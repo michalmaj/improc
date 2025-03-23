@@ -1,0 +1,1224 @@
+{
+	"inputs" : 
+	[
+		{
+			"path" : "CMakeLists.txt"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/CMakeFiles/3.30.5/CMakeSystem.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/michalmaj/.vcpkg-clion/vcpkg/scripts/buildsystems/vcpkg.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDependentOption.cmake"
+		},
+		{
+			"path" : "conan_provider.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeSystemSpecificInitialize.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/Platform/Darwin-Initialize.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/CMakeFiles/3.30.5/CMakeCCompiler.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/CMakeFiles/3.30.5/CMakeCXXCompiler.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeSystemSpecificInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeGenericSystem.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeInitializeConfigs.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/Platform/Darwin.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/Platform/UnixPaths.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeCInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeLanguageInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/Compiler/AppleClang-C.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/Compiler/Clang.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/Compiler/CMakeCommonCompilerMacros.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/Compiler/GNU.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/Compiler/CMakeCommonCompilerMacros.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/Platform/Apple-AppleClang-C.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/Platform/Apple-Clang-C.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/Platform/Apple-Clang.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeCommonLanguageInclude.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeCXXInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeLanguageInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/Compiler/AppleClang-CXX.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/Compiler/Clang.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/Platform/Apple-AppleClang-CXX.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/Platform/Apple-Clang-CXX.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/Platform/Apple-Clang.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeCommonLanguageInclude.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CheckCXXSourceCompiles.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/Internal/CheckSourceCompiles.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/michalmaj/.vcpkg-clion/vcpkg/installed/arm64-osx/share/matplot++/Matplot++ConfigVersion.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/michalmaj/.vcpkg-clion/vcpkg/installed/arm64-osx/share/matplot++/Matplot++Config.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/michalmaj/.vcpkg-clion/vcpkg/installed/arm64-osx/share/nodesoup/nodesoup-config.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/michalmaj/.vcpkg-clion/vcpkg/installed/arm64-osx/share/nodesoup/nodesoup-config-debug.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/michalmaj/.vcpkg-clion/vcpkg/installed/arm64-osx/share/nodesoup/nodesoup-config-release.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/michalmaj/.vcpkg-clion/vcpkg/installed/arm64-osx/share/matplot++/Matplot++Targets.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/michalmaj/.vcpkg-clion/vcpkg/installed/arm64-osx/share/matplot++/Matplot++Targets-debug.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/michalmaj/.vcpkg-clion/vcpkg/installed/arm64-osx/share/matplot++/Matplot++Targets-release.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/OpenCVConfigVersion.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/OpenCVConfig.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/OpenCVTargets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/OpenCV-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/OpenCV-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/protobuf-config-version.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/protobuf-config.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/protobufTargets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/protobuf-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/protobuf-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/ZLIBConfigVersion.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/ZLIBConfig.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/ZLIBTargets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/ZLIB-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/ZLIB-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/michalmaj/.conan2/p/b/proto54fdac56de2ea/p/lib/cmake/protobuf/protobuf-generate.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/michalmaj/.conan2/p/b/proto54fdac56de2ea/p/lib/cmake/protobuf/protobuf-options.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/michalmaj/.conan2/p/b/proto54fdac56de2ea/p/lib/cmake/protobuf/protobuf-module.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/michalmaj/.conan2/p/b/proto54fdac56de2ea/p/lib/cmake/protobuf/protobuf-options.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/michalmaj/.conan2/p/b/proto54fdac56de2ea/p/lib/cmake/protobuf/protobuf-conan-protoc-target.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/ade-config-version.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/ade-config.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/adeTargets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/ade-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/ade-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/OpenEXRConfigVersion.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/OpenEXRConfig.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/OpenEXRTargets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/OpenEXR-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/OpenEXR-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/ImathConfigVersion.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/ImathConfig.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/ImathTargets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/Imath-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/Imath-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/libdeflate-config-version.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/libdeflate-config.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/libdeflateTargets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/libdeflate-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/libdeflate-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/TIFFConfigVersion.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/TIFFConfig.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/TIFFTargets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/TIFF-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/TIFF-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/JPEGConfigVersion.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/JPEGConfig.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/JPEGTargets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/JPEG-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/JPEG-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/jbig-config-version.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/jbig-config.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/jbigTargets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/jbig-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/jbig-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/zstd-config-version.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/zstd-config.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/zstdTargets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/zstd-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/zstd-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/LibLZMAConfigVersion.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/LibLZMAConfig.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/LibLZMATargets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/LibLZMA-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/LibLZMA-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/michalmaj/.conan2/p/b/xz_utcba4be3eb8f04/p/lib/cmake/conan-official-xz_utils-variables.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/WebPConfigVersion.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/WebPConfig.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/WebPTargets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/WebP-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/WebP-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/quirc-config-version.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/quirc-config.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/quircTargets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/quirc-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/quirc-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/ffmpeg-config-version.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/ffmpeg-config.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/ffmpegTargets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/ffmpeg-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/ffmpeg-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/IconvConfigVersion.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/IconvConfig.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/IconvTargets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/Iconv-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/Iconv-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/freetype-config-version.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/freetype-config.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/freetypeTargets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/freetype-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/freetype-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/PNGConfigVersion.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/PNGConfig.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/PNGTargets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/PNG-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/PNG-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/BZip2ConfigVersion.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/BZip2Config.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/BZip2Targets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/BZip2-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/BZip2-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/michalmaj/.conan2/p/b/bzip2aec6cc871a76d/p/lib/cmake/conan-official-bzip2-variables.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/brotli-config-version.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/brotli-config.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/brotliTargets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/brotli-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/brotli-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/michalmaj/.conan2/p/b/freet0decf104691c0/p/lib/cmake/conan-official-freetype-variables.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/OpenJPEGConfigVersion.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/OpenJPEGConfig.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/OpenJPEGTargets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/OpenJPEG-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/OpenJPEG-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/michalmaj/.conan2/p/b/openja99b17d74a5ef/p/lib/cmake/conan-official-openjpeg-variables.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/openh264-config-version.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/openh264-config.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/openh264Targets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/openh264-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/openh264-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/VorbisConfigVersion.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/VorbisConfig.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/VorbisTargets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/Vorbis-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/Vorbis-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/OggConfigVersion.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/OggConfig.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/OggTargets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/Ogg-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/Ogg-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/OpusConfigVersion.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/OpusConfig.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/OpusTargets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/Opus-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/Opus-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/libx264-config-version.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/libx264-config.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/libx264Targets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/libx264-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/libx264-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/libx265-config-version.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/libx265-config.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/libx265Targets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/libx265-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/libx265-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/libvpx-config-version.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/libvpx-config.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/libvpxTargets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/libvpx-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/libvpx-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/libmp3lame-config-version.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/libmp3lame-config.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/libmp3lameTargets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/libmp3lame-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/libmp3lame-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/fdk-aac-config-version.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/fdk-aac-config.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/fdk-aacTargets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/fdk-aac-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/fdk-aac-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/OpenSSLConfigVersion.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/OpenSSLConfig.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/OpenSSLTargets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/OpenSSL-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/OpenSSL-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/michalmaj/.conan2/p/b/opens9bf56e2ebc65d/p/lib/cmake/conan-official-openssl-variables.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/libaom-av1-config-version.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/libaom-av1-config.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/libaom-av1Targets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/libaom-av1-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/libaom-av1-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/dav1d-config-version.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/dav1d-config.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/cmakedeps_macros.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/dav1dTargets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/dav1d-release-armv8-data.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "cmake-build-release/conan/build/Release/generators/dav1d-Target-release.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/michalmaj/.conan2/p/b/openccca6a0a7c2059/p/lib/cmake/conan-official-opencv-variables.cmake"
+		},
+		{
+			"path" : "conanfile.py"
+		}
+	],
+	"kind" : "cmakeFiles",
+	"paths" : 
+	{
+		"build" : "/Users/michalmaj/Documents/cpp/improc++/cmake-build-release",
+		"source" : "/Users/michalmaj/Documents/cpp/improc++"
+	},
+	"version" : 
+	{
+		"major" : 1,
+		"minor" : 1
+	}
+}

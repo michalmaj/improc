@@ -1,0 +1,50 @@
+/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/Applications/CLion.app/Contents/bin/ninja/mac/aarch64/ninja -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ "-DCMAKE_CXX_FLAGS=-fsanitize=thread -g -O1 -fno-omit-frame-pointer" "-DCMAKE_C_FLAGS=-fsanitize=thread -g -O1 -fno-omit-frame-pointer" -DCMAKE_TOOLCHAIN_FILE=/Users/michalmaj/.vcpkg-clion/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=conan_provider.cmake -DCONAN_COMMAND=/opt/anaconda3/envs/conan_cv/bin/conan -G Ninja -S /Users/michalmaj/Documents/cpp/improc++ -B /Users/michalmaj/Documents/cpp/improc++/cmake-build-threadsanitize
+-- The C compiler identification is AppleClang 16.0.0.16000026
+-- The CXX compiler identification is AppleClang 16.0.0.16000026
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/clang - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/clang++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- CMake-Conan: first find_package() found. Installing dependencies with Conan
+-- CMake-Conan: Checking if a default profile exists
+/Users/michalmaj/.conan2/profiles/default
+-- CMake-Conan: cmake_system_name=Darwin
+-- CMake-Conan: cmake_osx_sysroot=/Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk
+-- CMake-Conan: cmake_osx_deployment_target=
+-- CMake-Conan: cmake_system_processor=armv8
+-- CMake-Conan: CMake compiler=AppleClang
+-- CMake-Conan: CMake compiler version=16.0.0.16000026
+-- CMake-Conan: [settings] compiler=apple-clang
+-- CMake-Conan: [settings] compiler.version=16
+-- CMake-Conan: Creating profile /Users/michalmaj/Documents/cpp/improc++/cmake-build-threadsanitize/conan_host_profile
+-- CMake-Conan: Profile: 
+[settings]
+arch=armv8
+os=Macos
+compiler=apple-clang
+compiler.version=16
+compiler.cppstd=23
+compiler.libcxx=libc++
+build_type=Debug
+[conf]
+tools.cmake.cmaketoolchain:generator=Ninja
+tools.build:compiler_executables={"c":"/usr/bin/clang","cpp":"/usr/bin/clang++"}
+
+-- CMake-Conan: Installing single configuration Debug
+-- CMake-Conan: conan install /Users/michalmaj/Documents/cpp/improc++ -of=/Users/michalmaj/Documents/cpp/improc++/cmake-build-threadsanitize/conan --profile:host=default;--profile:host=/Users/michalmaj/Documents/cpp/improc++/cmake-build-threadsanitize/conan_host_profile;--profile:build=default;--build=missing
+ERROR: Conanfile not found at /Users/michalmaj/Documents/cpp/improc++/conanfile.txt
+CMake Error at conan_provider.cmake:486 (message):
+  Conan install failed='1'
+Call Stack (most recent call first):
+  conan_provider.cmake:594 (conan_install)
+  /Users/michalmaj/.vcpkg-clion/vcpkg/scripts/buildsystems/vcpkg.cmake:893 (_find_package)
+  CMakeLists.txt:8 (find_package)
+
+
+-- Configuring incomplete, errors occurred!

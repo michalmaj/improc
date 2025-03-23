@@ -1,0 +1,1 @@
+. "/Users/michalmaj/Documents/cpp/improc++/cmake-build-threadsanitize/conan/build/Debug/generators/deactivate_conanbuildenv-debug-armv8.sh"

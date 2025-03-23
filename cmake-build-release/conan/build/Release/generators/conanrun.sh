@@ -1,0 +1,1 @@
+. "/Users/michalmaj/Documents/cpp/improc++/cmake-build-release/conan/build/Release/generators/conanrunenv-release-armv8.sh"

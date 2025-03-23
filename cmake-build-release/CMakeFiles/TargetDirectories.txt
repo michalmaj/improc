@@ -1,0 +1,3 @@
+/Users/michalmaj/Documents/cpp/improc++/cmake-build-release/CMakeFiles/improc__.dir
+/Users/michalmaj/Documents/cpp/improc++/cmake-build-release/CMakeFiles/edit_cache.dir
+/Users/michalmaj/Documents/cpp/improc++/cmake-build-release/CMakeFiles/rebuild_cache.dir
