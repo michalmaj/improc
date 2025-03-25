@@ -1,3 +1,0 @@
-/Users/michalmaj/Documents/cpp/improc++/cmake-build-ubmemorysanitize/CMakeFiles/improc__.dir
-/Users/michalmaj/Documents/cpp/improc++/cmake-build-ubmemorysanitize/CMakeFiles/edit_cache.dir
-/Users/michalmaj/Documents/cpp/improc++/cmake-build-ubmemorysanitize/CMakeFiles/rebuild_cache.dir
