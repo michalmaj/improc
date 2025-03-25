@@ -2,4 +2,5 @@
 # To keep your changes, remove these comment lines, but the plugin won't be able to modify your requirements
 
 requirements:
+  - "xtensor/0.25.0"
   - "opencv/4.8.1"

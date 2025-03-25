@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Required dependencies
 find_package(Matplot++ CONFIG REQUIRED)
 find_package(OpenCV REQUIRED)
+find_package(xtensor)
 
 # Force Armadillo to use raw LAPACK/BLAS (no wrapper functions)
 add_compile_definitions(ARMA_DONT_USE_WRAPPER)
@@ -17,6 +18,7 @@ add_executable(improc__ main.cpp)
 if(APPLE)
     # macOS: use Accelerate framework (includes BLAS/LAPACK)
     target_link_libraries(improc__ PRIVATE
+            xtensor
             opencv::opencv
             Matplot++::cimg
             Matplot++::matplot
@@ -26,6 +28,7 @@ elseif(WIN32)
     # Windows: use OpenBLAS (via vcpkg)
     find_package(OpenBLAS CONFIG REQUIRED)
     target_link_libraries(improc__ PRIVATE
+            xtensor
             opencv::opencv
             Matplot++::cimg
             Matplot++::matplot
@@ -35,6 +38,7 @@ elseif(UNIX)
     # Linux: use OpenBLAS (via vcpkg or system)
     find_package(OpenBLAS CONFIG REQUIRED)
     target_link_libraries(improc__ PRIVATE
+            xtensor
             opencv::opencv
             Matplot++::cimg
             Matplot++::matplot

@@ -35,3 +35,17 @@ Follow these steps to build and install the toolkit:
    cmake ..
    make
    ```
+
+## Tested With
+
+- **C++ Compilers:**
+   - GCC 14.2
+   - Clang 19.1.7
+
+- **Libraries:**
+   - OpenCV: 4.8.1
+   - MLPack: 4.5.1
+   - Matplot++: 1.2.1
+   - xtensor: 0.25.0
+
+*Note:* CUDA and MSVC have not been tested yet.
