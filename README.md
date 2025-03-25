@@ -23,7 +23,7 @@ Follow these steps to build and install the toolkit:
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/improc.git
+   git clone https://github.com/michalmaj/improc.git
    ```
 2. **Install dependencies via Conan:**
    ```bash
