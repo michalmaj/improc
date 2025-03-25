@@ -15,6 +15,7 @@ improc++ is a modern C++ image processing toolkit that provides advanced image m
 - [OpenCV](https://opencv.org/)
 - [Matplot++](https://github.com/alandefreitas/matplotplusplus)
 - [ML Pack](https://www.mlpack.org/)
+- [xtensor](https://xtensor.readthedocs.io/en/latest/index.html)
 - [CUDA](https://developer.nvidia.com/cuda-zone) (for GPU acceleration)
 - [Conan 2.0](https://conan.io/) and [vcpkg](https://github.com/microsoft/vcpkg) for dependency management
 
