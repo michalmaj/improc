@@ -1,0 +1,68 @@
+@startuml
+' Main namespace for the library
+package "improc" {
+
+  ' Core namespace for basic image operations
+  package "core" {
+    class Image {
+      +cv::Mat data
+      +resize(width: int, height: int)
+      +rotate(angle: double)
+      +crop(x: int, y: int, width: int, height: int)
+      +to_grayscale()
+      +apply_filter(filterType: FilterType)
+    }
+  }
+
+  ' Pipeline namespace for image processing operations using pipe operator
+  package "pipeline" {
+    class Resize {
+      +operator()(img: Image): Image
+    }
+    class Rotate {
+      +operator()(img: Image): Image
+    }
+    class ToGrayscale {
+      +operator()(img: Image): Image
+    }
+  }
+
+  ' Threading namespace for multi-threading tools
+  package "threading" {
+    class ThreadPool {
+      +enqueue(task: Function): void
+      +wait(): void
+    }
+  }
+
+  ' Visualization namespace for image result visualization
+  package "visualization" {
+    class Plotter {
+      +plotHistogram(img: Image): void
+      +compareImages(img1: Image, img2: Image): void
+      +exportChart(filename: string): void
+    }
+  }
+
+  ' Machine Learning namespace for feature extraction and classification
+  package "ml" {
+    class FeatureExtractor {
+      +extractHOG(img: Image): Features
+      +extractSIFT(img: Image): Features
+      +extractORB(img: Image): Features
+    }
+    class Classifier {
+      +train(data: TrainingData): void
+      +predict(img: Image): Label
+    }
+  }
+
+  ' CUDA namespace for GPU-accelerated image operations
+  package "cuda" {
+    class CUDAKernel {
+      +launchKernel(args: KernelArgs): void
+    }
+  }
+}
+
+@enduml
