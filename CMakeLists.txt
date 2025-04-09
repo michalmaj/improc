@@ -17,6 +17,7 @@ find_package(Matplot++ CONFIG REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(xtensor)
 find_package(Eigen3)
+find_package(GTest)
 
 # Force Armadillo to use raw LAPACK/BLAS (no wrapper functions)
 add_compile_definitions(ARMA_DONT_USE_WRAPPER)
