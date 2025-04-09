@@ -8,53 +8,44 @@ if(APPLE)
     string(REPLACE "--no-undefined" "" CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")
 endif()
 
-
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Required dependencies
+# Dependencies
 find_package(Matplot++ CONFIG REQUIRED)
 find_package(OpenCV REQUIRED)
-find_package(xtensor)
-find_package(Eigen3)
-find_package(GTest)
+find_package(xtensor REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(GTest REQUIRED)
 
-# Force Armadillo to use raw LAPACK/BLAS (no wrapper functions)
+# Armadillo behavior (used by mlpack)
 add_compile_definitions(ARMA_DONT_USE_WRAPPER)
 
-add_executable(improc__ main.cpp)
+# === improc LIBRARY ===
+file(GLOB_RECURSE IMPROC_HEADERS CONFIGURE_DEPENDS include/improc/**/*.hpp)
+file(GLOB_RECURSE IMPROC_SOURCES CONFIGURE_DEPENDS src/**/*.cpp)
 
-# Platform-specific LAPACK/BLAS linking
+add_library(improc STATIC ${IMPROC_HEADERS} ${IMPROC_SOURCES})
+
+target_include_directories(improc PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+)
+
+target_link_libraries(improc PUBLIC
+        xtensor
+        opencv::opencv
+        Eigen3::Eigen
+        Matplot++::cimg
+        Matplot++::matplot
+)
+
 if(APPLE)
-    # macOS: use Accelerate framework (includes BLAS/LAPACK)
-    target_link_libraries(improc__ PRIVATE
-            xtensor
-            opencv::opencv
-            Eigen3::Eigen
-            Matplot++::cimg
-            Matplot++::matplot
-            "-framework Accelerate"
-    )
-elseif(WIN32)
-    # Windows: use OpenBLAS (via vcpkg)
+    target_link_libraries(improc PUBLIC "-framework Accelerate")
+elseif(WIN32 OR UNIX)
     find_package(OpenBLAS CONFIG REQUIRED)
-    target_link_libraries(improc__ PRIVATE
-            xtensor
-            opencv::opencv
-            Eigen3::Eigen
-            Matplot++::cimg
-            Matplot++::matplot
-            OpenBLAS::OpenBLAS
-    )
-elseif(UNIX)
-    # Linux: use OpenBLAS (via vcpkg or system)
-    find_package(OpenBLAS CONFIG REQUIRED)
-    target_link_libraries(improc__ PRIVATE
-            xtensor
-            opencv::opencv
-            Eigen3::Eigen
-            Matplot++::cimg
-            Matplot++::matplot
-            OpenBLAS::OpenBLAS
-    )
+    target_link_libraries(improc PUBLIC OpenBLAS::OpenBLAS)
 endif()
+
+# === Executable (demo / main) ===
+add_executable(improc__ main.cpp)
+target_link_libraries(improc__ PRIVATE improc)
