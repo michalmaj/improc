@@ -59,3 +59,8 @@ target_link_libraries(improc_tests PRIVATE improc GTest::gtest GTest::gtest_main
 
 include(GoogleTest)
 gtest_discover_tests(improc_tests)
+
+
+# === DEMO ===
+add_executable(demo_camera examples/demo_camera.cpp)
+target_link_libraries(demo_camera PRIVATE improc)
