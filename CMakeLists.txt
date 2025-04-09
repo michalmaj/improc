@@ -49,3 +49,13 @@ endif()
 # === Executable (demo / main) ===
 add_executable(improc__ main.cpp)
 target_link_libraries(improc__ PRIVATE improc)
+
+enable_testing()
+
+file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS tests/*.cpp)
+
+add_executable(improc_tests ${TEST_SOURCES})
+target_link_libraries(improc_tests PRIVATE improc GTest::gtest GTest::gtest_main)
+
+include(GoogleTest)
+gtest_discover_tests(improc_tests)
