@@ -15,9 +15,23 @@ improc++ is a modern C++ image processing toolkit that provides advanced image m
 - [OpenCV](https://opencv.org/)
 - [Matplot++](https://github.com/alandefreitas/matplotplusplus)
 - [ML Pack](https://www.mlpack.org/)
-- [xtensor](https://xtensor.readthedocs.io/en/latest/index.html)
+- [xtensor](https://xtensor.readthedocs.io/)
+- [Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page)
+- [GoogleTest](https://github.com/google/googletest)
 - [CUDA](https://developer.nvidia.com/cuda-zone) (for GPU acceleration)
 - [Conan 2.0](https://conan.io/) and [vcpkg](https://github.com/microsoft/vcpkg) for dependency management
+
+## Dependency Management
+
+- Installed via **Conan**:
+    - OpenCV
+    - xtensor
+    - Eigen
+    - GoogleTest (GTest)
+
+- Installed via **vcpkg**:
+    - ML Pack
+    - Matplot++
 
 ## Installation
 Follow these steps to build and install the toolkit:
@@ -48,5 +62,7 @@ Follow these steps to build and install the toolkit:
    - MLPack: 4.5.1
    - Matplot++: 1.2.1
    - xtensor: 0.25.0
+   - Eigen: 3.4.0
+   - GoogleTest: 1.16.0
 
 *Note:* CUDA and MSVC have not been tested yet.
