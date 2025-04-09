@@ -1,5 +1,13 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.30)
 project(improc__)
+
+if(APPLE)
+    string(REPLACE "--as-needed" "" CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
+    string(REPLACE "--no-undefined" "" CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
+    string(REPLACE "--as-needed" "" CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")
+    string(REPLACE "--no-undefined" "" CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")
+endif()
+
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -8,6 +16,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Matplot++ CONFIG REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(xtensor)
+find_package(Eigen3)
 
 # Force Armadillo to use raw LAPACK/BLAS (no wrapper functions)
 add_compile_definitions(ARMA_DONT_USE_WRAPPER)
@@ -20,6 +29,7 @@ if(APPLE)
     target_link_libraries(improc__ PRIVATE
             xtensor
             opencv::opencv
+            Eigen3::Eigen
             Matplot++::cimg
             Matplot++::matplot
             "-framework Accelerate"
@@ -30,6 +40,7 @@ elseif(WIN32)
     target_link_libraries(improc__ PRIVATE
             xtensor
             opencv::opencv
+            Eigen3::Eigen
             Matplot++::cimg
             Matplot++::matplot
             OpenBLAS::OpenBLAS
@@ -40,6 +51,7 @@ elseif(UNIX)
     target_link_libraries(improc__ PRIVATE
             xtensor
             opencv::opencv
+            Eigen3::Eigen
             Matplot++::cimg
             Matplot++::matplot
             OpenBLAS::OpenBLAS
