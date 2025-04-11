@@ -50,6 +50,43 @@ Follow these steps to build and install the toolkit:
    cmake ..
    make
    ```
+## CMake Configuration
+To configure the project with both Conan and vcpkg in CMake-based environments (e.g., CLion), set the following CMake options:
+```bash
+-DCMAKE_TOOLCHAIN_FILE=<path_to_vcpkg>/scripts/buildsystems/vcpkg.cmake \
+-DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="conan_provider.cmake" \
+-DCONAN_COMMAND=<path_to_conan_executable>
+```
+Replace <path_to_vcpkg> and <path_to_conan_executable> with the actual paths on your system.
+
+These settings ensure that:
+- vcpkg is used for libraries like Matplot++ and ML Pack
+- conan_provider.cmake bootstraps Conan for dependencies like OpenCV, Eigen, and xtensor
+- Conan is invoked automatically during CMake configuration
+
+### Sanitizer Configuration (optional)
+To enable sanitizers for debugging purposes, you can add the following flags to your CMake configuration:
+
+**Thread Sanitizer**
+```bash
+-DCMAKE_CXX_FLAGS="-fsanitize=thread -g -O1 -fno-omit-frame-pointer" \
+-DCMAKE_C_FLAGS="-fsanitize=thread -g -O1 -fno-omit-frame-pointer" \
+-DCMAKE_TOOLCHAIN_FILE=<path_to_vcpkg>/scripts/buildsystems/vcpkg.cmake \
+-DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="conan_provider.cmake" \
+-DCONAN_COMMAND=<path_to_conan_executable>
+```
+
+**Address + Undefined Behavior Sanitizer**
+```bash
+-DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -g -O1 -fno-omit-frame-pointer" \
+-DCMAKE_C_FLAGS="-fsanitize=address,undefined -g -O1 -fno-omit-frame-pointer" \
+-DCMAKE_BUILD_TYPE=Debug \
+-DCMAKE_TOOLCHAIN_FILE=<path_to_vcpkg>/scripts/buildsystems/vcpkg.cmake \
+-DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="conan_provider.cmake" \
+-DCONAN_COMMAND=<path_to_conan_executable>
+```
+
+💡 Sanitizers are helpful for detecting threading issues, memory leaks, and undefined behavior during development. Use them with `-O1` and `-g` for best results.
 
 ## Tested With
 
