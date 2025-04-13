@@ -4,7 +4,6 @@
 
 #include "improc/io/camera_capture.hpp"
 #include <opencv2/highgui.hpp>
-#include <opencv2/imgproc.hpp>
 #include <iostream>
 #include <chrono>
 #include <thread>
@@ -23,9 +22,8 @@ int main() {
       cv::imshow(camera.getWindowName(), frame);
     }
 
-    // Wait 30 ms for key press, break loop if ESC is pressed
     int key = cv::waitKey(30);
-    if (key == 27) { // ESC
+    if (key == 27) {
       break;
     }
   }
