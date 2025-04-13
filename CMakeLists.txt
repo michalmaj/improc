@@ -70,3 +70,7 @@ target_link_libraries(demo_camera_capture PRIVATE improc)
 # Image Loader
 add_executable(demo_image_loader examples/ml/demo_image_loader.cpp)
 target_link_libraries(demo_image_loader PRIVATE improc)
+
+# Dataset loader
+add_executable(demo_dataset examples/ml/demo_dataset.cpp)
+target_link_libraries(demo_dataset PRIVATE improc)
