@@ -62,5 +62,11 @@ gtest_discover_tests(improc_tests)
 
 
 # === DEMO ===
+
+# Camera Capture
 add_executable(demo_camera_capture examples/io/demo_camera_capture.cpp)
 target_link_libraries(demo_camera_capture PRIVATE improc)
+
+# Image Loader
+add_executable(demo_image_loader examples/ml/demo_image_loader.cpp)
+target_link_libraries(demo_image_loader PRIVATE improc)
