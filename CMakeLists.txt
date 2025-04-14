@@ -74,3 +74,7 @@ target_link_libraries(demo_image_loader PRIVATE improc)
 # Dataset loader
 add_executable(demo_dataset examples/ml/demo_dataset.cpp)
 target_link_libraries(demo_dataset PRIVATE improc)
+
+# OpenCV Haarcascade Loader
+add_executable(demo_haar_loader examples/ml/demo_haar_cascade_loader.cpp)
+target_link_libraries(demo_haar_loader PRIVATE improc)
