@@ -1,47 +1,80 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.30)
 project(improc__)
+
+if(APPLE)
+    string(REPLACE "--as-needed" "" CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
+    string(REPLACE "--no-undefined" "" CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
+    string(REPLACE "--as-needed" "" CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")
+    string(REPLACE "--no-undefined" "" CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")
+endif()
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Required dependencies
+# Dependencies
 find_package(Matplot++ CONFIG REQUIRED)
 find_package(OpenCV REQUIRED)
-find_package(xtensor)
+find_package(xtensor REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(GTest REQUIRED)
 
-# Force Armadillo to use raw LAPACK/BLAS (no wrapper functions)
+# Armadillo behavior (used by mlpack)
 add_compile_definitions(ARMA_DONT_USE_WRAPPER)
 
-add_executable(improc__ main.cpp)
+# === improc LIBRARY ===
+file(GLOB_RECURSE IMPROC_HEADERS CONFIGURE_DEPENDS include/improc/**/*.hpp)
+file(GLOB_RECURSE IMPROC_SOURCES CONFIGURE_DEPENDS src/**/*.cpp)
 
-# Platform-specific LAPACK/BLAS linking
+add_library(improc STATIC ${IMPROC_HEADERS} ${IMPROC_SOURCES})
+
+target_include_directories(improc PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+)
+
+target_link_libraries(improc PUBLIC
+        xtensor
+        opencv::opencv
+        Eigen3::Eigen
+        Matplot++::cimg
+        Matplot++::matplot
+)
+
 if(APPLE)
-    # macOS: use Accelerate framework (includes BLAS/LAPACK)
-    target_link_libraries(improc__ PRIVATE
-            xtensor
-            opencv::opencv
-            Matplot++::cimg
-            Matplot++::matplot
-            "-framework Accelerate"
-    )
-elseif(WIN32)
-    # Windows: use OpenBLAS (via vcpkg)
+    target_link_libraries(improc PUBLIC "-framework Accelerate")
+elseif(WIN32 OR UNIX)
     find_package(OpenBLAS CONFIG REQUIRED)
-    target_link_libraries(improc__ PRIVATE
-            xtensor
-            opencv::opencv
-            Matplot++::cimg
-            Matplot++::matplot
-            OpenBLAS::OpenBLAS
-    )
-elseif(UNIX)
-    # Linux: use OpenBLAS (via vcpkg or system)
-    find_package(OpenBLAS CONFIG REQUIRED)
-    target_link_libraries(improc__ PRIVATE
-            xtensor
-            opencv::opencv
-            Matplot++::cimg
-            Matplot++::matplot
-            OpenBLAS::OpenBLAS
-    )
+    target_link_libraries(improc PUBLIC OpenBLAS::OpenBLAS)
 endif()
+
+# === Executable (demo / main) ===
+add_executable(improc__ main.cpp)
+target_link_libraries(improc__ PRIVATE improc)
+
+enable_testing()
+
+file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS tests/*.cpp)
+
+add_executable(improc_tests ${TEST_SOURCES})
+target_link_libraries(improc_tests PRIVATE improc GTest::gtest GTest::gtest_main)
+
+include(GoogleTest)
+gtest_discover_tests(improc_tests)
+
+
+# === DEMO ===
+
+# Camera Capture
+add_executable(demo_camera_capture examples/io/demo_camera_capture.cpp)
+target_link_libraries(demo_camera_capture PRIVATE improc)
+
+# Image Loader
+add_executable(demo_image_loader examples/ml/demo_image_loader.cpp)
+target_link_libraries(demo_image_loader PRIVATE improc)
+
+# Dataset loader
+add_executable(demo_dataset examples/ml/demo_dataset.cpp)
+target_link_libraries(demo_dataset PRIVATE improc)
+
+# OpenCV Haarcascade Loader
+add_executable(demo_haar_loader examples/ml/demo_haar_cascade_loader.cpp)
+target_link_libraries(demo_haar_loader PRIVATE improc)

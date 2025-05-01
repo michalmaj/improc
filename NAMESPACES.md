@@ -12,6 +12,8 @@ The library is organized into the following namespaces:
 - `improc::visualization` (visualization utilities)
 - `improc::ml` (machine learning integration)
 - `improc::cuda` (CUDA/GPU acceleration)
+- `improc::io` (camera input, file I/O, video streaming)
+- *(planned)* `improc::math` (generic math helpers and backends)
 
 Below is a detailed description of each namespace.
 
@@ -94,7 +96,7 @@ Facilitates the visualization of image processing results.
 Integrates machine learning functionalities for image processing.
 
 **Key Elements:**
-- **`FeatureExtractor`** – Provides methods to extract image features (e.g., HOG, SIFT, ORB).
+- **`FeatureExtractor`** – Provides methods to extract image   features (e.g., HOG, SIFT, ORB).
 - **`Classifier`** – Enables training machine learning models (e.g., SVM) and predicting image classes.
 
 ---
@@ -106,3 +108,25 @@ Provides GPU-accelerated image processing operations using CUDA.
 
 **Key Elements:**
 - **`CUDAKernel`** – Implements GPU-based operations, possibly leveraging libraries like thrust or cuBLAS.
+
+---
+
+## `improc::io`
+
+**Purpose:**
+Handles input/output operations related to image and video streams.
+
+**Key Elements:**
+- CameraCapture – Captures video frames asynchronously from a camera device.
+- (planned) VideoReader / ImageLoader – For reading image or video files.
+
+---
+
+## **`(planned) improc::math`**
+
+**Purpose:**
+Provides unified math utilities, wrappers, or adapters over different numerical backends (e.g., xtensor, Eigen, Armadillo).
+
+**Use Case Ideas:**
+- Matrix conversion utilities
+- Abstracted math ops used by `ml` or `cuda` modules

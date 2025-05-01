@@ -63,6 +63,14 @@ package "improc" {
       +launchKernel(args: KernelArgs): void
     }
   }
-}
 
+  ' IO namespace for camera and file I/O
+  package "io" {
+    class CameraCapture {
+      +getFrame(): cv::Mat
+      +getWindowName(): string
+      +stop(): void
+    }
+  }
+}
 @enduml
