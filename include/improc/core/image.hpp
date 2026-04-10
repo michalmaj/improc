@@ -21,12 +21,12 @@ public:
 
     Image clone() const { return Image(mat_.clone()); }
 
-    cv::Mat&       mat()       { return mat_; }
-    const cv::Mat& mat() const { return mat_; }
+    [[nodiscard]] cv::Mat&       mat()       { return mat_; }
+    [[nodiscard]] const cv::Mat& mat() const { return mat_; }
 
-    int  rows()  const { return mat_.rows; }
-    int  cols()  const { return mat_.cols; }
-    bool empty() const { return mat_.empty(); }
+    [[nodiscard]] int  rows()  const { return mat_.rows; }
+    [[nodiscard]] int  cols()  const { return mat_.cols; }
+    [[nodiscard]] bool empty() const { return mat_.empty(); }
 
     Image(const Image&)            = default;
     Image& operator=(const Image&) = default;
