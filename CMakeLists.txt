@@ -12,9 +12,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Dependencies
-find_package(Matplot++ CONFIG REQUIRED)
 find_package(OpenCV REQUIRED)
-find_package(xtensor REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(GTest REQUIRED)
 
@@ -32,11 +30,8 @@ target_include_directories(improc PUBLIC
 )
 
 target_link_libraries(improc PUBLIC
-        xtensor
         opencv::opencv
         Eigen3::Eigen
-        Matplot++::cimg
-        Matplot++::matplot
 )
 
 if(APPLE)
@@ -78,3 +73,11 @@ target_link_libraries(demo_dataset PRIVATE improc)
 # OpenCV Haarcascade Loader
 add_executable(demo_haar_loader examples/ml/demo_haar_cascade_loader.cpp)
 target_link_libraries(demo_haar_loader PRIVATE improc)
+
+# Image Wrapper
+add_executable(demo_image_wrapper examples/core/demo_image_wrapper.cpp)
+target_link_libraries(demo_image_wrapper PRIVATE improc)
+
+# Pipeline
+add_executable(demo_pipeline examples/core/demo_pipeline.cpp)
+target_link_libraries(demo_pipeline PRIVATE improc)
