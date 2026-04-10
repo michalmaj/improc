@@ -14,7 +14,6 @@ int main() {
   CameraCapture camera(0); // Default camera
 
   std::cout << "Starting camera. Press ESC to exit." << std::endl;
-
   while (true) {
     auto frame = camera.getFrame();
 

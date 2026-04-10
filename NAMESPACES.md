@@ -1,132 +1,111 @@
 # Namespace Structure in improc++
 
-The **improc++** library is designed in a modular way to facilitate extensibility and maintainability. This document provides an overview of the namespace structure used within the library.
-
-## Overview
-
-The library is organized into the following namespaces:
-- `improc` (main namespace)
-- `improc::core` (basic image operations)
-- `improc::pipeline` (pipeline operations using the pipe operator)
-- `improc::threading` (multi-threading support)
-- `improc::visualization` (visualization utilities)
-- `improc::ml` (machine learning integration)
-- `improc::cuda` (CUDA/GPU acceleration)
-- `improc::io` (camera input, file I/O, video streaming)
-- *(planned)* `improc::math` (generic math helpers and backends)
-
-Below is a detailed description of each namespace.
+The library is organized into modular namespaces under the root `improc` namespace. Each namespace has a single responsibility and maps to a corresponding directory under `include/improc/` and `src/`.
 
 ---
 
-## `improc`
+## `improc::core` — Type-safe image primitives
 
-**Purpose:**  
-The main namespace for the library that groups all modules and functionalities related to image processing.
+**Status: Implemented**
 
----
+Provides a compile-time type-safe wrapper over `cv::Mat`, format conversion utilities, and a pipeline composition operator.
 
-## `improc::core`
+### Format tag types (`format_traits.hpp`)
 
-**Purpose:**  
-Provides basic image operations.
+Empty structs used as template parameters. `FormatTraits<T>` maps each tag to its OpenCV type constant and channel count.
 
-**Key Elements:**
-- **`Image`** – The central class representing an image, typically implemented based on `cv::Mat`.
+| Tag | `cv_type` | `channels` |
+|---|---|---|
+| `BGR` | `CV_8UC3` | 3 |
+| `Gray` | `CV_8UC1` | 1 |
+| `BGRA` | `CV_8UC4` | 4 |
+| `Float32` | `CV_32FC1` | 1 |
 
-**Methods:**
-- `resize(width, height)` – Resize the image.
-- `rotate(angle)` – Rotate the image.
-- `crop(x, y, width, height)` – Crop the image.
-- `to_grayscale()` – Convert the image to grayscale.
-- `apply_filter(filterType)` – Apply a specific filter (e.g., Gaussian, median, bilateral).
+### `Image<Format>` (`image.hpp`)
 
----
+Thin wrapper over `cv::Mat` with shallow-copy semantics (same as `cv::Mat`). Constructor validates that the `cv::Mat` type matches `FormatTraits<Format>::cv_type` — throws `std::invalid_argument` on mismatch.
 
-## `improc::pipeline`
+```cpp
+Image<BGR> img(mat);          // validated at construction
+Image<BGR> copy = img;        // shallow copy (shared data)
+Image<BGR> owned = img.clone(); // deep copy
+cv::Mat& raw = img.mat();     // explicit interop with OpenCV
+```
 
-**Purpose:**  
-Enables the composition of image processing operations in a pipeline style, similar to `std::ranges`.
+### `convert<To, From>()` (`convert.hpp`)
 
-**Key Elements:**
-- **Functors:**
-    - **`Resize`** – Resizes an image.
-    - **`Rotate`** – Rotates an image.
-    - **`ToGrayscale`** – Converts an image to grayscale.
+Free function template. Primary template is `= delete` — unsupported conversions are compile errors. Explicit specializations define allowed conversions:
 
-- **Pipe Operator (`|`):**  
-  The library overloads the `|` operator to allow chaining operations in a clear manner.  
-  For example:
-  ```cpp
-  auto processed = image
-      | improc::pipeline::Resize(800, 600)
-      | improc::pipeline::ToGrayscale();
+- `BGR` ↔ `Gray`
+- `BGR` ↔ `BGRA`
+- `Gray` → `Float32` (normalized 0–1)
 
----
+```cpp
+Image<Gray> gray = convert<Gray, BGR>(bgr_image);
+```
 
-## `improc::threading`
+### Pipeline `operator|` (`pipeline.hpp`)
 
-**Purpose:**
-Handles asynchronous tasks and multi-threading.
+Composes processing steps using the pipe operator. Each step is a small functor.
 
-**Key Elements:**
-- **`ThreadPool`** – A class for managing and executing asynchronous tasks.
+```cpp
+Image<Float32> result = bgr_image | ToGray{} | ToFloat32{};
+```
 
-**Methods:**
-- **`enqueue`**(task: Function) – Add a task to the queue.
-- **`wait()`** – Wait for all tasks to complete.
+Available functors: `ToGray`, `ToBGR`, `ToFloat32`.
 
 ---
 
-## `improc::visualization`
+## `improc::io` — Input/Output
 
-**Purpose:**
-Facilitates the visualization of image processing results.
+**Status: Implemented**
 
-**Key Elements:**
-- **`Plotter`** – A utility class that provides functions to:
-    - Plot image histograms.
-    - Compare images.
-    - Export charts (e.g., to PNG or JPG files).
----
+### `CameraCapture`
 
-## `improc::ml`
+Asynchronous camera frame capture. Runs a background capture thread. Non-copyable, non-movable.
 
-**Purpose:**
-Integrates machine learning functionalities for image processing.
-
-**Key Elements:**
-- **`FeatureExtractor`** – Provides methods to extract image   features (e.g., HOG, SIFT, ORB).
-- **`Classifier`** – Enables training machine learning models (e.g., SVM) and predicting image classes.
+```cpp
+CameraCapture cam(0);
+cv::Mat frame = cam.getFrame();
+cam.stop();
+```
 
 ---
 
-## `improc::cuda`
+## `improc::ml` — Machine Learning utilities
 
-**Purpose:**
-Provides GPU-accelerated image processing operations using CUDA.
+**Status: Implemented**
 
-**Key Elements:**
-- **`CUDAKernel`** – Implements GPU-based operations, possibly leveraging libraries like thrust or cuBLAS.
+### `ImageLoader`
+
+Loads all valid images (`.jpg`, `.jpeg`, `.png`) from a directory. Returns `std::expected<std::vector<cv::Mat>, std::string>`.
+
+### `Dataset`
+
+Loads an image dataset from a directory of class-labeled subdirectories. Splits into train/val/test sets with configurable ratios and optional per-class cap.
+
+```
+root_dir/
+  class_a/
+    img1.jpg
+  class_b/
+    img2.png
+```
+
+### `ModelLoaderBase<Derived, ModelType>` (CRTP)
+
+Base class for model loaders. Validates file path and extension (`.yml`, `.yaml`, `.xml`). Concrete loaders implement `load_impl()` and `get_impl()`.
+
+### `HaarCascadeLoader`
+
+Loads OpenCV Haar Cascade XML files into `cv::CascadeClassifier`.
 
 ---
 
-## `improc::io`
+## Planned namespaces
 
-**Purpose:**
-Handles input/output operations related to image and video streams.
-
-**Key Elements:**
-- CameraCapture – Captures video frames asynchronously from a camera device.
-- (planned) VideoReader / ImageLoader – For reading image or video files.
-
----
-
-## **`(planned) improc::math`**
-
-**Purpose:**
-Provides unified math utilities, wrappers, or adapters over different numerical backends (e.g., xtensor, Eigen, Armadillo).
-
-**Use Case Ideas:**
-- Matrix conversion utilities
-- Abstracted math ops used by `ml` or `cuda` modules
+| Namespace | Purpose |
+|---|---|
+| `improc::pipeline` | *(merge into `improc::core`)* Additional pipeline ops: Resize, Rotate, Crop |
+| `improc::threading` | ThreadPool, producer-consumer frame pipeline |
+| `improc::cuda` | Wrapper over `cv::cuda` for GPU-accelerated ops |
