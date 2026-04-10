@@ -36,3 +36,19 @@ TEST(ImageTest, MatAccessorReturnsSameMat) {
     Image<BGR> img(mat);
     EXPECT_EQ(img.mat().data, mat.data);  // same underlying data
 }
+
+TEST(ImageTest, CloneIsDeepCopy) {
+    cv::Mat mat(2, 2, CV_8UC3, cv::Scalar(10, 20, 30));
+    Image<BGR> original(mat);
+    Image<BGR> copy = original.clone();
+    copy.mat().at<cv::Vec3b>(0, 0) = {0, 0, 0};
+    EXPECT_EQ(original.mat().at<cv::Vec3b>(0, 0), (cv::Vec3b{10, 20, 30}));
+}
+
+TEST(ImageTest, ShallowCopySharesData) {
+    cv::Mat mat(2, 2, CV_8UC3, cv::Scalar(10, 20, 30));
+    Image<BGR> original(mat);
+    Image<BGR> shallow = original;          // copy constructor — shallow
+    shallow.mat().at<cv::Vec3b>(0, 0) = {0, 0, 0};
+    EXPECT_EQ(original.mat().at<cv::Vec3b>(0, 0), (cv::Vec3b{0, 0, 0}));  // shared data changed
+}
