@@ -50,6 +50,14 @@ TEST(NormalizeToTest, ThrowsOnInvalidRange) {
     EXPECT_THROW(NormalizeTo(1.0f, 1.0f), std::invalid_argument);
 }
 
+TEST(NormalizeToTest, UniformImageReturnsZeros) {
+    // spec does not define this case; behavior: returns zero-filled image (same as Normalize)
+    cv::Mat mat(2, 2, CV_32FC1, cv::Scalar(5.0f));
+    Image<Float32> img(mat);
+    Image<Float32> result = img | NormalizeTo{0.0f, 1.0f};
+    EXPECT_NEAR(result.mat().at<float>(0, 0), 0.0f, 1e-5f);
+}
+
 // --- Standardize ---
 
 TEST(StandardizeTest, AppliesZScore) {

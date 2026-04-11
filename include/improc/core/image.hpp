@@ -12,6 +12,9 @@ template<typename Format>
 class Image {
 public:
     explicit Image(cv::Mat mat) : mat_(std::move(mat)) {
+        if (mat_.empty()) {
+            throw std::invalid_argument("Image: mat must not be empty");
+        }
         if (mat_.type() != FormatTraits<Format>::cv_type) {
             throw std::invalid_argument(
                 std::format("Image: expected cv_type {}, got {}",

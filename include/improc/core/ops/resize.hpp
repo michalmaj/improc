@@ -26,9 +26,7 @@ struct Resize {
         if (!width_ && !height_) {
             throw std::invalid_argument("Resize: at least one of width or height must be set");
         }
-        if (img.empty()) {
-            throw std::invalid_argument("Resize: input image is empty");
-        }
+
         int w = width_.value_or(0);
         int h = height_.value_or(0);
         if (!width_) {
