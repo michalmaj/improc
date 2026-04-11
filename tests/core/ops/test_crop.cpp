@@ -53,8 +53,6 @@ TEST(CropTest, ThrowsOnROIExceedingHeight) {
 }
 
 TEST(CropTest, ThrowsOnNonPositiveDimension) {
-    cv::Mat mat(100, 200, CV_8UC3);
-    Image<BGR> img(mat);
-    EXPECT_THROW((img | Crop{}.x(0).y(0).width(0).height(50)),  std::invalid_argument);
-    EXPECT_THROW((img | Crop{}.x(0).y(0).width(50).height(-1)), std::invalid_argument);
+    EXPECT_THROW(Crop{}.width(0),  std::invalid_argument);
+    EXPECT_THROW(Crop{}.height(-1), std::invalid_argument);
 }

@@ -30,6 +30,7 @@ Image<Float32> NormalizeTo::operator()(Image<Float32> img) const {
     cv::minMaxLoc(img.mat(), &min_val, &max_val);
     cv::Mat dst;
     if (std::abs(max_val - min_val) < 1e-10) {
+        // Uniform image: range is undefined, return zeros (same as Normalize)
         dst = cv::Mat::zeros(img.mat().size(), CV_32FC1);
     } else {
         const double scale = (max_ - min_) / (max_val - min_val);

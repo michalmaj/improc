@@ -12,8 +12,14 @@ namespace improc::core {
 struct Crop {
     Crop& x(int v)      { x_ = v; return *this; }
     Crop& y(int v)      { y_ = v; return *this; }
-    Crop& width(int v)  { width_ = v; return *this; }
-    Crop& height(int v) { height_ = v; return *this; }
+    Crop& width(int v) {
+        if (v <= 0) throw std::invalid_argument("Crop: width must be positive");
+        width_ = v; return *this;
+    }
+    Crop& height(int v) {
+        if (v <= 0) throw std::invalid_argument("Crop: height must be positive");
+        height_ = v; return *this;
+    }
 
     template<typename Format>
     Image<Format> operator()(Image<Format> img) const {

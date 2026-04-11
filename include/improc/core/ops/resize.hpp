@@ -29,6 +29,7 @@ struct Resize {
 
         int w = width_.value_or(0);
         int h = height_.value_or(0);
+        // img is guaranteed non-empty by Image constructor, so rows/cols > 0
         if (!width_) {
             w = static_cast<int>(std::round(static_cast<double>(img.cols()) * h / img.rows()));
         } else if (!height_) {
