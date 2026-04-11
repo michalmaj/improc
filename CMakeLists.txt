@@ -41,10 +41,6 @@ elseif(WIN32 OR UNIX)
     target_link_libraries(improc PUBLIC OpenBLAS::OpenBLAS)
 endif()
 
-# === Executable (demo / main) ===
-add_executable(improc__ main.cpp)
-target_link_libraries(improc__ PRIVATE improc)
-
 enable_testing()
 
 file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS tests/*.cpp)

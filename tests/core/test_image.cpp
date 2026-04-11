@@ -21,9 +21,8 @@ TEST(ImageTest, RowsColsReflectMat) {
     EXPECT_EQ(img.cols(), 80);
 }
 
-TEST(ImageTest, EmptyDetected) {
-    Image<BGR> img(cv::Mat(0, 0, CV_8UC3));
-    EXPECT_TRUE(img.empty());
+TEST(ImageTest, EmptyMatThrows) {
+    EXPECT_THROW(Image<BGR>(cv::Mat(0, 0, CV_8UC3)), std::invalid_argument);
 }
 
 TEST(ImageTest, NonEmptyDetected) {

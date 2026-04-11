@@ -3,6 +3,12 @@
 
 #include "improc/core/image.hpp"
 #include "improc/core/convert.hpp"
+#include "improc/core/ops/axis.hpp"
+#include "improc/core/ops/resize.hpp"
+#include "improc/core/ops/crop.hpp"
+#include "improc/core/ops/flip.hpp"
+#include "improc/core/ops/rotate.hpp"
+#include "improc/core/ops/normalize.hpp"
 
 namespace improc::core {
 
@@ -13,6 +19,7 @@ auto operator|(Image<Format> img, Op&& op) {
 
 struct ToGray    { Image<Gray>    operator()(Image<BGR>  img) const; };
 struct ToBGR     { Image<BGR>     operator()(Image<Gray> img) const; };
-struct ToFloat32 { Image<Float32> operator()(Image<Gray> img) const; };
+struct ToFloat32   { Image<Float32>   operator()(Image<Gray> img) const; };
+struct ToFloat32C3 { Image<Float32C3> operator()(Image<BGR>  img) const; };
 
 } // namespace improc::core
