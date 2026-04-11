@@ -42,10 +42,20 @@ TEST(ResizeTest, WorksOnFloat32Format) {
     Image<Float32> img(mat);
     Image<Float32> result = img | Resize{}.width(40).height(40);
     EXPECT_EQ(result.mat().type(), CV_32FC1);
+    EXPECT_EQ(result.cols(), 40);
+    EXPECT_EQ(result.rows(), 40);
 }
 
 TEST(ResizeTest, ThrowsWithNoDimensions) {
     cv::Mat mat(100, 200, CV_8UC3);
     Image<BGR> img(mat);
     EXPECT_THROW((img | Resize{}), std::invalid_argument);
+}
+
+TEST(ResizeTest, ThrowsOnZeroWidth) {
+    EXPECT_THROW(Resize{}.width(0), std::invalid_argument);
+}
+
+TEST(ResizeTest, ThrowsOnNegativeHeight) {
+    EXPECT_THROW(Resize{}.height(-10), std::invalid_argument);
 }

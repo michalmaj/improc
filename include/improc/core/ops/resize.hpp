@@ -10,8 +10,16 @@
 namespace improc::core {
 
 struct Resize {
-    Resize& width(int w)  { width_  = w; return *this; }
-    Resize& height(int h) { height_ = h; return *this; }
+    Resize& width(int w) {
+        if (w <= 0) throw std::invalid_argument("Resize: width must be positive");
+        width_  = w;
+        return *this;
+    }
+    Resize& height(int h) {
+        if (h <= 0) throw std::invalid_argument("Resize: height must be positive");
+        height_ = h;
+        return *this;
+    }
 
     template<typename Format>
     Image<Format> operator()(Image<Format> img) const {
