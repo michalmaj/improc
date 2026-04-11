@@ -21,7 +21,8 @@ struct Crop {
             throw std::invalid_argument("Crop: all of x, y, width, height must be set");
         }
         cv::Rect roi(*x_, *y_, *width_, *height_);
-        if (roi.x < 0 || roi.y < 0 ||
+        if (roi.width <= 0 || roi.height <= 0 ||
+            roi.x < 0 || roi.y < 0 ||
             roi.x + roi.width  > img.cols() ||
             roi.y + roi.height > img.rows()) {
             throw std::invalid_argument(
