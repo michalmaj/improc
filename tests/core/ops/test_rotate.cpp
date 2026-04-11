@@ -22,7 +22,15 @@ TEST(RotateTest, PreservesType) {
 TEST(RotateTest, WorksWithScaleOption) {
     cv::Mat mat(100, 100, CV_8UC3);
     Image<BGR> img(mat);
-    EXPECT_NO_THROW(img | Rotate{}.angle(30.0).scale(0.5));
+    Image<BGR> result = img | Rotate{}.angle(30.0).scale(0.5);
+    EXPECT_FALSE(result.empty());
+    EXPECT_EQ(result.rows(), 100);
+    EXPECT_EQ(result.cols(), 100);
+}
+
+TEST(RotateTest, ThrowsOnNonPositiveScale) {
+    EXPECT_THROW(Rotate{}.scale(0.0),  std::invalid_argument);
+    EXPECT_THROW(Rotate{}.scale(-1.0), std::invalid_argument);
 }
 
 TEST(RotateTest, WorksOnFloat32) {

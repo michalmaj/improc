@@ -9,7 +9,11 @@ namespace improc::core {
 
 struct Rotate {
     Rotate& angle(double deg) { angle_ = deg; return *this; }
-    Rotate& scale(double s)   { scale_ = s;   return *this; }
+    Rotate& scale(double s) {
+        if (s <= 0.0) throw std::invalid_argument("Rotate: scale must be positive");
+        scale_ = s;
+        return *this;
+    }
 
     template<typename Format>
     Image<Format> operator()(Image<Format> img) const {
