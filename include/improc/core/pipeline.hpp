@@ -13,6 +13,7 @@ auto operator|(Image<Format> img, Op&& op) {
 
 struct ToGray    { Image<Gray>    operator()(Image<BGR>  img) const; };
 struct ToBGR     { Image<BGR>     operator()(Image<Gray> img) const; };
-struct ToFloat32 { Image<Float32> operator()(Image<Gray> img) const; };
+struct ToFloat32   { Image<Float32>   operator()(Image<Gray> img) const; };
+struct ToFloat32C3 { Image<Float32C3> operator()(Image<BGR>  img) const; };
 
 } // namespace improc::core

@@ -40,4 +40,11 @@ Image<Float32> convert<Float32, Gray>(const Image<Gray>& src) {
     return Image<Float32>(std::move(dst));
 }
 
+template<>
+Image<Float32C3> convert<Float32C3, BGR>(const Image<BGR>& src) {
+    cv::Mat dst;
+    src.mat().convertTo(dst, CV_32FC3, 1.0 / 255.0);
+    return Image<Float32C3>(std::move(dst));
+}
+
 } // namespace improc::core
