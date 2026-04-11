@@ -7,7 +7,9 @@ improc++ is a modern C++23 image processing toolkit designed as a high-level wra
 ## Features
 
 - **Type-safe image wrapper** — `Image<BGR>`, `Image<Gray>`, `Image<Float32>` etc. catch format mismatches at compile time
-- **Composable pipeline** — `image | ToGray{} | ToFloat32{}` syntax for readable processing chains
+- **Composable pipeline** — `image | Resize{}.width(224) | ToFloat32C3{}` syntax for readable processing chains
+- **Geometric operations** — `Resize` (aspect-ratio aware), `Crop`, `Flip`, `Rotate`
+- **Normalization operations** — `Normalize`, `NormalizeTo`, `Standardize` for ML preprocessing
 - **Format conversions** — explicit, compiler-enforced free functions (`convert<Gray>(bgr_image)`)
 - **Dataset loading** — load image datasets from class-labeled directories with train/val/test splitting
 - **Camera capture** — asynchronous threaded frame capture via `CameraCapture`

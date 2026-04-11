@@ -77,3 +77,7 @@ target_link_libraries(demo_image_wrapper PRIVATE improc)
 # Pipeline
 add_executable(demo_pipeline examples/core/demo_pipeline.cpp)
 target_link_libraries(demo_pipeline PRIVATE improc)
+
+# Image Ops
+add_executable(demo_image_ops examples/core/demo_image_ops.cpp)
+target_link_libraries(demo_image_ops PRIVATE improc)
