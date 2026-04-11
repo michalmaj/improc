@@ -19,6 +19,7 @@ TEST(FlipTest, VerticalFlipMovesPixel) {
     Image<BGR> img(mat);
     Image<BGR> result = img | Flip{Axis::Vertical};
     EXPECT_EQ(result.mat().at<cv::Vec3b>(1, 0), (cv::Vec3b{0, 255, 0}));  // now bottom-left
+    EXPECT_EQ(result.mat().at<cv::Vec3b>(0, 0), (cv::Vec3b{0,   0, 0}));  // origin cleared
 }
 
 TEST(FlipTest, BothAxesFlipsCompletely) {
@@ -27,6 +28,7 @@ TEST(FlipTest, BothAxesFlipsCompletely) {
     Image<BGR> img(mat);
     Image<BGR> result = img | Flip{Axis::Both};
     EXPECT_EQ(result.mat().at<cv::Vec3b>(1, 1), (cv::Vec3b{0, 0, 255}));  // now bottom-right
+    EXPECT_EQ(result.mat().at<cv::Vec3b>(0, 0), (cv::Vec3b{0, 0,   0}));  // origin cleared
 }
 
 TEST(FlipTest, PreservesDimensionsAndType) {
