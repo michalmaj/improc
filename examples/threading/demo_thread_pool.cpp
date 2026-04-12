@@ -37,10 +37,9 @@ int main() {
     std::cout << "\nFire-and-forget (submit_detached):\n";
     std::atomic<int> counter{0};
     for (int i = 0; i < 5; ++i)
-        pool.submit_detached([&counter, i]{
+        pool.submit_detached([&counter]{
             std::this_thread::sleep_for(std::chrono::milliseconds(20));
-            ++counter;
-            std::cout << "  detached task " << i << " done\n";
+            ++counter;  // atomic — no cout inside worker threads to avoid concurrent writes
         });
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
     std::cout << "Counter after all detached tasks: " << counter.load() << "\n";
