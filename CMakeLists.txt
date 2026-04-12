@@ -81,3 +81,10 @@ target_link_libraries(demo_pipeline PRIVATE improc)
 # Image Ops
 add_executable(demo_image_ops examples/core/demo_image_ops.cpp)
 target_link_libraries(demo_image_ops PRIVATE improc)
+
+# Threading demos
+add_executable(demo_thread_pool examples/threading/demo_thread_pool.cpp)
+target_link_libraries(demo_thread_pool PRIVATE improc)
+
+add_executable(demo_frame_pipeline examples/threading/demo_frame_pipeline.cpp)
+target_link_libraries(demo_frame_pipeline PRIVATE improc)
