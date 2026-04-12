@@ -33,12 +33,11 @@ public:
 
     void start(Processor fn) {
         bool expected = false;
-        // Atomically check that running_ == false. Does NOT change running_.
-        if (!running_.compare_exchange_strong(expected, false)) {
+        // Atomically transition running_ false→true; throws if already true.
+        if (!running_.compare_exchange_strong(expected, true)) {
             throw std::logic_error("FramePipeline: already running");
         }
         processor_ = std::move(fn);
-        running_.store(true, std::memory_order_release);
         poller_ = std::thread(&FramePipeline<Result>::pollLoop, this);
     }
 
