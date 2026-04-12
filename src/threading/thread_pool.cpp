@@ -7,8 +7,19 @@ ThreadPool::ThreadPool(std::size_t threads) {
     if (threads == 0)
         throw std::invalid_argument("ThreadPool: thread count must be > 0");
     workers_.reserve(threads);
-    for (std::size_t i = 0; i < threads; ++i)
-        workers_.emplace_back(&ThreadPool::workerLoop, this);
+    try {
+        for (std::size_t i = 0; i < threads; ++i)
+            workers_.emplace_back(&ThreadPool::workerLoop, this);
+    } catch (...) {
+        {
+            std::unique_lock<std::mutex> lock(queue_mutex_);
+            stop_ = true;
+        }
+        cv_.notify_all();
+        for (auto& w : workers_)
+            if (w.joinable()) w.join();
+        throw;
+    }
 }
 
 ThreadPool::~ThreadPool() {

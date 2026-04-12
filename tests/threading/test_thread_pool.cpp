@@ -65,7 +65,7 @@ TEST(ThreadPoolTest, ExceptionPropagatesThroughFuture) {
     EXPECT_THROW(future.get(), std::runtime_error);
 }
 
-TEST(ThreadPoolTest, DefaultThreadCountIsHardwareConcurrency) {
+TEST(ThreadPoolTest, DefaultConstructionWorks) {
     ThreadPool pool;
     auto future = pool.submit([]{ return true; });
     EXPECT_TRUE(future.get());
