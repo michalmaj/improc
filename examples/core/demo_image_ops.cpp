@@ -54,27 +54,40 @@ int main() {
     cv::imshow("Step 4 — Rotate 30°", rotated.mat());
     cv::waitKey(0);
 
-    // --- 7. Full ML preprocessing pipeline ---
-    //   BGR → Resize(224x224) → Flip(H) → Float32C3
-    //   (normalization ops work on Image<Float32> single-channel only)
+    // --- 7. Convert to Float32C3 and normalize to [0, 1] ---
+    Image<Float32C3> f32c3 = src | ToFloat32C3{};
+    Image<Float32C3> normalized = f32c3 | Normalize{};
+    std::cout << "Normalize (Float32C3): global min-max → [0.0, 1.0]\n";
+    cv::imshow("Step 5a — Float32C3 Normalize", normalized.mat());
+    cv::waitKey(0);
+
+    // --- 8. Full ML preprocessing pipeline (color, ImageNet-style) ---
+    //   BGR → Resize(224x224) → Flip(H) → Float32C3 → Standardize
     Image<Float32C3> ml_ready =
         src
         | Resize{}.width(224).height(224)
         | Flip{Axis::Horizontal}
-        | ToFloat32C3{};
+        | ToFloat32C3{}
+        | Standardize{0.485f, 0.229f};
 
-    std::cout << "ML-ready: Image<Float32C3>  "
+    std::cout << "ML-ready (color): Image<Float32C3>  "
               << ml_ready.cols() << "x" << ml_ready.rows()
-              << "  type=CV_32FC3  values in [0.0, 1.0]\n";
-    cv::imshow("Step 5 — ML pipeline result (Float32C3, 0-1)", ml_ready.mat());
+              << "  standardized (mean=0.485, std=0.229)\n";
+    cv::imshow("Step 5b — ML pipeline (Float32C3, Standardize)", ml_ready.mat());
     cv::waitKey(0);
 
-    // --- 8. Standardize (ImageNet-style, single channel demo) ---
+    // --- 9. NormalizeTo explicit range on Float32C3 ---
+    Image<Float32C3> norm_range = src | ToFloat32C3{} | NormalizeTo{-1.0f, 1.0f};
+    std::cout << "NormalizeTo [-1, 1] (Float32C3): type=CV_32FC3\n";
+    cv::imshow("Step 5c — NormalizeTo [-1, 1]", norm_range.mat());
+    cv::waitKey(0);
+
+    // --- 10. Standardize on grayscale Float32 ---
     Image<Float32> gray_f =
         src | ToGray{} | ToFloat32{} | Normalize{};
 
     Image<Float32> standardized = gray_f | Standardize{0.485f, 0.229f};
-    std::cout << "Standardized (mean=0.485, std=0.229): type=CV_32FC1\n";
+    std::cout << "Standardized (Gray Float32, mean=0.485, std=0.229): type=CV_32FC1\n";
     cv::imshow("Step 6 — Standardize (Gray Float32)", standardized.mat());
     cv::waitKey(0);
 
