@@ -34,8 +34,10 @@ Image<BGR> Scatter::operator()(const std::vector<float>& xs,
     float y_range = (y_max > y_min) ? (y_max - y_min) : 1.0f;
 
     for (std::size_t i = 0; i < xs.size(); ++i) {
-        int px = margin + static_cast<int>((xs[i] - x_min) / x_range * plot_w);
-        int py = margin + static_cast<int>((1.0f - (ys[i] - y_min) / y_range) * plot_h);
+        int px = std::clamp(margin + static_cast<int>((xs[i] - x_min) / x_range * plot_w),
+                            margin, width_  - 1 - margin);
+        int py = std::clamp(margin + static_cast<int>((1.0f - (ys[i] - y_min) / y_range) * plot_h),
+                            margin, height_ - 1 - margin);
         cv::circle(canvas, {px, py}, point_radius_, color_, cv::FILLED);
     }
 

@@ -18,7 +18,10 @@ TEST(ScatterTest, MismatchedSizesThrow) {
 }
 
 TEST(ScatterTest, SinglePointDoesNotThrow) {
-    EXPECT_NO_THROW(Scatter{}({0.5f}, {0.5f}));
+    Image<BGR> result = Scatter{}({0.5f}, {0.5f});
+    EXPECT_EQ(result.mat().type(), CV_8UC3);
+    EXPECT_EQ(result.cols(), 512);
+    EXPECT_EQ(result.rows(), 512);
 }
 
 TEST(ScatterTest, DefaultOutputType) {
@@ -48,4 +51,16 @@ TEST(ScatterTest, NegativeWidthThrows) {
 
 TEST(ScatterTest, NegativeHeightThrows) {
     EXPECT_THROW(Scatter{}.height(-1), std::invalid_argument);
+}
+
+TEST(ScatterTest, ZeroWidthThrows) {
+    EXPECT_THROW(Scatter{}.width(0), std::invalid_argument);
+}
+
+TEST(ScatterTest, ZeroHeightThrows) {
+    EXPECT_THROW(Scatter{}.height(0), std::invalid_argument);
+}
+
+TEST(ScatterTest, NegativePointRadiusThrows) {
+    EXPECT_THROW(Scatter{}.point_radius(-1), std::invalid_argument);
 }
