@@ -88,3 +88,7 @@ target_link_libraries(demo_thread_pool PRIVATE improc)
 
 add_executable(demo_frame_pipeline examples/threading/demo_frame_pipeline.cpp)
 target_link_libraries(demo_frame_pipeline PRIVATE improc)
+
+# Visualization demo
+add_executable(demo_visualization examples/visualization/demo_visualization.cpp)
+target_link_libraries(demo_visualization PRIVATE improc)
