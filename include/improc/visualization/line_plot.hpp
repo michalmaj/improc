@@ -27,7 +27,7 @@ struct LinePlot {
     }
 
     // Throws std::invalid_argument if values is empty.
-    Image<BGR> operator()(std::vector<float> values) const;
+    Image<BGR> operator()(const std::vector<float>& values) const;
 
 private:
     std::string title_;

@@ -5,7 +5,7 @@
 
 namespace improc::visualization {
 
-Image<BGR> LinePlot::operator()(std::vector<float> values) const {
+Image<BGR> LinePlot::operator()(const std::vector<float>& values) const {
     if (values.empty())
         throw std::invalid_argument("LinePlot: values must not be empty");
 
@@ -24,9 +24,15 @@ Image<BGR> LinePlot::operator()(std::vector<float> values) const {
         return Image<BGR>(std::move(canvas));
     }
 
-    float v_min = *std::min_element(values.begin(), values.end());
-    float v_max = *std::max_element(values.begin(), values.end());
-    float range = (v_max > v_min) ? (v_max - v_min) : 1.0f;
+    auto [v_min_it, v_max_it] = std::minmax_element(values.begin(), values.end());
+    float v_min = *v_min_it;
+    float v_max = *v_max_it;
+    // Flat input (all values equal): draw horizontal centre line
+    if (v_max <= v_min) {
+        cv::line(canvas, {0, height_ / 2}, {width_ - 1, height_ / 2}, color_, 1);
+        return Image<BGR>(std::move(canvas));
+    }
+    float range = v_max - v_min;
 
     const int margin = 8;
     const int plot_h = height_ - 2 * margin;
