@@ -1,6 +1,7 @@
 // include/improc/visualization/show.hpp
 #pragma once
 
+#include <stdexcept>
 #include <string>
 #include <opencv2/highgui.hpp>
 #include "improc/core/image.hpp"
@@ -14,11 +15,16 @@ struct Show {
     explicit Show(std::string window_name)
         : window_name_(std::move(window_name)) {}
 
-    Show& wait_ms(int ms) { wait_ms_ = ms; return *this; }
+    Show& wait_ms(int ms) {
+        if (ms < 0) throw std::invalid_argument("Show: wait_ms must be >= 0");
+        wait_ms_ = ms;
+        return *this;
+    }
 
-    // Calls cv::imshow + cv::waitKey, then returns img unchanged.
+    // Displays a BGR image. Calls cv::imshow + cv::waitKey, then returns img unchanged.
     // wait_ms=0 blocks until a key is pressed (default).
     // wait_ms=1 is suitable for camera loops.
+    // Note: accepts only Image<BGR>; use Histogram{} to convert Gray/Float32 first.
     Image<BGR> operator()(Image<BGR> img) const {
         cv::imshow(window_name_, img.mat());
         cv::waitKey(wait_ms_);
