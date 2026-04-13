@@ -121,10 +121,55 @@ Loads OpenCV Haar Cascade XML files into `cv::CascadeClassifier`.
 
 ---
 
+## `improc::threading` — Concurrency utilities
+
+**Status: Implemented**
+
+### `ThreadPool` (`threading/thread_pool.hpp`)
+
+General-purpose thread pool. Workers drain a task queue; `submit` returns a typed future; `submit_detached` is fire-and-forget. Destructor drains the queue and joins all workers (graceful shutdown). Non-copyable, non-movable.
+
+```cpp
+ThreadPool pool(4);                                          // 4 workers (default: hardware_concurrency)
+
+auto future = pool.submit([](int a, int b){ return a+b; }, 3, 4);
+int result  = future.get();                                  // 7
+
+pool.submit_detached([]{ heavy_work(); });                   // fire-and-forget
+```
+
+Throws `std::invalid_argument` if constructed with 0 threads. Exceptions from tasks propagate through `future.get()`.
+
+### `FramePipeline<Result>` (`threading/frame_pipeline.hpp`)
+
+Header-only template. Connects `CameraCapture` to `ThreadPool` for typed frame-by-frame processing. Holds references (not ownership) to both. Non-copyable, non-movable.
+
+```cpp
+improc::io::CameraCapture camera(0);
+ThreadPool pool(4);
+FramePipeline<cv::Mat> pipeline(camera, pool);
+
+pipeline.start([](cv::Mat frame) {
+    return frame | Resize{}.width(224).height(224) | ToFloat32C3{};
+});
+
+while (running) {
+    if (auto result = pipeline.tryPop()) {
+        // use *result (cv::Mat)
+    }
+}
+pipeline.stop();
+```
+
+`tryPop()` returns `std::optional<Result>` — `std::nullopt` if no result is ready or `start()` was not called. `start()` called twice throws `std::logic_error`. `stop()` is idempotent.
+
+`FramePipeline<void>` is not supported (`std::optional<void>` is not valid C++). For fire-and-forget frame processing use `pool.submit_detached(processor, camera.getFrame())` directly.
+
+---
+
 ## Planned namespaces
 
 | Namespace | Purpose |
 |---|---|
-| `improc::threading` | ThreadPool, producer-consumer frame pipeline |
 | `improc::visualization` | Histogram and chart plotting utilities |
 | `improc::cuda` | Wrapper over `cv::cuda` for GPU-accelerated ops |
