@@ -57,6 +57,14 @@ TEST(HistogramTest, ZeroWidthThrows) {
     EXPECT_THROW(Histogram{}.width(0), std::invalid_argument);
 }
 
+TEST(HistogramTest, NegativeWidthThrows) {
+    EXPECT_THROW(Histogram{}.width(-1), std::invalid_argument);
+}
+
 TEST(HistogramTest, ZeroHeightThrows) {
     EXPECT_THROW(Histogram{}.height(0), std::invalid_argument);
+}
+
+TEST(HistogramTest, NegativeHeightThrows) {
+    EXPECT_THROW(Histogram{}.height(-1), std::invalid_argument);
 }
