@@ -167,9 +167,75 @@ pipeline.stop();
 
 ---
 
+## `improc::visualization` — Chart and display utilities
+
+**Status: Implemented**
+
+All chart functors return `Image<BGR>` and compose with the existing `operator|` pipeline. No external plotting library — everything uses OpenCV.
+
+### `Histogram` (`visualization/histogram.hpp`)
+
+Pipeline op. Computes per-channel histograms and renders them as curves on a black canvas. Accepts `Image<BGR>`, `Image<Gray>`, or `Image<Float32>`.
+
+```cpp
+#include "improc/visualization/visualization.hpp"
+using namespace improc::visualization;
+
+Image<BGR> hist  = bgr_image | Histogram{};                          // 512×256, 256 bins
+Image<BGR> hist2 = gray_image | Histogram{}.bins(64).width(400).height(200);
+Image<BGR> hist3 = f32_image  | Histogram{};                         // auto min-max range
+```
+
+BGR input renders three colored curves (blue, green, red). Gray/Float32 input renders a single white curve.
+
+### `LinePlot` (`visualization/line_plot.hpp`)
+
+Standalone functor. Takes a `std::vector<float>` and renders a connected polyline scaled to the canvas.
+
+```cpp
+std::vector<float> loss = {1.2f, 0.9f, 0.7f, 0.5f, 0.3f};
+Image<BGR> plot = LinePlot{}.title("Train Loss").color({0, 200, 255})(loss);
+```
+
+Values are min-max normalised to canvas height. A single value or all-equal values renders a horizontal centre line. Throws `std::invalid_argument` if vector is empty.
+
+### `Scatter` (`visualization/scatter.hpp`)
+
+Standalone functor. Takes `xs` and `ys` vectors and renders filled circles, each axis independently normalised.
+
+```cpp
+Image<BGR> sc = Scatter{}.title("Features").color({0, 255, 255}).point_radius(5)(xs, ys);
+```
+
+Throws `std::invalid_argument` if either vector is empty or `xs.size() != ys.size()`. An 8 px margin ensures extreme points are fully visible.
+
+### `Show` (`visualization/show.hpp`, header-only)
+
+Passthrough display op. Calls `cv::imshow()` + `cv::waitKey()` and returns the image unchanged — enables inline display anywhere in a pipeline.
+
+```cpp
+// Block until key press (default)
+bgr_image | Histogram{} | Show{"Histogram"};
+
+// Non-blocking — suitable for camera loops
+result | Show{"Camera"}.wait_ms(1);
+
+// Stand-alone chart display
+LinePlot{}.title("Loss")(loss) | Show{"Loss"};
+```
+
+`Show` accepts only `Image<BGR>`. To display Gray/Float32 images convert first or pipe through `Histogram{}`.
+
+### Umbrella include
+
+```cpp
+#include "improc/visualization/visualization.hpp"  // includes all four
+```
+
+---
+
 ## Planned namespaces
 
 | Namespace | Purpose |
 |---|---|
-| `improc::visualization` | Histogram and chart plotting utilities |
 | `improc::cuda` | Wrapper over `cv::cuda` for GPU-accelerated ops |

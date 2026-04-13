@@ -14,6 +14,7 @@ improc++ is a modern C++23 image processing toolkit designed as a high-level wra
 - **Dataset loading** — load image datasets from class-labeled directories with train/val/test splitting
 - **Camera capture** — asynchronous threaded frame capture via `CameraCapture`
 - **Haar Cascade loader** — CRTP-based model loader for OpenCV cascade classifiers
+- **Visualization** — `Histogram`, `LinePlot`, `Scatter` chart functors and a `Show` passthrough display op, all returning `Image<BGR>` and composable with `operator|`
 
 ## Requirements
 
