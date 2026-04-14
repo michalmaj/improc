@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <stdexcept>
 #include <string>
+#include <unordered_set>
 #include <vector>
 #include <opencv2/dnn.hpp>
 #include "improc/core/image.hpp"
@@ -36,7 +37,7 @@ struct DnnClassifier {
     DnnClassifier& labels(std::vector<std::string> l)   { labels_ = std::move(l); return *this; }
 
     // Throws std::runtime_error if inference fails.
-    std::vector<ClassResult> operator()(Image<BGR> img) const;
+    std::vector<ClassResult> operator()(const Image<BGR>& img) const;
 
 private:
     mutable cv::dnn::Net     net_;
@@ -48,7 +49,7 @@ private:
     bool                     swap_rb_ = true;
     std::vector<std::string> labels_;
 
-    static const std::vector<std::string>& valid_extensions();
+    static const std::unordered_set<std::string>& valid_extensions();
 };
 
 } // namespace improc::ml

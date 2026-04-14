@@ -1,13 +1,10 @@
 // src/ml/dnn_classifier.cpp
 #include "improc/ml/dnn_classifier.hpp"
-#include <algorithm>
-#include <fstream>
-#include <opencv2/imgproc.hpp>
 
 namespace improc::ml {
 
-const std::vector<std::string>& DnnClassifier::valid_extensions() {
-    static const std::vector<std::string> exts = {
+const std::unordered_set<std::string>& DnnClassifier::valid_extensions() {
+    static const std::unordered_set<std::string> exts = {
         ".onnx", ".pb", ".caffemodel", ".weights", ".t7", ".net"
     };
     return exts;
@@ -20,7 +17,7 @@ DnnClassifier::DnnClassifier(std::string model_path) {
     std::string ext = std::filesystem::path(model_path).extension().string();
     std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
     const auto& valid = valid_extensions();
-    if (std::find(valid.begin(), valid.end(), ext) == valid.end())
+    if (!valid.contains(ext))
         throw std::runtime_error("DnnClassifier: unsupported model extension '" + ext + "': " + model_path);
 
     try {
@@ -32,7 +29,7 @@ DnnClassifier::DnnClassifier(std::string model_path) {
         throw std::runtime_error("DnnClassifier: loaded model is empty: " + model_path);
 }
 
-std::vector<ClassResult> DnnClassifier::operator()(Image<BGR> img) const {
+std::vector<ClassResult> DnnClassifier::operator()(const Image<BGR>& img) const {
     cv::Mat blob = cv::dnn::blobFromImage(
         img.mat(), scale_, {input_w_, input_h_}, mean_, swap_rb_);
     net_.setInput(blob);
