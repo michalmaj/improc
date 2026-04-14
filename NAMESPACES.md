@@ -119,6 +119,40 @@ Base class for model loaders. Validates file path and extension (`.yml`, `.yaml`
 
 Loads OpenCV Haar Cascade XML files into `cv::CascadeClassifier`.
 
+### DNN Inference (`dnn_classifier.hpp`, `dnn_detector.hpp`, `dnn_forward.hpp`)
+
+Standalone inference functors backed by OpenCV DNN. All accept `const Image<BGR>&` and work as both standalone functors and terminal `operator|` pipeline ops. Model is loaded at construction via `cv::dnn::readNet` — throws `std::runtime_error` on failure (file not found, unsupported extension, parse error, empty net). Supported formats: `.onnx`, `.pb`, `.caffemodel`, `.weights`, `.t7`, `.net`.
+
+Shared result types are in `result_types.hpp`: `ClassResult{class_id, score, label}` and `Detection{box, class_id, confidence, label}`.
+
+```cpp
+// Classification — top-K results
+auto results = img | Resize{}.width(224) | DnnClassifier{"resnet50.onnx"}.top_k(5);
+for (const auto& r : results)
+    std::cout << r.class_id << " " << r.score << " " << r.label << "\n";
+
+// Detection — YOLO style (default) with NMS
+auto detections = DnnDetector{"yolov8n.onnx"}
+    .confidence_threshold(0.5f).labels(class_names)(frame);
+
+// Detection — SSD style (two output blobs)
+auto detections = DnnDetector{"ssd.onnx"}
+    .style(DnnDetector::Style::SSD)
+    .boxes_layer("detection_boxes")
+    .scores_layer("detection_scores")(frame);
+
+// Raw output tensor (for custom parsing)
+std::vector<float> blob = DnnForward{"encoder.onnx"}(img);
+```
+
+**`DnnClassifier`** — runs `blobFromImage` → `forward` → `sortIdx`, returns top-K `ClassResult` sorted by score. Setters: `top_k(int)`, `input_size(int,int)`, `mean(cv::Scalar)`, `scale(float)`, `swap_rb(bool)`, `labels(vector<string>)`. Defaults: top_k=5, 224×224, scale=1/255, swap_rb=true.
+
+**`DnnDetector`** — supports two output formats via `Style` enum. `Style::YOLO` (default): single blob `[1, N, 5+C]` (cx,cy,w,h,obj_conf,class_scores). `Style::SSD`: two blobs — boxes `[1,N,4]` as y1,x1,y2,x2 normalized + scores `[1,N,C]`. NMS applied via `cv::dnn::NMSBoxes`. Box coordinates are scaled back to original image dimensions. Defaults: 640×640, confidence_threshold=0.5, nms_threshold=0.4.
+
+**`DnnForward`** — minimal wrapper: `blobFromImage` → `forward` → flatten to `std::vector<float>`. Use for models with non-standard output formats that require custom parsing. Defaults: 224×224, scale=1/255, swap_rb=true.
+
+Future: `OrtClassifier`, `OrtDetector`, `OrtForward` will provide the same API with ONNX Runtime backend — no changes to calling code needed, just swap the class name.
+
 ---
 
 ## `improc::threading` — Concurrency utilities
