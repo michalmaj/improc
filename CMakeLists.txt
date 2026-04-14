@@ -92,3 +92,7 @@ target_link_libraries(demo_frame_pipeline PRIVATE improc)
 # Visualization demo
 add_executable(demo_visualization examples/visualization/demo_visualization.cpp)
 target_link_libraries(demo_visualization PRIVATE improc)
+
+# DNN Inference demo
+add_executable(demo_dnn_inference examples/ml/demo_dnn_inference.cpp)
+target_link_libraries(demo_dnn_inference PRIVATE improc)
