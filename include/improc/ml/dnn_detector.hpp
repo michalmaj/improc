@@ -66,8 +66,8 @@ private:
     bool                     swap_rb_             = true;
     std::vector<std::string> labels_;
 
-    std::vector<Detection> parse_yolo(cv::Mat& output, int orig_w, int orig_h) const;
-    std::vector<Detection> parse_ssd(cv::Mat& boxes, cv::Mat& scores, int orig_w, int orig_h) const;
+    std::vector<Detection> parse_yolo(const cv::Mat& output, int orig_w, int orig_h) const;
+    std::vector<Detection> parse_ssd(const cv::Mat& boxes, const cv::Mat& scores, int orig_w, int orig_h) const;
 
     static const std::unordered_set<std::string>& valid_extensions();
 };

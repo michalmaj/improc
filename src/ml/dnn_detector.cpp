@@ -44,6 +44,8 @@ std::vector<Detection> DnnDetector::operator()(const Image<BGR>& img) const {
             net_.forward(outs, net_.getUnconnectedOutLayersNames());
         else
             outs = {net_.forward(output_layer_)};
+        if (outs.empty())
+            throw std::runtime_error("DnnDetector: YOLO forward pass produced no output blobs");
         cv::Mat out = outs[0];
         return parse_yolo(out, orig_w, orig_h);
     } else {
@@ -53,7 +55,7 @@ std::vector<Detection> DnnDetector::operator()(const Image<BGR>& img) const {
     }
 }
 
-std::vector<Detection> DnnDetector::parse_yolo(cv::Mat& output,
+std::vector<Detection> DnnDetector::parse_yolo(const cv::Mat& output,
                                                 int orig_w, int orig_h) const {
     // Reshape to [N, 5+num_classes]
     cv::Mat det_mat;
@@ -61,6 +63,15 @@ std::vector<Detection> DnnDetector::parse_yolo(cv::Mat& output,
         det_mat = output.reshape(1, output.size[1]);
     else
         det_mat = output;
+
+    if (det_mat.dims != 2)
+        throw std::runtime_error("DnnDetector: YOLO output has unexpected shape (dims=" +
+                                 std::to_string(det_mat.dims) + ")");
+
+    const int num_classes = det_mat.cols - 5;
+    if (num_classes <= 0)
+        throw std::runtime_error("DnnDetector: YOLO output has unexpected column count: " +
+                                 std::to_string(det_mat.cols));
 
     const float x_scale = static_cast<float>(orig_w) / input_w_;
     const float y_scale = static_cast<float>(orig_h) / input_h_;
@@ -74,7 +85,6 @@ std::vector<Detection> DnnDetector::parse_yolo(cv::Mat& output,
         const float obj_conf = d[4];
         if (obj_conf < confidence_threshold_) continue;
 
-        const int num_classes = det_mat.cols - 5;
         cv::Mat class_scores(1, num_classes, CV_32F, const_cast<float*>(d + 5));
         cv::Point max_loc;
         double max_val;
@@ -114,12 +124,15 @@ std::vector<Detection> DnnDetector::parse_yolo(cv::Mat& output,
     return results;
 }
 
-std::vector<Detection> DnnDetector::parse_ssd(cv::Mat& boxes_blob, cv::Mat& scores_blob,
+std::vector<Detection> DnnDetector::parse_ssd(const cv::Mat& boxes_blob, const cv::Mat& scores_blob,
                                                int orig_w, int orig_h) const {
     // boxes_blob:  [1, N, 4] — [y1, x1, y2, x2] normalized
     // scores_blob: [1, N, C] — per-class scores (index 0 = background)
     cv::Mat boxes_mat  = boxes_blob.reshape(1,  boxes_blob.size[1]);   // [N, 4]
     cv::Mat scores_mat = scores_blob.reshape(1, scores_blob.size[1]);  // [N, C]
+
+    if (boxes_mat.rows != scores_mat.rows)
+        throw std::runtime_error("DnnDetector: SSD boxes/scores row count mismatch");
 
     std::vector<cv::Rect> boxes;
     std::vector<float>    confs;
@@ -128,10 +141,11 @@ std::vector<Detection> DnnDetector::parse_ssd(cv::Mat& boxes_blob, cv::Mat& scor
     for (int i = 0; i < boxes_mat.rows; ++i) {
         const float* s = scores_mat.ptr<float>(i);
         const int num_classes = scores_mat.cols;
+        if (num_classes <= 1) continue;  // no foreground classes (only background or empty)
 
         // Skip background class (index 0)
         int   best_class = 1;
-        float best_score = (num_classes > 1) ? s[1] : 0.0f;
+        float best_score = s[1];
         for (int c = 2; c < num_classes; ++c) {
             if (s[c] > best_score) { best_score = s[c]; best_class = c; }
         }
