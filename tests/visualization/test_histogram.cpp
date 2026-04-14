@@ -1,5 +1,6 @@
 // tests/visualization/test_histogram.cpp
 #include <gtest/gtest.h>
+#include "improc/core/pipeline.hpp"
 #include "improc/visualization/histogram.hpp"
 
 using namespace improc::core;

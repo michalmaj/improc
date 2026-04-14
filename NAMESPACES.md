@@ -39,8 +39,8 @@ Free function template. Primary template is `= delete` — unsupported conversio
 
 - `BGR` ↔ `Gray`
 - `BGR` ↔ `BGRA`
-- `Gray` → `Float32` (scale 1/255)
-- `BGR` → `Float32C3` (scale 1/255, 3-channel float)
+- `Gray` ↔ `Float32` (scale ×1/255 / ×255)
+- `BGR` ↔ `Float32C3` (scale ×1/255 / ×255, 3-channel float)
 
 ```cpp
 Image<Gray>     gray  = convert<Gray, BGR>(bgr_image);
