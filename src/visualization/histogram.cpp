@@ -1,5 +1,6 @@
 // src/visualization/histogram.cpp
 #include "improc/visualization/histogram.hpp"
+#include <algorithm>
 #include <opencv2/imgproc.hpp>
 
 namespace improc::visualization {
@@ -26,12 +27,11 @@ cv::Mat Histogram::render(const std::vector<cv::Mat>& hists,
         cv::normalize(hist, hist, 0, height_, cv::NORM_MINMAX);
 
         for (int i = 1; i < bins_; ++i) {
-            cv::line(canvas,
-                cv::Point(bin_w * (i - 1),
-                          height_ - static_cast<int>(hist.at<float>(i - 1))),
-                cv::Point(bin_w * i,
-                          height_ - static_cast<int>(hist.at<float>(i))),
-                colors[c], 1);
+            int x0 = std::min(bin_w * (i - 1), width_ - 1);
+            int x1 = std::min(bin_w * i,       width_ - 1);
+            int y0 = height_ - static_cast<int>(hist.at<float>(i - 1));
+            int y1 = height_ - static_cast<int>(hist.at<float>(i));
+            cv::line(canvas, cv::Point(x0, y0), cv::Point(x1, y1), colors[c], 1);
         }
     }
     return canvas;
