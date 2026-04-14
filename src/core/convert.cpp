@@ -47,4 +47,18 @@ Image<Float32C3> convert<Float32C3, BGR>(const Image<BGR>& src) {
     return Image<Float32C3>(std::move(dst));
 }
 
+template<>
+Image<Gray> convert<Gray, Float32>(const Image<Float32>& src) {
+    cv::Mat dst;
+    src.mat().convertTo(dst, CV_8UC1, 255.0);
+    return Image<Gray>(std::move(dst));
+}
+
+template<>
+Image<BGR> convert<BGR, Float32C3>(const Image<Float32C3>& src) {
+    cv::Mat dst;
+    src.mat().convertTo(dst, CV_8UC3, 255.0);
+    return Image<BGR>(std::move(dst));
+}
+
 } // namespace improc::core

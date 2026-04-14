@@ -50,3 +50,55 @@ TEST(ConvertTest, GrayToFloat32ZeroIsZero) {
     Image<Float32> f = convert<Float32, Gray>(gray);
     EXPECT_NEAR(f.mat().at<float>(0, 0), 0.0f, 1e-5f);
 }
+
+TEST(ConvertTest, Float32ToGrayScalesValues) {
+    cv::Mat mat(1, 1, CV_32FC1, cv::Scalar(1.0f));
+    Image<Float32> f(mat);
+    Image<Gray> gray = convert<Gray, Float32>(f);
+    EXPECT_EQ(gray.mat().type(), CV_8UC1);
+    EXPECT_EQ(gray.mat().at<uchar>(0, 0), 255);
+}
+
+TEST(ConvertTest, Float32ToGrayZeroIsZero) {
+    cv::Mat mat(1, 1, CV_32FC1, cv::Scalar(0.0f));
+    Image<Float32> f(mat);
+    Image<Gray> gray = convert<Gray, Float32>(f);
+    EXPECT_EQ(gray.mat().at<uchar>(0, 0), 0);
+}
+
+TEST(ConvertTest, Float32ToGrayPreservesDimensions) {
+    cv::Mat mat(50, 60, CV_32FC1, cv::Scalar(0.5f));
+    Image<Float32> f(mat);
+    Image<Gray> gray = convert<Gray, Float32>(f);
+    EXPECT_EQ(gray.rows(), 50);
+    EXPECT_EQ(gray.cols(), 60);
+}
+
+TEST(ConvertTest, Float32C3ToBGRScalesValues) {
+    cv::Mat mat(1, 1, CV_32FC3, cv::Scalar(1.0f, 1.0f, 1.0f));
+    Image<Float32C3> f(mat);
+    Image<BGR> bgr = convert<BGR, Float32C3>(f);
+    EXPECT_EQ(bgr.mat().type(), CV_8UC3);
+    auto px = bgr.mat().at<cv::Vec3b>(0, 0);
+    EXPECT_EQ(px[0], 255);
+    EXPECT_EQ(px[1], 255);
+    EXPECT_EQ(px[2], 255);
+}
+
+TEST(ConvertTest, Float32C3ToBGRZeroIsZero) {
+    cv::Mat mat(1, 1, CV_32FC3, cv::Scalar(0.0f, 0.0f, 0.0f));
+    Image<Float32C3> f(mat);
+    Image<BGR> bgr = convert<BGR, Float32C3>(f);
+    auto px = bgr.mat().at<cv::Vec3b>(0, 0);
+    EXPECT_EQ(px[0], 0);
+    EXPECT_EQ(px[1], 0);
+    EXPECT_EQ(px[2], 0);
+}
+
+TEST(ConvertTest, Float32C3ToBGRPreservesDimensions) {
+    cv::Mat mat(50, 60, CV_32FC3, cv::Scalar(0.5f, 0.5f, 0.5f));
+    Image<Float32C3> f(mat);
+    Image<BGR> bgr = convert<BGR, Float32C3>(f);
+    EXPECT_EQ(bgr.rows(), 50);
+    EXPECT_EQ(bgr.cols(), 60);
+}
