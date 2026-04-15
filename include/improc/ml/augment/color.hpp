@@ -2,6 +2,7 @@
 #pragma once
 
 #include <random>
+#include <cmath>
 #include <stdexcept>
 #include <string>
 #include <opencv2/imgproc.hpp>
@@ -123,14 +124,18 @@ struct ColorJitter : detail::BindMixin<ColorJitter> {
         std::vector<cv::Mat> ch;
         cv::split(hsv, ch);
         ch[0] += hu_f;
-        cv::min(ch[0], 360.0, ch[0]);
-        cv::max(ch[0], 0.0,   ch[0]);
+        ch[0].forEach<float>([](float& v, const int*) {
+            v = std::fmod(v, 360.0f);
+            if (v < 0.0f) v += 360.0f;
+        });
         ch[1] *= sa_f;
         cv::min(ch[1], 1.0, ch[1]);
         cv::max(ch[1], 0.0, ch[1]);
         cv::merge(ch, hsv);
         cv::cvtColor(hsv, bgr_f, cv::COLOR_HSV2BGR);
 
+        static_assert(improc::core::FormatTraits<Format>::cv_type == CV_8UC3,
+            "ColorJitter: currently only supports 8-bit BGR images");
         cv::Mat dst;
         bgr_f.convertTo(dst, CV_8UC3, 255.0);
         try {
