@@ -35,6 +35,7 @@ TEST(MorphologyTest, DilateWithIterations2PreservesSize) {
     Image<Gray> img(mat);
     Image<Gray> result = Dilate{}.iterations(2)(img);
     EXPECT_EQ(result.rows(), 10);
+    EXPECT_EQ(result.cols(), 10);
 }
 
 TEST(MorphologyTest, DilateZeroKernelThrows) {
@@ -102,4 +103,20 @@ TEST(MorphologyTest, ErodeActuallyErodes) {
     // Neighbors of dark pixel should darken (erosion spreads dark pixels)
     EXPECT_LT(result.mat().at<uchar>(2, 3), 255);
     EXPECT_LT(result.mat().at<uchar>(3, 2), 255);
+}
+
+TEST(MorphologyTest, DilateEvenKernelThrows) {
+    EXPECT_THROW(Dilate{}.kernel_size(4), std::invalid_argument);
+}
+
+TEST(MorphologyTest, ErodeEvenKernelThrows) {
+    EXPECT_THROW(Erode{}.kernel_size(2), std::invalid_argument);
+}
+
+TEST(MorphologyTest, ErodeWithIterations2PreservesSize) {
+    cv::Mat mat(10, 10, CV_8UC1, cv::Scalar(200));
+    Image<Gray> img(mat);
+    Image<Gray> result = Erode{}.iterations(2)(img);
+    EXPECT_EQ(result.rows(), 10);
+    EXPECT_EQ(result.cols(), 10);
 }

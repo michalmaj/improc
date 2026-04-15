@@ -2,6 +2,7 @@
 #pragma once
 
 #include <stdexcept>
+#include <utility>
 #include <opencv2/imgproc.hpp>
 #include "improc/core/image.hpp"
 
@@ -16,13 +17,14 @@ inline int morph_shape_to_cv(MorphShape s) {
         case MorphShape::Cross:   return cv::MORPH_CROSS;
         case MorphShape::Ellipse: return cv::MORPH_ELLIPSE;
     }
-    return cv::MORPH_RECT;
+    std::unreachable();
 }
 } // namespace detail
 
 struct Dilate {
     Dilate& kernel_size(int k) {
-        if (k <= 0) throw std::invalid_argument("Dilate: kernel_size must be positive");
+        if (k <= 0 || k % 2 == 0)
+            throw std::invalid_argument("Dilate: kernel_size must be odd and positive");
         kernel_size_ = k; return *this;
     }
     Dilate& iterations(int n) {
@@ -49,7 +51,8 @@ private:
 
 struct Erode {
     Erode& kernel_size(int k) {
-        if (k <= 0) throw std::invalid_argument("Erode: kernel_size must be positive");
+        if (k <= 0 || k % 2 == 0)
+            throw std::invalid_argument("Erode: kernel_size must be odd and positive");
         kernel_size_ = k; return *this;
     }
     Erode& iterations(int n) {
