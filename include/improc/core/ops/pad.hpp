@@ -1,8 +1,8 @@
 // include/improc/core/ops/pad.hpp
 #pragma once
 
-#include <cmath>
 #include <stdexcept>
+#include <string>
 #include <utility>
 #include <opencv2/core.hpp>
 #include "improc/core/image.hpp"
@@ -47,9 +47,13 @@ struct Pad {
         if (top_ == 0 && bottom_ == 0 && left_ == 0 && right_ == 0)
             throw std::invalid_argument("Pad: at least one side must be > 0");
         cv::Mat dst;
-        cv::copyMakeBorder(img.mat(), dst,
-                           top_, bottom_, left_, right_,
-                           detail::pad_mode_to_cv(mode_), value_);
+        try {
+            cv::copyMakeBorder(img.mat(), dst,
+                               top_, bottom_, left_, right_,
+                               detail::pad_mode_to_cv(mode_), value_);
+        } catch (const cv::Exception& e) {
+            throw std::runtime_error("Pad: " + std::string(e.what()));
+        }
         return Image<Format>(std::move(dst));
     }
 
@@ -78,9 +82,13 @@ struct PadToSquare {
         const int right  = (w < h) ? pad2 : 0;
 
         cv::Mat dst;
-        cv::copyMakeBorder(img.mat(), dst,
-                           top, bottom, left, right,
-                           detail::pad_mode_to_cv(mode_), value_);
+        try {
+            cv::copyMakeBorder(img.mat(), dst,
+                               top, bottom, left, right,
+                               detail::pad_mode_to_cv(mode_), value_);
+        } catch (const cv::Exception& e) {
+            throw std::runtime_error("PadToSquare: " + std::string(e.what()));
+        }
         return Image<Format>(std::move(dst));
     }
 
