@@ -15,36 +15,38 @@ TEST(ThresholdTest, BinaryOnGrayPreservesSizeAndType) {
     EXPECT_EQ(result.mat().type(), CV_8UC1);
 }
 
-TEST(ThresholdTest, BinaryInvOnGrayPreservesSize) {
-    cv::Mat mat(10, 10, CV_8UC1, cv::Scalar(100));
+TEST(ThresholdTest, BinaryInvOnGrayProducesCorrectValues) {
+    cv::Mat mat(1, 1, CV_8UC1, cv::Scalar(200));
     Image<Gray> img(mat);
-    Image<Gray> result = Threshold{}.mode(ThresholdMode::BinaryInv)(img);
-    EXPECT_EQ(result.rows(), 10);
+    Image<Gray> result = Threshold{}.value(127).mode(ThresholdMode::BinaryInv)(img);
+    EXPECT_EQ(result.mat().at<uchar>(0, 0), 0);  // above threshold → 0 for BinaryInv
 }
 
-TEST(ThresholdTest, TruncateOnGrayPreservesSize) {
-    cv::Mat mat(10, 10, CV_8UC1, cv::Scalar(100));
+TEST(ThresholdTest, TruncateOnGrayProducesCorrectValues) {
+    cv::Mat mat(1, 1, CV_8UC1, cv::Scalar(200));
     Image<Gray> img(mat);
-    Image<Gray> result = Threshold{}.mode(ThresholdMode::Truncate)(img);
-    EXPECT_EQ(result.rows(), 10);
+    Image<Gray> result = Threshold{}.value(127).mode(ThresholdMode::Truncate)(img);
+    EXPECT_EQ(result.mat().at<uchar>(0, 0), 127);  // above threshold → truncated to threshold
 }
 
-TEST(ThresholdTest, ToZeroOnGrayPreservesSize) {
-    cv::Mat mat(10, 10, CV_8UC1, cv::Scalar(100));
+TEST(ThresholdTest, ToZeroOnGrayProducesCorrectValues) {
+    cv::Mat mat(1, 1, CV_8UC1, cv::Scalar(50));
     Image<Gray> img(mat);
-    Image<Gray> result = Threshold{}.mode(ThresholdMode::ToZero)(img);
-    EXPECT_EQ(result.rows(), 10);
+    Image<Gray> result = Threshold{}.value(127).mode(ThresholdMode::ToZero)(img);
+    EXPECT_EQ(result.mat().at<uchar>(0, 0), 0);  // below threshold → 0
 }
 
-TEST(ThresholdTest, ToZeroInvOnGrayPreservesSize) {
-    cv::Mat mat(10, 10, CV_8UC1, cv::Scalar(100));
+TEST(ThresholdTest, ToZeroInvOnGrayProducesCorrectValues) {
+    cv::Mat mat(1, 1, CV_8UC1, cv::Scalar(200));
     Image<Gray> img(mat);
-    Image<Gray> result = Threshold{}.mode(ThresholdMode::ToZeroInv)(img);
-    EXPECT_EQ(result.rows(), 10);
+    Image<Gray> result = Threshold{}.value(127).mode(ThresholdMode::ToZeroInv)(img);
+    EXPECT_EQ(result.mat().at<uchar>(0, 0), 0);  // above threshold → 0 for ToZeroInv
 }
 
 TEST(ThresholdTest, OtsuOnGrayPreservesSizeAndType) {
-    cv::Mat mat(10, 10, CV_8UC1, cv::Scalar(100));
+    // Two-value image: meaningful histogram for Otsu
+    cv::Mat mat(10, 10, CV_8UC1, cv::Scalar(50));
+    mat.rowRange(5, 10) = cv::Scalar(200);  // half pixels at 50, half at 200
     Image<Gray> img(mat);
     Image<Gray> result = Threshold{}.mode(ThresholdMode::Otsu)(img);
     EXPECT_EQ(result.rows(), 10);
@@ -63,6 +65,14 @@ TEST(ThresholdTest, BinaryProducesCorrectValues) {
     Image<Gray> img(mat);
     Image<Gray> result = Threshold{}.value(127).mode(ThresholdMode::Binary)(img);
     EXPECT_EQ(result.mat().at<uchar>(0, 0), 255);
+}
+
+TEST(ThresholdTest, BinaryBelowThresholdProducesZero) {
+    // pixel value 50 < threshold 127 → output = 0 for Binary
+    cv::Mat mat(1, 1, CV_8UC1, cv::Scalar(50));
+    Image<Gray> img(mat);
+    Image<Gray> result = Threshold{}.value(127).mode(ThresholdMode::Binary)(img);
+    EXPECT_EQ(result.mat().at<uchar>(0, 0), 0);
 }
 
 TEST(ThresholdTest, PipelineOp) {
