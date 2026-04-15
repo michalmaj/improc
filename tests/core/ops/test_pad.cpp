@@ -54,6 +54,22 @@ TEST(PadTest, NegativeLeftThrows) {
     EXPECT_THROW(Pad{}.left(-3), std::invalid_argument);
 }
 
+TEST(PadTest, NegativeBottomThrows) {
+    EXPECT_THROW(Pad{}.bottom(-2), std::invalid_argument);
+}
+
+TEST(PadTest, NegativeRightThrows) {
+    EXPECT_THROW(Pad{}.right(-1), std::invalid_argument);
+}
+
+TEST(PadTest, ConstantPadCustomValueFillsBorder) {
+    cv::Mat mat(4, 4, CV_8UC1, cv::Scalar(100));
+    Image<Gray> img(mat);
+    Image<Gray> result = Pad{}.top(2).value(cv::Scalar(42))(img);
+    EXPECT_EQ(result.mat().at<uchar>(0, 0), 42);
+    EXPECT_EQ(result.mat().at<uchar>(1, 0), 42);
+}
+
 TEST(PadTest, PreservesSizeAndType) {
     cv::Mat mat(10, 10, CV_8UC3, cv::Scalar(100, 100, 100));
     Image<BGR> img(mat);
@@ -109,4 +125,5 @@ TEST(PadTest, PadToSquarePipelineOp) {
     Image<Gray> img(mat);
     Image<Gray> result = img | PadToSquare{};
     EXPECT_EQ(result.rows(), result.cols());
+    EXPECT_EQ(result.cols(), 10);
 }
