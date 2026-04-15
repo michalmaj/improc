@@ -9,6 +9,10 @@
 #include "improc/core/ops/flip.hpp"
 #include "improc/core/ops/rotate.hpp"
 #include "improc/core/ops/normalize.hpp"
+#include "improc/core/ops/blur.hpp"
+#include "improc/core/ops/morphology.hpp"
+#include "improc/core/ops/threshold.hpp"
+#include "improc/core/ops/pad.hpp"
 
 namespace improc::core {
 

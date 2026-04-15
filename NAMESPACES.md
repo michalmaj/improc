@@ -67,6 +67,22 @@ Image<BGR> t = src | Rotate{}.angle(30.0).scale(0.5);  // scale optional, defaul
 Image<Float32> n  = f32 | Normalize{};                  // auto min-max → [0, 1]
 Image<Float32> n2 = f32 | NormalizeTo{-1.0f, 1.0f};    // explicit target range
 Image<Float32> n3 = f32 | Standardize{0.485f, 0.229f}; // z-score
+
+// Blur ops — templated, work on any Image<Format>
+Image<BGR>  blurred = src  | GaussianBlur{}.kernel_size(5).sigma(1.0);
+Image<Gray> median  = gray | MedianBlur{}.kernel_size(3);
+
+// Morphological ops — templated, work on any Image<Format>
+Image<Gray> dilated = mask | Dilate{}.kernel_size(5).shape(MorphShape::Ellipse);
+Image<Gray> eroded  = mask | Erode{}.kernel_size(3).iterations(2);
+
+// Threshold — templated; Otsu only valid on Image<Gray> (CV_8U)
+Image<Gray> binary = gray | Threshold{}.value(128).mode(ThresholdMode::Binary);
+Image<Gray> otsu   = gray | Threshold{}.mode(ThresholdMode::Otsu);
+
+// Padding ops — templated, work on any Image<Format>
+Image<BGR>  padded = src | Pad{}.top(10).bottom(10).left(20).right(20).mode(PadMode::Reflect);
+Image<BGR>  square = src | PadToSquare{}.value({114, 114, 114});  // letterbox for inference
 ```
 
 **Geometric ops** throw `std::invalid_argument` when required parameters are missing or invalid (e.g. no dimension in `Resize`, ROI out of bounds in `Crop`, no angle in `Rotate`).
