@@ -136,6 +136,16 @@ TEST(GeometricAugTest, RandomResizeShorterSideInRange) {
     EXPECT_LE(shorter, 80);
 }
 
+TEST(GeometricAugTest, RandomResizeShorterSideInRangePortrait) {
+    cv::Mat mat(200, 100, CV_8UC3, cv::Scalar(100, 100, 100));  // portrait: shorter side = cols=100
+    Image<BGR> img(mat);
+    std::mt19937 rng(42);
+    Image<BGR> result = RandomResize{}.range(50, 80)(img, rng);
+    int shorter = std::min(result.rows(), result.cols());
+    EXPECT_GE(shorter, 50);
+    EXPECT_LE(shorter, 80);
+}
+
 TEST(GeometricAugTest, RandomResizeInvalidRangeThrows) {
     EXPECT_THROW(RandomResize{}.range(100, 50),  std::invalid_argument);
     EXPECT_THROW(RandomResize{}.range(0, 100),   std::invalid_argument);
