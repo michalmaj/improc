@@ -1,0 +1,150 @@
+// include/improc/ml/augment/color.hpp
+#pragma once
+
+#include <random>
+#include <stdexcept>
+#include <string>
+#include <opencv2/imgproc.hpp>
+#include "improc/core/image.hpp"
+#include "improc/core/concepts.hpp"
+#include "improc/ml/augment/detail.hpp"
+
+namespace improc::ml {
+
+using improc::core::AnyFormat;
+using improc::core::BGRFormat;
+using improc::core::Image;
+
+struct RandomBrightness : detail::BindMixin<RandomBrightness> {
+    RandomBrightness& range(float low, float high) {
+        if (low <= 0.0f)
+            throw std::invalid_argument("RandomBrightness: low must be > 0");
+        if (low > high)
+            throw std::invalid_argument("RandomBrightness: low must be <= high");
+        low_ = low; high_ = high; return *this;
+    }
+
+    template<AnyFormat Format>
+    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
+        std::uniform_real_distribution<float> d(low_, high_);
+        float factor = d(rng);
+        cv::Mat src_f, dst;
+        img.mat().convertTo(src_f, CV_32F);
+        src_f *= factor;
+        cv::min(src_f, 255.0, src_f);
+        cv::max(src_f, 0.0,   src_f);
+        src_f.convertTo(dst, img.mat().type());
+        return Image<Format>(std::move(dst));
+    }
+
+private:
+    float low_  = 0.8f;
+    float high_ = 1.2f;
+};
+
+struct RandomContrast : detail::BindMixin<RandomContrast> {
+    RandomContrast& range(float low, float high) {
+        if (low <= 0.0f)
+            throw std::invalid_argument("RandomContrast: low must be > 0");
+        if (low > high)
+            throw std::invalid_argument("RandomContrast: low must be <= high");
+        low_ = low; high_ = high; return *this;
+    }
+
+    template<AnyFormat Format>
+    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
+        std::uniform_real_distribution<float> d(low_, high_);
+        float alpha = d(rng);
+        cv::Scalar mean = cv::mean(img.mat());
+        cv::Mat src_f, dst;
+        img.mat().convertTo(src_f, CV_32F);
+        src_f = alpha * src_f + (1.0f - alpha) * cv::Mat(src_f.size(), src_f.type(), mean);
+        cv::min(src_f, 255.0, src_f);
+        cv::max(src_f, 0.0,   src_f);
+        src_f.convertTo(dst, img.mat().type());
+        return Image<Format>(std::move(dst));
+    }
+
+private:
+    float low_  = 0.8f;
+    float high_ = 1.2f;
+};
+
+struct ColorJitter : detail::BindMixin<ColorJitter> {
+    ColorJitter& brightness(float low, float high) {
+        if (low <= 0.0f) throw std::invalid_argument("ColorJitter: brightness low must be > 0");
+        if (low > high)  throw std::invalid_argument("ColorJitter: brightness low must be <= high");
+        br_low_ = low; br_high_ = high; return *this;
+    }
+    ColorJitter& contrast(float low, float high) {
+        if (low <= 0.0f) throw std::invalid_argument("ColorJitter: contrast low must be > 0");
+        if (low > high)  throw std::invalid_argument("ColorJitter: contrast low must be <= high");
+        ct_low_ = low; ct_high_ = high; return *this;
+    }
+    ColorJitter& saturation(float low, float high) {
+        if (low <= 0.0f) throw std::invalid_argument("ColorJitter: saturation low must be > 0");
+        if (low > high)  throw std::invalid_argument("ColorJitter: saturation low must be <= high");
+        sa_low_ = low; sa_high_ = high; return *this;
+    }
+    ColorJitter& hue(float low, float high) {
+        if (std::abs(low) > 180.0f || std::abs(high) > 180.0f)
+            throw std::invalid_argument("ColorJitter: hue values must be in [-180, 180]");
+        if (low > high)
+            throw std::invalid_argument("ColorJitter: hue low must be <= high");
+        hu_low_ = low; hu_high_ = high; return *this;
+    }
+
+    template<BGRFormat Format>
+    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
+        std::uniform_real_distribution<float> br_d(br_low_, br_high_);
+        std::uniform_real_distribution<float> ct_d(ct_low_, ct_high_);
+        std::uniform_real_distribution<float> sa_d(sa_low_, sa_high_);
+        std::uniform_real_distribution<float> hu_d(hu_low_, hu_high_);
+
+        float br_f = br_d(rng), ct_f = ct_d(rng);
+        float sa_f = sa_d(rng), hu_f = hu_d(rng);
+
+        // Brightness: scale all channels
+        cv::Mat bgr_f;
+        img.mat().convertTo(bgr_f, CV_32F, 1.0 / 255.0);
+        bgr_f *= br_f;
+        cv::min(bgr_f, 1.0, bgr_f);
+        cv::max(bgr_f, 0.0, bgr_f);
+
+        // Contrast: alpha * img + (1-alpha) * mean
+        cv::Scalar mean = cv::mean(bgr_f);
+        bgr_f = ct_f * bgr_f + (1.0f - ct_f) * cv::Mat(bgr_f.size(), bgr_f.type(), mean);
+        cv::min(bgr_f, 1.0, bgr_f);
+        cv::max(bgr_f, 0.0, bgr_f);
+
+        // Saturation & Hue via HSV
+        cv::Mat hsv;
+        cv::cvtColor(bgr_f, hsv, cv::COLOR_BGR2HSV);  // H:[0,360] S:[0,1] V:[0,1]
+        std::vector<cv::Mat> ch;
+        cv::split(hsv, ch);
+        ch[0] += hu_f;
+        cv::min(ch[0], 360.0, ch[0]);
+        cv::max(ch[0], 0.0,   ch[0]);
+        ch[1] *= sa_f;
+        cv::min(ch[1], 1.0, ch[1]);
+        cv::max(ch[1], 0.0, ch[1]);
+        cv::merge(ch, hsv);
+        cv::cvtColor(hsv, bgr_f, cv::COLOR_HSV2BGR);
+
+        cv::Mat dst;
+        bgr_f.convertTo(dst, CV_8UC3, 255.0);
+        try {
+            return Image<Format>(std::move(dst));
+        } catch (const cv::Exception& e) {
+            throw std::runtime_error("ColorJitter: " + std::string(e.what()));
+        }
+    }
+
+private:
+    float br_low_ = 0.8f,  br_high_ = 1.2f;
+    float ct_low_ = 0.8f,  ct_high_ = 1.2f;
+    float sa_low_ = 0.8f,  sa_high_ = 1.2f;
+    float hu_low_ = -10.f, hu_high_ = 10.0f;
+};
+
+} // namespace improc::ml
