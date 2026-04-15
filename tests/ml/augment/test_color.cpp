@@ -77,6 +77,14 @@ TEST(ColorAugTest, RandomContrastInvalidRangeThrows) {
     EXPECT_THROW(RandomContrast{}.range(1.5f, 1.0f), std::invalid_argument);  // low > high
 }
 
+TEST(ColorAugTest, RandomContrastBindRngPipelineOp) {
+    cv::Mat mat(10, 10, CV_8UC3, cv::Scalar(100, 100, 100));
+    Image<BGR> img(mat);
+    std::mt19937 rng(42);
+    Image<BGR> result = img | RandomContrast{}.range(1.0f, 1.0f).bind(rng);
+    EXPECT_EQ(result.rows(), 10);
+}
+
 // ---- ColorJitter ----
 
 TEST(ColorAugTest, ColorJitterOnBGRPreservesSizeAndType) {
