@@ -73,3 +73,20 @@ TEST(BlurTest, MedianBlurPipelineOp) {
     Image<Gray> result = img | MedianBlur{}.kernel_size(3);
     EXPECT_EQ(result.rows(), 10);
 }
+
+TEST(BlurTest, GaussianBlurActuallySmooths) {
+    cv::Mat mat(5, 5, CV_8UC1, cv::Scalar(0));
+    mat.at<uchar>(2, 2) = 255;  // single hot pixel
+    Image<Gray> img(mat);
+    Image<Gray> result = GaussianBlur{}.kernel_size(5)(img);
+    EXPECT_LT(result.mat().at<uchar>(2, 2), 255);  // center should be smoothed
+    EXPECT_GT(result.mat().at<uchar>(2, 3), 0);    // neighbor should pick up value
+}
+
+TEST(BlurTest, GaussianBlurNegativeKernelThrows) {
+    EXPECT_THROW(GaussianBlur{}.kernel_size(-1), std::invalid_argument);
+}
+
+TEST(BlurTest, MedianBlurNegativeKernelThrows) {
+    EXPECT_THROW(MedianBlur{}.kernel_size(-3), std::invalid_argument);
+}
