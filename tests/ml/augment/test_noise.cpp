@@ -99,3 +99,28 @@ TEST(NoiseAugTest, SaltAndPepperBindRngPipelineOp) {
     Image<BGR> result = img | RandomSaltAndPepper{}.p(0.0f).bind(rng);
     EXPECT_EQ(result.rows(), 10);
 }
+
+TEST(NoiseAugTest, GaussianNoiseFloat32StaysInRange) {
+    cv::Mat mat(10, 10, CV_32FC1, cv::Scalar(0.5f));
+    Image<Float32> img(mat);
+    std::mt19937 rng(42);
+    // std_dev in native float units (i.e. 0.05 is 5% noise)
+    Image<Float32> result = RandomGaussianNoise{}.std_dev(0.05f, 0.05f)(img, rng);
+    double mn, mx;
+    cv::minMaxLoc(result.mat(), &mn, &mx);
+    EXPECT_GE(mn, 0.0);
+    EXPECT_LE(mx, 1.0);
+    EXPECT_EQ(result.mat().type(), CV_32FC1);
+}
+
+TEST(NoiseAugTest, SaltAndPepperFloat32ProducesExtremes) {
+    cv::Mat mat(10, 10, CV_32FC1, cv::Scalar(0.5f));
+    Image<Float32> img(mat);
+    std::mt19937 rng(42);
+    Image<Float32> result = RandomSaltAndPepper{}.p(1.0f)(img, rng);
+    for (int r = 0; r < 10; ++r)
+        for (int c = 0; c < 10; ++c) {
+            float v = result.mat().at<float>(r, c);
+            EXPECT_TRUE(v == 0.0f || v == 1.0f) << "pixel(" << r << "," << c << ")=" << v;
+        }
+}

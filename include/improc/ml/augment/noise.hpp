@@ -1,7 +1,6 @@
 // include/improc/ml/augment/noise.hpp
 #pragma once
 
-#include <cmath>
 #include <random>
 #include <stdexcept>
 #include <string>
@@ -35,14 +34,12 @@ struct RandomGaussianNoise : detail::BindMixin<RandomGaussianNoise> {
         cv::Mat src_f, dst;
         img.mat().convertTo(src_f, CV_32FC(ch));
         src_f += noise;
-        cv::min(src_f, 255.0, src_f);
-        cv::max(src_f, 0.0,   src_f);
+        // Clamp range depends on pixel depth: [0,1] for float, [0,255] for 8-bit
+        const double hi = (img.mat().depth() == CV_32F) ? 1.0 : 255.0;
+        cv::min(src_f, hi,  src_f);
+        cv::max(src_f, 0.0, src_f);
         src_f.convertTo(dst, img.mat().type());
-        try {
-            return Image<Format>(std::move(dst));
-        } catch (const cv::Exception& e) {
-            throw std::runtime_error("RandomGaussianNoise: " + std::string(e.what()));
-        }
+        return Image<Format>(std::move(dst));
     }
 
 private:
@@ -78,6 +75,9 @@ struct RandomSaltAndPepper : detail::BindMixin<RandomSaltAndPepper> {
                     float val = is_salt ? 1.0f : 0.0f;
                     auto* ptr = dst.ptr<float>(r) + c * channels;
                     for (int ch = 0; ch < channels; ++ch) ptr[ch] = val;
+                } else {
+                    throw std::runtime_error(
+                        "RandomSaltAndPepper: unsupported image depth");
                 }
             }
         }
