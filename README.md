@@ -8,12 +8,16 @@ improc++ is a modern C++23 image processing toolkit designed as a high-level wra
 
 - **Type-safe image wrapper** — `Image<BGR>`, `Image<Gray>`, `Image<Float32>` etc. catch format mismatches at compile time
 - **Composable pipeline** — `image | Resize{}.width(224) | ToFloat32C3{}` syntax for readable processing chains
-- **Geometric operations** — `Resize` (aspect-ratio aware), `Crop`, `Flip`, `Rotate`
+- **Geometric operations** — `Resize` (aspect-ratio aware), `Crop`, `Flip`, `Rotate`, `Pad`, `PadToSquare`
 - **Normalization operations** — `Normalize`, `NormalizeTo`, `Standardize` for ML preprocessing
+- **Filter & morphology** — `GaussianBlur`, `MedianBlur`, `Dilate`, `Erode`, `Threshold` (incl. Otsu)
 - **Format conversions** — explicit, compiler-enforced free functions (`convert<Gray>(bgr_image)`)
+- **Augmentation** — stochastic training augmentations constrained by C++20 concepts: `RandomFlip`, `RandomRotate`, `RandomCrop`, `RandomResize`, `RandomBrightness`, `RandomContrast`, `ColorJitter`, `RandomGaussianNoise`, `RandomSaltAndPepper`, `Compose`, `RandomApply`, `OneOf`
 - **Dataset loading** — load image datasets from class-labeled directories with train/val/test splitting
+- **DNN inference** — `DnnClassifier`, `DnnDetector` (YOLO & SSD), `DnnForward` backed by OpenCV DNN; pipeline-composable
 - **Camera capture** — asynchronous threaded frame capture via `CameraCapture`
 - **Haar Cascade loader** — CRTP-based model loader for OpenCV cascade classifiers
+- **Threading** — `ThreadPool` and `FramePipeline<Result>` for real-time frame processing
 - **Visualization** — `Histogram`, `LinePlot`, `Scatter` chart functors and a `Show` passthrough display op, all returning `Image<BGR>` and composable with `operator|`
 
 ## Requirements
@@ -60,6 +64,39 @@ Set the following CMake options:
 -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -g -O1 -fno-omit-frame-pointer"
 -DCMAKE_BUILD_TYPE=Debug
 ```
+
+## Augmentation
+
+Stochastic augmentations for training pipelines. Each op takes `(Image<Format>, std::mt19937&)` directly or via `.bind(rng)` for `operator|` use. Format constraints are enforced at compile time via C++20 concepts.
+
+```cpp
+#include "improc/ml/augmentation.hpp"
+using namespace improc::ml;
+
+std::mt19937 rng(42);
+
+// Single op — direct call
+Image<BGR> flipped = RandomFlip{}.p(0.5f)(img, rng);
+
+// Pipeline via .bind()
+Image<BGR> result = img
+    | RandomFlip{}.p(0.5f).bind(rng)
+    | RandomBrightness{}.range(0.8f, 1.2f).bind(rng);
+
+// Full training augmentor
+auto augmentor = Compose<BGR>{}
+    .add(RandomFlip{}.p(0.5f))
+    .add(RandomRotate{}.range(-10.0f, 10.0f))
+    .add(RandomApply<BGR>{ColorJitter{}, 0.5f})
+    .add(OneOf<BGR>{}
+        .add(RandomGaussianNoise{}.std_dev(5.0f, 15.0f))
+        .add(RandomSaltAndPepper{}.p(0.02f)));
+
+Image<BGR> augmented = augmentor(img, rng);
+// or: Image<BGR> augmented = img | augmentor.bind(rng);
+```
+
+See `examples/ml/demo_augmentation.cpp` for a full walkthrough.
 
 ## Running Tests
 
