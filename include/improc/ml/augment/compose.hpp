@@ -1,6 +1,7 @@
 // include/improc/ml/augment/compose.hpp
 #pragma once
 
+#include <concepts>
 #include <functional>
 #include <random>
 #include <stdexcept>
@@ -11,13 +12,15 @@
 
 namespace improc::ml {
 
+using improc::core::AnyFormat;
 using improc::core::Image;
 
-template<improc::core::AnyFormat Format>
+template<AnyFormat Format>
 struct Compose : detail::BindMixin<Compose<Format>> {
     using AugFn = std::function<Image<Format>(Image<Format>, std::mt19937&)>;
 
     template<typename Aug>
+        requires std::invocable<Aug&, Image<Format>, std::mt19937&>
     Compose& add(Aug aug) {
         steps_.emplace_back(std::move(aug));
         return *this;
@@ -33,32 +36,38 @@ private:
     std::vector<AugFn> steps_;
 };
 
-template<improc::core::AnyFormat Format>
+template<AnyFormat Format>
 struct RandomApply : detail::BindMixin<RandomApply<Format>> {
     using AugFn = std::function<Image<Format>(Image<Format>, std::mt19937&)>;
 
-    template<typename Aug>
-    RandomApply(Aug aug, float p) : aug_(std::move(aug)), p_(p) {
+private:
+    // p_ declared before aug_ so the member-initialiser validates p before aug is moved
+    float p_;
+    AugFn aug_;
+
+    static float validate_p(float p) {
         if (p < 0.0f || p > 1.0f)
             throw std::invalid_argument("RandomApply: p must be in [0, 1]");
+        return p;
     }
+
+public:
+    template<typename Aug>
+    RandomApply(Aug aug, float p) : p_(validate_p(p)), aug_(std::move(aug)) {}
 
     Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         std::bernoulli_distribution d(p_);
         if (!d(rng)) return img;
         return aug_(std::move(img), rng);
     }
-
-private:
-    AugFn aug_;
-    float p_ = 0.5f;
 };
 
-template<improc::core::AnyFormat Format>
+template<AnyFormat Format>
 struct OneOf : detail::BindMixin<OneOf<Format>> {
     using AugFn = std::function<Image<Format>(Image<Format>, std::mt19937&)>;
 
     template<typename Aug>
+        requires std::invocable<Aug&, Image<Format>, std::mt19937&>
     OneOf& add(Aug aug) {
         options_.emplace_back(std::move(aug));
         return *this;

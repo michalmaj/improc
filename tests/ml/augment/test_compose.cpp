@@ -122,7 +122,7 @@ TEST(ComposeAugTest, OneOfDistributesAcrossOptions) {
         .add(RandomFlip{}.p(1.0f))               // option 0: always flips → marker at (0,3)
         .add(RandomSaltAndPepper{}.p(0.0f));      // option 1: noop → marker at (0,0)
     int flipped = 0, unchanged = 0;
-    for (int i = 0; i < 20; ++i) {
+    for (int i = 0; i < 100; ++i) {
         Image<BGR> result = oo(img, rng);
         if (result.mat().at<cv::Vec3b>(0, 3)[0] == 255) ++flipped;
         else if (result.mat().at<cv::Vec3b>(0, 0)[0] == 255) ++unchanged;
