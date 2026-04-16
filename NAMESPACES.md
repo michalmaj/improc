@@ -169,6 +169,49 @@ std::vector<float> blob = DnnForward{"encoder.onnx"}(img);
 
 Future: `OrtClassifier`, `OrtDetector`, `OrtForward` will provide the same API with ONNX Runtime backend — no changes to calling code needed, just swap the class name.
 
+### Augmentation (`augmentation.hpp`)
+
+Stochastic image augmentation ops for training data pipelines. All ops are header-only and templated on `Image<Format>`. Each op exposes two interfaces:
+- `aug(img, rng)` — direct call with caller-owned `std::mt19937`
+- `aug.bind(rng)` — returns a functor compatible with `operator|`
+
+Format constraints are enforced at compile time via C++20 concepts (`AnyFormat`, `BGRFormat`).
+
+```cpp
+#include "improc/ml/augmentation.hpp"
+using namespace improc::ml;
+using namespace improc::core;
+
+std::mt19937 rng(42);
+
+// Standalone call
+Image<BGR> flipped = RandomFlip{}.p(0.5f)(img, rng);
+
+// Pipeline via .bind()
+Image<BGR> result = img
+    | RandomFlip{}.p(0.5f).bind(rng)
+    | RandomBrightness{}.range(0.8f, 1.2f).bind(rng);
+
+// Composition pipeline for training
+auto augmentor = Compose<BGR>{}
+    .add(RandomFlip{}.p(0.5f))
+    .add(RandomRotate{}.range(-10.0f, 10.0f))
+    .add(RandomApply<BGR>{ColorJitter{}.brightness(0.8f, 1.2f), 0.5f})
+    .add(OneOf<BGR>{}
+        .add(RandomGaussianNoise{}.std_dev(5.0f, 15.0f))
+        .add(RandomSaltAndPepper{}.p(0.02f)));
+
+Image<BGR> augmented = augmentor(img, rng);
+```
+
+**Geometric ops** (`RandomFlip`, `RandomRotate`, `RandomCrop`, `RandomResize`) — work on any `Image<Format>`. `RandomCrop` throws `std::invalid_argument` if crop exceeds image size or dimensions not set.
+
+**Colour ops** (`RandomBrightness`, `RandomContrast`) — work on any `Image<Format>`. `ColorJitter` requires `Image<BGR>` (compile error on other formats).
+
+**Noise ops** (`RandomGaussianNoise`, `RandomSaltAndPepper`) — work on any `Image<Format>`. Clamp range adapts to pixel depth: `[0, 255]` for 8-bit, `[0, 1]` for float.
+
+**Composition ops** (`Compose<F>`, `RandomApply<F>`, `OneOf<F>`) — parameterised on `Format`, use `std::function` for type erasure. `OneOf` throws `std::logic_error` if empty. `RandomApply` throws `std::invalid_argument` if `p` outside `[0, 1]`.
+
 ---
 
 ## `improc::threading` — Concurrency utilities
