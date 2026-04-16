@@ -82,6 +82,10 @@ target_link_libraries(demo_pipeline PRIVATE improc)
 add_executable(demo_image_ops examples/core/demo_image_ops.cpp)
 target_link_libraries(demo_image_ops PRIVATE improc)
 
+# Filters, morphology, threshold, padding
+add_executable(demo_filters examples/core/demo_filters.cpp)
+target_link_libraries(demo_filters PRIVATE improc)
+
 # Threading demos
 add_executable(demo_thread_pool examples/threading/demo_thread_pool.cpp)
 target_link_libraries(demo_thread_pool PRIVATE improc)
