@@ -6,6 +6,7 @@
 #include <utility>
 #include <opencv2/core.hpp>
 #include "improc/core/image.hpp"
+#include "improc/core/concepts.hpp"
 
 namespace improc::core {
 
@@ -42,7 +43,7 @@ struct Pad {
     Pad& mode(PadMode m)      { mode_  = m; return *this; }
     Pad& value(cv::Scalar v)  { value_ = v; return *this; }
 
-    template<typename Format>
+    template<AnyFormat Format>
     Image<Format> operator()(Image<Format> img) const {
         if (top_ == 0 && bottom_ == 0 && left_ == 0 && right_ == 0)
             throw std::invalid_argument("Pad: at least one side must be > 0");
@@ -67,7 +68,7 @@ struct PadToSquare {
     PadToSquare& mode(PadMode m)     { mode_  = m; return *this; }
     PadToSquare& value(cv::Scalar v) { value_ = v; return *this; }
 
-    template<typename Format>
+    template<AnyFormat Format>
     Image<Format> operator()(Image<Format> img) const {
         const int h = img.rows();
         const int w = img.cols();

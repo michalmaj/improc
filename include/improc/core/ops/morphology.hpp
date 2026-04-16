@@ -5,6 +5,7 @@
 #include <utility>
 #include <opencv2/imgproc.hpp>
 #include "improc/core/image.hpp"
+#include "improc/core/concepts.hpp"
 
 namespace improc::core {
 
@@ -33,7 +34,7 @@ struct Dilate {
     }
     Dilate& shape(MorphShape s) { shape_ = s; return *this; }
 
-    template<typename Format>
+    template<AnyFormat Format>
     Image<Format> operator()(Image<Format> img) const {
         cv::Mat kernel = cv::getStructuringElement(
             detail::morph_shape_to_cv(shape_),
@@ -61,7 +62,7 @@ struct Erode {
     }
     Erode& shape(MorphShape s) { shape_ = s; return *this; }
 
-    template<typename Format>
+    template<AnyFormat Format>
     Image<Format> operator()(Image<Format> img) const {
         cv::Mat kernel = cv::getStructuringElement(
             detail::morph_shape_to_cv(shape_),

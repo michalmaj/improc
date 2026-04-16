@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <opencv2/core.hpp>
 #include "improc/core/image.hpp"
+#include "improc/core/concepts.hpp"
 #include "improc/core/ops/axis.hpp"
 
 namespace improc::core {
@@ -10,7 +11,7 @@ namespace improc::core {
 struct Flip {
     explicit Flip(Axis axis) : axis_(axis) {}
 
-    template<typename Format>
+    template<AnyFormat Format>
     Image<Format> operator()(Image<Format> img) const {
         int flip_code;
         switch (axis_) {

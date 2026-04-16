@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <opencv2/imgproc.hpp>
 #include "improc/core/image.hpp"
+#include "improc/core/concepts.hpp"
 
 namespace improc::core {
 
@@ -15,7 +16,7 @@ struct Rotate {
         return *this;
     }
 
-    template<typename Format>
+    template<AnyFormat Format>
     Image<Format> operator()(Image<Format> img) const {
         if (!angle_) {
             throw std::invalid_argument("Rotate: angle must be set");

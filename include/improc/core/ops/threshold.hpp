@@ -5,6 +5,7 @@
 #include <utility>
 #include <opencv2/imgproc.hpp>
 #include "improc/core/image.hpp"
+#include "improc/core/concepts.hpp"
 
 namespace improc::core {
 
@@ -29,7 +30,7 @@ struct Threshold {
     Threshold& max_value(double v)   { max_value_ = v; return *this; }
     Threshold& mode(ThresholdMode m) { mode_      = m; return *this; }
 
-    template<typename Format>
+    template<AnyFormat Format>
     Image<Format> operator()(Image<Format> img) const {
         cv::Mat dst;
         try {
