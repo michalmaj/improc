@@ -96,3 +96,7 @@ target_link_libraries(demo_visualization PRIVATE improc)
 # DNN Inference demo
 add_executable(demo_dnn_inference examples/ml/demo_dnn_inference.cpp)
 target_link_libraries(demo_dnn_inference PRIVATE improc)
+
+# Augmentation demo
+add_executable(demo_augmentation examples/ml/demo_augmentation.cpp)
+target_link_libraries(demo_augmentation PRIVATE improc)
