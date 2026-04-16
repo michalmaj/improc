@@ -104,8 +104,8 @@ TEST(NoiseAugTest, GaussianNoiseFloat32StaysInRange) {
     cv::Mat mat(10, 10, CV_32FC1, cv::Scalar(0.5f));
     Image<Float32> img(mat);
     std::mt19937 rng(42);
-    // std_dev in native float units (i.e. 0.05 is 5% noise)
-    Image<Float32> result = RandomGaussianNoise{}.std_dev(0.05f, 0.05f)(img, rng);
+    // std_dev=2.0 guarantees noise far exceeds [0,1]; clamp must bring it back
+    Image<Float32> result = RandomGaussianNoise{}.std_dev(2.0f, 2.0f)(img, rng);
     double mn, mx;
     cv::minMaxLoc(result.mat(), &mn, &mx);
     EXPECT_GE(mn, 0.0);
