@@ -6,6 +6,7 @@
 #include <format>
 #include <opencv2/core.hpp>
 #include "improc/core/image.hpp"
+#include "improc/core/concepts.hpp"
 
 namespace improc::core {
 
@@ -21,7 +22,7 @@ struct Crop {
         height_ = v; return *this;
     }
 
-    template<typename Format>
+    template<AnyFormat Format>
     Image<Format> operator()(Image<Format> img) const {
         if (!x_ || !y_ || !width_ || !height_) {
             throw std::invalid_argument("Crop: all of x, y, width, height must be set");

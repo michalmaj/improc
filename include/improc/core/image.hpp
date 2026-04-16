@@ -5,10 +5,11 @@
 #include <stdexcept>
 #include <format>
 #include "improc/core/format_traits.hpp"
+#include "improc/core/concepts.hpp"
 
 namespace improc::core {
 
-template<typename Format>
+template<AnyFormat Format>
 class Image {
 public:
     explicit Image(cv::Mat mat) : mat_(std::move(mat)) {

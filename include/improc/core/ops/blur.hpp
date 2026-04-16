@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <opencv2/imgproc.hpp>
 #include "improc/core/image.hpp"
+#include "improc/core/concepts.hpp"
 
 namespace improc::core {
 
@@ -21,7 +22,7 @@ struct GaussianBlur {
         return *this;
     }
 
-    template<typename Format>
+    template<AnyFormat Format>
     Image<Format> operator()(Image<Format> img) const {
         cv::Mat dst;
         cv::GaussianBlur(img.mat(), dst, cv::Size(kernel_size_, kernel_size_), sigma_);
@@ -41,7 +42,7 @@ struct MedianBlur {
         return *this;
     }
 
-    template<typename Format>
+    template<AnyFormat Format>
     Image<Format> operator()(Image<Format> img) const {
         cv::Mat dst;
         cv::medianBlur(img.mat(), dst, kernel_size_);

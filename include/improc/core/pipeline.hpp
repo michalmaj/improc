@@ -16,7 +16,7 @@
 
 namespace improc::core {
 
-template<typename Format, typename Op>
+template<AnyFormat Format, typename Op>
 auto operator|(Image<Format> img, Op&& op) {
     return std::forward<Op>(op)(std::move(img));
 }

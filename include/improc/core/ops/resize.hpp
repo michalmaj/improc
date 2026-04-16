@@ -6,6 +6,7 @@
 #include <cmath>
 #include <opencv2/imgproc.hpp>
 #include "improc/core/image.hpp"
+#include "improc/core/concepts.hpp"
 
 namespace improc::core {
 
@@ -21,7 +22,7 @@ struct Resize {
         return *this;
     }
 
-    template<typename Format>
+    template<AnyFormat Format>
     Image<Format> operator()(Image<Format> img) const {
         if (!width_ && !height_) {
             throw std::invalid_argument("Resize: at least one of width or height must be set");
