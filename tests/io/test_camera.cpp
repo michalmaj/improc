@@ -7,6 +7,7 @@
 #include <gtest/gtest.h>
 #include <opencv2/videoio.hpp>
 #include "improc/io/camera_capture.hpp"
+#include "improc/exceptions.hpp"
 
 using improc::io::CameraCapture;
 
@@ -25,7 +26,8 @@ TEST(CameraCaptureTest, CanStartAndGrabFrame) {
     std::this_thread::sleep_for(std::chrono::milliseconds(2500));
 
     auto frame = camera.getFrame();
-    EXPECT_FALSE(frame.empty()) << "Frame from camera is empty";
+    ASSERT_TRUE(frame.has_value()) << "getFrame() returned error";
+    EXPECT_FALSE(frame->empty()) << "Frame from camera is empty";
 }
 
 TEST(CameraCaptureTest, CanStopCapture) {
@@ -53,9 +55,9 @@ TEST(CameraCaptureTest, StopIsIdempotent) {
     SUCCEED() << "Multiple calls to stop() work correctly.";
 }
 
-TEST(CameraCaptureTest, InvalidCameraIDReturnsEmptyFrame) {
+TEST(CameraCaptureTest, InvalidCameraIDReturnsError) {
     CameraCapture camera(9999);
     std::this_thread::sleep_for(std::chrono::milliseconds(1500));
     auto frame = camera.getFrame();
-    EXPECT_TRUE(frame.empty()) << "Frame should be empty for an invalid camera ID.";
+    EXPECT_FALSE(frame.has_value()) << "Expected error for invalid camera ID";
 }

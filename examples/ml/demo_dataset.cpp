@@ -14,7 +14,7 @@ int main() {
 
   auto result = dataset.load_from_directory(dataset_path, 0.2f, 0.1f, 5);
   if (!result) {
-    std::cerr << "Error loading dataset: " << result.error() << std::endl;
+    std::cerr << "Error loading dataset: " << result.error().message << std::endl;
     return 1;
   }
 

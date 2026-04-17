@@ -21,7 +21,7 @@ int main() {
       cv::imshow("First Image", result->front());
       cv::waitKey(0);
     } else {
-      std::cerr << result.error() << std::endl;
+      std::cerr << result.error().message << std::endl;
     }
 
   } catch (const std::exception& e) {
