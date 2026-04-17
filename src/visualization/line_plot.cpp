@@ -3,11 +3,13 @@
 #include <algorithm>
 #include <opencv2/imgproc.hpp>
 
+using improc::ParameterError;
+
 namespace improc::visualization {
 
 Image<BGR> LinePlot::operator()(const std::vector<float>& values) const {
     if (values.empty())
-        throw std::invalid_argument("LinePlot: values must not be empty");
+        throw ParameterError{"values", "must not be empty", "LinePlot"};
 
     cv::Mat canvas(height_, width_, CV_8UC3, cv::Scalar(0, 0, 0));
 

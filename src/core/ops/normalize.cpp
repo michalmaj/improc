@@ -2,6 +2,9 @@
 #include "improc/core/ops/normalize.hpp"
 #include <cmath>
 #include <opencv2/core.hpp>
+#include "improc/exceptions.hpp"
+
+using improc::ParameterError;
 
 namespace improc::core {
 
@@ -41,9 +44,8 @@ Image<Float32C3> Normalize::operator()(Image<Float32C3> img) const {
 }
 
 NormalizeTo::NormalizeTo(float min, float max) : min_(min), max_(max) {
-    if (min >= max) {
-        throw std::invalid_argument("NormalizeTo: min must be less than max");
-    }
+    if (min >= max)
+        throw ParameterError{"min", "must be less than max", "NormalizeTo"};
 }
 
 Image<Float32> NormalizeTo::operator()(Image<Float32> img) const {
@@ -77,9 +79,8 @@ Image<Float32C3> NormalizeTo::operator()(Image<Float32C3> img) const {
 }
 
 Standardize::Standardize(float mean, float std_dev) : mean_(mean), std_dev_(std_dev) {
-    if (std_dev <= 0.0f) {
-        throw std::invalid_argument("Standardize: std_dev must be positive");
-    }
+    if (std_dev <= 0.0f)
+        throw ParameterError{"std_dev", "must be positive", "Standardize"};
 }
 
 Image<Float32> Standardize::operator()(Image<Float32> img) const {

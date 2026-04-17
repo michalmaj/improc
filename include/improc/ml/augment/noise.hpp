@@ -2,12 +2,11 @@
 #pragma once
 
 #include <random>
-#include <stdexcept>
-#include <string>
 #include <opencv2/core.hpp>
 #include "improc/core/image.hpp"
 #include "improc/core/concepts.hpp"
 #include "improc/ml/augment/detail.hpp"
+#include "improc/exceptions.hpp"
 
 namespace improc::ml {
 
@@ -17,9 +16,9 @@ using improc::core::Image;
 struct RandomGaussianNoise : detail::BindMixin<RandomGaussianNoise> {
     RandomGaussianNoise& std_dev(float low, float high) {
         if (low < 0.0f)
-            throw std::invalid_argument("RandomGaussianNoise: std_dev low must be >= 0");
+            throw ParameterError{"std_dev.low", "must be >= 0", "RandomGaussianNoise"};
         if (low > high)
-            throw std::invalid_argument("RandomGaussianNoise: std_dev low must be <= high");
+            throw ParameterError{"std_dev.low", "must be <= high", "RandomGaussianNoise"};
         std_low_ = low; std_high_ = high; return *this;
     }
     RandomGaussianNoise& mean(float m) { mean_ = m; return *this; }
@@ -51,7 +50,7 @@ private:
 struct RandomSaltAndPepper : detail::BindMixin<RandomSaltAndPepper> {
     RandomSaltAndPepper& p(float prob) {
         if (prob < 0.0f || prob > 1.0f)
-            throw std::invalid_argument("RandomSaltAndPepper: p must be in [0, 1]");
+            throw ParameterError{"p", std::format("must be in [0, 1], got {}", prob), "RandomSaltAndPepper"};
         p_ = prob; return *this;
     }
 
@@ -76,8 +75,7 @@ struct RandomSaltAndPepper : detail::BindMixin<RandomSaltAndPepper> {
                     auto* ptr = dst.ptr<float>(r) + c * channels;
                     for (int ch = 0; ch < channels; ++ch) ptr[ch] = val;
                 } else {
-                    throw std::runtime_error(
-                        "RandomSaltAndPepper: unsupported image depth");
+                    throw AugmentError{"RandomSaltAndPepper: unsupported image depth"};
                 }
             }
         }

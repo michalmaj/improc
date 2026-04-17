@@ -1,5 +1,6 @@
 // tests/ml/augment/test_noise.cpp
 #include <gtest/gtest.h>
+#include "improc/exceptions.hpp"
 #include <opencv2/core.hpp>
 #include "improc/ml/augment/noise.hpp"
 #include "improc/core/pipeline.hpp"
@@ -41,8 +42,8 @@ TEST(NoiseAugTest, GaussianNoiseOnGrayPreservesType) {
 }
 
 TEST(NoiseAugTest, GaussianNoiseInvalidStdDevThrows) {
-    EXPECT_THROW(RandomGaussianNoise{}.std_dev(-1.0f, 10.0f), std::invalid_argument);
-    EXPECT_THROW(RandomGaussianNoise{}.std_dev(20.0f, 10.0f), std::invalid_argument);
+    EXPECT_THROW(RandomGaussianNoise{}.std_dev(-1.0f, 10.0f), improc::ParameterError);
+    EXPECT_THROW(RandomGaussianNoise{}.std_dev(20.0f, 10.0f), improc::ParameterError);
 }
 
 TEST(NoiseAugTest, GaussianNoiseBindRngPipelineOp) {
@@ -88,8 +89,8 @@ TEST(NoiseAugTest, SaltAndPepperAtP0LeavesImageUnchanged) {
 }
 
 TEST(NoiseAugTest, SaltAndPepperInvalidPThrows) {
-    EXPECT_THROW(RandomSaltAndPepper{}.p(-0.1f), std::invalid_argument);
-    EXPECT_THROW(RandomSaltAndPepper{}.p(1.1f),  std::invalid_argument);
+    EXPECT_THROW(RandomSaltAndPepper{}.p(-0.1f), improc::ParameterError);
+    EXPECT_THROW(RandomSaltAndPepper{}.p(1.1f),  improc::ParameterError);
 }
 
 TEST(NoiseAugTest, SaltAndPepperBindRngPipelineOp) {

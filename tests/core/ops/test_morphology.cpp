@@ -1,5 +1,6 @@
 // tests/core/ops/test_morphology.cpp
 #include <gtest/gtest.h>
+#include "improc/exceptions.hpp"
 #include <opencv2/core.hpp>
 #include "improc/core/ops/morphology.hpp"
 #include "improc/core/pipeline.hpp"
@@ -39,15 +40,15 @@ TEST(MorphologyTest, DilateWithIterations2PreservesSize) {
 }
 
 TEST(MorphologyTest, DilateZeroKernelThrows) {
-    EXPECT_THROW(Dilate{}.kernel_size(0), std::invalid_argument);
+    EXPECT_THROW(Dilate{}.kernel_size(0), improc::ParameterError);
 }
 
 TEST(MorphologyTest, DilateNegativeKernelThrows) {
-    EXPECT_THROW(Dilate{}.kernel_size(-1), std::invalid_argument);
+    EXPECT_THROW(Dilate{}.kernel_size(-1), improc::ParameterError);
 }
 
 TEST(MorphologyTest, DilateZeroIterationsThrows) {
-    EXPECT_THROW(Dilate{}.iterations(0), std::invalid_argument);
+    EXPECT_THROW(Dilate{}.iterations(0), improc::ParameterError);
 }
 
 TEST(MorphologyTest, DilatePipelineOp) {
@@ -77,15 +78,15 @@ TEST(MorphologyTest, ErodeDefaultPreservesSizeAndType) {
 }
 
 TEST(MorphologyTest, ErodeZeroKernelThrows) {
-    EXPECT_THROW(Erode{}.kernel_size(0), std::invalid_argument);
+    EXPECT_THROW(Erode{}.kernel_size(0), improc::ParameterError);
 }
 
 TEST(MorphologyTest, ErodeNegativeKernelThrows) {
-    EXPECT_THROW(Erode{}.kernel_size(-2), std::invalid_argument);
+    EXPECT_THROW(Erode{}.kernel_size(-2), improc::ParameterError);
 }
 
 TEST(MorphologyTest, ErodeZeroIterationsThrows) {
-    EXPECT_THROW(Erode{}.iterations(0), std::invalid_argument);
+    EXPECT_THROW(Erode{}.iterations(0), improc::ParameterError);
 }
 
 TEST(MorphologyTest, ErodePipelineOp) {
@@ -106,11 +107,11 @@ TEST(MorphologyTest, ErodeActuallyErodes) {
 }
 
 TEST(MorphologyTest, DilateEvenKernelThrows) {
-    EXPECT_THROW(Dilate{}.kernel_size(4), std::invalid_argument);
+    EXPECT_THROW(Dilate{}.kernel_size(4), improc::ParameterError);
 }
 
 TEST(MorphologyTest, ErodeEvenKernelThrows) {
-    EXPECT_THROW(Erode{}.kernel_size(2), std::invalid_argument);
+    EXPECT_THROW(Erode{}.kernel_size(2), improc::ParameterError);
 }
 
 TEST(MorphologyTest, ErodeWithIterations2PreservesSize) {

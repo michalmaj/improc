@@ -13,7 +13,7 @@ namespace improc::ml {
 class HaarCascadeLoader : public ModelLoaderBase<HaarCascadeLoader, cv::CascadeClassifier> {
 public:
   void load_impl(const std::filesystem::path& path);
-  std::expected<cv::CascadeClassifier, std::string> get_impl() const;
+  std::expected<cv::CascadeClassifier, improc::Error> get_impl() const;
 
 private:
   cv::CascadeClassifier classifier_;

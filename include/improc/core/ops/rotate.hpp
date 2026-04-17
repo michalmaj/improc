@@ -1,26 +1,25 @@
 #pragma once
 
 #include <optional>
-#include <stdexcept>
 #include <opencv2/imgproc.hpp>
 #include "improc/core/image.hpp"
 #include "improc/core/concepts.hpp"
+#include "improc/exceptions.hpp"
 
 namespace improc::core {
 
 struct Rotate {
     Rotate& angle(double deg) { angle_ = deg; return *this; }
     Rotate& scale(double s) {
-        if (s <= 0.0) throw std::invalid_argument("Rotate: scale must be positive");
+        if (s <= 0.0) throw ParameterError{"scale", "must be positive", "Rotate"};
         scale_ = s;
         return *this;
     }
 
     template<AnyFormat Format>
     Image<Format> operator()(Image<Format> img) const {
-        if (!angle_) {
-            throw std::invalid_argument("Rotate: angle must be set");
-        }
+        if (!angle_)
+            throw ParameterError{"angle", "must be set before calling operator()", "Rotate"};
         cv::Point2f center(img.cols() / 2.0f, img.rows() / 2.0f);
         cv::Mat M = cv::getRotationMatrix2D(center, *angle_, scale_);
         cv::Mat dst;

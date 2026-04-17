@@ -1,5 +1,6 @@
 // tests/ml/augment/test_compose.cpp
 #include <gtest/gtest.h>
+#include "improc/exceptions.hpp"
 #include <opencv2/core.hpp>
 #include "improc/ml/augment/compose.hpp"
 #include "improc/ml/augment/geometric.hpp"
@@ -80,8 +81,8 @@ TEST(ComposeAugTest, RandomApplyAtP0NeverApplies) {
 }
 
 TEST(ComposeAugTest, RandomApplyInvalidPThrows) {
-    EXPECT_THROW((RandomApply<BGR>{RandomFlip{}, 1.5f}), std::invalid_argument);
-    EXPECT_THROW((RandomApply<BGR>{RandomFlip{}, -0.1f}), std::invalid_argument);
+    EXPECT_THROW((RandomApply<BGR>{RandomFlip{}, 1.5f}), improc::ParameterError);
+    EXPECT_THROW((RandomApply<BGR>{RandomFlip{}, -0.1f}), improc::ParameterError);
 }
 
 TEST(ComposeAugTest, RandomApplyBindRngPipelineOp) {
@@ -109,7 +110,7 @@ TEST(ComposeAugTest, OneOfEmptyThrows) {
     cv::Mat mat(10, 10, CV_8UC3, cv::Scalar(100, 100, 100));
     Image<BGR> img(mat);
     std::mt19937 rng(42);
-    EXPECT_THROW(OneOf<BGR>{}(img, rng), std::logic_error);
+    EXPECT_THROW(OneOf<BGR>{}(img, rng), improc::AugmentError);
 }
 
 TEST(ComposeAugTest, OneOfDistributesAcrossOptions) {

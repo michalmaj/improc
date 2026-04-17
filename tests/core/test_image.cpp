@@ -1,5 +1,6 @@
 // tests/core/test_image.cpp
 #include <gtest/gtest.h>
+#include "improc/exceptions.hpp"
 #include "improc/core/image.hpp"
 
 using namespace improc::core;
@@ -11,7 +12,7 @@ TEST(ImageTest, ConstructFromValidBGRMat) {
 
 TEST(ImageTest, ThrowsOnWrongType) {
     cv::Mat mat(100, 100, CV_8UC1);  // Gray mat, not BGR
-    EXPECT_THROW((Image<BGR>{mat}), std::invalid_argument);
+    EXPECT_THROW((Image<BGR>{mat}), improc::ParameterError);
 }
 
 TEST(ImageTest, RowsColsReflectMat) {
@@ -22,7 +23,7 @@ TEST(ImageTest, RowsColsReflectMat) {
 }
 
 TEST(ImageTest, EmptyMatThrows) {
-    EXPECT_THROW(Image<BGR>(cv::Mat(0, 0, CV_8UC3)), std::invalid_argument);
+    EXPECT_THROW(Image<BGR>(cv::Mat(0, 0, CV_8UC3)), improc::ParameterError);
 }
 
 TEST(ImageTest, NonEmptyDetected) {

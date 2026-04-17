@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include "improc/exceptions.hpp"
 #include "improc/core/ops/rotate.hpp"
 #include "improc/core/pipeline.hpp"
 
@@ -29,8 +30,8 @@ TEST(RotateTest, WorksWithScaleOption) {
 }
 
 TEST(RotateTest, ThrowsOnNonPositiveScale) {
-    EXPECT_THROW(Rotate{}.scale(0.0),  std::invalid_argument);
-    EXPECT_THROW(Rotate{}.scale(-1.0), std::invalid_argument);
+    EXPECT_THROW(Rotate{}.scale(0.0),  improc::ParameterError);
+    EXPECT_THROW(Rotate{}.scale(-1.0), improc::ParameterError);
 }
 
 TEST(RotateTest, WorksOnFloat32) {
@@ -43,5 +44,5 @@ TEST(RotateTest, WorksOnFloat32) {
 TEST(RotateTest, ThrowsWithoutAngle) {
     cv::Mat mat(50, 50, CV_8UC3);
     Image<BGR> img(mat);
-    EXPECT_THROW((img | Rotate{}), std::invalid_argument);
+    EXPECT_THROW((img | Rotate{}), improc::ParameterError);
 }

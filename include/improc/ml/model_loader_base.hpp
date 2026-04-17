@@ -8,6 +8,8 @@
 #include <expected>
 #include <format>
 #include <ranges>
+#include "improc/exceptions.hpp"
+#include "improc/error.hpp"
 
 namespace improc::ml {
 
@@ -22,23 +24,27 @@ template<typename Derived, typename ModelType>
 class ModelLoaderBase {
 public:
   void load_model(const std::filesystem::path& path) {
-    auto expected = check_path(path);
-    if (!expected) {
-      throw std::runtime_error(expected.error());
-    }
-    static_cast<Derived*>(this)->load_impl(expected.value());
+    auto result = check_path(path);
+    if (!result)
+      throw improc::ModelError{path, result.error().message};
+    static_cast<Derived*>(this)->load_impl(result.value());
   }
 
-  [[nodiscard]] std::expected<ModelType, std::string> get_model() const {
+  [[nodiscard]] std::expected<ModelType, improc::Error> get_model() const {
     return static_cast<const Derived*>(this)->get_impl();
   }
 
-  static std::expected<std::filesystem::path, std::string> check_path(const std::filesystem::path& path) {
-    if (std::filesystem::is_regular_file(path) &&
-        valid_extensions().contains(std::ranges::to<std::string>(path.extension().string() | std::views::transform(::tolower)))) {
+  static std::expected<std::filesystem::path, improc::Error> check_path(const std::filesystem::path& path) {
+    auto ext = std::ranges::to<std::string>(
+        path.extension().string() | std::views::transform(::tolower));
+    if (std::filesystem::is_regular_file(path) && valid_extensions().contains(ext))
       return path;
-        }
-    return std::unexpected(std::format("Invalid model file: {}", path.string()));
+    if (!std::filesystem::exists(path))
+      return std::unexpected(improc::Error::invalid_model_file(
+          path.string(), "file not found"));
+    return std::unexpected(improc::Error::invalid_model_file(
+        path.string(),
+        std::format("unsupported extension '{}', expected .yml/.yaml/.xml", ext)));
   }
 
 protected:

@@ -2,22 +2,22 @@
 #pragma once
 
 #include <optional>
-#include <stdexcept>
 #include <cmath>
 #include <opencv2/imgproc.hpp>
 #include "improc/core/image.hpp"
 #include "improc/core/concepts.hpp"
+#include "improc/exceptions.hpp"
 
 namespace improc::core {
 
 struct Resize {
     Resize& width(int w) {
-        if (w <= 0) throw std::invalid_argument("Resize: width must be positive");
+        if (w <= 0) throw ParameterError{"width", "must be positive", "Resize"};
         width_  = w;
         return *this;
     }
     Resize& height(int h) {
-        if (h <= 0) throw std::invalid_argument("Resize: height must be positive");
+        if (h <= 0) throw ParameterError{"height", "must be positive", "Resize"};
         height_ = h;
         return *this;
     }
@@ -25,7 +25,7 @@ struct Resize {
     template<AnyFormat Format>
     Image<Format> operator()(Image<Format> img) const {
         if (!width_ && !height_) {
-            throw std::invalid_argument("Resize: at least one of width or height must be set");
+            throw ParameterError{"width/height", "at least one must be set", "Resize"};
         }
 
         int w = width_.value_or(0);

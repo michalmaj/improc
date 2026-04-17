@@ -3,14 +3,16 @@
 #include <algorithm>
 #include <opencv2/imgproc.hpp>
 
+using improc::ParameterError;
+
 namespace improc::visualization {
 
 Image<BGR> Scatter::operator()(const std::vector<float>& xs,
                                 const std::vector<float>& ys) const {
     if (xs.empty() || ys.empty())
-        throw std::invalid_argument("Scatter: xs and ys must not be empty");
+        throw ParameterError{"xs/ys", "must not be empty", "Scatter"};
     if (xs.size() != ys.size())
-        throw std::invalid_argument("Scatter: xs and ys must have the same size");
+        throw ParameterError{"xs/ys", "must have the same size", "Scatter"};
 
     cv::Mat canvas(height_, width_, CV_8UC3, cv::Scalar(0, 0, 0));
 

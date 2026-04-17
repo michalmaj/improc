@@ -1,5 +1,6 @@
 // tests/threading/test_frame_pipeline.cpp
 #include <gtest/gtest.h>
+#include "improc/exceptions.hpp"
 #include <chrono>
 #include <thread>
 #include <opencv2/videoio.hpp>
@@ -32,7 +33,7 @@ TEST(FramePipelineTest, StartTwiceThrows) {
     pipeline.start([](cv::Mat frame){ return frame; });
     EXPECT_THROW(
         pipeline.start([](cv::Mat frame){ return frame; }),
-        std::logic_error
+        improc::Exception
     );
 }
 

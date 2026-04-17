@@ -1,5 +1,6 @@
 // tests/ml/augment/test_color.cpp
 #include <gtest/gtest.h>
+#include "improc/exceptions.hpp"
 #include <opencv2/core.hpp>
 #include "improc/ml/augment/color.hpp"
 #include "improc/core/pipeline.hpp"
@@ -38,8 +39,8 @@ TEST(ColorAugTest, RandomBrightnessClampAt255) {
 }
 
 TEST(ColorAugTest, RandomBrightnessInvalidRangeThrows) {
-    EXPECT_THROW(RandomBrightness{}.range(0.0f, 1.0f), std::invalid_argument);  // low <= 0
-    EXPECT_THROW(RandomBrightness{}.range(1.5f, 1.0f), std::invalid_argument);  // low > high
+    EXPECT_THROW(RandomBrightness{}.range(0.0f, 1.0f), improc::ParameterError);  // low <= 0
+    EXPECT_THROW(RandomBrightness{}.range(1.5f, 1.0f), improc::ParameterError);  // low > high
 }
 
 TEST(ColorAugTest, RandomBrightnessBindRngPipelineOp) {
@@ -73,8 +74,8 @@ TEST(ColorAugTest, RandomContrastUniformImageUnchanged) {
 }
 
 TEST(ColorAugTest, RandomContrastInvalidRangeThrows) {
-    EXPECT_THROW(RandomContrast{}.range(0.0f, 1.0f), std::invalid_argument);  // low <= 0
-    EXPECT_THROW(RandomContrast{}.range(1.5f, 1.0f), std::invalid_argument);  // low > high
+    EXPECT_THROW(RandomContrast{}.range(0.0f, 1.0f), improc::ParameterError);  // low <= 0
+    EXPECT_THROW(RandomContrast{}.range(1.5f, 1.0f), improc::ParameterError);  // low > high
 }
 
 TEST(ColorAugTest, RandomContrastBindRngPipelineOp) {
@@ -109,13 +110,13 @@ TEST(ColorAugTest, ColorJitterChangesPixels) {
 }
 
 TEST(ColorAugTest, ColorJitterInvalidBrightnessThrows) {
-    EXPECT_THROW(ColorJitter{}.brightness(0.0f, 1.0f), std::invalid_argument);
-    EXPECT_THROW(ColorJitter{}.brightness(1.5f, 1.0f), std::invalid_argument);
+    EXPECT_THROW(ColorJitter{}.brightness(0.0f, 1.0f), improc::ParameterError);
+    EXPECT_THROW(ColorJitter{}.brightness(1.5f, 1.0f), improc::ParameterError);
 }
 
 TEST(ColorAugTest, ColorJitterInvalidHueThrows) {
-    EXPECT_THROW(ColorJitter{}.hue(-200.0f, 0.0f), std::invalid_argument);
-    EXPECT_THROW(ColorJitter{}.hue(10.0f, 5.0f),   std::invalid_argument);
+    EXPECT_THROW(ColorJitter{}.hue(-200.0f, 0.0f), improc::ParameterError);
+    EXPECT_THROW(ColorJitter{}.hue(10.0f, 5.0f),   improc::ParameterError);
 }
 
 TEST(ColorAugTest, ColorJitterBindRngPipelineOp) {

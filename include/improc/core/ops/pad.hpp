@@ -1,12 +1,11 @@
 // include/improc/core/ops/pad.hpp
 #pragma once
 
-#include <stdexcept>
-#include <string>
 #include <utility>
 #include <opencv2/core.hpp>
 #include "improc/core/image.hpp"
 #include "improc/core/concepts.hpp"
+#include "improc/exceptions.hpp"
 
 namespace improc::core {
 
@@ -25,19 +24,19 @@ inline int pad_mode_to_cv(PadMode m) {
 
 struct Pad {
     Pad& top(int v) {
-        if (v < 0) throw std::invalid_argument("Pad: top must be >= 0");
+        if (v < 0) throw ParameterError{"top", "must be >= 0", "Pad"};
         top_ = v; return *this;
     }
     Pad& bottom(int v) {
-        if (v < 0) throw std::invalid_argument("Pad: bottom must be >= 0");
+        if (v < 0) throw ParameterError{"bottom", "must be >= 0", "Pad"};
         bottom_ = v; return *this;
     }
     Pad& left(int v) {
-        if (v < 0) throw std::invalid_argument("Pad: left must be >= 0");
+        if (v < 0) throw ParameterError{"left", "must be >= 0", "Pad"};
         left_ = v; return *this;
     }
     Pad& right(int v) {
-        if (v < 0) throw std::invalid_argument("Pad: right must be >= 0");
+        if (v < 0) throw ParameterError{"right", "must be >= 0", "Pad"};
         right_ = v; return *this;
     }
     Pad& mode(PadMode m)      { mode_  = m; return *this; }
@@ -46,14 +45,14 @@ struct Pad {
     template<AnyFormat Format>
     Image<Format> operator()(Image<Format> img) const {
         if (top_ == 0 && bottom_ == 0 && left_ == 0 && right_ == 0)
-            throw std::invalid_argument("Pad: at least one side must be > 0");
+            throw ParameterError{"top/bottom/left/right", "at least one side must be > 0", "Pad"};
         cv::Mat dst;
         try {
             cv::copyMakeBorder(img.mat(), dst,
                                top_, bottom_, left_, right_,
                                detail::pad_mode_to_cv(mode_), value_);
         } catch (const cv::Exception& e) {
-            throw std::runtime_error("Pad: " + std::string(e.what()));
+            throw ParameterError{"mode", std::string(e.what()), "Pad"};
         }
         return Image<Format>(std::move(dst));
     }
@@ -88,7 +87,7 @@ struct PadToSquare {
                                top, bottom, left, right,
                                detail::pad_mode_to_cv(mode_), value_);
         } catch (const cv::Exception& e) {
-            throw std::runtime_error("PadToSquare: " + std::string(e.what()));
+            throw ParameterError{"mode", std::string(e.what()), "PadToSquare"};
         }
         return Image<Format>(std::move(dst));
     }

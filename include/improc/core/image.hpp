@@ -2,10 +2,9 @@
 #pragma once
 
 #include <opencv2/core.hpp>
-#include <stdexcept>
-#include <format>
 #include "improc/core/format_traits.hpp"
 #include "improc/core/concepts.hpp"
+#include "improc/exceptions.hpp"
 
 namespace improc::core {
 
@@ -13,14 +12,13 @@ template<AnyFormat Format>
 class Image {
 public:
     explicit Image(cv::Mat mat) : mat_(std::move(mat)) {
-        if (mat_.empty()) {
-            throw std::invalid_argument("Image: mat must not be empty");
-        }
-        if (mat_.type() != FormatTraits<Format>::cv_type) {
-            throw std::invalid_argument(
-                std::format("Image: expected cv_type {}, got {}",
-                    FormatTraits<Format>::cv_type, mat_.type()));
-        }
+        if (mat_.empty())
+            throw ParameterError{"mat", "must not be empty", "Image constructor"};
+        if (mat_.type() != FormatTraits<Format>::cv_type)
+            throw FormatError{
+                std::string(FormatTraits<Format>::name),
+                cv_type_to_name(mat_.type()),
+                "Image constructor"};
     }
 
     Image clone() const { return Image(mat_.clone()); }

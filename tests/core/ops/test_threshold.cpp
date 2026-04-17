@@ -1,5 +1,6 @@
 // tests/core/ops/test_threshold.cpp
 #include <gtest/gtest.h>
+#include "improc/exceptions.hpp"
 #include <opencv2/core.hpp>
 #include "improc/core/ops/threshold.hpp"
 #include "improc/core/pipeline.hpp"
@@ -56,7 +57,7 @@ TEST(ThresholdTest, OtsuOnGrayPreservesSizeAndType) {
 TEST(ThresholdTest, OtsuOnBGRThrowsRuntimeError) {
     cv::Mat mat(10, 10, CV_8UC3, cv::Scalar(100, 100, 100));
     Image<BGR> img(mat);
-    EXPECT_THROW(Threshold{}.mode(ThresholdMode::Otsu)(img), std::runtime_error);
+    EXPECT_THROW(Threshold{}.mode(ThresholdMode::Otsu)(img), improc::ParameterError);
 }
 
 TEST(ThresholdTest, BinaryProducesCorrectValues) {

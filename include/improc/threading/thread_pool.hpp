@@ -6,10 +6,10 @@
 #include <future>
 #include <mutex>
 #include <queue>
-#include <stdexcept>
 #include <thread>
 #include <type_traits>
 #include <vector>
+#include "improc/exceptions.hpp"
 
 namespace improc::threading {
 
@@ -53,7 +53,7 @@ auto ThreadPool::submit(Fn&& fn, Args&&... args)
     std::future<R> future = task->get_future();
     {
         std::lock_guard<std::mutex> lock(queue_mutex_);
-        if (stop_) throw std::runtime_error("ThreadPool: cannot submit after shutdown");
+        if (stop_) throw Exception{"ThreadPool: cannot submit tasks after shutdown"};
         tasks_.emplace([task]{ (*task)(); });
     }
     cv_.notify_one();
