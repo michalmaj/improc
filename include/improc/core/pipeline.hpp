@@ -13,6 +13,7 @@
 #include "improc/core/ops/morphology.hpp"
 #include "improc/core/ops/threshold.hpp"
 #include "improc/core/ops/pad.hpp"
+#include "improc/core/ops/clahe.hpp"
 
 namespace improc::core {
 
