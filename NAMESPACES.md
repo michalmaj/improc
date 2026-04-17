@@ -138,11 +138,18 @@ Image<Gray> otsu   = gray | Threshold{}.mode(ThresholdMode::Otsu);
 // Padding ops — templated, work on any Image<Format>
 Image<BGR>  padded = src | Pad{}.top(10).bottom(10).left(20).right(20).mode(PadMode::Reflect);
 Image<BGR>  square = src | PadToSquare{}.value({114, 114, 114});  // letterbox for inference
+
+// CLAHE — Image<Gray> (direct) or Image<BGR> (applied to L channel in LAB)
+Image<Gray> eq  = gray | CLAHE{};                                  // defaults: clip=40, tile=8×8
+Image<Gray> eq2 = gray | CLAHE{}.clip_limit(2.0).tile_grid_size(8, 8);
+Image<BGR>  eq3 = bgr  | CLAHE{}.clip_limit(3.0);                 // colour-safe via LAB
 ```
 
 **Geometric ops** throw `ParameterError` when required parameters are missing or invalid (e.g. no dimension in `Resize`, ROI out of bounds in `Crop`, no angle in `Rotate`).
 
 **Normalization ops** throw `ParameterError` at construction if parameters are invalid (`NormalizeTo` requires `min < max`; `Standardize` requires `std_dev > 0`). A uniform image passed to `Normalize` or `NormalizeTo` returns a zero-filled image.
+
+**`CLAHE`** throws `ParameterError` for non-positive `clip_limit` or tile dimensions. On BGR input the operation is colour-safe: it converts to LAB, equalises the L channel only, and converts back — so hue and saturation are preserved.
 
 ---
 
