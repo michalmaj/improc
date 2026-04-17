@@ -1,16 +1,16 @@
 # improc++: Modern C++ Image Processing Toolkit
 
-## Overview
+## Motivation
 
-improc++ is a modern C++23 image processing toolkit designed as a high-level wrapper over OpenCV, aimed at simplifying ML workflows in real-time systems. It provides compile-time type-safe image handling, a composable pipeline API, and structured data loading utilities.
+OpenCV is powerful but its raw API is stringly-typed, mutation-heavy, and easy to misuse — passing a `CV_32FC1` mat where a `CV_8UC3` is expected silently produces garbage instead of a compiler error. improc++ wraps OpenCV with a thin, zero-overhead abstraction that makes format mismatches impossible at compile time, composes processing steps into readable pipelines, and provides ML-ready utilities (augmentation, dataset loading, DNN inference) without reinventing the wheel. The goal is code that reads like a description of what it does, not how OpenCV internals work.
 
 ## Features
 
 - **Type-safe image wrapper** — `Image<BGR>`, `Image<Gray>`, `Image<Float32>` etc. catch format mismatches at compile time
 - **Composable pipeline** — `image | Resize{}.width(224) | ToFloat32C3{}` syntax for readable processing chains
 - **Geometric operations** — `Resize` (aspect-ratio aware), `Crop`, `Flip`, `Rotate`, `Pad`, `PadToSquare`
-- **Normalization operations** — `Normalize`, `NormalizeTo`, `Standardize` for ML preprocessing
-- **Filter & morphology** — `GaussianBlur`, `MedianBlur`, `Dilate`, `Erode`, `Threshold` (incl. Otsu)
+- **Filter & morphology** — `GaussianBlur`, `MedianBlur`, `Dilate`, `Erode`, `Threshold` (incl. Otsu), `CLAHE`
+- **Normalization** — `Normalize`, `NormalizeTo`, `Standardize` for ML preprocessing
 - **Format conversions** — explicit, compiler-enforced free functions (`convert<Gray>(bgr_image)`)
 - **Augmentation** — stochastic training augmentations constrained by C++20 concepts: `RandomFlip`, `RandomRotate`, `RandomCrop`, `RandomResize`, `RandomBrightness`, `RandomContrast`, `ColorJitter`, `RandomGaussianNoise`, `RandomSaltAndPepper`, `Compose`, `RandomApply`, `OneOf`
 - **Dataset loading** — load image datasets from class-labeled directories with train/val/test splitting
@@ -21,49 +21,64 @@ improc++ is a modern C++23 image processing toolkit designed as a high-level wra
 - **Threading** — `ThreadPool` and `FramePipeline<Result>` for real-time frame processing
 - **Visualization** — `Histogram`, `LinePlot`, `Scatter` chart functors and a `Show` passthrough display op, all returning `Image<BGR>` and composable with `operator|`
 
-## Requirements
+## Quick Start
 
-- C++23 or later
-- [OpenCV](https://opencv.org/) 4.8+
-- [Eigen](https://eigen.tuxfamily.org/) 3.4+
-- [GoogleTest](https://github.com/google/googletest) 1.16+
-- [Conan 2.0](https://conan.io/) for dependency management
-- macOS: Accelerate framework (built-in); Linux/Windows: OpenBLAS
+```cpp
+#include "improc/core/pipeline.hpp"
+#include "improc/io/camera_capture.hpp"
+#include "improc/io/video_writer.hpp"
+#include "improc/visualization/visualization.hpp"
 
-## Installation
+using namespace improc::core;
+using namespace improc::io;
+using namespace improc::visualization;
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/michalmaj/improc.git
-   ```
+// 1. Load an image and run a preprocessing pipeline
+cv::Mat raw = cv::imread("photo.jpg");
+Image<BGR> result = Image<BGR>(raw)
+    | Resize{}.width(224).height(224)
+    | CLAHE{}.clip_limit(2.0)
+    | GaussianBlur{}.kernel_size(3);
 
-2. **Configure with CMake (Conan auto-invoked via `conan_provider.cmake`):**
-   ```bash
-   cmake -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="conan_provider.cmake" \
-         -DCONAN_COMMAND=<path_to_conan> \
-         -B build .
-   cmake --build build
-   ```
+// 2. Convert for model inference
+Image<Float32C3> tensor = result | ToFloat32C3{} | NormalizeTo{0.0f, 1.0f};
 
-## CMake Configuration (CLion)
+// 3. Display a histogram of the processed image
+result | Histogram{} | Show{"Histogram"};
 
-Set the following CMake options:
+// 4. Record from camera with live preview
+CameraCapture cam(0);
+VideoWriter writer{"output.mp4"};
+writer.fps(30);
+
+while (true) {
+    auto frame = cam.getFrame();
+    if (!frame) continue;
+    Image<BGR> img(*frame);
+    img | Show{"Live"}.wait_ms(1) | writer;  // display + record in one pipeline
+    if (cv::waitKey(1) == 27) break;         // ESC to stop
+}
 ```
--DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="conan_provider.cmake"
--DCONAN_COMMAND=<path_to_conan_executable>
-```
 
-### Sanitizer Builds (optional)
+## Usage
 
-**Thread Sanitizer:**
-```
--DCMAKE_CXX_FLAGS="-fsanitize=thread -g -O1 -fno-omit-frame-pointer"
-```
+All ops are functors that compose via `operator|`. The `pipeline.hpp` umbrella header pulls in all core ops. For a full reference of every namespace, op, and error type see **[NAMESPACES.md](NAMESPACES.md)**.
 
-**Address + Undefined Behavior Sanitizer:**
-```
--DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -g -O1 -fno-omit-frame-pointer"
--DCMAKE_BUILD_TYPE=Debug
+```cpp
+// Core ops
+#include "improc/core/pipeline.hpp"
+
+// I/O
+#include "improc/io/camera_capture.hpp"
+#include "improc/io/video_writer.hpp"
+
+// ML utilities
+#include "improc/ml/augmentation.hpp"     // all augmentation ops
+#include "improc/ml/dnn_classifier.hpp"
+#include "improc/ml/dataset.hpp"
+
+// Visualization
+#include "improc/visualization/visualization.hpp"
 ```
 
 ## Augmentation
@@ -121,6 +136,51 @@ w.fps(25).size(640, 480).codec("MJPG");
 
 Supported auto-codecs: `.mp4`/`.mov` → `mp4v`, `.avi` → `MJPG`, `.mkv` → `XVID`.
 
+## Requirements
+
+- C++23 or later
+- [OpenCV](https://opencv.org/) 4.8+
+- [Eigen](https://eigen.tuxfamily.org/) 3.4+
+- [GoogleTest](https://github.com/google/googletest) 1.16+
+- [Conan 2.0](https://conan.io/) for dependency management
+- macOS: Accelerate framework (built-in); Linux/Windows: OpenBLAS
+
+## Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/michalmaj/improc.git
+   ```
+
+2. **Configure with CMake (Conan auto-invoked via `conan_provider.cmake`):**
+   ```bash
+   cmake -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="conan_provider.cmake" \
+         -DCONAN_COMMAND=<path_to_conan> \
+         -B build .
+   cmake --build build
+   ```
+
+## CMake Configuration (CLion)
+
+Set the following CMake options:
+```
+-DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="conan_provider.cmake"
+-DCONAN_COMMAND=<path_to_conan_executable>
+```
+
+### Sanitizer Builds (optional)
+
+**Thread Sanitizer:**
+```
+-DCMAKE_CXX_FLAGS="-fsanitize=thread -g -O1 -fno-omit-frame-pointer"
+```
+
+**Address + Undefined Behavior Sanitizer:**
+```
+-DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -g -O1 -fno-omit-frame-pointer"
+-DCMAKE_BUILD_TYPE=Debug
+```
+
 ## Running Tests
 
 ```bash
@@ -129,7 +189,7 @@ cmake --build cmake-build-debug --target improc_tests
 ./cmake-build-debug/improc_tests
 
 # Single suite
-./cmake-build-debug/improc_tests --gtest_filter="VideoWriterTest.*"
+./cmake-build-debug/improc_tests --gtest_filter="CLAHETest.*"
 ```
 
 ## Tested With
@@ -138,3 +198,7 @@ cmake --build cmake-build-debug --target improc_tests
 - **OpenCV:** 4.8.1
 - **Eigen:** 3.4.0
 - **GoogleTest:** 1.16.0
+
+## Contributing
+
+Contributions are welcome. Fork the repository, create a feature branch (`git checkout -b feature/my-op`), add your changes with tests, and open a pull request against `main`. Please keep new ops consistent with the existing patterns: a fluent-setter functor in `include/improc/`, a matching `.cpp` in `src/`, tests in `tests/`, and the new type registered in the relevant umbrella header (`pipeline.hpp` for core ops, `augmentation.hpp` for augmentation ops). All pull requests must pass the full test suite before merging.
