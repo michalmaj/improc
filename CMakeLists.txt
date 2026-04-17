@@ -104,3 +104,7 @@ target_link_libraries(demo_dnn_inference PRIVATE improc)
 # Augmentation demo
 add_executable(demo_augmentation examples/ml/demo_augmentation.cpp)
 target_link_libraries(demo_augmentation PRIVATE improc)
+
+# Video Writer demo
+add_executable(demo_video_writer examples/io/demo_video_writer.cpp)
+target_link_libraries(demo_video_writer PRIVATE improc)
