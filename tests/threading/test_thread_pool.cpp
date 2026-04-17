@@ -1,5 +1,6 @@
 // tests/threading/test_thread_pool.cpp
 #include <gtest/gtest.h>
+#include "improc/exceptions.hpp"
 #include <atomic>
 #include <chrono>
 #include <thread>
@@ -54,7 +55,7 @@ TEST(ThreadPoolTest, DestructorDrainsQueue) {
 }
 
 TEST(ThreadPoolTest, ZeroThreadsThrows) {
-    EXPECT_THROW(ThreadPool(0), std::invalid_argument);
+    EXPECT_THROW(ThreadPool(0), improc::ParameterError);
 }
 
 TEST(ThreadPoolTest, ExceptionPropagatesThroughFuture) {

@@ -1,5 +1,6 @@
 // tests/visualization/test_histogram.cpp
 #include <gtest/gtest.h>
+#include "improc/exceptions.hpp"
 #include "improc/core/pipeline.hpp"
 #include "improc/visualization/histogram.hpp"
 
@@ -47,25 +48,25 @@ TEST(HistogramTest, CustomBinsAndSize) {
 }
 
 TEST(HistogramTest, ZeroBinsThrows) {
-    EXPECT_THROW(Histogram{}.bins(0), std::invalid_argument);
+    EXPECT_THROW(Histogram{}.bins(0), improc::ParameterError);
 }
 
 TEST(HistogramTest, NegativeBinsThrows) {
-    EXPECT_THROW(Histogram{}.bins(-1), std::invalid_argument);
+    EXPECT_THROW(Histogram{}.bins(-1), improc::ParameterError);
 }
 
 TEST(HistogramTest, ZeroWidthThrows) {
-    EXPECT_THROW(Histogram{}.width(0), std::invalid_argument);
+    EXPECT_THROW(Histogram{}.width(0), improc::ParameterError);
 }
 
 TEST(HistogramTest, NegativeWidthThrows) {
-    EXPECT_THROW(Histogram{}.width(-1), std::invalid_argument);
+    EXPECT_THROW(Histogram{}.width(-1), improc::ParameterError);
 }
 
 TEST(HistogramTest, ZeroHeightThrows) {
-    EXPECT_THROW(Histogram{}.height(0), std::invalid_argument);
+    EXPECT_THROW(Histogram{}.height(0), improc::ParameterError);
 }
 
 TEST(HistogramTest, NegativeHeightThrows) {
-    EXPECT_THROW(Histogram{}.height(-1), std::invalid_argument);
+    EXPECT_THROW(Histogram{}.height(-1), improc::ParameterError);
 }

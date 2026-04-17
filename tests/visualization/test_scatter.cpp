@@ -1,20 +1,21 @@
 // tests/visualization/test_scatter.cpp
 #include <gtest/gtest.h>
+#include "improc/exceptions.hpp"
 #include "improc/visualization/scatter.hpp"
 
 using namespace improc::core;
 using namespace improc::visualization;
 
 TEST(ScatterTest, EmptyXsThrows) {
-    EXPECT_THROW(Scatter{}({}, {1.0f}), std::invalid_argument);
+    EXPECT_THROW(Scatter{}({}, {1.0f}), improc::ParameterError);
 }
 
 TEST(ScatterTest, EmptyYsThrows) {
-    EXPECT_THROW(Scatter{}({1.0f}, {}), std::invalid_argument);
+    EXPECT_THROW(Scatter{}({1.0f}, {}), improc::ParameterError);
 }
 
 TEST(ScatterTest, MismatchedSizesThrow) {
-    EXPECT_THROW(Scatter{}({1.0f, 2.0f}, {1.0f}), std::invalid_argument);
+    EXPECT_THROW(Scatter{}({1.0f, 2.0f}, {1.0f}), improc::ParameterError);
 }
 
 TEST(ScatterTest, SinglePointDoesNotThrow) {
@@ -42,25 +43,25 @@ TEST(ScatterTest, CustomSize) {
 }
 
 TEST(ScatterTest, ZeroPointRadiusThrows) {
-    EXPECT_THROW(Scatter{}.point_radius(0), std::invalid_argument);
+    EXPECT_THROW(Scatter{}.point_radius(0), improc::ParameterError);
 }
 
 TEST(ScatterTest, NegativeWidthThrows) {
-    EXPECT_THROW(Scatter{}.width(-1), std::invalid_argument);
+    EXPECT_THROW(Scatter{}.width(-1), improc::ParameterError);
 }
 
 TEST(ScatterTest, NegativeHeightThrows) {
-    EXPECT_THROW(Scatter{}.height(-1), std::invalid_argument);
+    EXPECT_THROW(Scatter{}.height(-1), improc::ParameterError);
 }
 
 TEST(ScatterTest, ZeroWidthThrows) {
-    EXPECT_THROW(Scatter{}.width(0), std::invalid_argument);
+    EXPECT_THROW(Scatter{}.width(0), improc::ParameterError);
 }
 
 TEST(ScatterTest, ZeroHeightThrows) {
-    EXPECT_THROW(Scatter{}.height(0), std::invalid_argument);
+    EXPECT_THROW(Scatter{}.height(0), improc::ParameterError);
 }
 
 TEST(ScatterTest, NegativePointRadiusThrows) {
-    EXPECT_THROW(Scatter{}.point_radius(-1), std::invalid_argument);
+    EXPECT_THROW(Scatter{}.point_radius(-1), improc::ParameterError);
 }

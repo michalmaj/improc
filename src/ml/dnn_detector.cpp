@@ -2,6 +2,11 @@
 #include "improc/ml/dnn_detector.hpp"
 #include <algorithm>
 #include <filesystem>
+#include <format>
+#include "improc/exceptions.hpp"
+
+using improc::ModelError;
+using improc::Exception;
 
 namespace improc::ml {
 
@@ -14,20 +19,20 @@ const std::unordered_set<std::string>& DnnDetector::valid_extensions() {
 
 DnnDetector::DnnDetector(std::string model_path) {
     if (!std::filesystem::exists(model_path))
-        throw std::runtime_error("DnnDetector: model file not found: " + model_path);
+        throw ModelError{model_path, "file not found"};
 
     std::string ext = std::filesystem::path(model_path).extension().string();
     std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
     if (!valid_extensions().contains(ext))
-        throw std::runtime_error("DnnDetector: unsupported model extension '" + ext + "': " + model_path);
+        throw ModelError{model_path, "unsupported extension '" + ext + "'"};
 
     try {
         net_ = cv::dnn::readNet(model_path);
     } catch (const cv::Exception& e) {
-        throw std::runtime_error("DnnDetector: failed to load model: " + std::string(e.what()));
+        throw ModelError{model_path, "failed to load: " + std::string(e.what())};
     }
     if (net_.empty())
-        throw std::runtime_error("DnnDetector: loaded model is empty: " + model_path);
+        throw ModelError{model_path, "loaded model is empty"};
 }
 
 std::vector<Detection> DnnDetector::operator()(const Image<BGR>& img) const {
@@ -45,7 +50,7 @@ std::vector<Detection> DnnDetector::operator()(const Image<BGR>& img) const {
         else
             outs = {net_.forward(output_layer_)};
         if (outs.empty())
-            throw std::runtime_error("DnnDetector: YOLO forward pass produced no output blobs");
+            throw Exception{"DnnDetector: YOLO forward pass produced no output blobs"};
         cv::Mat out = outs[0];
         return parse_yolo(out, orig_w, orig_h);
     } else {
@@ -65,13 +70,11 @@ std::vector<Detection> DnnDetector::parse_yolo(const cv::Mat& output,
         det_mat = output;
 
     if (det_mat.dims != 2)
-        throw std::runtime_error("DnnDetector: YOLO output has unexpected shape (dims=" +
-                                 std::to_string(det_mat.dims) + ")");
+        throw Exception{std::format("DnnDetector: YOLO output has unexpected shape (dims={})", det_mat.dims)};
 
     const int num_classes = det_mat.cols - 5;
     if (num_classes <= 0)
-        throw std::runtime_error("DnnDetector: YOLO output has unexpected column count: " +
-                                 std::to_string(det_mat.cols));
+        throw Exception{std::format("DnnDetector: YOLO output has unexpected column count: {}", det_mat.cols)};
 
     const float x_scale = static_cast<float>(orig_w) / input_w_;
     const float y_scale = static_cast<float>(orig_h) / input_h_;
@@ -132,7 +135,7 @@ std::vector<Detection> DnnDetector::parse_ssd(const cv::Mat& boxes_blob, const c
     cv::Mat scores_mat = scores_blob.reshape(1, scores_blob.size[1]);  // [N, C]
 
     if (boxes_mat.rows != scores_mat.rows)
-        throw std::runtime_error("DnnDetector: SSD boxes/scores row count mismatch");
+        throw Exception{"DnnDetector: SSD boxes/scores row count mismatch"};
 
     std::vector<cv::Rect> boxes;
     std::vector<float>    confs;

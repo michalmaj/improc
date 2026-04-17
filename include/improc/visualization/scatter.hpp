@@ -1,11 +1,11 @@
 // include/improc/visualization/scatter.hpp
 #pragma once
 
-#include <stdexcept>
 #include <string>
 #include <vector>
 #include <opencv2/core.hpp>
 #include "improc/core/image.hpp"
+#include "improc/exceptions.hpp"
 
 namespace improc::visualization {
 
@@ -16,22 +16,22 @@ struct Scatter {
     Scatter& title(std::string t) { title_ = std::move(t); return *this; }
     Scatter& color(cv::Scalar c) { color_ = c; return *this; }
     Scatter& point_radius(int r) {
-        if (r <= 0) throw std::invalid_argument("Scatter: point_radius must be positive");
+        if (r <= 0) throw ParameterError{"point_radius", "must be positive", "Scatter"};
         point_radius_ = r;
         return *this;
     }
     Scatter& width(int w) {
-        if (w <= 0) throw std::invalid_argument("Scatter: width must be positive");
+        if (w <= 0) throw ParameterError{"width", "must be positive", "Scatter"};
         width_ = w;
         return *this;
     }
     Scatter& height(int h) {
-        if (h <= 0) throw std::invalid_argument("Scatter: height must be positive");
+        if (h <= 0) throw ParameterError{"height", "must be positive", "Scatter"};
         height_ = h;
         return *this;
     }
 
-    // Throws std::invalid_argument if xs or ys is empty, or xs.size() != ys.size().
+    // Throws ParameterError if xs or ys is empty, or xs.size() != ys.size().
     Image<BGR> operator()(const std::vector<float>& xs,
                           const std::vector<float>& ys) const;
 

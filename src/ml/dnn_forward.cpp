@@ -2,6 +2,9 @@
 #include "improc/ml/dnn_forward.hpp"
 #include <algorithm>
 #include <filesystem>
+#include "improc/exceptions.hpp"
+
+using improc::ModelError;
 
 namespace improc::ml {
 
@@ -14,20 +17,20 @@ const std::unordered_set<std::string>& DnnForward::valid_extensions() {
 
 DnnForward::DnnForward(std::string model_path) {
     if (!std::filesystem::exists(model_path))
-        throw std::runtime_error("DnnForward: model file not found: " + model_path);
+        throw ModelError{model_path, "file not found"};
 
     std::string ext = std::filesystem::path(model_path).extension().string();
     std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
     if (!valid_extensions().contains(ext))
-        throw std::runtime_error("DnnForward: unsupported model extension '" + ext + "': " + model_path);
+        throw ModelError{model_path, "unsupported extension '" + ext + "'"};
 
     try {
         net_ = cv::dnn::readNet(model_path);
     } catch (const cv::Exception& e) {
-        throw std::runtime_error("DnnForward: failed to load model: " + std::string(e.what()));
+        throw ModelError{model_path, "failed to load: " + std::string(e.what())};
     }
     if (net_.empty())
-        throw std::runtime_error("DnnForward: loaded model is empty: " + model_path);
+        throw ModelError{model_path, "loaded model is empty"};
 }
 
 std::vector<float> DnnForward::operator()(const Image<BGR>& img) const {

@@ -1,12 +1,13 @@
 // tests/visualization/test_line_plot.cpp
 #include <gtest/gtest.h>
+#include "improc/exceptions.hpp"
 #include "improc/visualization/line_plot.hpp"
 
 using namespace improc::core;
 using namespace improc::visualization;
 
 TEST(LinePlotTest, EmptyVectorThrows) {
-    EXPECT_THROW(LinePlot{}({}), std::invalid_argument);
+    EXPECT_THROW(LinePlot{}({}), improc::ParameterError);
 }
 
 TEST(LinePlotTest, SingleValueDoesNotThrow) {
@@ -31,17 +32,17 @@ TEST(LinePlotTest, CustomSize) {
 }
 
 TEST(LinePlotTest, ZeroWidthThrows) {
-    EXPECT_THROW(LinePlot{}.width(0), std::invalid_argument);
+    EXPECT_THROW(LinePlot{}.width(0), improc::ParameterError);
 }
 
 TEST(LinePlotTest, NegativeWidthThrows) {
-    EXPECT_THROW(LinePlot{}.width(-1), std::invalid_argument);
+    EXPECT_THROW(LinePlot{}.width(-1), improc::ParameterError);
 }
 
 TEST(LinePlotTest, ZeroHeightThrows) {
-    EXPECT_THROW(LinePlot{}.height(0), std::invalid_argument);
+    EXPECT_THROW(LinePlot{}.height(0), improc::ParameterError);
 }
 
 TEST(LinePlotTest, NegativeHeightThrows) {
-    EXPECT_THROW(LinePlot{}.height(-1), std::invalid_argument);
+    EXPECT_THROW(LinePlot{}.height(-1), improc::ParameterError);
 }

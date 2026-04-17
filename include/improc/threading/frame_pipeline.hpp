@@ -8,8 +8,8 @@
 #include <mutex>
 #include <optional>
 #include <queue>
-#include <stdexcept>
 #include <thread>
+#include "improc/exceptions.hpp"
 #include <opencv2/core.hpp>
 #include "improc/io/camera_capture.hpp"
 #include "improc/threading/thread_pool.hpp"
@@ -34,9 +34,8 @@ public:
     void start(Processor fn) {
         bool expected = false;
         // Atomically transition running_ false→true; throws if already true.
-        if (!running_.compare_exchange_strong(expected, true)) {
-            throw std::logic_error("FramePipeline: already running");
-        }
+        if (!running_.compare_exchange_strong(expected, true))
+            throw Exception{"FramePipeline: start() called while already running"};
         processor_ = std::move(fn);
         poller_ = std::thread(&FramePipeline<Result>::pollLoop, this);
     }
@@ -63,11 +62,12 @@ private:
     void pollLoop() {
         Processor local_processor = processor_;  // safe: written before thread started
         while (running_) {
-            cv::Mat frame = camera_.getFrame();
-            if (frame.empty()) {
+            auto frame_result = camera_.getFrame();
+            if (!frame_result) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 continue;
             }
+            cv::Mat frame = std::move(*frame_result);
             try {
                 auto future = pool_.submit([local_processor, frame]{ return local_processor(frame); });
                 std::lock_guard<std::mutex> lock(pending_mutex_);

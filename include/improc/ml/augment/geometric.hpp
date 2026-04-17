@@ -3,13 +3,13 @@
 
 #include <cmath>
 #include <random>
-#include <stdexcept>
 #include <utility>
 #include <opencv2/imgproc.hpp>
 #include "improc/core/image.hpp"
 #include "improc/core/concepts.hpp"
 #include "improc/core/ops/axis.hpp"
 #include "improc/ml/augment/detail.hpp"
+#include "improc/exceptions.hpp"
 
 namespace improc::ml {
 
@@ -19,7 +19,7 @@ using improc::core::Image;
 struct RandomFlip : detail::BindMixin<RandomFlip> {
     RandomFlip& p(float prob) {
         if (prob < 0.0f || prob > 1.0f)
-            throw std::invalid_argument("RandomFlip: p must be in [0, 1]");
+            throw ParameterError{"p", std::format("must be in [0, 1], got {}", prob), "RandomFlip"};
         p_ = prob; return *this;
     }
     RandomFlip& axis(core::Axis a) { axis_ = a; return *this; }
@@ -48,12 +48,12 @@ private:
 struct RandomRotate : detail::BindMixin<RandomRotate> {
     RandomRotate& range(float min_deg, float max_deg) {
         if (min_deg > max_deg)
-            throw std::invalid_argument("RandomRotate: min_deg must be <= max_deg");
+            throw ParameterError{"min_deg", "must be <= max_deg", "RandomRotate"};
         min_deg_ = min_deg; max_deg_ = max_deg; return *this;
     }
     RandomRotate& scale(float s) {
         if (s <= 0.0f)
-            throw std::invalid_argument("RandomRotate: scale must be > 0");
+            throw ParameterError{"scale", "must be > 0", "RandomRotate"};
         scale_ = s; return *this;
     }
 
@@ -67,7 +67,7 @@ struct RandomRotate : detail::BindMixin<RandomRotate> {
         try {
             cv::warpAffine(img.mat(), dst, M, img.mat().size());
         } catch (const cv::Exception& e) {
-            throw std::runtime_error("RandomRotate: " + std::string(e.what()));
+            throw AugmentError{"RandomRotate: " + std::string(e.what())};
         }
         return Image<Format>(std::move(dst));
     }
@@ -80,20 +80,23 @@ private:
 
 struct RandomCrop : detail::BindMixin<RandomCrop> {
     RandomCrop& width(int w) {
-        if (w <= 0) throw std::invalid_argument("RandomCrop: width must be positive");
+        if (w <= 0) throw ParameterError{"width", "must be positive", "RandomCrop"};
         width_ = w; return *this;
     }
     RandomCrop& height(int h) {
-        if (h <= 0) throw std::invalid_argument("RandomCrop: height must be positive");
+        if (h <= 0) throw ParameterError{"height", "must be positive", "RandomCrop"};
         height_ = h; return *this;
     }
 
     template<AnyFormat Format>
     Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         if (width_ <= 0 || height_ <= 0)
-            throw std::invalid_argument("RandomCrop: width and height must both be set");
+            throw ParameterError{"width/height", "both must be set", "RandomCrop"};
         if (width_ > img.cols() || height_ > img.rows())
-            throw std::invalid_argument("RandomCrop: crop size exceeds image dimensions");
+            throw ParameterError{"width/height",
+                std::format("crop {}x{} exceeds image {}x{}",
+                    width_, height_, img.cols(), img.rows()),
+                "RandomCrop"};
         std::uniform_int_distribution<int> x_d(0, img.cols() - width_);
         std::uniform_int_distribution<int> y_d(0, img.rows() - height_);
         int x = x_d(rng);
@@ -110,9 +113,9 @@ private:
 struct RandomResize : detail::BindMixin<RandomResize> {
     RandomResize& range(int min_side, int max_side) {
         if (min_side <= 0)
-            throw std::invalid_argument("RandomResize: min_side must be > 0");
+            throw ParameterError{"min_side", "must be > 0", "RandomResize"};
         if (min_side > max_side)
-            throw std::invalid_argument("RandomResize: min_side must be <= max_side");
+            throw ParameterError{"min_side", "must be <= max_side", "RandomResize"};
         min_side_ = min_side; max_side_ = max_side; return *this;
     }
 

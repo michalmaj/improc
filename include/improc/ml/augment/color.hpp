@@ -3,12 +3,11 @@
 
 #include <random>
 #include <cmath>
-#include <stdexcept>
-#include <string>
 #include <opencv2/imgproc.hpp>
 #include "improc/core/image.hpp"
 #include "improc/core/concepts.hpp"
 #include "improc/ml/augment/detail.hpp"
+#include "improc/exceptions.hpp"
 
 namespace improc::ml {
 
@@ -19,9 +18,9 @@ using improc::core::Image;
 struct RandomBrightness : detail::BindMixin<RandomBrightness> {
     RandomBrightness& range(float low, float high) {
         if (low <= 0.0f)
-            throw std::invalid_argument("RandomBrightness: low must be > 0");
+            throw ParameterError{"low", "must be > 0", "RandomBrightness"};
         if (low > high)
-            throw std::invalid_argument("RandomBrightness: low must be <= high");
+            throw ParameterError{"low", "must be <= high", "RandomBrightness"};
         low_ = low; high_ = high; return *this;
     }
 
@@ -46,9 +45,9 @@ private:
 struct RandomContrast : detail::BindMixin<RandomContrast> {
     RandomContrast& range(float low, float high) {
         if (low <= 0.0f)
-            throw std::invalid_argument("RandomContrast: low must be > 0");
+            throw ParameterError{"low", "must be > 0", "RandomContrast"};
         if (low > high)
-            throw std::invalid_argument("RandomContrast: low must be <= high");
+            throw ParameterError{"low", "must be <= high", "RandomContrast"};
         low_ = low; high_ = high; return *this;
     }
 
@@ -73,25 +72,25 @@ private:
 
 struct ColorJitter : detail::BindMixin<ColorJitter> {
     ColorJitter& brightness(float low, float high) {
-        if (low <= 0.0f) throw std::invalid_argument("ColorJitter: brightness low must be > 0");
-        if (low > high)  throw std::invalid_argument("ColorJitter: brightness low must be <= high");
+        if (low <= 0.0f) throw ParameterError{"brightness.low", "must be > 0", "ColorJitter"};
+        if (low > high)  throw ParameterError{"brightness.low", "must be <= high", "ColorJitter"};
         br_low_ = low; br_high_ = high; return *this;
     }
     ColorJitter& contrast(float low, float high) {
-        if (low <= 0.0f) throw std::invalid_argument("ColorJitter: contrast low must be > 0");
-        if (low > high)  throw std::invalid_argument("ColorJitter: contrast low must be <= high");
+        if (low <= 0.0f) throw ParameterError{"contrast.low", "must be > 0", "ColorJitter"};
+        if (low > high)  throw ParameterError{"contrast.low", "must be <= high", "ColorJitter"};
         ct_low_ = low; ct_high_ = high; return *this;
     }
     ColorJitter& saturation(float low, float high) {
-        if (low <= 0.0f) throw std::invalid_argument("ColorJitter: saturation low must be > 0");
-        if (low > high)  throw std::invalid_argument("ColorJitter: saturation low must be <= high");
+        if (low <= 0.0f) throw ParameterError{"saturation.low", "must be > 0", "ColorJitter"};
+        if (low > high)  throw ParameterError{"saturation.low", "must be <= high", "ColorJitter"};
         sa_low_ = low; sa_high_ = high; return *this;
     }
     ColorJitter& hue(float low, float high) {
         if (std::abs(low) > 180.0f || std::abs(high) > 180.0f)
-            throw std::invalid_argument("ColorJitter: hue values must be in [-180, 180]");
+            throw ParameterError{"hue", "values must be in [-180, 180]", "ColorJitter"};
         if (low > high)
-            throw std::invalid_argument("ColorJitter: hue low must be <= high");
+            throw ParameterError{"hue.low", "must be <= high", "ColorJitter"};
         hu_low_ = low; hu_high_ = high; return *this;
     }
 
@@ -141,7 +140,7 @@ struct ColorJitter : detail::BindMixin<ColorJitter> {
         try {
             return Image<Format>(std::move(dst));
         } catch (const cv::Exception& e) {
-            throw std::runtime_error("ColorJitter: " + std::string(e.what()));
+            throw AugmentError{"ColorJitter: " + std::string(e.what())};
         }
     }
 

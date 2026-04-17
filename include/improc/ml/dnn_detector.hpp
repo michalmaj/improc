@@ -2,13 +2,13 @@
 #pragma once
 
 #include <filesystem>
-#include <stdexcept>
 #include <string>
 #include <unordered_set>
 #include <vector>
 #include <opencv2/dnn.hpp>
 #include "improc/core/image.hpp"
 #include "improc/ml/result_types.hpp"
+#include "improc/exceptions.hpp"
 
 namespace improc::ml {
 
@@ -21,7 +21,7 @@ struct DnnDetector {
         SSD    // two output blobs: boxes [1,N,4] + scores [1,N,C] (y1,x1,y2,x2 normalized)
     };
 
-    // Loads model at construction. Throws std::runtime_error on failure.
+    // Loads model at construction. Throws ModelError on failure.
     explicit DnnDetector(std::string model_path);
 
     DnnDetector& style(Style s)               { style_ = s; return *this; }
@@ -29,26 +29,26 @@ struct DnnDetector {
     DnnDetector& boxes_layer(std::string n)   { boxes_layer_  = std::move(n); return *this; }
     DnnDetector& scores_layer(std::string n)  { scores_layer_ = std::move(n); return *this; }
     DnnDetector& confidence_threshold(float t) {
-        if (t < 0.0f || t > 1.0f) throw std::invalid_argument("DnnDetector: confidence_threshold must be in [0, 1]");
+        if (t < 0.0f || t > 1.0f) throw ParameterError{"confidence_threshold", "must be in [0, 1]", "DnnDetector"};
         confidence_threshold_ = t; return *this;
     }
     DnnDetector& nms_threshold(float t) {
-        if (t < 0.0f || t > 1.0f) throw std::invalid_argument("DnnDetector: nms_threshold must be in [0, 1]");
+        if (t < 0.0f || t > 1.0f) throw ParameterError{"nms_threshold", "must be in [0, 1]", "DnnDetector"};
         nms_threshold_ = t; return *this;
     }
     DnnDetector& input_size(int w, int h) {
-        if (w <= 0 || h <= 0) throw std::invalid_argument("DnnDetector: input_size dimensions must be positive");
+        if (w <= 0 || h <= 0) throw ParameterError{"input_size", "dimensions must be positive", "DnnDetector"};
         input_w_ = w; input_h_ = h; return *this;
     }
     DnnDetector& mean(cv::Scalar m)                     { mean_ = m; return *this; }
     DnnDetector& scale(float s) {
-        if (s <= 0.0f) throw std::invalid_argument("DnnDetector: scale must be positive");
+        if (s <= 0.0f) throw ParameterError{"scale", "must be positive", "DnnDetector"};
         scale_ = s; return *this;
     }
     DnnDetector& swap_rb(bool s)                        { swap_rb_ = s; return *this; }
     DnnDetector& labels(std::vector<std::string> l)     { labels_ = std::move(l); return *this; }
 
-    // Throws std::runtime_error if inference fails.
+    // Throws Exception if inference fails.
     std::vector<Detection> operator()(const Image<BGR>& img) const;
 
 private:

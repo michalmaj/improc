@@ -1,5 +1,6 @@
 // tests/core/ops/test_blur.cpp
 #include <gtest/gtest.h>
+#include "improc/exceptions.hpp"
 #include <opencv2/core.hpp>
 #include "improc/core/ops/blur.hpp"
 #include "improc/core/pipeline.hpp"
@@ -31,15 +32,15 @@ TEST(BlurTest, GaussianBlurOnGrayPreservesType) {
 }
 
 TEST(BlurTest, GaussianBlurEvenKernelThrows) {
-    EXPECT_THROW(GaussianBlur{}.kernel_size(4), std::invalid_argument);
+    EXPECT_THROW(GaussianBlur{}.kernel_size(4), improc::ParameterError);
 }
 
 TEST(BlurTest, GaussianBlurZeroKernelThrows) {
-    EXPECT_THROW(GaussianBlur{}.kernel_size(0), std::invalid_argument);
+    EXPECT_THROW(GaussianBlur{}.kernel_size(0), improc::ParameterError);
 }
 
 TEST(BlurTest, GaussianBlurNegativeSigmaThrows) {
-    EXPECT_THROW(GaussianBlur{}.sigma(-1.0), std::invalid_argument);
+    EXPECT_THROW(GaussianBlur{}.sigma(-1.0), improc::ParameterError);
 }
 
 TEST(BlurTest, GaussianBlurPipelineOp) {
@@ -60,11 +61,11 @@ TEST(BlurTest, MedianBlurDefaultPreservesSizeAndType) {
 }
 
 TEST(BlurTest, MedianBlurEvenKernelThrows) {
-    EXPECT_THROW(MedianBlur{}.kernel_size(4), std::invalid_argument);
+    EXPECT_THROW(MedianBlur{}.kernel_size(4), improc::ParameterError);
 }
 
 TEST(BlurTest, MedianBlurZeroKernelThrows) {
-    EXPECT_THROW(MedianBlur{}.kernel_size(0), std::invalid_argument);
+    EXPECT_THROW(MedianBlur{}.kernel_size(0), improc::ParameterError);
 }
 
 TEST(BlurTest, MedianBlurPipelineOp) {
@@ -84,9 +85,9 @@ TEST(BlurTest, GaussianBlurActuallySmooths) {
 }
 
 TEST(BlurTest, GaussianBlurNegativeKernelThrows) {
-    EXPECT_THROW(GaussianBlur{}.kernel_size(-1), std::invalid_argument);
+    EXPECT_THROW(GaussianBlur{}.kernel_size(-1), improc::ParameterError);
 }
 
 TEST(BlurTest, MedianBlurNegativeKernelThrows) {
-    EXPECT_THROW(MedianBlur{}.kernel_size(-3), std::invalid_argument);
+    EXPECT_THROW(MedianBlur{}.kernel_size(-3), improc::ParameterError);
 }

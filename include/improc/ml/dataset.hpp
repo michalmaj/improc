@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <expected>
 #include <optional>
+#include "improc/error.hpp"
 
 namespace improc::ml {
 
@@ -36,7 +37,7 @@ public:
      * @param max_per_class Optional: maximum number of images to load per class
      * @return std::expected with error if loading fails
      */
-    std::expected<void, std::string> load_from_directory(const std::filesystem::path& root,
+    std::expected<void, improc::Error> load_from_directory(const std::filesystem::path& root,
                                                          float test_ratio = 0.2f,
                                                          float val_ratio = 0.1f,
                                                          std::optional<size_t> max_per_class = std::nullopt);

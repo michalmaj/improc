@@ -1,11 +1,12 @@
 // src/threading/thread_pool.cpp
 #include "improc/threading/thread_pool.hpp"
+#include "improc/exceptions.hpp"
 
 namespace improc::threading {
 
 ThreadPool::ThreadPool(std::size_t threads) {
     if (threads == 0)
-        throw std::invalid_argument("ThreadPool: thread count must be > 0");
+        throw ParameterError{"threads", "must be > 0", "ThreadPool"};
     workers_.reserve(threads);
     try {
         for (std::size_t i = 0; i < threads; ++i)

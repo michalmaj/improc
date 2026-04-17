@@ -1,6 +1,7 @@
 // Created by Michał Maj on 14/04/2025.
 
 #include <gtest/gtest.h>
+#include "improc/exceptions.hpp"
 #include <filesystem>
 #include <fstream>
 #include "improc/ml/haar_cascade_loader.hpp"
@@ -29,6 +30,6 @@ TEST(HaarCascadeLoaderTest, ThrowsOnInvalidLoad) {
   auto path = std::filesystem::path(__FILE__).parent_path() / "invalid_file.txt";
   std::ofstream(path) << "not a valid model";
 
-  EXPECT_THROW(loader.load_model(path), std::runtime_error);
+  EXPECT_THROW(loader.load_model(path), improc::ModelError);
   std::filesystem::remove(path);
 }

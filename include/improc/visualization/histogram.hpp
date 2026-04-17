@@ -1,11 +1,11 @@
 // include/improc/visualization/histogram.hpp
 #pragma once
 
-#include <stdexcept>
 #include <vector>
 #include <opencv2/imgproc.hpp>
 #include "improc/core/image.hpp"
 #include "improc/core/pipeline.hpp"
+#include "improc/exceptions.hpp"
 
 namespace improc::visualization {
 
@@ -16,17 +16,17 @@ using improc::core::Float32;
 
 struct Histogram {
     Histogram& bins(int n) {
-        if (n <= 0) throw std::invalid_argument("Histogram: bins must be positive");
+        if (n <= 0) throw ParameterError{"bins", "must be positive", "Histogram"};
         bins_ = n;
         return *this;
     }
     Histogram& width(int w) {
-        if (w <= 0) throw std::invalid_argument("Histogram: width must be positive");
+        if (w <= 0) throw ParameterError{"width", "must be positive", "Histogram"};
         width_ = w;
         return *this;
     }
     Histogram& height(int h) {
-        if (h <= 0) throw std::invalid_argument("Histogram: height must be positive");
+        if (h <= 0) throw ParameterError{"height", "must be positive", "Histogram"};
         height_ = h;
         return *this;
     }

@@ -3,13 +3,14 @@
 //
 
 #include <gtest/gtest.h>
+#include "improc/exceptions.hpp"
 #include "improc/ml/image_loader.hpp"
 
 using improc::ml::ImageLoader;
 
 TEST(ImageLoaderTest, InvalidPathThrows) {
   ImageLoader loader;
-  EXPECT_THROW(loader.load_images("not_a_dir"), std::runtime_error);
+  EXPECT_THROW(loader.load_images("not_a_dir"), improc::FileNotFoundError);
 }
 
 TEST(ImageLoaderTest, EmptyDirReturnsNoImages) {

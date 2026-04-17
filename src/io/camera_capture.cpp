@@ -31,8 +31,12 @@ void CameraCapture::stop() {
   }
 }
 
-cv::Mat CameraCapture::getFrame() {
+std::expected<cv::Mat, improc::Error> CameraCapture::getFrame() {
+  if (!camera_available_)
+    return std::unexpected(improc::Error::camera_unavailable(camera_id_));
   std::shared_lock<std::shared_mutex> lock(frame_mutex_);
+  if (frame_.empty())
+    return std::unexpected(improc::Error::camera_frame_empty(camera_id_));
   return frame_.clone();
 }
 
@@ -46,10 +50,10 @@ void CameraCapture::start() {
 
 void CameraCapture::captureLoop() {
   cap_.open(camera_id_);
-  if (!cap_.isOpened()) {
-    std::cerr << "Cannot open camera " << camera_id_ << std::endl;
-    return;
-  }
+  if (!cap_.isOpened())
+    return;  // camera_available_ stays false; getFrame() will report the error
+
+  camera_available_ = true;
 
   while (keep_running_) {
     cv::Mat temp_frame;

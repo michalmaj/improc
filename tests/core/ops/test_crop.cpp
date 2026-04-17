@@ -1,5 +1,6 @@
 // tests/core/ops/test_crop.cpp
 #include <gtest/gtest.h>
+#include "improc/exceptions.hpp"
 #include "improc/core/pipeline.hpp"
 #include "improc/core/ops/crop.hpp"
 
@@ -31,28 +32,28 @@ TEST(CropTest, ResultOwnsItsMemory) {
 TEST(CropTest, ThrowsOnMissingWidth) {
     cv::Mat mat(100, 200, CV_8UC3);
     Image<BGR> img(mat);
-    EXPECT_THROW((img | Crop{}.x(0).y(0).height(50)), std::invalid_argument);
+    EXPECT_THROW((img | Crop{}.x(0).y(0).height(50)), improc::ParameterError);
 }
 
 TEST(CropTest, ThrowsOnMissingX) {
     cv::Mat mat(100, 200, CV_8UC3);
     Image<BGR> img(mat);
-    EXPECT_THROW((img | Crop{}.y(0).width(50).height(50)), std::invalid_argument);
+    EXPECT_THROW((img | Crop{}.y(0).width(50).height(50)), improc::ParameterError);
 }
 
 TEST(CropTest, ThrowsOnROIOutOfBounds) {
     cv::Mat mat(100, 200, CV_8UC3);
     Image<BGR> img(mat);
-    EXPECT_THROW((img | Crop{}.x(0).y(0).width(300).height(50)), std::invalid_argument);
+    EXPECT_THROW((img | Crop{}.x(0).y(0).width(300).height(50)), improc::ParameterError);
 }
 
 TEST(CropTest, ThrowsOnROIExceedingHeight) {
     cv::Mat mat(100, 200, CV_8UC3);
     Image<BGR> img(mat);
-    EXPECT_THROW((img | Crop{}.x(0).y(50).width(50).height(100)), std::invalid_argument);
+    EXPECT_THROW((img | Crop{}.x(0).y(50).width(50).height(100)), improc::ParameterError);
 }
 
 TEST(CropTest, ThrowsOnNonPositiveDimension) {
-    EXPECT_THROW(Crop{}.width(0),  std::invalid_argument);
-    EXPECT_THROW(Crop{}.height(-1), std::invalid_argument);
+    EXPECT_THROW(Crop{}.width(0),  improc::ParameterError);
+    EXPECT_THROW(Crop{}.height(-1), improc::ParameterError);
 }

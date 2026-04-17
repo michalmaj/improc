@@ -1,5 +1,6 @@
 // tests/core/ops/test_pad.cpp
 #include <gtest/gtest.h>
+#include "improc/exceptions.hpp"
 #include <opencv2/core.hpp>
 #include "improc/core/ops/pad.hpp"
 #include "improc/core/pipeline.hpp"
@@ -43,23 +44,23 @@ TEST(PadTest, ReplicateModeCorrectSize) {
 TEST(PadTest, AllZeroSidesThrows) {
     cv::Mat mat(10, 10, CV_8UC3, cv::Scalar(100, 100, 100));
     Image<BGR> img(mat);
-    EXPECT_THROW(Pad{}(img), std::invalid_argument);
+    EXPECT_THROW(Pad{}(img), improc::ParameterError);
 }
 
 TEST(PadTest, NegativeTopThrows) {
-    EXPECT_THROW(Pad{}.top(-1), std::invalid_argument);
+    EXPECT_THROW(Pad{}.top(-1), improc::ParameterError);
 }
 
 TEST(PadTest, NegativeLeftThrows) {
-    EXPECT_THROW(Pad{}.left(-3), std::invalid_argument);
+    EXPECT_THROW(Pad{}.left(-3), improc::ParameterError);
 }
 
 TEST(PadTest, NegativeBottomThrows) {
-    EXPECT_THROW(Pad{}.bottom(-2), std::invalid_argument);
+    EXPECT_THROW(Pad{}.bottom(-2), improc::ParameterError);
 }
 
 TEST(PadTest, NegativeRightThrows) {
-    EXPECT_THROW(Pad{}.right(-1), std::invalid_argument);
+    EXPECT_THROW(Pad{}.right(-1), improc::ParameterError);
 }
 
 TEST(PadTest, ConstantPadCustomValueFillsBorder) {

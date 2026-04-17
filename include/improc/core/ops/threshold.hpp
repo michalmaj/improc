@@ -1,11 +1,11 @@
 // include/improc/core/ops/threshold.hpp
 #pragma once
 
-#include <stdexcept>
 #include <utility>
 #include <opencv2/imgproc.hpp>
 #include "improc/core/image.hpp"
 #include "improc/core/concepts.hpp"
+#include "improc/exceptions.hpp"
 
 namespace improc::core {
 
@@ -36,7 +36,8 @@ struct Threshold {
         try {
             cv::threshold(img.mat(), dst, value_, max_value_, detail::to_cv_type(mode_));
         } catch (const cv::Exception& e) {
-            throw std::runtime_error("Threshold: " + std::string(e.what()));
+            throw ParameterError{"mode/value",
+                std::string(e.what()), "Threshold"};
         }
         return Image<Format>(std::move(dst));
     }

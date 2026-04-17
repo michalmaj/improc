@@ -1,5 +1,6 @@
 // tests/core/ops/test_resize.cpp
 #include <gtest/gtest.h>
+#include "improc/exceptions.hpp"
 #include "improc/core/pipeline.hpp"
 #include "improc/core/ops/resize.hpp"
 
@@ -49,13 +50,13 @@ TEST(ResizeTest, WorksOnFloat32Format) {
 TEST(ResizeTest, ThrowsWithNoDimensions) {
     cv::Mat mat(100, 200, CV_8UC3);
     Image<BGR> img(mat);
-    EXPECT_THROW((img | Resize{}), std::invalid_argument);
+    EXPECT_THROW((img | Resize{}), improc::ParameterError);
 }
 
 TEST(ResizeTest, ThrowsOnZeroWidth) {
-    EXPECT_THROW(Resize{}.width(0), std::invalid_argument);
+    EXPECT_THROW(Resize{}.width(0), improc::ParameterError);
 }
 
 TEST(ResizeTest, ThrowsOnNegativeHeight) {
-    EXPECT_THROW(Resize{}.height(-10), std::invalid_argument);
+    EXPECT_THROW(Resize{}.height(-10), improc::ParameterError);
 }

@@ -8,16 +8,16 @@
 #include <format>
 #include <ranges>
 #include <algorithm>
+#include "improc/exceptions.hpp"
 
 namespace improc::ml {
 
 void ImageLoader::load_images(const std::filesystem::path& dir_path) {
-  if (!std::filesystem::is_directory(dir_path)) {
-    std::cerr << std::format("Wrong dir_path: {}\n", dir_path.string());
-    throw std::runtime_error("Can't load data!\n");
-  }
+  if (!std::filesystem::is_directory(dir_path))
+    throw improc::FileNotFoundError{dir_path};
 
   images_.clear();
+  last_dir_ = dir_path.string();
 
   for (const auto& file : std::filesystem::directory_iterator(dir_path)) {
     if (!std::filesystem::is_regular_file(file)) continue;
@@ -35,11 +35,9 @@ void ImageLoader::load_images(const std::filesystem::path& dir_path) {
   }
 }
 
-std::expected<std::vector<cv::Mat>, std::string> ImageLoader::get_images() {
-  if (images_.empty()) {
-    return std::unexpected("There is no images to process!\n");
-  }
-
+std::expected<std::vector<cv::Mat>, improc::Error> ImageLoader::get_images() {
+  if (images_.empty())
+    return std::unexpected(improc::Error::no_images(last_dir_));
   return std::move(images_);
 }
 

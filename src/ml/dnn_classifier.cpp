@@ -11,22 +11,22 @@ const std::unordered_set<std::string>& DnnClassifier::valid_extensions() {
 }
 
 DnnClassifier::DnnClassifier(std::string model_path) {
-    if (!std::filesystem::exists(model_path))
-        throw std::runtime_error("DnnClassifier: model file not found: " + model_path);
+    std::filesystem::path p{model_path};
+    if (!std::filesystem::exists(p))
+        throw ModelError{p, "file not found"};
 
-    std::string ext = std::filesystem::path(model_path).extension().string();
+    std::string ext = p.extension().string();
     std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-    const auto& valid = valid_extensions();
-    if (!valid.contains(ext))
-        throw std::runtime_error("DnnClassifier: unsupported model extension '" + ext + "': " + model_path);
+    if (!valid_extensions().contains(ext))
+        throw ModelError{p, "unsupported extension '" + ext + "'"};
 
     try {
         net_ = cv::dnn::readNet(model_path);
     } catch (const cv::Exception& e) {
-        throw std::runtime_error("DnnClassifier: failed to load model: " + std::string(e.what()));
+        throw ModelError{p, "failed to parse model: " + std::string(e.what())};
     }
     if (net_.empty())
-        throw std::runtime_error("DnnClassifier: loaded model is empty: " + model_path);
+        throw ModelError{p, "loaded model is empty"};
 }
 
 std::vector<ClassResult> DnnClassifier::operator()(const Image<BGR>& img) const {

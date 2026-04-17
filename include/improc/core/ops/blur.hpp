@@ -1,23 +1,24 @@
 // include/improc/core/ops/blur.hpp
 #pragma once
 
-#include <stdexcept>
 #include <opencv2/imgproc.hpp>
 #include "improc/core/image.hpp"
 #include "improc/core/concepts.hpp"
+#include "improc/exceptions.hpp"
 
 namespace improc::core {
 
 struct GaussianBlur {
     GaussianBlur& kernel_size(int k) {
         if (k <= 0 || k % 2 == 0)
-            throw std::invalid_argument("GaussianBlur: kernel_size must be odd and positive");
+            throw ParameterError{"kernel_size",
+                std::format("must be odd and positive, got {}", k), "GaussianBlur"};
         kernel_size_ = k;
         return *this;
     }
     GaussianBlur& sigma(double s) {
         if (s < 0.0)
-            throw std::invalid_argument("GaussianBlur: sigma must be >= 0");
+            throw ParameterError{"sigma", "must be >= 0", "GaussianBlur"};
         sigma_ = s;
         return *this;
     }
@@ -37,7 +38,8 @@ private:
 struct MedianBlur {
     MedianBlur& kernel_size(int k) {
         if (k <= 0 || k % 2 == 0)
-            throw std::invalid_argument("MedianBlur: kernel_size must be odd and positive");
+            throw ParameterError{"kernel_size",
+                std::format("must be odd and positive, got {}", k), "MedianBlur"};
         kernel_size_ = k;
         return *this;
     }

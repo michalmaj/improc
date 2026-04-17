@@ -4,11 +4,11 @@
 #include <concepts>
 #include <functional>
 #include <random>
-#include <stdexcept>
 #include <vector>
 #include "improc/core/image.hpp"
 #include "improc/core/concepts.hpp"
 #include "improc/ml/augment/detail.hpp"
+#include "improc/exceptions.hpp"
 
 namespace improc::ml {
 
@@ -47,7 +47,7 @@ private:
 
     static float validate_p(float p) {
         if (p < 0.0f || p > 1.0f)
-            throw std::invalid_argument("RandomApply: p must be in [0, 1]");
+            throw ParameterError{"p", std::format("must be in [0, 1], got {}", p), "RandomApply"};
         return p;
     }
 
@@ -75,7 +75,7 @@ struct OneOf : detail::BindMixin<OneOf<Format>> {
 
     Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         if (options_.empty())
-            throw std::logic_error("OneOf: no augmentations added");
+            throw AugmentError{"OneOf: operator() called with no augmentations added"};
         std::uniform_int_distribution<std::size_t> d(0, options_.size() - 1);
         return options_[d(rng)](std::move(img), rng);
     }

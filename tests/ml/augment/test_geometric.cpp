@@ -1,5 +1,6 @@
 // tests/ml/augment/test_geometric.cpp
 #include <gtest/gtest.h>
+#include "improc/exceptions.hpp"
 #include <opencv2/core.hpp>
 #include "improc/ml/augment/geometric.hpp"
 #include "improc/core/pipeline.hpp"
@@ -40,8 +41,8 @@ TEST(GeometricAugTest, RandomFlipNeverFlipsAtP0) {
 }
 
 TEST(GeometricAugTest, RandomFlipInvalidPThrows) {
-    EXPECT_THROW(RandomFlip{}.p(1.5f),  std::invalid_argument);
-    EXPECT_THROW(RandomFlip{}.p(-0.1f), std::invalid_argument);
+    EXPECT_THROW(RandomFlip{}.p(1.5f),  improc::ParameterError);
+    EXPECT_THROW(RandomFlip{}.p(-0.1f), improc::ParameterError);
 }
 
 TEST(GeometricAugTest, RandomFlipBindRngPipelineOp) {
@@ -66,12 +67,12 @@ TEST(GeometricAugTest, RandomRotatePreservesSizeAndType) {
 }
 
 TEST(GeometricAugTest, RandomRotateInvalidRangeThrows) {
-    EXPECT_THROW(RandomRotate{}.range(10.0f, 5.0f), std::invalid_argument);
+    EXPECT_THROW(RandomRotate{}.range(10.0f, 5.0f), improc::ParameterError);
 }
 
 TEST(GeometricAugTest, RandomRotateInvalidScaleThrows) {
-    EXPECT_THROW(RandomRotate{}.scale(0.0f),  std::invalid_argument);
-    EXPECT_THROW(RandomRotate{}.scale(-1.0f), std::invalid_argument);
+    EXPECT_THROW(RandomRotate{}.scale(0.0f),  improc::ParameterError);
+    EXPECT_THROW(RandomRotate{}.scale(-1.0f), improc::ParameterError);
 }
 
 TEST(GeometricAugTest, RandomRotateBindRngPipelineOp) {
@@ -98,21 +99,21 @@ TEST(GeometricAugTest, RandomCropLargerThanImageThrows) {
     cv::Mat mat(10, 10, CV_8UC3, cv::Scalar(100, 100, 100));
     Image<BGR> img(mat);
     std::mt19937 rng(42);
-    EXPECT_THROW(RandomCrop{}.width(20).height(5)(img, rng),  std::invalid_argument);
-    EXPECT_THROW(RandomCrop{}.width(5).height(20)(img, rng),  std::invalid_argument);
+    EXPECT_THROW(RandomCrop{}.width(20).height(5)(img, rng),  improc::ParameterError);
+    EXPECT_THROW(RandomCrop{}.width(5).height(20)(img, rng),  improc::ParameterError);
 }
 
 TEST(GeometricAugTest, RandomCropMissingDimensionsThrows) {
     cv::Mat mat(10, 10, CV_8UC3, cv::Scalar(100, 100, 100));
     Image<BGR> img(mat);
     std::mt19937 rng(42);
-    EXPECT_THROW(RandomCrop{}.width(5)(img, rng),  std::invalid_argument);
-    EXPECT_THROW(RandomCrop{}(img, rng),            std::invalid_argument);
+    EXPECT_THROW(RandomCrop{}.width(5)(img, rng),  improc::ParameterError);
+    EXPECT_THROW(RandomCrop{}(img, rng),            improc::ParameterError);
 }
 
 TEST(GeometricAugTest, RandomCropInvalidDimensionThrows) {
-    EXPECT_THROW(RandomCrop{}.width(0),   std::invalid_argument);
-    EXPECT_THROW(RandomCrop{}.height(-1), std::invalid_argument);
+    EXPECT_THROW(RandomCrop{}.width(0),   improc::ParameterError);
+    EXPECT_THROW(RandomCrop{}.height(-1), improc::ParameterError);
 }
 
 TEST(GeometricAugTest, RandomCropBindRngPipelineOp) {
@@ -147,8 +148,8 @@ TEST(GeometricAugTest, RandomResizeShorterSideInRangePortrait) {
 }
 
 TEST(GeometricAugTest, RandomResizeInvalidRangeThrows) {
-    EXPECT_THROW(RandomResize{}.range(100, 50),  std::invalid_argument);
-    EXPECT_THROW(RandomResize{}.range(0, 100),   std::invalid_argument);
+    EXPECT_THROW(RandomResize{}.range(100, 50),  improc::ParameterError);
+    EXPECT_THROW(RandomResize{}.range(0, 100),   improc::ParameterError);
 }
 
 TEST(GeometricAugTest, RandomResizeBindRngPipelineOp) {

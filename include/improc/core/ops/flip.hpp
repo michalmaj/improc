@@ -1,10 +1,10 @@
 #pragma once
 
-#include <stdexcept>
 #include <opencv2/core.hpp>
 #include "improc/core/image.hpp"
 #include "improc/core/concepts.hpp"
 #include "improc/core/ops/axis.hpp"
+#include "improc/exceptions.hpp"
 
 namespace improc::core {
 
@@ -18,7 +18,7 @@ struct Flip {
             case Axis::Horizontal: flip_code =  1; break;
             case Axis::Vertical:   flip_code =  0; break;
             case Axis::Both:       flip_code = -1; break;
-            default: throw std::invalid_argument("Flip: unknown Axis value");
+            default: throw ParameterError{"axis", "unknown Axis value", "Flip"};
         }
         cv::Mat dst;
         cv::flip(img.mat(), dst, flip_code);

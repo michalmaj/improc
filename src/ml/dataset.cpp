@@ -12,13 +12,12 @@
 
 namespace improc::ml {
 
-std::expected<void, std::string> Dataset::load_from_directory(const std::filesystem::path& root,
-                                                              float test_ratio,
-                                                              float val_ratio,
-                                                              std::optional<size_t> max_per_class) {
-    if (!std::filesystem::exists(root) || !std::filesystem::is_directory(root)) {
-        return std::unexpected(std::format("Invalid dataset directory: {}", root.string()));
-    }
+std::expected<void, improc::Error> Dataset::load_from_directory(const std::filesystem::path& root,
+                                                               float test_ratio,
+                                                               float val_ratio,
+                                                               std::optional<size_t> max_per_class) {
+    if (!std::filesystem::exists(root) || !std::filesystem::is_directory(root))
+        return std::unexpected(improc::Error::directory_not_found(root.string()));
 
     class_to_label_.clear();
     label_to_class_.clear();
@@ -36,9 +35,9 @@ std::expected<void, std::string> Dataset::load_from_directory(const std::filesys
         loader.load_images(class_dir);
         auto result = loader.get_images();
 
-        if (!result) {
-            return std::unexpected(std::format("Failed to load images from class '{}': {}", class_name, result.error()));
-        }
+        if (!result)
+            return std::unexpected(improc::Error::no_images(
+                class_dir.string() + " (class '" + class_name + "'): " + result.error().message));
 
         auto images = std::move(result.value());
         if (max_per_class && images.size() > *max_per_class) {

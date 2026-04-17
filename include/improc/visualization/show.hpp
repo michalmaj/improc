@@ -1,10 +1,10 @@
 // include/improc/visualization/show.hpp
 #pragma once
 
-#include <stdexcept>
 #include <string>
 #include <opencv2/highgui.hpp>
 #include "improc/core/image.hpp"
+#include "improc/exceptions.hpp"
 
 namespace improc::visualization {
 
@@ -16,7 +16,7 @@ struct Show {
         : window_name_(std::move(window_name)) {}
 
     Show& wait_ms(int ms) {
-        if (ms < 0) throw std::invalid_argument("Show: wait_ms must be >= 0");
+        if (ms < 0) throw ParameterError{"wait_ms", "must be >= 0", "Show"};
         wait_ms_ = ms;
         return *this;
     }

@@ -1,5 +1,6 @@
 // tests/core/ops/test_normalize.cpp
 #include <gtest/gtest.h>
+#include "improc/exceptions.hpp"
 #include "improc/core/ops/normalize.hpp"
 #include "improc/core/pipeline.hpp"
 
@@ -46,8 +47,8 @@ TEST(NormalizeToTest, ScalesToExplicitRange) {
 }
 
 TEST(NormalizeToTest, ThrowsOnInvalidRange) {
-    EXPECT_THROW(NormalizeTo(1.0f, 0.0f), std::invalid_argument);
-    EXPECT_THROW(NormalizeTo(1.0f, 1.0f), std::invalid_argument);
+    EXPECT_THROW(NormalizeTo(1.0f, 0.0f), improc::ParameterError);
+    EXPECT_THROW(NormalizeTo(1.0f, 1.0f), improc::ParameterError);
 }
 
 TEST(NormalizeToTest, UniformImageReturnsZeros) {
@@ -71,8 +72,8 @@ TEST(StandardizeTest, AppliesZScore) {
 }
 
 TEST(StandardizeTest, ThrowsOnZeroStdDev) {
-    EXPECT_THROW(Standardize(0.5f, 0.0f),  std::invalid_argument);
-    EXPECT_THROW(Standardize(0.5f, -1.0f), std::invalid_argument);
+    EXPECT_THROW(Standardize(0.5f, 0.0f),  improc::ParameterError);
+    EXPECT_THROW(Standardize(0.5f, -1.0f), improc::ParameterError);
 }
 
 // --- Float32C3 overloads (global normalization across all channels) ---
