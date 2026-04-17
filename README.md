@@ -15,7 +15,8 @@ improc++ is a modern C++23 image processing toolkit designed as a high-level wra
 - **Augmentation** — stochastic training augmentations constrained by C++20 concepts: `RandomFlip`, `RandomRotate`, `RandomCrop`, `RandomResize`, `RandomBrightness`, `RandomContrast`, `ColorJitter`, `RandomGaussianNoise`, `RandomSaltAndPepper`, `Compose`, `RandomApply`, `OneOf`
 - **Dataset loading** — load image datasets from class-labeled directories with train/val/test splitting
 - **DNN inference** — `DnnClassifier`, `DnnDetector` (YOLO & SSD), `DnnForward` backed by OpenCV DNN; pipeline-composable
-- **Camera capture** — asynchronous threaded frame capture via `CameraCapture`
+- **Camera capture** — asynchronous threaded frame capture via `CameraCapture`; `getFrame()` returns `std::expected<cv::Mat, Error>` for safe error handling
+- **Video recording** — synchronous RAII `VideoWriter` with auto codec detection and pipeline support (`img | Show{"preview"} | writer`)
 - **Haar Cascade loader** — CRTP-based model loader for OpenCV cascade classifiers
 - **Threading** — `ThreadPool` and `FramePipeline<Result>` for real-time frame processing
 - **Visualization** — `Histogram`, `LinePlot`, `Scatter` chart functors and a `Show` passthrough display op, all returning `Image<BGR>` and composable with `operator|`
@@ -98,15 +99,37 @@ Image<BGR> augmented = augmentor(img, rng);
 
 See `examples/ml/demo_augmentation.cpp` for a full walkthrough.
 
+## Video Recording
+
+```cpp
+#include "improc/io/video_writer.hpp"
+using improc::io::VideoWriter;
+
+// Basic recording — codec and size auto-detected
+VideoWriter writer{"output.mp4"};
+writer.fps(30);
+writer(frame);            // write a frame
+writer.close();           // or let the destructor finalise
+
+// Pipeline form — display and record simultaneously
+img | Show{"preview"}.wait_ms(1) | writer;
+
+// Manual configuration
+VideoWriter w{"output.avi"};
+w.fps(25).size(640, 480).codec("MJPG");
+```
+
+Supported auto-codecs: `.mp4`/`.mov` → `mp4v`, `.avi` → `MJPG`, `.mkv` → `XVID`.
+
 ## Running Tests
 
 ```bash
 # All tests
-cmake --build build --target improc_tests
-./build/improc_tests
+cmake --build cmake-build-debug --target improc_tests
+./cmake-build-debug/improc_tests
 
 # Single suite
-./build/improc_tests --gtest_filter="ImageTest.*"
+./cmake-build-debug/improc_tests --gtest_filter="VideoWriterTest.*"
 ```
 
 ## Tested With

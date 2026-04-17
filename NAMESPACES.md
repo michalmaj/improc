@@ -4,6 +4,61 @@ The library is organized into modular namespaces under the root `improc` namespa
 
 ---
 
+## `improc` — Root namespace: exceptions and error values
+
+**Headers:** `improc/exceptions.hpp`, `improc/error.hpp`
+
+### Exception hierarchy (`exceptions.hpp`)
+
+All library exceptions inherit from `improc::Exception`, which inherits from `std::exception`. Catch at the granularity you need.
+
+```
+std::exception
+└── improc::Exception
+    ├── improc::FormatError         — wrong image format (has expected_format / actual_format / context)
+    ├── improc::ParameterError      — invalid parameter value (has param_name / constraint / context)
+    ├── improc::IoError             — I/O failure
+    │   ├── improc::FileNotFoundError  — path does not exist or is not a directory (has path())
+    │   └── improc::CameraError        — camera open/read failure (has device_id())
+    ├── improc::ModelError          — model load failure (has model_path() / reason())
+    ├── improc::DataError           — dataset/loader data problem
+    └── improc::AugmentError        — augmentation precondition failure
+```
+
+**Rule of thumb:** throw for programming errors (wrong format, invalid parameters, misuse of API); return `std::expected<T, Error>` for environmental errors (file not found, camera unavailable, no images loaded).
+
+### `improc::Error` value type (`error.hpp`)
+
+Used as the error channel in `std::expected<T, improc::Error>` returns throughout the library.
+
+```cpp
+struct Error {
+    enum class Code {
+        NoImages, EmptyDataset, DirectoryNotFound,
+        InvalidModelFile, CameraUnavailable, CameraFrameEmpty
+    };
+    Code        code;
+    std::string message;
+
+    // Named constructors
+    static Error no_images(const std::string& dir);
+    static Error directory_not_found(const std::string& path);
+    static Error invalid_model_file(const std::string& path, const std::string& reason);
+    static Error camera_unavailable(int device_id);
+    static Error camera_frame_empty(int device_id);
+};
+```
+
+Access the human-readable description via `.message`:
+
+```cpp
+auto result = loader.get_images();
+if (!result)
+    std::cerr << result.error().message << '\n';
+```
+
+---
+
 ## `improc::core` — Type-safe image primitives
 
 **Status: Implemented**
@@ -24,7 +79,7 @@ Empty structs used as template parameters. `FormatTraits<T>` maps each tag to it
 
 ### `Image<Format>` (`image.hpp`)
 
-Thin wrapper over `cv::Mat` with shallow-copy semantics (same as `cv::Mat`). Constructor validates that the `cv::Mat` is non-empty and its type matches `FormatTraits<Format>::cv_type` — throws `std::invalid_argument` on mismatch or empty mat.
+Thin wrapper over `cv::Mat` with shallow-copy semantics (same as `cv::Mat`). Constructor validates that the `cv::Mat` is non-empty and its type matches `FormatTraits<Format>::cv_type` — throws `FormatError` on type mismatch, `ParameterError` on empty mat.
 
 ```cpp
 Image<BGR> img(mat);            // validated at construction
@@ -85,9 +140,9 @@ Image<BGR>  padded = src | Pad{}.top(10).bottom(10).left(20).right(20).mode(PadM
 Image<BGR>  square = src | PadToSquare{}.value({114, 114, 114});  // letterbox for inference
 ```
 
-**Geometric ops** throw `std::invalid_argument` when required parameters are missing or invalid (e.g. no dimension in `Resize`, ROI out of bounds in `Crop`, no angle in `Rotate`).
+**Geometric ops** throw `ParameterError` when required parameters are missing or invalid (e.g. no dimension in `Resize`, ROI out of bounds in `Crop`, no angle in `Rotate`).
 
-**Normalization ops** throw at construction if parameters are invalid (`NormalizeTo` requires `min < max`; `Standardize` requires `std_dev > 0`). A uniform image passed to `Normalize` or `NormalizeTo` returns a zero-filled image.
+**Normalization ops** throw `ParameterError` at construction if parameters are invalid (`NormalizeTo` requires `min < max`; `Standardize` requires `std_dev > 0`). A uniform image passed to `Normalize` or `NormalizeTo` returns a zero-filled image.
 
 ---
 
@@ -95,15 +150,52 @@ Image<BGR>  square = src | PadToSquare{}.value({114, 114, 114});  // letterbox f
 
 **Status: Implemented**
 
-### `CameraCapture`
+### `CameraCapture` (`io/camera_capture.hpp`)
 
 Asynchronous camera frame capture. Runs a background capture thread. Non-copyable, non-movable.
 
+`getFrame()` returns `std::expected<cv::Mat, improc::Error>` — use `.has_value()` / `*result` / `.error()` to inspect the result.
+
 ```cpp
 CameraCapture cam(0);
-cv::Mat frame = cam.getFrame();
+std::this_thread::sleep_for(std::chrono::milliseconds(500)); // warm-up
+
+if (auto frame = cam.getFrame())
+    cv::imshow("Live", *frame);
+else
+    std::cerr << frame.error().message << '\n';
+
 cam.stop();
 ```
+
+### `VideoWriter` (`io/video_writer.hpp`)
+
+Synchronous RAII video writer. Size is auto-detected from the first frame if not set explicitly. Codec is auto-detected from the file extension. `operator()` writes a frame and returns it unchanged — pipeline-compatible.
+
+| Extension | Auto codec |
+|---|---|
+| `.mp4`, `.mov`, `.m4v` | `mp4v` |
+| `.avi` | `MJPG` |
+| `.mkv` | `XVID` |
+
+```cpp
+// Basic usage — RAII, destructor finalises the file
+{
+    VideoWriter w{"output.mp4"};
+    w.fps(30);
+    for (auto& frame : frames)
+        w(frame);
+}  // file closed here
+
+// Pipeline form — display and record at the same time
+img | Show{"preview"}.wait_ms(1) | writer;
+
+// Explicit configuration
+VideoWriter w{"output.avi"};
+w.fps(25).size(640, 480).codec("MJPG");
+```
+
+Throws `ParameterError` on invalid setter arguments; throws `IoError` if the underlying `cv::VideoWriter` fails to open or if a frame's size does not match the writer's configured size.
 
 ---
 
@@ -113,7 +205,7 @@ cam.stop();
 
 ### `ImageLoader`
 
-Loads all valid images (`.jpg`, `.jpeg`, `.png`) from a directory. Returns `std::expected<std::vector<cv::Mat>, std::string>`.
+Loads all valid images (`.jpg`, `.jpeg`, `.png`) from a directory. `load_images()` throws `FileNotFoundError` if the path is not a directory. `get_images()` returns `std::expected<std::vector<cv::Mat>, improc::Error>` — error code `NoImages` if nothing was loaded.
 
 ### `Dataset`
 
@@ -137,7 +229,7 @@ Loads OpenCV Haar Cascade XML files into `cv::CascadeClassifier`.
 
 ### DNN Inference (`dnn_classifier.hpp`, `dnn_detector.hpp`, `dnn_forward.hpp`)
 
-Standalone inference functors backed by OpenCV DNN. All accept `const Image<BGR>&` and work as both standalone functors and terminal `operator|` pipeline ops. Model is loaded at construction via `cv::dnn::readNet` — throws `std::runtime_error` on failure (file not found, unsupported extension, parse error, empty net). Supported formats: `.onnx`, `.pb`, `.caffemodel`, `.weights`, `.t7`, `.net`.
+Standalone inference functors backed by OpenCV DNN. All accept `const Image<BGR>&` and work as both standalone functors and terminal `operator|` pipeline ops. Model is loaded at construction via `cv::dnn::readNet` — throws `ModelError` on failure (file not found, unsupported extension, parse error, empty net). Supported formats: `.onnx`, `.pb`, `.caffemodel`, `.weights`, `.t7`, `.net`.
 
 Shared result types are in `result_types.hpp`: `ClassResult{class_id, score, label}` and `Detection{box, class_id, confidence, label}`.
 
@@ -204,13 +296,13 @@ auto augmentor = Compose<BGR>{}
 Image<BGR> augmented = augmentor(img, rng);
 ```
 
-**Geometric ops** (`RandomFlip`, `RandomRotate`, `RandomCrop`, `RandomResize`) — work on any `Image<Format>`. `RandomCrop` throws `std::invalid_argument` if crop exceeds image size or dimensions not set.
+**Geometric ops** (`RandomFlip`, `RandomRotate`, `RandomCrop`, `RandomResize`) — work on any `Image<Format>`. `RandomCrop` throws `ParameterError` if crop exceeds image size or dimensions not set.
 
 **Colour ops** (`RandomBrightness`, `RandomContrast`) — work on any `Image<Format>`. `ColorJitter` requires `Image<BGR>` (compile error on other formats).
 
 **Noise ops** (`RandomGaussianNoise`, `RandomSaltAndPepper`) — work on any `Image<Format>`. Clamp range adapts to pixel depth: `[0, 255]` for 8-bit, `[0, 1]` for float.
 
-**Composition ops** (`Compose<F>`, `RandomApply<F>`, `OneOf<F>`) — parameterised on `Format`, use `std::function` for type erasure. `OneOf` throws `std::logic_error` if empty. `RandomApply` throws `std::invalid_argument` if `p` outside `[0, 1]`.
+**Composition ops** (`Compose<F>`, `RandomApply<F>`, `OneOf<F>`) — parameterised on `Format`, use `std::function` for type erasure. `OneOf` throws `AugmentError` if called with no augmentations added. `RandomApply` throws `ParameterError` if `p` is outside `[0, 1]`.
 
 ---
 
@@ -231,7 +323,7 @@ int result  = future.get();                                  // 7
 pool.submit_detached([]{ heavy_work(); });                   // fire-and-forget
 ```
 
-Throws `std::invalid_argument` if constructed with 0 threads. Exceptions from tasks propagate through `future.get()`.
+Throws `ParameterError` if constructed with 0 threads. Exceptions from tasks propagate through `future.get()`.
 
 ### `FramePipeline<Result>` (`threading/frame_pipeline.hpp`)
 
@@ -254,7 +346,7 @@ while (running) {
 pipeline.stop();
 ```
 
-`tryPop()` returns `std::optional<Result>` — `std::nullopt` if no result is ready or `start()` was not called. `start()` called twice throws `std::logic_error`. `stop()` is idempotent.
+`tryPop()` returns `std::optional<Result>` — `std::nullopt` if no result is ready or `start()` was not called. `start()` called twice throws `improc::Exception`. `stop()` is idempotent.
 
 `FramePipeline<void>` is not supported (`std::optional<void>` is not valid C++). For fire-and-forget frame processing use `pool.submit_detached(processor, camera.getFrame())` directly.
 
@@ -290,7 +382,7 @@ std::vector<float> loss = {1.2f, 0.9f, 0.7f, 0.5f, 0.3f};
 Image<BGR> plot = LinePlot{}.title("Train Loss").color({0, 200, 255})(loss);
 ```
 
-Values are min-max normalised to canvas height. A single value or all-equal values renders a horizontal centre line. Throws `std::invalid_argument` if vector is empty.
+Values are min-max normalised to canvas height. A single value or all-equal values renders a horizontal centre line. Throws `ParameterError` if vector is empty.
 
 ### `Scatter` (`visualization/scatter.hpp`)
 
@@ -300,7 +392,7 @@ Standalone functor. Takes `xs` and `ys` vectors and renders filled circles, each
 Image<BGR> sc = Scatter{}.title("Features").color({0, 255, 255}).point_radius(5)(xs, ys);
 ```
 
-Throws `std::invalid_argument` if either vector is empty or `xs.size() != ys.size()`. An 8 px margin ensures extreme points are fully visible.
+Throws `ParameterError` if either vector is empty or `xs.size() != ys.size()`. An 8 px margin ensures extreme points are fully visible.
 
 ### `Show` (`visualization/show.hpp`, header-only)
 
