@@ -14,7 +14,7 @@ int main() {
     loader.load_model(model_path);
     auto model = loader.get_model();
     if (!model) {
-      std::cerr << "Model load failed: " << model.error() << std::endl;
+      std::cerr << "Model load failed: " << model.error().message << std::endl;
       return 1;
     }
 

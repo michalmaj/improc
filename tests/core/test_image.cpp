@@ -12,7 +12,7 @@ TEST(ImageTest, ConstructFromValidBGRMat) {
 
 TEST(ImageTest, ThrowsOnWrongType) {
     cv::Mat mat(100, 100, CV_8UC1);  // Gray mat, not BGR
-    EXPECT_THROW((Image<BGR>{mat}), improc::ParameterError);
+    EXPECT_THROW((Image<BGR>{mat}), improc::FormatError);
 }
 
 TEST(ImageTest, RowsColsReflectMat) {

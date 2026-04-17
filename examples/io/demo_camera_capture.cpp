@@ -17,8 +17,8 @@ int main() {
   while (true) {
     auto frame = camera.getFrame();
 
-    if (!frame.empty()) {
-      cv::imshow(camera.getWindowName(), frame);
+    if (frame.has_value()) {
+      cv::imshow(camera.getWindowName(), *frame);
     }
 
     int key = cv::waitKey(30);
