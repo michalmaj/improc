@@ -86,6 +86,14 @@ target_link_libraries(demo_image_ops PRIVATE improc)
 add_executable(demo_filters examples/core/demo_filters.cpp)
 target_link_libraries(demo_filters PRIVATE improc)
 
+# CLAHE, GammaCorrection, BilateralFilter
+add_executable(demo_enhance examples/core/demo_enhance.cpp)
+target_link_libraries(demo_enhance PRIVATE improc)
+
+# SobelEdge, CannyEdge
+add_executable(demo_edge examples/core/demo_edge.cpp)
+target_link_libraries(demo_edge PRIVATE improc)
+
 # Threading demos
 add_executable(demo_thread_pool examples/threading/demo_thread_pool.cpp)
 target_link_libraries(demo_thread_pool PRIVATE improc)
@@ -96,6 +104,10 @@ target_link_libraries(demo_frame_pipeline PRIVATE improc)
 # Visualization demo
 add_executable(demo_visualization examples/visualization/demo_visualization.cpp)
 target_link_libraries(demo_visualization PRIVATE improc)
+
+# DrawBoundingBoxes demo
+add_executable(demo_draw examples/visualization/demo_draw.cpp)
+target_link_libraries(demo_draw PRIVATE improc)
 
 # DNN Inference demo
 add_executable(demo_dnn_inference examples/ml/demo_dnn_inference.cpp)
