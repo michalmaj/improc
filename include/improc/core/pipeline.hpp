@@ -14,6 +14,9 @@
 #include "improc/core/ops/threshold.hpp"
 #include "improc/core/ops/pad.hpp"
 #include "improc/core/ops/clahe.hpp"
+#include "improc/core/ops/gamma.hpp"
+#include "improc/core/ops/bilateral_filter.hpp"
+#include "improc/core/ops/edge.hpp"
 
 namespace improc::core {
 

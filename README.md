@@ -9,7 +9,8 @@ OpenCV is powerful but its raw API is stringly-typed, mutation-heavy, and easy t
 - **Type-safe image wrapper** — `Image<BGR>`, `Image<Gray>`, `Image<Float32>` etc. catch format mismatches at compile time
 - **Composable pipeline** — `image | Resize{}.width(224) | ToFloat32C3{}` syntax for readable processing chains
 - **Geometric operations** — `Resize` (aspect-ratio aware), `Crop`, `Flip`, `Rotate`, `Pad`, `PadToSquare`
-- **Filter & morphology** — `GaussianBlur`, `MedianBlur`, `Dilate`, `Erode`, `Threshold` (incl. Otsu), `CLAHE`
+- **Filter & morphology** — `GaussianBlur`, `MedianBlur`, `Dilate`, `Erode`, `Threshold` (incl. Otsu), `CLAHE`, `GammaCorrection`, `BilateralFilter`
+- **Edge detection** — `SobelEdge` (gradient magnitude), `CannyEdge` (hysteresis thresholding); both accept `Image<Gray>` or `Image<BGR>` (auto-converted)
 - **Normalization** — `Normalize`, `NormalizeTo`, `Standardize` for ML preprocessing
 - **Format conversions** — explicit, compiler-enforced free functions (`convert<Gray>(bgr_image)`)
 - **Augmentation** — stochastic training augmentations constrained by C++20 concepts: `RandomFlip`, `RandomRotate`, `RandomCrop`, `RandomResize`, `RandomBrightness`, `RandomContrast`, `ColorJitter`, `RandomGaussianNoise`, `RandomSaltAndPepper`, `Compose`, `RandomApply`, `OneOf`
@@ -19,7 +20,7 @@ OpenCV is powerful but its raw API is stringly-typed, mutation-heavy, and easy t
 - **Video recording** — synchronous RAII `VideoWriter` with auto codec detection and pipeline support (`img | Show{"preview"} | writer`)
 - **Haar Cascade loader** — CRTP-based model loader for OpenCV cascade classifiers
 - **Threading** — `ThreadPool` and `FramePipeline<Result>` for real-time frame processing
-- **Visualization** — `Histogram`, `LinePlot`, `Scatter` chart functors and a `Show` passthrough display op, all returning `Image<BGR>` and composable with `operator|`
+- **Visualization** — `Histogram`, `LinePlot`, `Scatter` chart functors, a `Show` passthrough display op, and `DrawBoundingBoxes` for annotating `Detection` results — all composable with `operator|`
 
 ## Quick Start
 
@@ -135,6 +136,44 @@ w.fps(25).size(640, 480).codec("MJPG");
 ```
 
 Supported auto-codecs: `.mp4`/`.mov` → `mp4v`, `.avi` → `MJPG`, `.mkv` → `XVID`.
+
+## Edge Detection & Enhancement
+
+```cpp
+#include "improc/core/pipeline.hpp"
+using namespace improc::core;
+
+// Sobel edge magnitude (accepts Gray or BGR)
+Image<Gray> edges = Image<Gray>(gray_mat) | SobelEdge{}.ksize(3);
+Image<Gray> edges2 = Image<BGR>(bgr_mat)  | SobelEdge{};  // auto-converts
+
+// Canny (two-threshold hysteresis)
+Image<Gray> canny = img | CannyEdge{}.threshold1(50).threshold2(150);
+
+// Gamma correction (any format)
+Image<BGR> brighter = img | GammaCorrection{}.gamma(0.5f);  // brighten
+Image<BGR> darker   = img | GammaCorrection{}.gamma(2.0f);  // darken
+
+// Bilateral filter (edge-preserving smoothing)
+Image<BGR> smooth = img | BilateralFilter{}.diameter(9).sigma_color(75).sigma_space(75);
+```
+
+## Drawing Detections
+
+```cpp
+#include "improc/visualization/draw.hpp"
+using namespace improc::visualization;
+
+// After running DnnDetector
+std::vector<improc::ml::Detection> detections = detector(frame);
+
+// Annotate a copy of the frame
+Image<BGR> annotated = frame | DrawBoundingBoxes{detections}.thickness(2);
+
+// Suppress labels or confidence scores
+Image<BGR> boxes_only = frame | DrawBoundingBoxes{detections}
+    .show_label(false).show_confidence(false);
+```
 
 ## Requirements
 
