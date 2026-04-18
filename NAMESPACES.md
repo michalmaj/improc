@@ -151,6 +151,36 @@ Image<BGR>  eq3 = bgr  | CLAHE{}.clip_limit(3.0);                 // colour-safe
 
 **`CLAHE`** throws `ParameterError` for non-positive `clip_limit` or tile dimensions. On BGR input the operation is colour-safe: it converts to LAB, equalises the L channel only, and converts back — so hue and saturation are preserved.
 
+```cpp
+// GammaCorrection — any format (Gray, BGR, Float32, Float32C3)
+// output = input ^ gamma  (gamma > 1 darkens, gamma < 1 brightens)
+Image<BGR>  bright = img | GammaCorrection{}.gamma(0.5f);
+Image<Gray> dark   = gray | GammaCorrection{}.gamma(2.0f);
+Image<Float32C3> fp = fp_img | GammaCorrection{}.gamma(1.8f);
+
+// BilateralFilter — edge-preserving smoothing (Gray or BGR, 8-bit)
+Image<BGR>  smooth = img | BilateralFilter{}.diameter(9).sigma_color(75).sigma_space(75);
+Image<Gray> s2     = gray | BilateralFilter{};  // defaults: d=9, sigma_color=75, sigma_space=75
+
+// SobelEdge — gradient magnitude; accepts Gray or BGR (auto-converts to Gray)
+// ksize must be 1, 3, 5, or 7
+Image<Gray> sob  = gray | SobelEdge{}.ksize(3);
+Image<Gray> sob2 = bgr  | SobelEdge{};  // BGR auto-converted to Gray before processing
+
+// CannyEdge — hysteresis thresholding; accepts Gray or BGR
+// aperture_size must be 3, 5, or 7
+Image<Gray> canny = gray | CannyEdge{}.threshold1(50).threshold2(150);
+Image<Gray> c2    = bgr  | CannyEdge{}.threshold1(100).threshold2(200).aperture_size(3);
+```
+
+**`GammaCorrection`** throws `ParameterError` if `gamma <= 0`. Uses an 8-bit LUT for integer formats (fast); `cv::pow` + clamp for float formats.
+
+**`BilateralFilter`** throws `ParameterError` for non-positive `diameter`, `sigma_color`, or `sigma_space`. Supports `Gray` and `BGR` only (OpenCV bilateral requires 8-bit input).
+
+**`SobelEdge`** throws `ParameterError` if `ksize` is not in {1, 3, 5, 7}. Computes X and Y gradients in CV_32F, combines via `cv::magnitude`, and converts back to CV_8U.
+
+**`CannyEdge`** throws `ParameterError` for negative thresholds or invalid `aperture_size` (not in {3, 5, 7}).
+
 ---
 
 ## `improc::io` — Input/Output
@@ -418,10 +448,40 @@ LinePlot{}.title("Loss")(loss) | Show{"Loss"};
 
 `Show` accepts only `Image<BGR>`. To display Gray/Float32 images convert first or pipe through `Histogram{}`.
 
+### `DrawBoundingBoxes` (`visualization/draw.hpp`, header-only)
+
+Draws detection boxes (and optional labels / confidence scores) onto a clone of the source image. Takes a `std::vector<improc::ml::Detection>` at construction and returns `Image<BGR>` — pipeline-compatible.
+
+```cpp
+#include "improc/visualization/draw.hpp"
+using namespace improc::visualization;
+
+std::vector<improc::ml::Detection> dets = detector(frame);
+
+// Annotate with default settings (green boxes, thickness 2, label + confidence)
+Image<BGR> annotated = frame | DrawBoundingBoxes{dets};
+
+// Custom appearance
+Image<BGR> annotated = frame | DrawBoundingBoxes{dets}
+    .color({0, 0, 255})      // red
+    .thickness(1)
+    .font_scale(0.4)
+    .show_label(true)
+    .show_confidence(false);
+
+// Full inference + annotation pipeline
+Image<BGR> result = frame
+    | Resize{}.width(640).height(640)
+    | DrawBoundingBoxes{detector(frame)}.thickness(2)
+    | Show{"Detections"}.wait_ms(1);
+```
+
+`DrawBoundingBoxes` draws onto a **clone** — the source image is never modified. Throws `ParameterError` if `thickness <= 0` or `font_scale <= 0`.
+
 ### Umbrella include
 
 ```cpp
-#include "improc/visualization/visualization.hpp"  // includes all four
+#include "improc/visualization/visualization.hpp"  // includes all five
 ```
 
 ---
