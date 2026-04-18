@@ -15,6 +15,7 @@
 #include "improc/core/ops/pad.hpp"
 #include "improc/core/ops/clahe.hpp"
 #include "improc/core/ops/gamma.hpp"
+#include "improc/core/ops/bilateral_filter.hpp"
 
 namespace improc::core {
 
