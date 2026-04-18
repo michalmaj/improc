@@ -5,3 +5,4 @@
 #include "improc/visualization/line_plot.hpp"
 #include "improc/visualization/scatter.hpp"
 #include "improc/visualization/show.hpp"
+#include "improc/visualization/draw.hpp"
