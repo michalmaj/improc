@@ -94,6 +94,10 @@ target_link_libraries(demo_enhance PRIVATE improc)
 add_executable(demo_edge examples/core/demo_edge.cpp)
 target_link_libraries(demo_edge PRIVATE improc)
 
+# FindHomography + WarpPerspective demo
+add_executable(demo_homography examples/core/demo_homography.cpp)
+target_link_libraries(demo_homography PRIVATE improc)
+
 # Threading demos
 add_executable(demo_thread_pool examples/threading/demo_thread_pool.cpp)
 target_link_libraries(demo_thread_pool PRIVATE improc)

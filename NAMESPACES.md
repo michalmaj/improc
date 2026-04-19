@@ -35,7 +35,8 @@ Used as the error channel in `std::expected<T, improc::Error>` returns throughou
 struct Error {
     enum class Code {
         NoImages, EmptyDataset, DirectoryNotFound,
-        InvalidModelFile, CameraUnavailable, CameraFrameEmpty
+        InvalidModelFile, CameraUnavailable, CameraFrameEmpty,
+        InsufficientPoints, HomographyFailed
     };
     Code        code;
     std::string message;
@@ -46,6 +47,8 @@ struct Error {
     static Error invalid_model_file(const std::string& path, const std::string& reason);
     static Error camera_unavailable(int device_id);
     static Error camera_frame_empty(int device_id);
+    static Error insufficient_points(std::size_t got);
+    static Error homography_failed();
 };
 ```
 
@@ -171,6 +174,9 @@ Image<Gray> sob2 = bgr  | SobelEdge{};  // BGR auto-converted to Gray before pro
 // aperture_size must be 3, 5, or 7
 Image<Gray> canny = gray | CannyEdge{}.threshold1(50).threshold2(150);
 Image<Gray> c2    = bgr  | CannyEdge{}.threshold1(100).threshold2(200).aperture_size(3);
+
+// WarpPerspective — apply a 3×3 homography to an image
+Image<BGR> warped = src | WarpPerspective{}.homography(H).width(640).height(480);
 ```
 
 **`GammaCorrection`** throws `ParameterError` if `gamma <= 0`. Uses an 8-bit LUT for integer formats (fast); `cv::pow` + clamp for float formats.
@@ -180,6 +186,15 @@ Image<Gray> c2    = bgr  | CannyEdge{}.threshold1(100).threshold2(200).aperture_
 **`SobelEdge`** throws `ParameterError` if `ksize` is not in {1, 3, 5, 7}. Computes X and Y gradients in CV_32F, combines via `cv::magnitude`, and converts back to CV_8U.
 
 **`CannyEdge`** throws `ParameterError` for negative thresholds or invalid `aperture_size` (not in {3, 5, 7}).
+
+**`find_homography(src, dst, threshold)`** — free function; computes a 3×3 homography matrix from ≥4 corresponding point pairs via RANSAC. Returns `std::expected<cv::Mat, Error>` — error if fewer than 4 points are provided or RANSAC fails to find a valid homography.
+
+| Function / Op | Return type | Description |
+|---|---|---|
+| `find_homography(src, dst, threshold)` | `std::expected<cv::Mat, Error>` | Compute 3×3 homography from ≥4 point pairs via RANSAC |
+| `WarpPerspective` | pipeline op | Apply homography; `.homography(H)`, `.width(w)`, `.height(h)` |
+
+**`WarpPerspective`** throws `ParameterError` if `.homography()` is not set, or if width/height are not positive.
 
 ---
 

@@ -17,6 +17,7 @@
 #include "improc/core/ops/gamma.hpp"
 #include "improc/core/ops/bilateral_filter.hpp"
 #include "improc/core/ops/edge.hpp"
+#include "improc/core/ops/homography.hpp"
 
 namespace improc::core {
 
