@@ -16,7 +16,7 @@ struct Error {
         InvalidModelFile,   // Model path invalid or extension unsupported
         CameraUnavailable,  // Camera device could not be opened
         CameraFrameEmpty,   // Camera is open but returned an empty frame
-        InsufficientPoints, // find_homography: fewer than 4 point pairs
+        InsufficientPoints, // find_homography: fewer than 4 or mismatched point pairs
         HomographyFailed,   // find_homography: RANSAC returned empty matrix
     };
 
