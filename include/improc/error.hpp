@@ -16,6 +16,8 @@ struct Error {
         InvalidModelFile,   // Model path invalid or extension unsupported
         CameraUnavailable,  // Camera device could not be opened
         CameraFrameEmpty,   // Camera is open but returned an empty frame
+        InsufficientPoints, // find_homography: fewer than 4 point pairs
+        HomographyFailed,   // find_homography: RANSAC returned empty matrix
     };
 
     Code        code;
@@ -45,6 +47,15 @@ struct Error {
     static Error camera_frame_empty(int device_id) {
         return {Code::CameraFrameEmpty,
                 "Camera device " + std::to_string(device_id) + " returned an empty frame"};
+    }
+    static Error insufficient_points(std::size_t got) {
+        return {Code::InsufficientPoints,
+                "find_homography requires at least 4 point pairs, got " +
+                std::to_string(got)};
+    }
+    static Error homography_failed() {
+        return {Code::HomographyFailed,
+                "find_homography: RANSAC failed to find a valid homography"};
     }
 };
 
