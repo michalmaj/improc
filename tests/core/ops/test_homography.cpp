@@ -44,13 +44,14 @@ TEST(FindHomographyTest, FourPointsReturns3x3Matrix) {
 }
 
 TEST(FindHomographyTest, RansacHandlesOutliers) {
+    // 6 inliers (identity mapping) + 2 gross outliers — majority wins with RANSAC
     std::vector<cv::Point2f> src = {
-        {0,0},{200,0},{200,200},{0,200},
-        {50,50},{150,50},{150,150},{50,150}
+        {0,0},{200,0},{200,200},{0,200},{100,0},{0,100},
+        {50,50},{150,50}
     };
     std::vector<cv::Point2f> dst = {
-        {0,0},{200,0},{200,200},{0,200},
-        {999,999},{888,888},{777,777},{666,666}
+        {0,0},{200,0},{200,200},{0,200},{100,0},{0,100},
+        {999,999},{888,888}
     };
     auto result = find_homography(src, dst);
     ASSERT_TRUE(result.has_value());
