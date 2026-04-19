@@ -50,7 +50,7 @@ struct Error {
     }
     static Error insufficient_points(std::size_t got) {
         return {Code::InsufficientPoints,
-                "find_homography requires at least 4 point pairs, got " +
+                "find_homography requires equal-length vectors of at least 4 point pairs, got " +
                 std::to_string(got)};
     }
     static Error homography_failed() {

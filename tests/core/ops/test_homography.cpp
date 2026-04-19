@@ -25,7 +25,7 @@ TEST(FindHomographyTest, FewerThanFourPointsReturnsError) {
     EXPECT_EQ(result.error().code, improc::Error::Code::InsufficientPoints);
 }
 
-TEST(FindHomographyTest, MismatchedSizesReturnsError) {
+TEST(FindHomographyTest, MismatchedSizesTreatedAsInsufficientPoints) {
     std::vector<cv::Point2f> src = {{0,0},{100,0},{100,100},{0,100}};
     std::vector<cv::Point2f> dst = {{10,10},{110,10},{110,110}};
     auto result = find_homography(src, dst);
@@ -55,6 +55,10 @@ TEST(FindHomographyTest, RansacHandlesOutliers) {
     auto result = find_homography(src, dst);
     ASSERT_TRUE(result.has_value());
     EXPECT_EQ(result->rows, 3);
+    // Inliers map square to itself — recovered H should be near identity
+    EXPECT_NEAR(result->at<double>(0, 0), 1.0, 0.1);
+    EXPECT_NEAR(result->at<double>(1, 1), 1.0, 0.1);
+    EXPECT_NEAR(result->at<double>(2, 2), 1.0, 0.05);
 }
 
 TEST(FindHomographyTest, CustomThresholdIsAccepted) {
