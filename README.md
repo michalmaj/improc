@@ -1,5 +1,44 @@
 # improc++: Modern C++ Image Processing Toolkit
 
+> **Who is this for?**  
+> C++ engineers and researchers building real-time computer vision and ML systems who want
+> compile-time safety, composable pipelines, and ML-ready utilities — without leaving the OpenCV ecosystem.
+
+## Status
+
+> **Pre-1.0 — active development.** APIs may change between releases.
+
+| Namespace | Status | Notes |
+|---|---|---|
+| `improc::core` | ✅ Stable | New ops added regularly |
+| `improc::io` | ✅ Stable | |
+| `improc::ml` | ✅ Stable | New ops added regularly |
+| `improc::threading` | ✅ Stable | |
+| `improc::visualization` | ✅ Stable | New ops added regularly |
+| `improc::cuda` | 🔜 Planned | GPU-accelerated ops via OpenCV CUDA |
+| ONNX Runtime backend | 🔜 Planned | `OrtClassifier`, `OrtDetector`, `OrtForward` |
+
+## API Comparison
+
+| Task | Raw OpenCV | improc++ |
+|---|---|---|
+| Resize to 224×224 | `cv::resize(src, dst, cv::Size(224,224))` | `img \| Resize{}.width(224).height(224)` |
+| Convert to float | `src.convertTo(dst, CV_32FC3, 1.0/255)` | `img \| ToFloat32C3{} \| NormalizeTo{0.f, 1.f}` |
+| Gaussian blur | `cv::GaussianBlur(src, dst, cv::Size(3,3), 0)` | `img \| GaussianBlur{}.kernel_size(3)` |
+| Edge detection | `cv::Canny(gray, dst, 100, 200)` | `img \| CannyEdge{}.threshold1(100).threshold2(200)` |
+| Warp perspective | `cv::warpPerspective(src, dst, H, cv::Size(w,h))` | `img \| WarpPerspective{}.homography(H).width(w).height(h)` |
+
+Format mismatches (e.g. passing `Image<Float32>` where `Image<BGR>` is expected) are **compiler errors**, not silent runtime bugs.
+
+## Non-Goals & Limitations
+
+- **Not a Python library.** No bindings planned — use OpenCV's Python API for scripting workflows.
+- **Not a general-purpose image editor.** No GUI, no layers, no undo — this is a processing pipeline toolkit.
+- **Not a training framework.** No autograd, no loss functions — use PyTorch/TensorFlow for training; improc++ handles inference and preprocessing.
+- **No CUDA yet.** All ops run on CPU. GPU acceleration (`improc::cuda`) is planned but not implemented.
+- **OpenCV dependency is visible.** `cv::Mat`, `cv::Point2f` etc. appear in the public API — improc++ wraps, not hides, OpenCV.
+- **C++23 required.** No support for older standards.
+
 ## Motivation
 
 OpenCV is powerful but its raw API is stringly-typed, mutation-heavy, and easy to misuse — passing a `CV_32FC1` mat where a `CV_8UC3` is expected silently produces garbage instead of a compiler error. improc++ wraps OpenCV with a thin, zero-overhead abstraction that makes format mismatches impossible at compile time, composes processing steps into readable pipelines, and provides ML-ready utilities (augmentation, dataset loading, DNN inference) without reinventing the wheel. The goal is code that reads like a description of what it does, not how OpenCV internals work.
