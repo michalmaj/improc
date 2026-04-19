@@ -25,7 +25,11 @@ find_homography(const std::vector<cv::Point2f>& src,
 // Throws ParameterError if homography() was not called before operator().
 struct WarpPerspective {
     WarpPerspective& homography(const cv::Mat& H) {
-        H_ = H;
+        if (H.rows != 3 || H.cols != 3)
+            throw ParameterError{"homography", "must be a 3x3 matrix", "WarpPerspective"};
+        if (H.type() != CV_32F && H.type() != CV_64F)
+            throw ParameterError{"homography", "must be CV_32F or CV_64F", "WarpPerspective"};
+        H_ = H.clone();
         return *this;
     }
     WarpPerspective& width(int w) {
