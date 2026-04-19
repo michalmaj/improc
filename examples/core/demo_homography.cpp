@@ -65,9 +65,9 @@ int main() {
     show("2 — Warped camera onto tomo frame", warped.mat());
 
     // ── 3. Overlay: blend warped camera with tomo frame ──────────────────────
-    std::cout << "\n--- Sensor fusion: alpha blend ---\n";
+    std::cout << "\n--- 3. Sensor fusion: alpha blend ---\n";
     cv::Mat blended;
-    cv::addWeighted(tomo_raw, 0.5, warped.mat(), 0.5, 0.0, blended);
+    cv::addWeighted(tomo_img.mat(), 0.5, warped.mat(), 0.5, 0.0, blended);
     show("3 — Fused (tomo 50% + warped camera 50%)", blended);
 
     // ── 4. Default size (same as input) ──────────────────────────────────────
