@@ -35,7 +35,8 @@ Used as the error channel in `std::expected<T, improc::Error>` returns throughou
 struct Error {
     enum class Code {
         NoImages, EmptyDataset, DirectoryNotFound,
-        InvalidModelFile, CameraUnavailable, CameraFrameEmpty
+        InvalidModelFile, CameraUnavailable, CameraFrameEmpty,
+        InsufficientPoints, HomographyFailed
     };
     Code        code;
     std::string message;
@@ -46,6 +47,8 @@ struct Error {
     static Error invalid_model_file(const std::string& path, const std::string& reason);
     static Error camera_unavailable(int device_id);
     static Error camera_frame_empty(int device_id);
+    static Error insufficient_points(std::size_t got);
+    static Error homography_failed();
 };
 ```
 
