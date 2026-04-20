@@ -193,9 +193,9 @@ Image<BGR> warped = src | WarpPerspective{}.homography(H).width(640).height(480)
 |---|---|---|
 | `find_homography(src, dst, threshold)` | `std::expected<cv::Mat, Error>` | Compute 3×3 homography from ≥4 point pairs via RANSAC |
 | `WarpPerspective` | pipeline op | Apply homography; `.homography(H)`, `.width(w)`, `.height(h)` |
-| `WarpAffine` | Apply a 2×3 affine matrix; `.matrix(M)`, `.width(w)`, `.height(h)` | `include/improc/core/ops/warp_affine.hpp` |
-| `ApplyMask` | Zero pixels outside a binary `Image<Gray>` mask; `.mask(m)` | `include/improc/core/ops/apply_mask.hpp` |
-| `UnsharpMask` | Sharpen via blur subtraction; `.sigma(s)`, `.strength(f)` | `include/improc/core/ops/unsharp_mask.hpp` |
+| `WarpAffine` | pipeline op | Apply a 2×3 affine transformation; `.matrix(M)`, `.width(w)`, `.height(h)` |
+| `ApplyMask` | pipeline op | Zero pixels outside a binary `Image<Gray>` mask; `.mask(m)` |
+| `UnsharpMask` | pipeline op | Sharpen via blur subtraction; `.sigma(s)`, `.strength(f)` |
 
 **`WarpPerspective`** throws `ParameterError` if `.homography()` is not set, or if width/height are not positive.
 
