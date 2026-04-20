@@ -18,6 +18,9 @@
 #include "improc/core/ops/bilateral_filter.hpp"
 #include "improc/core/ops/edge.hpp"
 #include "improc/core/ops/homography.hpp"
+#include "improc/core/ops/warp_affine.hpp"
+#include "improc/core/ops/apply_mask.hpp"
+#include "improc/core/ops/unsharp_mask.hpp"
 
 namespace improc::core {
 
