@@ -11,6 +11,8 @@ namespace improc::core {
 
 struct ApplyMask {
     ApplyMask& mask(Image<Gray> m) {
+        if (m.mat().type() != CV_8UC1)
+            throw ParameterError{"mask", "must be CV_8UC1", "ApplyMask"};
         mask_ = std::move(m);
         return *this;
     }
