@@ -63,3 +63,11 @@ TEST(WarpAffineTest, TranslationShiftsContent) {
     EXPECT_EQ(topleft[1], 0);
     EXPECT_EQ(topleft[2], 0);
 }
+
+TEST(WarpAffineTest, ZeroWidthThrows) {
+    EXPECT_THROW(WarpAffine{}.width(0), improc::ParameterError);
+}
+
+TEST(WarpAffineTest, NegativeHeightThrows) {
+    EXPECT_THROW(WarpAffine{}.height(-1), improc::ParameterError);
+}

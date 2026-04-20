@@ -9,9 +9,6 @@
 
 namespace improc::core {
 
-// Apply a 2×3 affine transformation matrix to an image via cv::warpAffine.
-// Output size: matches input by default; use .width()/.height() for custom size.
-// Throws ParameterError if matrix() was not called before operator().
 struct WarpAffine {
     WarpAffine& matrix(const cv::Mat& M) {
         if (M.rows != 2 || M.cols != 3)
