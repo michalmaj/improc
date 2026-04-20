@@ -18,6 +18,7 @@
 #include "improc/core/ops/bilateral_filter.hpp"
 #include "improc/core/ops/edge.hpp"
 #include "improc/core/ops/homography.hpp"
+#include "improc/core/ops/warp_affine.hpp"
 
 namespace improc::core {
 
