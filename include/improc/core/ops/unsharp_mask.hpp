@@ -9,7 +9,7 @@
 namespace improc::core {
 
 // Sharpens via blurred subtraction: output = (1+s)*img - s*GaussianBlur(img, sigma).
-// Kernel size derived from sigma: ceil(6*sigma) rounded up to next odd integer.
+// Kernel size derived from sigma: trunc(6*sigma) rounded up to next odd integer.
 struct UnsharpMask {
     UnsharpMask& sigma(double s) {
         if (s <= 0.0)
