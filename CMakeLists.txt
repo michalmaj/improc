@@ -98,6 +98,16 @@ target_link_libraries(demo_edge PRIVATE improc)
 add_executable(demo_homography examples/core/demo_homography.cpp)
 target_link_libraries(demo_homography PRIVATE improc)
 
+# M1 ops demos
+add_executable(demo_warp_affine examples/core/demo_warp_affine.cpp)
+target_link_libraries(demo_warp_affine PRIVATE improc)
+
+add_executable(demo_apply_mask examples/core/demo_apply_mask.cpp)
+target_link_libraries(demo_apply_mask PRIVATE improc)
+
+add_executable(demo_unsharp_mask examples/core/demo_unsharp_mask.cpp)
+target_link_libraries(demo_unsharp_mask PRIVATE improc)
+
 # Threading demos
 add_executable(demo_thread_pool examples/threading/demo_thread_pool.cpp)
 target_link_libraries(demo_thread_pool PRIVATE improc)
