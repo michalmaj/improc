@@ -134,3 +134,21 @@ target_link_libraries(demo_augmentation PRIVATE improc)
 # Video Writer demo
 add_executable(demo_video_writer examples/io/demo_video_writer.cpp)
 target_link_libraries(demo_video_writer PRIVATE improc)
+
+# Benchmarks (opt-in: cmake -DIMPROC_BENCHMARKS=ON ...)
+if(IMPROC_BENCHMARKS)
+    include(FetchContent)
+    FetchContent_Declare(
+        benchmark
+        GIT_REPOSITORY https://github.com/google/benchmark.git
+        GIT_TAG        v1.9.1
+        GIT_SHALLOW    TRUE
+    )
+    set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
+    set(BENCHMARK_DOWNLOAD_DEPENDENCIES ON CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(benchmark)
+
+    file(GLOB_RECURSE BENCH_SOURCES CONFIGURE_DEPENDS benchmarks/*.cpp)
+    add_executable(improc_benchmarks ${BENCH_SOURCES})
+    target_link_libraries(improc_benchmarks PRIVATE improc benchmark::benchmark_main)
+endif()
