@@ -18,8 +18,10 @@ using namespace improc::core;
 static void BM_raw_resize(benchmark::State& state) {
     cv::Mat src(480, 640, CV_8UC3);
     cv::Mat dst;
-    for (auto _ : state)
+    for (auto _ : state) {
         cv::resize(src, dst, cv::Size(224, 224));
+        benchmark::DoNotOptimize(dst);
+    }
 }
 BENCHMARK(BM_raw_resize);
 
@@ -35,8 +37,10 @@ BENCHMARK(BM_improc_resize);
 static void BM_raw_gaussian(benchmark::State& state) {
     cv::Mat src(480, 640, CV_8UC3);
     cv::Mat dst;
-    for (auto _ : state)
+    for (auto _ : state) {
         cv::GaussianBlur(src, dst, cv::Size(3, 3), 0);
+        benchmark::DoNotOptimize(dst);
+    }
 }
 BENCHMARK(BM_raw_gaussian);
 
@@ -51,13 +55,14 @@ BENCHMARK(BM_improc_gaussian);
 
 static void BM_raw_gamma(benchmark::State& state) {
     cv::Mat src(480, 640, CV_8UC3);
+    cv::Mat lut(1, 256, CV_8U);
+    auto* p = lut.ptr<uchar>();
+    for (int i = 0; i < 256; ++i)
+        p[i] = cv::saturate_cast<uchar>(255.0 * std::pow(i / 255.0, 0.5));
     cv::Mat dst;
     for (auto _ : state) {
-        cv::Mat lut(1, 256, CV_8U);
-        auto* p = lut.ptr<uchar>();
-        for (int i = 0; i < 256; ++i)
-            p[i] = cv::saturate_cast<uchar>(255.0 * std::pow(i / 255.0, 0.5));
         cv::LUT(src, lut, dst);
+        benchmark::DoNotOptimize(dst);
     }
 }
 BENCHMARK(BM_raw_gamma);
@@ -75,8 +80,10 @@ static void BM_raw_clahe(benchmark::State& state) {
     cv::Mat src(480, 640, CV_8UC1);
     cv::Mat dst;
     auto clahe = cv::createCLAHE(40.0, cv::Size(8, 8));
-    for (auto _ : state)
+    for (auto _ : state) {
         clahe->apply(src, dst);
+        benchmark::DoNotOptimize(dst);
+    }
 }
 BENCHMARK(BM_raw_clahe);
 
@@ -92,8 +99,10 @@ BENCHMARK(BM_improc_clahe);
 static void BM_raw_bilateral(benchmark::State& state) {
     cv::Mat src(480, 640, CV_8UC3);
     cv::Mat dst;
-    for (auto _ : state)
+    for (auto _ : state) {
         cv::bilateralFilter(src, dst, 9, 75.0, 75.0);
+        benchmark::DoNotOptimize(dst);
+    }
 }
 BENCHMARK(BM_raw_bilateral);
 
@@ -109,8 +118,10 @@ BENCHMARK(BM_improc_bilateral);
 static void BM_raw_to_float32c3(benchmark::State& state) {
     cv::Mat src(480, 640, CV_8UC3);
     cv::Mat dst;
-    for (auto _ : state)
+    for (auto _ : state) {
         src.convertTo(dst, CV_32FC3, 1.0 / 255.0);
+        benchmark::DoNotOptimize(dst);
+    }
 }
 BENCHMARK(BM_raw_to_float32c3);
 
@@ -126,8 +137,10 @@ BENCHMARK(BM_improc_to_float32c3);
 static void BM_raw_normalize_to(benchmark::State& state) {
     cv::Mat src(480, 640, CV_32FC3);
     cv::Mat dst;
-    for (auto _ : state)
+    for (auto _ : state) {
         cv::normalize(src, dst, 0.0, 1.0, cv::NORM_MINMAX);
+        benchmark::DoNotOptimize(dst);
+    }
 }
 BENCHMARK(BM_raw_normalize_to);
 
@@ -144,8 +157,10 @@ static void BM_raw_warp_affine(benchmark::State& state) {
     cv::Mat src(480, 640, CV_8UC3);
     cv::Mat M = cv::Mat::eye(2, 3, CV_64F);
     cv::Mat dst;
-    for (auto _ : state)
+    for (auto _ : state) {
         cv::warpAffine(src, dst, M, cv::Size(640, 480));
+        benchmark::DoNotOptimize(dst);
+    }
 }
 BENCHMARK(BM_raw_warp_affine);
 
