@@ -41,7 +41,7 @@ Format mismatches (e.g. passing `Image<Float32>` where `Image<BGR>` is expected)
 
 ## Motivation
 
-OpenCV is powerful but its raw API is stringly-typed, mutation-heavy, and easy to misuse — passing a `CV_32FC1` mat where a `CV_8UC3` is expected silently produces garbage instead of a compiler error. improc++ wraps OpenCV with a thin, zero-overhead abstraction that makes format mismatches impossible at compile time, composes processing steps into readable pipelines, and provides ML-ready utilities (augmentation, dataset loading, DNN inference) without reinventing the wheel. The goal is code that reads like a description of what it does, not how OpenCV internals work.
+OpenCV is powerful but its raw API is stringly-typed, mutation-heavy, and easy to misuse — passing a `CV_32FC1` mat where a `CV_8UC3` is expected silently produces garbage instead of a compiler error. improc++ wraps OpenCV with a thin, low-overhead abstraction that makes format mismatches impossible at compile time, composes processing steps into readable pipelines, and provides ML-ready utilities (augmentation, dataset loading, DNN inference) without reinventing the wheel. Benchmarks on Apple M4 Pro show wrapper overhead of ≤0.9% for most ops; CLAHE and GammaCorrection carry additional per-call cost from object/LUT construction in the current implementation. The goal is code that reads like a description of what it does, not how OpenCV internals work.
 
 ## Features
 
