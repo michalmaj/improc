@@ -36,9 +36,9 @@ static void BM_raw_ml_pipeline(benchmark::State& state) {
     cv::Mat raw(1080, 1920, CV_8UC3);
     cv::randu(raw, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
 
+    cv::Mat resized, lab, blurred, float_img, normalized;
+    std::vector<cv::Mat> lab_planes;
     for (auto _ : state) {
-        cv::Mat resized, lab, blurred, float_img, normalized;
-        std::vector<cv::Mat> lab_planes;
 
         cv::resize(raw, resized, cv::Size(224, 224));
 
@@ -51,7 +51,11 @@ static void BM_raw_ml_pipeline(benchmark::State& state) {
 
         cv::GaussianBlur(resized, blurred, cv::Size(3, 3), 0);
         blurred.convertTo(float_img, CV_32FC3, 1.0 / 255.0);
-        cv::normalize(float_img, normalized, 0.0, 1.0, cv::NORM_MINMAX);
+        double mn, mx;
+        cv::minMaxLoc(float_img.reshape(1), &mn, &mx);
+        float scale = (mx > mn) ? static_cast<float>(1.0 / (mx - mn)) : 1.0f;
+        float shift = static_cast<float>(-mn * scale);
+        float_img.convertTo(normalized, CV_32FC3, scale, shift);
 
         benchmark::DoNotOptimize(normalized);
     }
