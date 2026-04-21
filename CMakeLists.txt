@@ -13,11 +13,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Dependencies
 find_package(OpenCV REQUIRED)
-find_package(Eigen3 REQUIRED)
 find_package(GTest REQUIRED)
-
-# Armadillo behavior (used by mlpack)
-add_compile_definitions(ARMA_DONT_USE_WRAPPER)
 
 # === improc LIBRARY ===
 file(GLOB_RECURSE IMPROC_HEADERS CONFIGURE_DEPENDS include/improc/**/*.hpp)
@@ -31,7 +27,6 @@ target_include_directories(improc PUBLIC
 
 target_link_libraries(improc PUBLIC
         opencv::opencv
-        Eigen3::Eigen
 )
 
 if(APPLE)
