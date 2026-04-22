@@ -61,3 +61,13 @@ TEST(HsvConversionTest, ToBGRFromGrayStillWorks) {
     Image<BGR>  result = gray | ToBGR{};
     EXPECT_EQ(result.mat().type(), CV_8UC3);
 }
+
+TEST(HSVConversionTest, KnownPixelGreenBGRtoHSV) {
+    cv::Mat mat(1, 1, CV_8UC3, cv::Scalar(0, 255, 0)); // pure green in BGR
+    Image<BGR> bgr(mat);
+    Image<HSV> hsv = bgr | ToHSV{};
+    cv::Vec3b px = hsv.mat().at<cv::Vec3b>(0, 0);
+    EXPECT_EQ(px[0], 60);  // H=60
+    EXPECT_EQ(px[1], 255); // S=255
+    EXPECT_EQ(px[2], 255); // V=255
+}

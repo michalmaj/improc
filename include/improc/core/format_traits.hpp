@@ -25,6 +25,7 @@ struct HSV {};
 template<> struct FormatTraits<HSV> {
     static constexpr int cv_type  = CV_8UC3;
     static constexpr int channels = 3;
+    static constexpr bool is_float = false;
     static constexpr std::string_view name = "HSV (CV_8UC3)";
 };
 

@@ -21,6 +21,8 @@
 #include "improc/core/ops/warp_affine.hpp"
 #include "improc/core/ops/apply_mask.hpp"
 #include "improc/core/ops/unsharp_mask.hpp"
+#include "improc/core/ops/to_hsv.hpp"
+#include "improc/core/ops/to_bgr.hpp"
 
 namespace improc::core {
 
@@ -29,15 +31,8 @@ auto operator|(Image<Format> img, Op&& op) {
     return std::forward<Op>(op)(std::move(img));
 }
 
-struct ToGray    { Image<Gray>    operator()(Image<BGR>  img) const; };
-/// @brief Converts to BGR. Accepts Image<Gray> or Image<HSV>.
-struct ToBGR {
-    Image<BGR> operator()(Image<Gray> img) const;
-    Image<BGR> operator()(Image<HSV>  img) const;
-};
+struct ToGray      { Image<Gray>      operator()(Image<BGR>  img) const; };
 struct ToFloat32   { Image<Float32>   operator()(Image<Gray> img) const; };
 struct ToFloat32C3 { Image<Float32C3> operator()(Image<BGR>  img) const; };
-/// @brief Converts Image<BGR> to HSV color space.
-struct ToHSV { Image<HSV> operator()(Image<BGR> img) const; };
 
 } // namespace improc::core
