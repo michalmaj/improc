@@ -36,10 +36,13 @@ struct AlphaBlend {
         cv::Mat alpha_f;
         planes[3].convertTo(alpha_f, CV_32F, 1.0 / 255.0);
 
-        // Expand single-channel alpha to 3-channel for element-wise multiply
+        // Expand single-channel alpha and inv-alpha to 3 channels using merge (safe for CV_32F)
+        cv::Mat inv_alpha_f;
+        cv::subtract(cv::Scalar(1.0f), alpha_f, inv_alpha_f);
+
         cv::Mat alpha_3c, inv_alpha_3c;
-        cv::cvtColor(alpha_f, alpha_3c, cv::COLOR_GRAY2BGR);
-        cv::subtract(cv::Scalar(1.0f, 1.0f, 1.0f), alpha_3c, inv_alpha_3c);
+        cv::merge(std::vector<cv::Mat>{alpha_f, alpha_f, alpha_f}, alpha_3c);
+        cv::merge(std::vector<cv::Mat>{inv_alpha_f, inv_alpha_f, inv_alpha_f}, inv_alpha_3c);
 
         cv::Mat bg_f, ol_f;
         img.mat().convertTo(bg_f, CV_32FC3);
