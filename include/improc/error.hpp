@@ -18,6 +18,8 @@ struct Error {
         CameraFrameEmpty,   // Camera is open but returned an empty frame
         InsufficientPoints, // find_homography: fewer than 4 or mismatched point pairs
         HomographyFailed,   // find_homography: RANSAC returned empty matrix
+        ImageReadFailed,    // cv::imread returned empty mat
+        ImageWriteFailed,   // cv::imwrite returned false
     };
 
     Code        code;
@@ -56,6 +58,12 @@ struct Error {
     static Error homography_failed() {
         return {Code::HomographyFailed,
                 "find_homography: RANSAC failed to find a valid homography"};
+    }
+    static Error image_read_failed(const std::string& path) {
+        return {Code::ImageReadFailed, "Failed to read image: " + path};
+    }
+    static Error image_write_failed(const std::string& path) {
+        return {Code::ImageWriteFailed, "Failed to write image: " + path};
     }
 };
 
