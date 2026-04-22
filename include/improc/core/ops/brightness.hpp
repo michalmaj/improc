@@ -12,7 +12,8 @@ namespace improc::core {
  *
  * Applies `output = clip(input + delta)` to every pixel channel.
  * Positive delta brightens; negative delta darkens.
- * Clipping is handled by OpenCV's `convertTo`.
+ * Clipping to [0, 255] is handled by OpenCV's `convertTo` for integer formats.
+ * Float formats are not clamped.
  *
  * Works on any `Image<Format>`.
  *
@@ -28,7 +29,7 @@ struct Brightness {
     Image<F> operator()(Image<F> img) const {
         cv::Mat dst;
         img.mat().convertTo(dst, -1, 1.0, delta_);
-        return Image<F>(dst);
+        return Image<F>(std::move(dst));
     }
 
 private:
