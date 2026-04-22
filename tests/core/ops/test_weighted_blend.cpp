@@ -74,6 +74,5 @@ TEST(WeightedBlendTest, WorksOnBGR) {
     Image<BGR> img2(m2);
     Image<BGR> result = img1 | WeightedBlend<BGR>{img2}.alpha(0.5);
     double mean = cv::mean(result.mat())[0];
-    EXPECT_GT(mean, 80.0);
-    EXPECT_LT(mean, 180.0);
+    EXPECT_NEAR(mean, 130.0, 2.0);
 }
