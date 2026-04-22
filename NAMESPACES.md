@@ -36,7 +36,9 @@ struct Error {
     enum class Code {
         NoImages, EmptyDataset, DirectoryNotFound,
         InvalidModelFile, CameraUnavailable, CameraFrameEmpty,
-        InsufficientPoints, HomographyFailed
+        InsufficientPoints, HomographyFailed,
+        ImageReadFailed,   // cv::imread returned empty mat
+        ImageWriteFailed   // cv::imwrite returned false
     };
     Code        code;
     std::string message;
@@ -49,6 +51,8 @@ struct Error {
     static Error camera_frame_empty(int device_id);
     static Error insufficient_points(std::size_t got);
     static Error homography_failed();
+    static Error image_read_failed(const std::string& path);
+    static Error image_write_failed(const std::string& path);
 };
 ```
 
@@ -72,13 +76,18 @@ Provides a compile-time type-safe wrapper over `cv::Mat`, format conversion util
 
 Empty structs used as template parameters. `FormatTraits<T>` maps each tag to its OpenCV type constant and channel count.
 
-| Tag | `cv_type` | `channels` |
-|---|---|---|
-| `BGR` | `CV_8UC3` | 3 |
-| `Gray` | `CV_8UC1` | 1 |
-| `BGRA` | `CV_8UC4` | 4 |
-| `Float32` | `CV_32FC1` | 1 |
-| `Float32C3` | `CV_32FC3` | 3 |
+| Tag | `cv_type` | `channels` | `is_float` |
+|---|---|---|---|
+| `BGR` | `CV_8UC3` | 3 | `false` |
+| `Gray` | `CV_8UC1` | 1 | `false` |
+| `BGRA` | `CV_8UC4` | 4 | `false` |
+| `Float32` | `CV_32FC1` | 1 | `true` |
+| `Float32C3` | `CV_32FC3` | 3 | `true` |
+| `HSV` | `CV_8UC3` | 3 | `false` |
+
+**`struct HSV {}`** — format tag for HSV color space (H∈[0,179], S∈[0,255], V∈[0,255]).
+
+All `FormatTraits<F>` specializations include `static constexpr bool is_float` — `false` for BGR/Gray/BGRA/HSV, `true` for Float32/Float32C3.
 
 ### `Image<Format>` (`image.hpp`)
 
@@ -99,6 +108,8 @@ Free function template. Primary template is `= delete` — unsupported conversio
 - `BGR` ↔ `BGRA`
 - `Gray` ↔ `Float32` (scale ×1/255 / ×255)
 - `BGR` ↔ `Float32C3` (scale ×1/255 / ×255, 3-channel float)
+- `BGR` → `HSV` (OpenCV `COLOR_BGR2HSV`)
+- `HSV` → `BGR` (OpenCV `COLOR_HSV2BGR`)
 
 ```cpp
 Image<Gray>     gray  = convert<Gray, BGR>(bgr_image);
@@ -113,6 +124,8 @@ Composes processing steps using the pipe operator. Each step is a small functor.
 // Conversion functors
 Image<Float32>   result = bgr_image | ToGray{} | ToFloat32{};
 Image<Float32C3> result = bgr_image | ToFloat32C3{};
+Image<HSV>       hsv    = bgr_image | ToHSV{};
+Image<BGR>       bgr    = hsv_image | ToBGR{};  // also accepts Image<Gray> (existing overload)
 
 // Geometric ops — templated, work on any Image<Format>
 Image<BGR> r = src | Resize{}.width(224).height(224);   // both dims
@@ -199,11 +212,61 @@ Image<BGR> warped = src | WarpPerspective{}.homography(H).width(640).height(480)
 
 **`WarpPerspective`** throws `ParameterError` if `.homography()` is not set, or if width/height are not positive.
 
+```cpp
+// Brightness and Contrast — work on any Image<Format>
+Image<BGR>  bright   = img  | Brightness{}.delta(30.0);   // additive; clamped to valid range
+Image<Gray> dark     = gray | Brightness{}.delta(-20.0);
+Image<BGR>  contrast = img  | Contrast{}.factor(1.5);     // multiplicative
+
+// WeightedBlend — blends two same-format, same-size images
+Image<BGR>  blended  = img  | WeightedBlend<BGR>{img2}.alpha(0.6);  // out = α·img + (1−α)·img2
+
+// AlphaBlend — composites a BGRA overlay onto a BGR background
+Image<BGR>  composited = bg | AlphaBlend{overlay_bgra};   // per-pixel alpha from overlay's A channel
+```
+
+**`Brightness`** — additive brightness adjustment via `.delta(double)`. Works on any `AnyFormat`. Pixel values are clamped to the valid range for the format.
+
+**`Contrast`** — multiplicative contrast scaling via `.factor(double)`. Works on any `AnyFormat`. Throws `ParameterError` if `factor <= 0`.
+
+**`WeightedBlend<F>`** — weighted average of two same-format images. `.alpha(double)` controls the blend weight of the first image (second image weight = 1−alpha). Throws `ParameterError` if `alpha` is outside `[0, 1]` or if image sizes differ.
+
+**`AlphaBlend`** — composites a BGRA overlay image onto a BGR background using per-pixel alpha from the overlay's A channel. Throws `ParameterError` if overlay and background sizes differ.
+
 ---
 
 ## `improc::io` — Input/Output
 
 **Status: Implemented**
+
+### `imread<F>` / `imwrite` (`io/image_io.hpp`)
+
+Typed image I/O functions. Both return `std::expected` for error handling — no exceptions thrown for environmental failures.
+
+```cpp
+#include "improc/io/image_io.hpp"
+using namespace improc::io;
+
+// Read and auto-convert to the requested format
+auto result = imread<BGR>("/path/to/image.png");
+if (!result)
+    std::cerr << result.error().message << '\n';
+else
+    Image<BGR> img = *result;
+
+// Read directly as Gray or Float32C3
+auto gray = imread<Gray>("/path/to/image.png");
+auto fp   = imread<Float32C3>("/path/to/image.png");
+
+// Write any Image<F> to file (format inferred from extension)
+auto ok = imwrite("/path/to/output.png", img);
+if (!ok)
+    std::cerr << ok.error().message << '\n';
+```
+
+`imread<F>` calls `cv::imread` then `convert<F, BGR>()` to produce the requested format. Returns `Error{Code::ImageReadFailed}` if `cv::imread` returns an empty mat.
+
+`imwrite` calls `cv::imwrite`. Returns `Error{Code::ImageWriteFailed}` if `cv::imwrite` returns false (bad path, unsupported extension, permissions error).
 
 ### `CameraCapture` (`io/camera_capture.hpp`)
 
