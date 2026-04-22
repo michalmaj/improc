@@ -13,9 +13,7 @@ namespace improc::core {
  * @endcode
  */
 struct ToHSV {
-    Image<HSV> operator()(const Image<BGR>& img) const;
+    Image<HSV> operator()(Image<BGR> img) const;
 };
-
-inline Image<HSV> operator|(const Image<BGR>& img, ToHSV op) { return op(img); }
 
 } // namespace improc::core

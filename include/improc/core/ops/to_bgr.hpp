@@ -14,11 +14,8 @@ namespace improc::core {
  * @endcode
  */
 struct ToBGR {
-    Image<BGR> operator()(const Image<Gray>& img) const;
-    Image<BGR> operator()(const Image<HSV>&  img) const;
+    Image<BGR> operator()(Image<Gray> img) const;
+    Image<BGR> operator()(Image<HSV>  img) const;
 };
-
-inline Image<BGR> operator|(const Image<Gray>& img, ToBGR op) { return op(img); }
-inline Image<BGR> operator|(const Image<HSV>&  img, ToBGR op) { return op(img); }
 
 } // namespace improc::core
