@@ -23,6 +23,7 @@
 #include "improc/core/ops/unsharp_mask.hpp"
 #include "improc/core/ops/to_hsv.hpp"
 #include "improc/core/ops/to_bgr.hpp"
+#include "improc/core/ops/brightness.hpp"
 
 namespace improc::core {
 
