@@ -19,7 +19,7 @@ protected:
     static void SetUpTestSuite() {
         // Write a 4x4 BGR PNG to /tmp for read tests
         cv::Mat mat(4, 4, CV_8UC3, cv::Scalar(100, 150, 200));
-        cv::imwrite(kTestPng, mat);
+        ASSERT_TRUE(cv::imwrite(kTestPng, mat)) << "Failed to create test fixture PNG";
     }
 };
 

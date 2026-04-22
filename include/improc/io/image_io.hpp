@@ -41,6 +41,8 @@ cv::Mat convert_raw_to_format(const cv::Mat& raw) {
             code = cv::COLOR_BGR2BGRA;
         else if (raw.channels() == 1 && FormatTraits<F>::channels == 4)
             code = cv::COLOR_GRAY2BGRA;
+        else if (raw.channels() == 4 && FormatTraits<F>::channels == 1)
+            code = cv::COLOR_BGRA2GRAY;
 
         if (code != -1) {
             cv::cvtColor(raw, converted, code);
@@ -90,8 +92,11 @@ cv::Mat convert_image_to_bgr_or_gray(const Image<F>& img) {
  * Loads from @p path using `cv::imread(IMREAD_UNCHANGED)` and converts
  * to the requested format automatically.
  *
- * @tparam F  Target format (BGR, Gray, HSV, Float32C3, …).
+ * @tparam F  Target format (BGR, Gray, Float32C3, …).
  * @return    `Image<F>` on success; `Error` (ImageReadFailed) if the file cannot be read.
+ *
+ * @note HSV is not a valid target for imread (no automatic BGR→HSV conversion is applied).
+ *       Use `imread<BGR>` then convert manually via `img | ToHSV{}`.
  *
  * @code
  * auto result = improc::io::imread<BGR>("photo.png");
@@ -113,7 +118,11 @@ std::expected<Image<F>, improc::Error> imread(const std::string& path) {
  * Format is inferred from the file extension (.png, .bmp, .tiff, .webp).
  * The image is converted to BGR or Gray (CV_8U) before writing.
  *
- * @return Empty expected on success; `Error` (ImageWriteFailed) on failure.
+ * @tparam F  Format of the source image.
+ * @return    Empty expected on success; `Error` (ImageWriteFailed) on failure.
+ *
+ * @note HSV images are written as raw bytes without converting back to BGR.
+ *       To save an HSV image in a viewable format, convert to BGR first.
  *
  * @code
  * auto ok = improc::io::imwrite("output.png", img);
