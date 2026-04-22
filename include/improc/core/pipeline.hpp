@@ -24,6 +24,7 @@
 #include "improc/core/ops/to_hsv.hpp"
 #include "improc/core/ops/to_bgr.hpp"
 #include "improc/core/ops/brightness.hpp"
+#include "improc/core/ops/contrast.hpp"
 
 namespace improc::core {
 
