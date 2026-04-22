@@ -25,6 +25,7 @@
 #include "improc/core/ops/to_bgr.hpp"
 #include "improc/core/ops/brightness.hpp"
 #include "improc/core/ops/contrast.hpp"
+#include "improc/core/ops/weighted_blend.hpp"
 
 namespace improc::core {
 
