@@ -18,5 +18,7 @@ template<> Image<Float32>   convert<Float32,   Gray>     (const Image<Gray>&    
 template<> Image<Float32C3> convert<Float32C3, BGR>      (const Image<BGR>&       src);
 template<> Image<Gray>      convert<Gray,      Float32>  (const Image<Float32>&   src);
 template<> Image<BGR>       convert<BGR,       Float32C3>(const Image<Float32C3>& src);
+template<> Image<HSV> convert<HSV, BGR>(const Image<BGR>& src);
+template<> Image<BGR> convert<BGR, HSV>(const Image<HSV>& src);
 
 } // namespace improc::core

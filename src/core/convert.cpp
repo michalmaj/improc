@@ -61,4 +61,18 @@ Image<BGR> convert<BGR, Float32C3>(const Image<Float32C3>& src) {
     return Image<BGR>(std::move(dst));
 }
 
+template<>
+Image<HSV> convert<HSV, BGR>(const Image<BGR>& src) {
+    cv::Mat dst;
+    cv::cvtColor(src.mat(), dst, cv::COLOR_BGR2HSV);
+    return Image<HSV>(std::move(dst));
+}
+
+template<>
+Image<BGR> convert<BGR, HSV>(const Image<HSV>& src) {
+    cv::Mat dst;
+    cv::cvtColor(src.mat(), dst, cv::COLOR_HSV2BGR);
+    return Image<BGR>(std::move(dst));
+}
+
 } // namespace improc::core
