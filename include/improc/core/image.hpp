@@ -29,6 +29,7 @@ namespace improc::core {
 template<AnyFormat Format>
 class Image {
 public:
+    /// @brief Constructs an Image from a raw cv::Mat, validating format and non-emptiness.
     explicit Image(cv::Mat mat) : mat_(std::move(mat)) {
         if (mat_.empty())
             throw ParameterError{"mat", "must not be empty", "Image constructor"};
@@ -54,6 +55,7 @@ public:
     /// @brief Returns true if the image has no pixel data (always false for a valid Image).
     [[nodiscard]] bool empty() const { return mat_.empty(); }
 
+    /// @brief Copy and move operations use shallow cv::Mat semantics (reference-counted buffer).
     Image(const Image&)            = default;
     Image& operator=(const Image&) = default;
     Image(Image&&)                 = default;
