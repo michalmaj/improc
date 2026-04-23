@@ -44,6 +44,8 @@ inline int to_cv_type(ThresholdMode m) {
  * Image<Gray> binary = gray | Threshold{}.value(100).mode(ThresholdMode::Binary);
  * Image<Gray> auto_t = gray | Threshold{}.mode(ThresholdMode::Otsu);
  * @endcode
+ *
+ * @throws improc::ParameterError if the combination of mode and value is rejected by OpenCV.
  */
 struct Threshold {
     /// @brief Sets the threshold value. Ignored when mode is ThresholdMode::Otsu.

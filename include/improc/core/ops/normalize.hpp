@@ -27,13 +27,17 @@ struct Normalize {
  * @brief Scales pixel values to a specified [min_val, max_val] range.
  *
  * Only operates on float images (`Image<Float32>`, `Image<Float32C3>`).
+ * If the image is uniform (min == max), all output values are 0.
  *
  * @code
  * Image<Float32C3> scaled = float_img | NormalizeTo{0.0f, 1.0f};
  * @endcode
  */
 struct NormalizeTo {
-    /// @brief Constructs NormalizeTo with the target [min, max] output range.
+    /**
+     * @brief Constructs NormalizeTo with output range [min_val, max_val].
+     * @throws improc::ParameterError if min_val >= max_val.
+     */
     explicit NormalizeTo(float min, float max);
     /// @brief Scales pixel values of img to [min_val, max_val].
     Image<Float32>   operator()(Image<Float32>   img) const;
@@ -53,7 +57,10 @@ private:
  * @endcode
  */
 struct Standardize {
-    /// @brief Constructs Standardize with per-channel mean and std_dev.
+    /**
+     * @brief Constructs Standardize with the given mean and standard deviation.
+     * @throws improc::ParameterError if std_dev <= 0.
+     */
     explicit Standardize(float mean, float std_dev);
     /// @brief Standardizes img by subtracting mean and dividing by std_dev.
     Image<Float32>   operator()(Image<Float32>   img) const;

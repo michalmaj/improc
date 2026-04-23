@@ -60,7 +60,7 @@ struct CannyEdge {
         threshold1_ = t;
         return *this;
     }
-    /// @brief Sets upper hysteresis threshold. Must be >= threshold1.
+    /// @brief Sets upper hysteresis threshold. Must be >= 0.
     CannyEdge& threshold2(double t) {
         if (t < 0.0)
             throw ParameterError{"threshold2", "must be >= 0", "CannyEdge"};
