@@ -8,14 +8,27 @@
 
 namespace improc::core {
 
-// Sharpens via blurred subtraction: output = (1+s)*img - s*GaussianBlur(img, sigma).
+/**
+ * @brief Sharpens via unsharp masking: `output = (1+s)*img − s*GaussianBlur(img, σ)`.
+ *
+ * Larger `strength` amplifies edges more aggressively;
+ * larger `sigma` widens the blur kernel used for the mask.
+ *
+ * @throws improc::ParameterError if sigma or strength <= 0.
+ *
+ * @code
+ * Image<BGR> sharp = img | UnsharpMask{}.sigma(1.0).strength(0.5);
+ * @endcode
+ */
 struct UnsharpMask {
+    /// @brief Sets blur kernel sigma for the mask. Must be > 0.
     UnsharpMask& sigma(double s) {
         if (s <= 0.0)
             throw ParameterError{"sigma", "must be positive", "UnsharpMask"};
         sigma_ = s;
         return *this;
     }
+    /// @brief Sets sharpening strength. Must be > 0. Larger = stronger sharpening.
     UnsharpMask& strength(double s) {
         if (s <= 0.0)
             throw ParameterError{"strength", "must be positive", "UnsharpMask"};
@@ -23,6 +36,7 @@ struct UnsharpMask {
         return *this;
     }
 
+    /// @brief Applies unsharp mask sharpening to img.
     template<AnyFormat Format>
     Image<Format> operator()(Image<Format> img) const {
         cv::Mat blurred;
