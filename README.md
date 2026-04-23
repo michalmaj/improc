@@ -18,6 +18,57 @@
 | `improc::cuda` | 🔜 Planned | GPU-accelerated ops via OpenCV CUDA |
 | ONNX Runtime backend | 🔜 Planned | `OrtClassifier`, `OrtDetector`, `OrtForward` |
 
+## Getting Started
+
+### Prerequisites
+
+- C++23 compiler: GCC 14+ or Clang 18+
+- CMake 3.30+
+- [Conan 2](https://conan.io/): `pip install "conan>=2,<3"`
+- macOS: Xcode Command Line Tools (`xcode-select --install`)
+- Linux: `sudo apt-get install build-essential cmake libgtk-3-dev`
+
+### Build
+
+```bash
+# 1. Detect your compiler profile (run once)
+conan profile detect --force
+
+# 2. Configure — Conan installs OpenCV, GTest, Eigen automatically
+cmake \
+  -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="conan_provider.cmake" \
+  -DCONAN_COMMAND=$(which conan) \
+  -DCMAKE_BUILD_TYPE=Release \
+  -B build .
+
+# 3. Build
+cmake --build build --parallel
+
+# 4. Run tests
+./build/improc_tests
+```
+
+### Your First Pipeline
+
+```cpp
+#include "improc/core/pipeline.hpp"
+#include "improc/io/image_io.hpp"
+using namespace improc::core;
+using namespace improc::io;
+
+int main() {
+    auto img = imread<BGR>("photo.png");
+    if (!img) { return 1; }
+
+    Image<BGR> result = *img
+        | Resize{}.width(224).height(224)
+        | GaussianBlur{}.kernel_size(3)
+        | Brightness{}.delta(20.0);
+
+    imwrite("output.png", result);
+}
+```
+
 ## API Comparison
 
 | Task | Raw OpenCV | improc++ |
