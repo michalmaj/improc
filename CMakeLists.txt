@@ -130,6 +130,14 @@ target_link_libraries(demo_augmentation PRIVATE improc)
 add_executable(demo_video_writer examples/io/demo_video_writer.cpp)
 target_link_libraries(demo_video_writer PRIVATE improc)
 
+# Color adjust demo (Brightness, Contrast, WeightedBlend, AlphaBlend, HSV)
+add_executable(demo_color_adjust examples/core/demo_color_adjust.cpp)
+target_link_libraries(demo_color_adjust PRIVATE improc)
+
+# Image I/O demo (imread / imwrite)
+add_executable(demo_image_io examples/io/demo_image_io.cpp)
+target_link_libraries(demo_image_io PRIVATE improc)
+
 # Benchmarks (opt-in: cmake -DIMPROC_BENCHMARKS=ON ...)
 if(IMPROC_BENCHMARKS)
     include(FetchContent)
