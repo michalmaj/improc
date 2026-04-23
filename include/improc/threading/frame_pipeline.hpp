@@ -16,21 +16,44 @@
 
 namespace improc::threading {
 
+/**
+ * @brief Threaded frame processing pipeline for real-time camera workflows.
+ *
+ * Holds references (not ownership) to a `CameraCapture` and a `ThreadPool`.
+ * Call `start(processor)` to begin submitting frames asynchronously.
+ * `tryPop()` returns `std::optional<Result>` with the next finished result.
+ *
+ * @tparam Result  The return type of the processor callable.
+ *
+ * @code
+ * FramePipeline<cv::Mat> pipeline(cam, pool);
+ * pipeline.start([](cv::Mat f){ return f; });
+ * while (auto r = pipeline.tryPop()) { ... }
+ * @endcode
+ */
 template<typename Result>
 class FramePipeline {
 public:
     using Processor = std::function<Result(cv::Mat)>;
 
+    /// @brief Constructs the pipeline holding references to `camera` and `pool`.
     FramePipeline(improc::io::CameraCapture& camera, ThreadPool& pool)
         : camera_(camera), pool_(pool) {}
 
+    /// @brief Stops the pipeline and joins the polling thread.
     ~FramePipeline() { stop(); }
 
+    /// @brief Deleted copy constructor — non-copyable.
     FramePipeline(const FramePipeline&) = delete;
+    /// @brief Deleted copy assignment — non-copyable.
     FramePipeline& operator=(const FramePipeline&) = delete;
+    /// @brief Deleted move constructor — non-movable.
     FramePipeline(FramePipeline&&) = delete;
+    /// @brief Deleted move assignment — non-movable.
     FramePipeline& operator=(FramePipeline&&) = delete;
 
+    /// @brief Starts the polling thread, submitting frames to the pool via `fn`.
+    /// @throws improc::Exception if the pipeline is already running.
     void start(Processor fn) {
         bool expected = false;
         // Atomically transition running_ false→true; throws if already true.
@@ -40,6 +63,7 @@ public:
         poller_ = std::thread(&FramePipeline<Result>::pollLoop, this);
     }
 
+    /// @brief Signals the polling thread to stop, joins it, and discards pending futures.
     void stop() {
         if (!running_) return;
         running_ = false;
@@ -48,6 +72,8 @@ public:
         while (!pending_.empty()) pending_.pop();
     }
 
+    /// @brief Returns the next ready result, or `std::nullopt` if none is available yet.
+    /// @throws Any exception thrown by the processor callable, propagated from the stored future.
     std::optional<Result> tryPop() {
         std::lock_guard<std::mutex> lock(pending_mutex_);
         if (pending_.empty()) return std::nullopt;

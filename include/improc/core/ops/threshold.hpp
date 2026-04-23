@@ -9,7 +9,15 @@
 
 namespace improc::core {
 
-enum class ThresholdMode { Binary, BinaryInv, Truncate, ToZero, ToZeroInv, Otsu };
+/// @brief Thresholding algorithm selector.
+enum class ThresholdMode {
+    Binary,    ///< `output = pixel > thresh ? max_value : 0`
+    BinaryInv, ///< `output = pixel > thresh ? 0 : max_value`
+    Truncate,  ///< `output = min(pixel, thresh)`
+    ToZero,    ///< `output = pixel > thresh ? pixel : 0`
+    ToZeroInv, ///< `output = pixel > thresh ? 0 : pixel`
+    Otsu       ///< Binary with automatic Otsu threshold (`.value()` is ignored).
+};
 
 namespace detail {
 inline int to_cv_type(ThresholdMode m) {
@@ -25,11 +33,29 @@ inline int to_cv_type(ThresholdMode m) {
 }
 } // namespace detail
 
+/**
+ * @brief Pixel-wise intensity thresholding.
+ *
+ * Default: Binary mode, threshold value 127, max_value 255.
+ * With `ThresholdMode::Otsu`, `.value()` is ignored and the optimal
+ * threshold is computed automatically.
+ *
+ * @code
+ * Image<Gray> binary = gray | Threshold{}.value(100).mode(ThresholdMode::Binary);
+ * Image<Gray> auto_t = gray | Threshold{}.mode(ThresholdMode::Otsu);
+ * @endcode
+ *
+ * @throws improc::ParameterError if the combination of mode and value is rejected by OpenCV.
+ */
 struct Threshold {
+    /// @brief Sets the threshold value. Ignored when mode is ThresholdMode::Otsu.
     Threshold& value(double v)       { value_     = v; return *this; }
+    /// @brief Sets the maximum output value for Binary/BinaryInv modes.
     Threshold& max_value(double v)   { max_value_ = v; return *this; }
+    /// @brief Sets the thresholding algorithm. Default: ThresholdMode::Binary.
     Threshold& mode(ThresholdMode m) { mode_      = m; return *this; }
 
+    /// @brief Applies thresholding to img.
     template<AnyFormat Format>
     Image<Format> operator()(Image<Format> img) const {
         cv::Mat dst;
