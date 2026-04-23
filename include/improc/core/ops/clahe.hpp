@@ -8,17 +8,22 @@
 
 namespace improc::core {
 
-// Contrast Limited Adaptive Histogram Equalization (CLAHE).
-//
-// On Image<Gray>: applied directly to the single channel.
-// On Image<BGR>:  converts to LAB, applies CLAHE to the L channel, converts back.
-//
-// Defaults match OpenCV: clip_limit=40.0, tile_grid=8×8.
-//
-// Usage:
-//   Image<Gray> enhanced = gray | CLAHE{};
-//   Image<BGR>  enhanced = bgr  | CLAHE{}.clip_limit(2.0).tile_grid_size(8, 8);
+/**
+ * @brief Contrast Limited Adaptive Histogram Equalization (CLAHE).
+ *
+ * On `Image<Gray>`: CLAHE applied to the single channel directly.
+ * On `Image<BGR>`:  converts to LAB color space, applies CLAHE to the L
+ *                   channel, then converts back.
+ *
+ * @throws improc::ParameterError if clip_limit <= 0 or tile dimensions <= 0.
+ *
+ * @code
+ * Image<Gray> sharp = gray | CLAHE{};
+ * Image<BGR>  sharp = bgr  | CLAHE{}.clip_limit(2.0).tile_grid_size(8, 8);
+ * @endcode
+ */
 struct CLAHE {
+    /// @brief Sets the contrast limit per tile. Higher = more contrast. Default 40.0.
     CLAHE& clip_limit(double limit) {
         if (limit <= 0.0)
             throw ParameterError{"clip_limit", "must be positive", "CLAHE"};
@@ -26,6 +31,7 @@ struct CLAHE {
         return *this;
     }
 
+    /// @brief Sets the tile grid dimensions. Default 8×8.
     CLAHE& tile_grid_size(int w, int h) {
         if (w <= 0) throw ParameterError{"tile_grid_size.w", "must be positive", "CLAHE"};
         if (h <= 0) throw ParameterError{"tile_grid_size.h", "must be positive", "CLAHE"};
@@ -34,7 +40,9 @@ struct CLAHE {
         return *this;
     }
 
+    /// @brief Applies CLAHE to img. May propagate cv::Exception on OpenCV failure.
     Image<Gray> operator()(Image<Gray> img) const;
+    /// @brief Applies CLAHE to img. May propagate cv::Exception on OpenCV failure.
     Image<BGR>  operator()(Image<BGR>  img) const;
 
 private:

@@ -8,9 +8,28 @@
 
 namespace improc::core {
 
+/**
+ * @brief Type-safe image wrapper over `cv::Mat`.
+ *
+ * Enforces format at construction: passing a `cv::Mat` of the wrong type
+ * throws `FormatError`. Shallow-copy semantics match `cv::Mat`; use `.clone()`
+ * for a deep copy.
+ *
+ * @tparam Format  A format tag (`BGR`, `Gray`, `BGRA`, `HSV`, `Float32`, `Float32C3`).
+ *
+ * @throws improc::ParameterError if the mat is empty.
+ * @throws improc::FormatError    if `mat.type()` does not match `FormatTraits<Format>::cv_type`.
+ *
+ * @code
+ * cv::Mat raw = cv::imread("photo.png");
+ * Image<BGR> img(raw);
+ * Image<Gray> gray = img | ToGray{};
+ * @endcode
+ */
 template<AnyFormat Format>
 class Image {
 public:
+    /// @brief Constructs an Image from a raw cv::Mat, validating format and non-emptiness.
     explicit Image(cv::Mat mat) : mat_(std::move(mat)) {
         if (mat_.empty())
             throw ParameterError{"mat", "must not be empty", "Image constructor"};
@@ -21,15 +40,22 @@ public:
                 "Image constructor"};
     }
 
+    /// @brief Returns a deep copy with independent pixel data.
     Image clone() const { return Image(mat_.clone()); }
 
+    /// @brief Mutable access to the underlying `cv::Mat`.
     [[nodiscard]] cv::Mat&       mat()       { return mat_; }
+    /// @brief Const access to the underlying `cv::Mat`.
     [[nodiscard]] const cv::Mat& mat() const { return mat_; }
 
+    /// @brief Number of pixel rows.
     [[nodiscard]] int  rows()  const { return mat_.rows; }
+    /// @brief Number of pixel columns.
     [[nodiscard]] int  cols()  const { return mat_.cols; }
+    /// @brief Returns true if the underlying mat has no pixel data. Always false for a correctly constructed Image — the constructor enforces non-emptiness.
     [[nodiscard]] bool empty() const { return mat_.empty(); }
 
+    /// @brief Copy and move operations use shallow cv::Mat semantics (reference-counted buffer).
     Image(const Image&)            = default;
     Image& operator=(const Image&) = default;
     Image(Image&&)                 = default;

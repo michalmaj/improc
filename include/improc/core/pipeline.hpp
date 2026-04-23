@@ -1,4 +1,23 @@
-// include/improc/core/pipeline.hpp
+/**
+ * @brief Umbrella include for all `improc::core` pipeline ops.
+ *
+ * Including this header pulls in every op (Resize, Crop, Flip, Rotate, Pad,
+ * GaussianBlur, MedianBlur, Dilate, Erode, Threshold, CLAHE, GammaCorrection,
+ * BilateralFilter, UnsharpMask, SobelEdge, CannyEdge, Normalize, NormalizeTo,
+ * Standardize, ApplyMask, WarpAffine, WarpPerspective, ToGray, ToFloat32,
+ * ToFloat32C3, ToHSV, ToBGR, Brightness, Contrast, WeightedBlend, AlphaBlend)
+ * and the generic `operator|` pipeline dispatch.
+ *
+ * @code
+ * #include "improc/core/pipeline.hpp"
+ * using namespace improc::core;
+ *
+ * Image<BGR> result = img
+ *     | Resize{}.width(224).height(224)
+ *     | GaussianBlur{}.kernel_size(3)
+ *     | Brightness{}.delta(20.0);
+ * @endcode
+ */
 #pragma once
 
 #include "improc/core/image.hpp"
@@ -30,13 +49,34 @@
 
 namespace improc::core {
 
+/**
+ * @brief Generic pipeline dispatch operator.
+ *
+ * Passes `img` by value into `op`, enabling the fluent `img | Op{}` syntax.
+ * Every pipeline op in `improc::core` uses this single overload.
+ *
+ * @tparam Format  Format tag of the source image.
+ * @tparam Op      A callable that accepts `Image<SomeFormat>` and returns an image.
+ * @return         Whatever `op` returns.
+ * @param  img     Source image, passed by value (ownership moved into `op`).
+ * @param  op      A pipeline op callable; must accept `Image<Format>` or a subtype.
+ *
+ * @code
+ * Image<Gray> gray = bgr_img | ToGray{} | Brightness{}.delta(10.0);
+ * @endcode
+ */
 template<AnyFormat Format, typename Op>
 auto operator|(Image<Format> img, Op&& op) {
     return std::forward<Op>(op)(std::move(img));
 }
 
+/// @brief Pipeline op: converts a BGR image to single-channel Gray.
 struct ToGray      { Image<Gray>      operator()(Image<BGR>  img) const; };
+
+/// @brief Pipeline op: converts a Gray image to single-channel Float32 (values in [0, 1]).
 struct ToFloat32   { Image<Float32>   operator()(Image<Gray> img) const; };
+
+/// @brief Pipeline op: converts a BGR image to 3-channel Float32C3 (values in [0, 1]).
 struct ToFloat32C3 { Image<Float32C3> operator()(Image<BGR>  img) const; };
 
 } // namespace improc::core

@@ -8,17 +8,21 @@
 
 namespace improc::core {
 
-// Applies gamma correction: output = input^gamma (per-pixel, per-channel).
-//
-// gamma < 1  — brightens (e.g. 0.5 = square root)
-// gamma = 1  — identity
-// gamma > 1  — darkens (e.g. 2.0 = square)
-//
-// 8-bit images use a precomputed LUT for speed.
-// Float images use cv::pow directly.
-//
-// Works on any Image<Format>.
+/**
+ * @brief Applies power-law (gamma) correction: `output = input^gamma`.
+ *
+ * `gamma < 1` brightens; `gamma > 1` darkens; `gamma == 1` is identity.
+ * Integer images use a precomputed LUT; float images use `cv::pow`.
+ *
+ * @throws improc::ParameterError if gamma <= 0.
+ *
+ * @code
+ * Image<BGR> bright = img | GammaCorrection{}.gamma(0.5f);
+ * Image<BGR> dark   = img | GammaCorrection{}.gamma(2.0f);
+ * @endcode
+ */
 struct GammaCorrection {
+    /// @brief Sets gamma exponent. Must be > 0. Values < 1 brighten; > 1 darken.
     GammaCorrection& gamma(float g) {
         if (g <= 0.0f)
             throw ParameterError{"gamma", "must be positive", "GammaCorrection"};
@@ -26,6 +30,7 @@ struct GammaCorrection {
         return *this;
     }
 
+    /// @brief Applies gamma correction to img.
     template<AnyFormat Format>
     Image<Format> operator()(Image<Format> img) const {
         const int depth = img.mat().depth();

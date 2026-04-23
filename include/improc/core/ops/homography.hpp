@@ -12,18 +12,43 @@
 
 namespace improc::core {
 
-// Compute a projective homography from point correspondences using RANSAC.
-// Requires at least 4 matching pairs in src and dst (same size).
-// ransac_threshold: max reprojection error in pixels to count as inlier (default 3.0).
+/**
+ * @brief Computes a 3×3 projective homography from point correspondences via RANSAC.
+ *
+ * @param src                Source points (at least 4).
+ * @param dst                Corresponding destination points (same count as src).
+ * @param ransac_threshold   Max reprojection error in pixels to count as inlier (default 3.0).
+ * @return  3×3 CV_64F homography matrix, or an `improc::Error` on failure.
+ *
+ * @code
+ * auto H = find_homography(src_pts, dst_pts);
+ * if (!H) { std::cerr << H.error().message; return; }
+ * Image<BGR> warped = img | WarpPerspective{}.homography(*H);
+ * @endcode
+ */
 std::expected<cv::Mat, improc::Error>
 find_homography(const std::vector<cv::Point2f>& src,
                 const std::vector<cv::Point2f>& dst,
                 double ransac_threshold = 3.0);
 
-// Apply a 3x3 homography matrix to an image via perspective warp.
-// Output size: matches input by default; use .width()/.height() for custom size.
-// Throws ParameterError if homography() was not called before operator().
+/**
+ * @brief Warps an image by a 3×3 perspective homography matrix.
+ *
+ * `.homography()` must be called before `operator()`. Output size defaults to
+ * the source size; use `.width()` / `.height()` for a custom output canvas.
+ *
+ * @throws improc::ParameterError if homography is not set.
+ * @throws improc::ParameterError if the matrix is not 3×3 (CV_32F or CV_64F).
+ *
+ * @code
+ * Image<BGR> warped = img | WarpPerspective{}.homography(H).width(800).height(600);
+ * @endcode
+ */
 struct WarpPerspective {
+    /**
+     * @brief Sets the 3×3 perspective homography matrix.
+     * @throws improc::ParameterError if the matrix is not 3×3 (CV_32F or CV_64F).
+     */
     WarpPerspective& homography(const cv::Mat& H) {
         if (H.rows != 3 || H.cols != 3)
             throw ParameterError{"homography", "must be a 3x3 matrix", "WarpPerspective"};
@@ -32,17 +57,20 @@ struct WarpPerspective {
         H_ = H.clone();
         return *this;
     }
+    /// @brief Sets the output canvas width in pixels (default: source width).
     WarpPerspective& width(int w) {
         if (w <= 0) throw ParameterError{"width", "must be positive", "WarpPerspective"};
         width_ = w;
         return *this;
     }
+    /// @brief Sets the output canvas height in pixels (default: source height).
     WarpPerspective& height(int h) {
         if (h <= 0) throw ParameterError{"height", "must be positive", "WarpPerspective"};
         height_ = h;
         return *this;
     }
 
+    /// @brief Warps img using the configured homography.
     template<AnyFormat Format>
     Image<Format> operator()(Image<Format> img) const {
         if (!H_)
