@@ -8,6 +8,24 @@
 
 namespace improc::core {
 
+/**
+ * @brief Type-safe image wrapper over `cv::Mat`.
+ *
+ * Enforces format at construction: passing a `cv::Mat` of the wrong type
+ * throws `FormatError`. Shallow-copy semantics match `cv::Mat`; use `.clone()`
+ * for a deep copy.
+ *
+ * @tparam Format  A format tag (`BGR`, `Gray`, `BGRA`, `HSV`, `Float32`, `Float32C3`).
+ *
+ * @throws ParameterError if the mat is empty.
+ * @throws FormatError    if `mat.type()` does not match `FormatTraits<Format>::cv_type`.
+ *
+ * @code
+ * cv::Mat raw = cv::imread("photo.png");
+ * Image<BGR> img(raw);
+ * Image<Gray> gray = img | ToGray{};
+ * @endcode
+ */
 template<AnyFormat Format>
 class Image {
 public:

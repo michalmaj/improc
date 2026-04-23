@@ -5,11 +5,25 @@
 
 namespace improc::core {
 
-// Primary template: deleted — unknown conversion = compile error
+/**
+ * @brief Converts between image formats at compile time.
+ *
+ * Only explicit specializations compile; the primary template is deleted.
+ *
+ * @tparam To    Target format tag.
+ * @tparam From  Source format tag.
+ * @param  src   Source image.
+ * @return       New `Image<To>` containing the converted data.
+ *
+ * @code
+ * Image<Gray> gray = convert<Gray>(bgr_img);
+ * Image<HSV>  hsv  = convert<HSV>(bgr_img);
+ * @endcode
+ */
 template<typename To, typename From>
 Image<To> convert(const Image<From>&) = delete;
 
-// Allowed conversions (full explicit specializations)
+/// Supported conversions (explicit specializations only):
 template<> Image<Gray>    convert<Gray,    BGR> (const Image<BGR>&     src);
 template<> Image<BGR>     convert<BGR,     Gray>(const Image<Gray>&    src);
 template<> Image<BGRA>    convert<BGRA,    BGR> (const Image<BGR>&     src);

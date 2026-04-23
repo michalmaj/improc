@@ -6,6 +6,12 @@
 
 namespace improc::core {
 
+/**
+ * @brief Satisfied by any type `F` with a complete `FormatTraits<F>` specialization.
+ *
+ * Requires `cv_type` (int), `channels` (int), and `is_float` (bool).
+ * All pipeline ops are constrained by this concept.
+ */
 template<typename F>
 concept AnyFormat = requires {
     { FormatTraits<F>::cv_type }  -> std::convertible_to<int>;
@@ -13,12 +19,15 @@ concept AnyFormat = requires {
     { FormatTraits<F>::is_float } -> std::convertible_to<bool>;
 };
 
+/// @brief Satisfied only by `BGR`.
 template<typename F>
 concept BGRFormat = AnyFormat<F> && std::same_as<F, BGR>;
 
+/// @brief Satisfied only by `Gray`.
 template<typename F>
 concept GrayFormat = AnyFormat<F> && std::same_as<F, Gray>;
 
+/// @brief Satisfied by any format with more than one channel (BGR, BGRA, HSV, Float32C3).
 template<typename F>
 concept MultiChannelFormat = AnyFormat<F> && (FormatTraits<F>::channels > 1);
 

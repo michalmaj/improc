@@ -1,4 +1,23 @@
-// include/improc/core/pipeline.hpp
+/**
+ * @brief Umbrella include for all `improc::core` pipeline ops.
+ *
+ * Including this header pulls in every op (Resize, Crop, Flip, Rotate, Pad,
+ * GaussianBlur, MedianBlur, Dilate, Erode, Threshold, CLAHE, GammaCorrection,
+ * BilateralFilter, UnsharpMask, SobelEdge, CannyEdge, Normalize, NormalizeTo,
+ * Standardize, ApplyMask, WarpAffine, WarpPerspective, ToGray, ToFloat32,
+ * ToFloat32C3, ToHSV, ToBGR, Brightness, Contrast, WeightedBlend, AlphaBlend)
+ * and the generic `operator|` pipeline dispatch.
+ *
+ * @code
+ * #include "improc/core/pipeline.hpp"
+ * using namespace improc::core;
+ *
+ * Image<BGR> result = img
+ *     | Resize{}.width(224).height(224)
+ *     | GaussianBlur{}.kernel_size(3)
+ *     | Brightness{}.delta(20.0);
+ * @endcode
+ */
 #pragma once
 
 #include "improc/core/image.hpp"

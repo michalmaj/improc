@@ -6,12 +6,25 @@
 
 namespace improc::core {
 
+/// @brief 8-bit BGR color image. 3 channels, CV_8UC3.
 struct BGR     {};
+/// @brief 8-bit single-channel grayscale image. CV_8UC1.
 struct Gray    {};
+/// @brief 8-bit BGR + alpha image. 4 channels, CV_8UC4.
 struct BGRA    {};
+/// @brief Single-channel 32-bit float image. CV_32FC1. Values typically in [0, 1].
 struct Float32   {};
+/// @brief 3-channel 32-bit float image. CV_32FC3. Values typically in [0, 1].
 struct Float32C3 {};
 
+/**
+ * @brief Maps a format tag to its OpenCV type constants.
+ *
+ * Specializations define `cv_type`, `channels`, `is_float`, and `name`.
+ * Using an unspecialized `FormatTraits<F>` is a compile error.
+ *
+ * @tparam Format  A format tag (BGR, Gray, BGRA, HSV, Float32, Float32C3).
+ */
 template<typename Format> struct FormatTraits;  // intentionally undefined — unknown format = compile error
 
 template<> struct FormatTraits<BGR>       { static constexpr int cv_type = CV_8UC3;  static constexpr int channels = 3; static constexpr bool is_float = false; static constexpr std::string_view name = "BGR (CV_8UC3)";       };
