@@ -49,13 +49,35 @@
 
 namespace improc::core {
 
+/**
+ * @brief Generic pipeline dispatch operator.
+ *
+ * Passes `img` by value into `op`, enabling the fluent `img | Op{}` syntax.
+ * Every pipeline op in `improc::core` uses this single overload.
+ *
+ * @tparam Format  Format tag of the source image.
+ * @tparam Op      A callable that accepts `Image<SomeFormat>` and returns an image.
+ * @return         Whatever `op` returns.
+ *
+ * @code
+ * Image<Gray> gray = bgr_img | ToGray{} | Brightness{}.delta(10.0);
+ * @endcode
+ */
 template<AnyFormat Format, typename Op>
 auto operator|(Image<Format> img, Op&& op) {
     return std::forward<Op>(op)(std::move(img));
 }
 
+/// @brief Pipeline op: converts a BGR image to single-channel Gray.
+/// @code Image<Gray> g = bgr | ToGray{}; @endcode
 struct ToGray      { Image<Gray>      operator()(Image<BGR>  img) const; };
+
+/// @brief Pipeline op: converts a Gray image to single-channel Float32 (values in [0,1]).
+/// @code Image<Float32> f = gray | ToFloat32{}; @endcode
 struct ToFloat32   { Image<Float32>   operator()(Image<Gray> img) const; };
+
+/// @brief Pipeline op: converts a BGR image to 3-channel Float32C3 (values in [0,1]).
+/// @code Image<Float32C3> f = bgr | ToFloat32C3{}; @endcode
 struct ToFloat32C3 { Image<Float32C3> operator()(Image<BGR>  img) const; };
 
 } // namespace improc::core

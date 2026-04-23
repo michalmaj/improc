@@ -11,6 +11,11 @@ namespace improc::core {
  *
  * Requires `cv_type` (int), `channels` (int), and `is_float` (bool).
  * All pipeline ops are constrained by this concept.
+ *
+ * @code
+ * static_assert(AnyFormat<BGR>);
+ * static_assert(!AnyFormat<int>);
+ * @endcode
  */
 template<typename F>
 concept AnyFormat = requires {
@@ -19,15 +24,24 @@ concept AnyFormat = requires {
     { FormatTraits<F>::is_float } -> std::convertible_to<bool>;
 };
 
-/// @brief Satisfied only by `BGR`.
+/**
+ * @brief Satisfied only by `BGR`.
+ * @code static_assert(BGRFormat<BGR>); @endcode
+ */
 template<typename F>
 concept BGRFormat = AnyFormat<F> && std::same_as<F, BGR>;
 
-/// @brief Satisfied only by `Gray`.
+/**
+ * @brief Satisfied only by `Gray`.
+ * @code static_assert(GrayFormat<Gray>); @endcode
+ */
 template<typename F>
 concept GrayFormat = AnyFormat<F> && std::same_as<F, Gray>;
 
-/// @brief Satisfied by any format with more than one channel (BGR, BGRA, HSV, Float32C3).
+/**
+ * @brief Satisfied by any format with more than one channel (BGR, BGRA, HSV, Float32C3).
+ * @code static_assert(MultiChannelFormat<BGR>); @endcode
+ */
 template<typename F>
 concept MultiChannelFormat = AnyFormat<F> && (FormatTraits<F>::channels > 1);
 

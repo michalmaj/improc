@@ -39,13 +39,19 @@ public:
                 "Image constructor"};
     }
 
+    /// @brief Returns a deep copy with independent pixel data.
     Image clone() const { return Image(mat_.clone()); }
 
+    /// @brief Mutable access to the underlying `cv::Mat`.
     [[nodiscard]] cv::Mat&       mat()       { return mat_; }
+    /// @brief Const access to the underlying `cv::Mat`.
     [[nodiscard]] const cv::Mat& mat() const { return mat_; }
 
+    /// @brief Number of pixel rows.
     [[nodiscard]] int  rows()  const { return mat_.rows; }
+    /// @brief Number of pixel columns.
     [[nodiscard]] int  cols()  const { return mat_.cols; }
+    /// @brief Returns true if the image has no pixel data (always false for a valid Image).
     [[nodiscard]] bool empty() const { return mat_.empty(); }
 
     Image(const Image&)            = default;
