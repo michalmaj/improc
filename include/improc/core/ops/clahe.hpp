@@ -23,7 +23,7 @@ namespace improc::core {
  * @endcode
  */
 struct CLAHE {
-    /// @brief Sets the contrast limit per tile. Higher = more contrast. Default 2.0.
+    /// @brief Sets the contrast limit per tile. Higher = more contrast. Default 40.0.
     CLAHE& clip_limit(double limit) {
         if (limit <= 0.0)
             throw ParameterError{"clip_limit", "must be positive", "CLAHE"};
@@ -40,9 +40,9 @@ struct CLAHE {
         return *this;
     }
 
-    /// @brief Applies CLAHE to img.
+    /// @brief Applies CLAHE to img. May propagate cv::Exception on OpenCV failure.
     Image<Gray> operator()(Image<Gray> img) const;
-    /// @brief Applies CLAHE to img.
+    /// @brief Applies CLAHE to img. May propagate cv::Exception on OpenCV failure.
     Image<BGR>  operator()(Image<BGR>  img) const;
 
 private:

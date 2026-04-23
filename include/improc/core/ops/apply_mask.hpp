@@ -23,7 +23,7 @@ namespace improc::core {
  * @endcode
  */
 struct ApplyMask {
-    /// @brief Sets the CV_8UC1 binary mask. Must match source image dimensions.
+    /// @brief Sets the CV_8UC1 binary mask. Must be single-channel; dimension check occurs at call time.
     ApplyMask& mask(Image<Gray> m) {
         if (m.mat().type() != CV_8UC1)
             throw ParameterError{"mask", "must be CV_8UC1", "ApplyMask"};
