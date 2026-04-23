@@ -17,8 +17,8 @@ namespace improc::core {
  *
  * @tparam Format  A format tag (`BGR`, `Gray`, `BGRA`, `HSV`, `Float32`, `Float32C3`).
  *
- * @throws ParameterError if the mat is empty.
- * @throws FormatError    if `mat.type()` does not match `FormatTraits<Format>::cv_type`.
+ * @throws improc::ParameterError if the mat is empty.
+ * @throws improc::FormatError    if `mat.type()` does not match `FormatTraits<Format>::cv_type`.
  *
  * @code
  * cv::Mat raw = cv::imread("photo.png");
@@ -52,7 +52,7 @@ public:
     [[nodiscard]] int  rows()  const { return mat_.rows; }
     /// @brief Number of pixel columns.
     [[nodiscard]] int  cols()  const { return mat_.cols; }
-    /// @brief Returns true if the image has no pixel data (always false for a valid Image).
+    /// @brief Returns true if the underlying mat has no pixel data. Always false for a correctly constructed Image — the constructor enforces non-emptiness.
     [[nodiscard]] bool empty() const { return mat_.empty(); }
 
     /// @brief Copy and move operations use shallow cv::Mat semantics (reference-counted buffer).

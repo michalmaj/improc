@@ -60,8 +60,6 @@ template<> struct FormatTraits<Float32>   { static constexpr int cv_type = CV_32
 /// @brief Traits for Float32C3: CV_32FC3, 3 channels, float.
 template<> struct FormatTraits<Float32C3> { static constexpr int cv_type = CV_32FC3; static constexpr int channels = 3; static constexpr bool is_float = true;  static constexpr std::string_view name = "Float32C3 (CV_32FC3)"; };
 
-/// @}
-
 /**
  * @brief HSV color space. 8-bit, 3 channels. H∈[0,179], S∈[0,255], V∈[0,255].
  * @code Image<HSV> hsv = bgr | ToHSV{}; @endcode
@@ -74,5 +72,7 @@ template<> struct FormatTraits<HSV> {
     static constexpr bool is_float = false;
     static constexpr std::string_view name = "HSV (CV_8UC3)";
 };
+
+/// @}
 
 } // namespace improc::core

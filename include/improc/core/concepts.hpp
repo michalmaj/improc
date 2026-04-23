@@ -26,6 +26,9 @@ concept AnyFormat = requires {
 
 /**
  * @brief Satisfied only by `BGR`.
+ *
+ * Use to constrain ops that are only meaningful on BGR input,
+ * such as `ToGray`, `ToFloat32C3`, `ToHSV`, or `AlphaBlend`.
  * @code static_assert(BGRFormat<BGR>); @endcode
  */
 template<typename F>
@@ -33,6 +36,9 @@ concept BGRFormat = AnyFormat<F> && std::same_as<F, BGR>;
 
 /**
  * @brief Satisfied only by `Gray`.
+ *
+ * Use to constrain ops that are only meaningful on single-channel input,
+ * such as `ToFloat32` or `ToBGR` (from Gray).
  * @code static_assert(GrayFormat<Gray>); @endcode
  */
 template<typename F>
