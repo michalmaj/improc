@@ -42,23 +42,29 @@ inline int pad_mode_to_cv(PadMode m) {
  * @endcode
  */
 struct Pad {
+    /// @brief Sets top border width in pixels.
     Pad& top(int v) {
         if (v < 0) throw ParameterError{"top", "must be >= 0", "Pad"};
         top_ = v; return *this;
     }
+    /// @brief Sets bottom border width in pixels.
     Pad& bottom(int v) {
         if (v < 0) throw ParameterError{"bottom", "must be >= 0", "Pad"};
         bottom_ = v; return *this;
     }
+    /// @brief Sets left border width in pixels.
     Pad& left(int v) {
         if (v < 0) throw ParameterError{"left", "must be >= 0", "Pad"};
         left_ = v; return *this;
     }
+    /// @brief Sets right border width in pixels.
     Pad& right(int v) {
         if (v < 0) throw ParameterError{"right", "must be >= 0", "Pad"};
         right_ = v; return *this;
     }
+    /// @brief Sets the border fill strategy (default: PadMode::Constant).
     Pad& mode(PadMode m)      { mode_  = m; return *this; }
+    /// @brief Sets the fill color used when mode is PadMode::Constant.
     Pad& value(cv::Scalar v)  { value_ = v; return *this; }
 
     template<AnyFormat Format>
@@ -88,14 +94,19 @@ private:
  * Adds equal padding to both sides of the short axis. Border style
  * is controlled by `.mode()` (default: `PadMode::Constant`, black).
  *
+ * @throws improc::ParameterError if the OpenCV border operation fails.
+ *
  * @code
  * Image<BGR> square = img | PadToSquare{};
  * @endcode
  */
 struct PadToSquare {
+    /// @brief Sets the border fill strategy (default: PadMode::Constant).
     PadToSquare& mode(PadMode m)     { mode_  = m; return *this; }
+    /// @brief Sets the fill color used when mode is PadMode::Constant.
     PadToSquare& value(cv::Scalar v) { value_ = v; return *this; }
 
+    /// @brief Pads img along the short axis to produce a square.
     template<AnyFormat Format>
     Image<Format> operator()(Image<Format> img) const {
         const int h = img.rows();

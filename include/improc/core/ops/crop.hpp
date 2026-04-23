@@ -25,17 +25,22 @@ namespace improc::core {
  * @endcode
  */
 struct Crop {
+    /// @brief Sets the x-coordinate of the top-left ROI corner.
     Crop& x(int v)      { x_ = v; return *this; }
+    /// @brief Sets the y-coordinate of the top-left ROI corner.
     Crop& y(int v)      { y_ = v; return *this; }
+    /// @brief Sets the ROI width in pixels.
     Crop& width(int v) {
         if (v <= 0) throw ParameterError{"width", "must be positive", "Crop"};
         width_ = v; return *this;
     }
+    /// @brief Sets the ROI height in pixels.
     Crop& height(int v) {
         if (v <= 0) throw ParameterError{"height", "must be positive", "Crop"};
         height_ = v; return *this;
     }
 
+    /// @brief Crops img to the configured ROI.
     template<AnyFormat Format>
     Image<Format> operator()(Image<Format> img) const {
         if (!x_ || !y_ || !width_ || !height_)

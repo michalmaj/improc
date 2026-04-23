@@ -25,17 +25,20 @@ namespace improc::core {
  * @endcode
  */
 struct Resize {
+    /// @brief Sets output width in pixels. Leave unset to auto-compute from height and aspect ratio.
     Resize& width(int w) {
         if (w <= 0) throw ParameterError{"width", "must be positive", "Resize"};
         width_  = w;
         return *this;
     }
+    /// @brief Sets output height in pixels. Leave unset to auto-compute from width and aspect ratio.
     Resize& height(int h) {
         if (h <= 0) throw ParameterError{"height", "must be positive", "Resize"};
         height_ = h;
         return *this;
     }
 
+    /// @brief Resizes img to the configured dimensions.
     template<AnyFormat Format>
     Image<Format> operator()(Image<Format> img) const {
         if (!width_ && !height_) {

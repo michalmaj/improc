@@ -11,14 +11,18 @@ namespace improc::core {
 /**
  * @brief Flips an image along the specified axis.
  *
+ * @throws improc::ParameterError if axis is not a recognized Axis value.
+ *
  * @code
  * Image<BGR> mirror     = img | Flip{Axis::Horizontal};
  * Image<BGR> upsidedown = img | Flip{Axis::Vertical};
  * @endcode
  */
 struct Flip {
+    /// @brief Constructs a Flip op for the given axis.
     explicit Flip(Axis axis) : axis_(axis) {}
 
+    /// @brief Flips img along the configured axis.
     template<AnyFormat Format>
     Image<Format> operator()(Image<Format> img) const {
         int flip_code;

@@ -45,6 +45,10 @@ find_homography(const std::vector<cv::Point2f>& src,
  * @endcode
  */
 struct WarpPerspective {
+    /**
+     * @brief Sets the 3×3 perspective homography matrix.
+     * @throws improc::ParameterError if the matrix is not 3×3 (CV_32F or CV_64F).
+     */
     WarpPerspective& homography(const cv::Mat& H) {
         if (H.rows != 3 || H.cols != 3)
             throw ParameterError{"homography", "must be a 3x3 matrix", "WarpPerspective"};
@@ -53,17 +57,20 @@ struct WarpPerspective {
         H_ = H.clone();
         return *this;
     }
+    /// @brief Sets the output canvas width in pixels (default: source width).
     WarpPerspective& width(int w) {
         if (w <= 0) throw ParameterError{"width", "must be positive", "WarpPerspective"};
         width_ = w;
         return *this;
     }
+    /// @brief Sets the output canvas height in pixels (default: source height).
     WarpPerspective& height(int h) {
         if (h <= 0) throw ParameterError{"height", "must be positive", "WarpPerspective"};
         height_ = h;
         return *this;
     }
 
+    /// @brief Warps img using the configured homography.
     template<AnyFormat Format>
     Image<Format> operator()(Image<Format> img) const {
         if (!H_)

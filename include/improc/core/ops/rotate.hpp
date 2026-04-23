@@ -23,13 +23,16 @@ namespace improc::core {
  * @endcode
  */
 struct Rotate {
+    /// @brief Sets rotation angle in degrees (counter-clockwise positive).
     Rotate& angle(double deg) { angle_ = deg; return *this; }
+    /// @brief Sets the uniform scale factor applied during rotation. Default 1.0.
     Rotate& scale(double s) {
         if (s <= 0.0) throw ParameterError{"scale", "must be positive", "Rotate"};
         scale_ = s;
         return *this;
     }
 
+    /// @brief Rotates img around its center by the configured angle.
     template<AnyFormat Format>
     Image<Format> operator()(Image<Format> img) const {
         if (!angle_)
