@@ -15,6 +15,7 @@ namespace improc::io {
 using improc::core::Image;
 using improc::core::FormatTraits;
 using improc::core::AnyFormat;
+using improc::core::HSV;
 
 namespace detail {
 
@@ -112,6 +113,11 @@ std::expected<Image<F>, improc::Error> imread(const std::string& path) {
     return Image<F>(converted);
 }
 
+// imread<HSV> is intentionally deleted: cv::imread always returns BGR data;
+// use imread<BGR> then img | ToHSV{} for explicit conversion.
+template<>
+std::expected<Image<HSV>, improc::Error> imread<HSV>(const std::string&) = delete;
+
 /**
  * @brief Writes an image to a file.
  *
@@ -121,8 +127,7 @@ std::expected<Image<F>, improc::Error> imread(const std::string& path) {
  * @tparam F  Format of the source image.
  * @return    Empty expected on success; `Error` (ImageWriteFailed) on failure.
  *
- * @note HSV images are written as raw bytes without converting back to BGR.
- *       To save an HSV image in a viewable format, convert to BGR first.
+ * @note HSV images cannot be written directly; convert to BGR first.
  *
  * @code
  * auto ok = improc::io::imwrite("output.png", img);
@@ -136,5 +141,10 @@ std::expected<void, improc::Error> imwrite(const std::string& path, const Image<
         return std::unexpected(improc::Error::image_write_failed(path));
     return {};
 }
+
+// imwrite<HSV> is intentionally deleted: writing raw HSV bytes produces a
+// visually wrong image; convert to BGR first via img | FromHSV{}.
+template<>
+std::expected<void, improc::Error> imwrite<HSV>(const std::string&, const Image<HSV>&) = delete;
 
 } // namespace improc::io

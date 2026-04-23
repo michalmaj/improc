@@ -10,6 +10,7 @@ template<typename F>
 concept AnyFormat = requires {
     { FormatTraits<F>::cv_type }  -> std::convertible_to<int>;
     { FormatTraits<F>::channels } -> std::convertible_to<int>;
+    { FormatTraits<F>::is_float } -> std::convertible_to<bool>;
 };
 
 template<typename F>
