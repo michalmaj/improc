@@ -73,6 +73,7 @@ public:
     }
 
     /// @brief Returns the next ready result, or `std::nullopt` if none is available yet.
+    /// @throws Any exception thrown by the processor callable, propagated from the stored future.
     std::optional<Result> tryPop() {
         std::lock_guard<std::mutex> lock(pending_mutex_);
         if (pending_.empty()) return std::nullopt;

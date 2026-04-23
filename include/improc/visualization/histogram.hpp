@@ -20,8 +20,6 @@ using improc::core::Float32;
  * Supports `Image<BGR>` (three overlapping channel curves),
  * `Image<Gray>` (single gray curve), and `Image<Float32>` (single curve in [0,1]).
  *
- * @throws improc::ParameterError if bins, width, or height <= 0.
- *
  * @code
  * Image<BGR> chart = bgr_img | Histogram{}.bins(256).width(512).height(300);
  * @endcode

@@ -19,7 +19,7 @@ using improc::core::BGR;
  *
  * @code
  * std::vector<float> vals = {1.0f, 3.5f, 2.0f, 4.1f};
- * Image<BGR> chart = LinePlot{}.operator()(vals);
+ * Image<BGR> chart = LinePlot{}.width(640).height(360)(vals);
  * @endcode
  */
 struct LinePlot {

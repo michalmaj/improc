@@ -35,8 +35,6 @@ struct Show {
     }
 
     /// @brief Displays the image via `cv::imshow`, waits `wait_ms` ms, and returns the image unchanged.
-    ///
-    /// Accepts only `Image<BGR>`; convert `Gray`/`Float32` images before passing.
     Image<BGR> operator()(Image<BGR> img) const {
         cv::imshow(window_name_, img.mat());
         cv::waitKey(wait_ms_);

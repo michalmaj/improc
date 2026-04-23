@@ -32,7 +32,11 @@ namespace improc::io {
  */
 class CameraCapture {
 public:
-  /// @brief Constructs and starts the capture thread for the given camera index.
+  /**
+   * @brief Constructs and starts the capture thread for the given camera index.
+   * @note Does not throw if the camera device is unavailable at construction time.
+   *       Callers must detect failure via `getFrame()` returning an error.
+   */
   explicit CameraCapture(unsigned int camera_id);
   /// @brief Stops the capture thread and releases the camera device.
   ~CameraCapture();
