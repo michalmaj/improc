@@ -10,6 +10,20 @@
 
 namespace improc::core {
 
+/**
+ * @brief Resizes an image to a target width and/or height.
+ *
+ * If only one dimension is set, the other is computed to preserve the
+ * original aspect ratio. Uses bilinear interpolation.
+ *
+ * @throws improc::ParameterError if neither width nor height is set.
+ * @throws improc::ParameterError if width or height <= 0.
+ *
+ * @code
+ * Image<BGR> thumb = img | Resize{}.width(224).height(224);
+ * Image<BGR> wide  = img | Resize{}.width(640);  // height auto-computed
+ * @endcode
+ */
 struct Resize {
     Resize& width(int w) {
         if (w <= 0) throw ParameterError{"width", "must be positive", "Resize"};

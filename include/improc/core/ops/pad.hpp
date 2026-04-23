@@ -9,7 +9,12 @@
 
 namespace improc::core {
 
-enum class PadMode { Constant, Reflect, Replicate };
+/// @brief Border fill strategy for padding operations.
+enum class PadMode {
+    Constant,  ///< Fill with a constant color (default: black).
+    Reflect,   ///< Mirror-reflect border pixels.
+    Replicate  ///< Repeat the edge pixel.
+};
 
 namespace detail {
 inline int pad_mode_to_cv(PadMode m) {
@@ -22,6 +27,20 @@ inline int pad_mode_to_cv(PadMode m) {
 }
 } // namespace detail
 
+/**
+ * @brief Adds border pixels to one or more sides of an image.
+ *
+ * Border style is controlled by `.mode()`:
+ * `PadMode::Constant` fills with `.value()` (default: black),
+ * `PadMode::Reflect` mirrors border pixels,
+ * `PadMode::Replicate` repeats the edge pixel.
+ *
+ * @throws improc::ParameterError if all padding sides are 0.
+ *
+ * @code
+ * Image<BGR> padded = img | Pad{}.top(10).bottom(10).left(5).right(5);
+ * @endcode
+ */
 struct Pad {
     Pad& top(int v) {
         if (v < 0) throw ParameterError{"top", "must be >= 0", "Pad"};
@@ -63,6 +82,16 @@ private:
     cv::Scalar value_ = {0, 0, 0, 0};
 };
 
+/**
+ * @brief Pads the shorter dimension to produce a square image.
+ *
+ * Adds equal padding to both sides of the short axis. Border style
+ * is controlled by `.mode()` (default: `PadMode::Constant`, black).
+ *
+ * @code
+ * Image<BGR> square = img | PadToSquare{};
+ * @endcode
+ */
 struct PadToSquare {
     PadToSquare& mode(PadMode m)     { mode_  = m; return *this; }
     PadToSquare& value(cv::Scalar v) { value_ = v; return *this; }

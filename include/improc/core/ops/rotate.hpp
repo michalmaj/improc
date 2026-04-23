@@ -8,6 +8,20 @@
 
 namespace improc::core {
 
+/**
+ * @brief Rotates an image around its center by an arbitrary angle.
+ *
+ * Output size equals input size; pixels that rotate outside the canvas are cropped.
+ * `.angle()` must be called before `operator()`.
+ *
+ * @throws improc::ParameterError if angle is not set.
+ * @throws improc::ParameterError if scale <= 0.
+ *
+ * @code
+ * Image<BGR> rotated = img | Rotate{}.angle(45.0);
+ * Image<BGR> scaled  = img | Rotate{}.angle(30.0).scale(0.8);
+ * @endcode
+ */
 struct Rotate {
     Rotate& angle(double deg) { angle_ = deg; return *this; }
     Rotate& scale(double s) {

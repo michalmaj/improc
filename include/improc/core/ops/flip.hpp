@@ -8,6 +8,14 @@
 
 namespace improc::core {
 
+/**
+ * @brief Flips an image along the specified axis.
+ *
+ * @code
+ * Image<BGR> mirror     = img | Flip{Axis::Horizontal};
+ * Image<BGR> upsidedown = img | Flip{Axis::Vertical};
+ * @endcode
+ */
 struct Flip {
     explicit Flip(Axis axis) : axis_(axis) {}
 

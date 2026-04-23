@@ -10,6 +10,20 @@
 
 namespace improc::core {
 
+/**
+ * @brief Crops a rectangular region of interest from an image.
+ *
+ * All four parameters (`.x()`, `.y()`, `.width()`, `.height()`) must be set.
+ * The ROI must lie entirely within the source image bounds.
+ *
+ * @throws improc::ParameterError if any parameter is missing.
+ * @throws improc::ParameterError if width or height <= 0.
+ * @throws improc::ParameterError if the ROI extends outside the image.
+ *
+ * @code
+ * Image<BGR> roi = img | Crop{}.x(10).y(20).width(100).height(80);
+ * @endcode
+ */
 struct Crop {
     Crop& x(int v)      { x_ = v; return *this; }
     Crop& y(int v)      { y_ = v; return *this; }
