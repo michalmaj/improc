@@ -12,21 +12,38 @@ namespace improc::visualization {
 using improc::core::Image;
 using improc::core::BGR;
 
+/**
+ * @brief Renders a 2D line chart from scalar values as `Image<BGR>`.
+ *
+ * Pass data via `.data()`. X-axis spans 0..N-1; Y-axis auto-scales.
+ *
+ * @code
+ * std::vector<float> vals = {1.0f, 3.5f, 2.0f, 4.1f};
+ * Image<BGR> chart = LinePlot{}.operator()(vals);
+ * @endcode
+ */
 struct LinePlot {
+    /// @brief Sets the chart title text.
     LinePlot& title(std::string t) { title_ = std::move(t); return *this; }
+    /// @brief Sets the line color as a BGR scalar.
     LinePlot& color(cv::Scalar c) { color_ = c; return *this; }
+    /// @brief Sets the output chart width in pixels.
+    /// @throws improc::ParameterError if `w` <= 0.
     LinePlot& width(int w) {
         if (w <= 0) throw ParameterError{"width", "must be positive", "LinePlot"};
         width_ = w;
         return *this;
     }
+    /// @brief Sets the output chart height in pixels.
+    /// @throws improc::ParameterError if `h` <= 0.
     LinePlot& height(int h) {
         if (h <= 0) throw ParameterError{"height", "must be positive", "LinePlot"};
         height_ = h;
         return *this;
     }
 
-    // Throws ParameterError if values is empty.
+    /// @brief Renders the line chart from the given scalar values.
+    /// @throws improc::ParameterError if `values` is empty.
     Image<BGR> operator()(const std::vector<float>& values) const;
 
 private:
