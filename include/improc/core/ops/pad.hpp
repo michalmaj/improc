@@ -67,6 +67,7 @@ struct Pad {
     /// @brief Sets the fill color used when mode is PadMode::Constant.
     Pad& value(cv::Scalar v)  { value_ = v; return *this; }
 
+    /// @brief Applies the configured border padding to img.
     template<AnyFormat Format>
     Image<Format> operator()(Image<Format> img) const {
         if (top_ == 0 && bottom_ == 0 && left_ == 0 && right_ == 0)
