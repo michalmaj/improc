@@ -163,3 +163,17 @@ TEST(VideoReaderTest, NextAfterCloseReturnsNullopt) {
     reader.close();
     EXPECT_FALSE(reader.next().has_value());
 }
+
+TEST(VideoReaderTest, FrameCountNormalisedToMinusOneWhenUnavailable) {
+    // frame_count() must return either a positive count (for containers that
+    // report it reliably) or -1 (never 0) — the normalisation in the
+    // implementation converts 0.0 from OpenCV to -1.
+    auto tmp = fs::temp_directory_path() / "fcount_test.mp4";
+    TempFile guard{tmp};
+    if (!make_test_video(tmp, 8, 32, 24))
+        GTEST_SKIP() << "video creation unavailable (no ffmpeg or H.264 encoder)";
+
+    VideoReader reader{tmp};
+    const int fc = reader.frame_count();
+    EXPECT_TRUE(fc > 0 || fc == -1) << "frame_count() returned 0, expected >0 or -1";
+}

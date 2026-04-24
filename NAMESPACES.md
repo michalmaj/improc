@@ -565,7 +565,7 @@ Image<BGR> result = frame
 
 ### `Montage` (`visualization/montage.hpp`)
 
-Arranges a `vector<Image<BGR>>` into a grid. Setters: `.cols(int)`, `.cell_size(int)`, `.gap(int)`. Returns a single tiled `Image<BGR>`.
+Arranges a `vector<Image<BGR>>` into a grid. Setters: `.cols(int)`, `.cell_size(int w, int h)`, `.gap(int)`, `.background(cv::Scalar)`. Returns a single tiled `Image<BGR>`.
 
 ### Umbrella include
 
