@@ -29,13 +29,6 @@ target_link_libraries(improc PUBLIC
         opencv::opencv
 )
 
-if(APPLE)
-    target_link_libraries(improc PUBLIC "-framework Accelerate")
-elseif(WIN32 OR UNIX)
-    find_package(OpenBLAS CONFIG REQUIRED)
-    target_link_libraries(improc PUBLIC OpenBLAS::OpenBLAS)
-endif()
-
 enable_testing()
 
 file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS tests/*.cpp)
