@@ -62,7 +62,8 @@ public:
      * @note Returns -1 for containers where this value is unreliable (e.g. some .mkv files).
      */
     int frame_count() const {
-        return static_cast<int>(cap_.get(cv::CAP_PROP_FRAME_COUNT));
+        const int n = static_cast<int>(cap_.get(cv::CAP_PROP_FRAME_COUNT));
+        return n > 0 ? n : -1;
     }
 
     /// @brief Frame width in pixels.

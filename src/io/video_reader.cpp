@@ -8,7 +8,7 @@ VideoReader::VideoReader(std::filesystem::path path) {
     if (!std::filesystem::exists(path))
         throw FileNotFoundError{path};
 
-    if (!cap_.open(path.string()) || !cap_.isOpened())
+    if (!cap_.open(path.string()))
         throw IoError{"Cannot open '" + path.string() + "' as a video file"};
 }
 
