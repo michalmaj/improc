@@ -315,6 +315,10 @@ w.fps(25).size(640, 480).codec("MJPG");
 
 Throws `ParameterError` on invalid setter arguments; throws `IoError` if the underlying `cv::VideoWriter` fails to open or if a frame's size does not match the writer's configured size.
 
+### `VideoReader` (`io/video_reader.hpp`)
+
+Sequential video file reader. `next()` returns `std::optional<Image<BGR>>` — reads frames one by one until EOF, then returns `std::nullopt`.
+
 ---
 
 ## `improc::ml` — Machine Learning utilities
@@ -558,6 +562,10 @@ Image<BGR> result = frame
 ```
 
 `DrawBoundingBoxes` draws onto a **clone** — the source image is never modified. Throws `ParameterError` if `thickness <= 0` or `font_scale <= 0`.
+
+### `Montage` (`visualization/montage.hpp`)
+
+Arranges a `vector<Image<BGR>>` into a grid. Setters: `.cols(int)`, `.cell_size(int w, int h)`, `.gap(int)`, `.background(cv::Scalar)`. Returns a single tiled `Image<BGR>`.
 
 ### Umbrella include
 
