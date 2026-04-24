@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-13]
 
     runs-on: ${{ matrix.os }}
 
@@ -36,6 +36,12 @@ jobs:
           path: ~/.conan2/p
           key: conan-${{ matrix.os }}-${{ hashFiles('conanfile.py') }}
           restore-keys: conan-${{ matrix.os }}-
+
+      - name: Allow Conan to install system packages (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          echo "tools.system.package_manager:mode=install" >> ~/.conan2/global.conf
+          echo "tools.system.package_manager:sudo=True"    >> ~/.conan2/global.conf
 
       - name: Install Linux system dependencies
         if: runner.os == 'Linux'
