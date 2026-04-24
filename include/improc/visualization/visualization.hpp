@@ -6,3 +6,4 @@
 #include "improc/visualization/scatter.hpp"
 #include "improc/visualization/show.hpp"
 #include "improc/visualization/draw.hpp"
+#include "improc/visualization/montage.hpp"
