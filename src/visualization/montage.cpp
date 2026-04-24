@@ -1,5 +1,6 @@
 // src/visualization/montage.cpp
 #include "improc/visualization/montage.hpp"
+#include <climits>
 #include <cmath>
 #include <opencv2/imgproc.hpp>
 
@@ -39,13 +40,17 @@ Montage& Montage::background(cv::Scalar color) {
 Image<BGR> Montage::operator()() const {
     const int n    = static_cast<int>(images_.size());
     const int cols = cols_ > 0 ? cols_
-                               : static_cast<int>(std::ceil(std::sqrt(n)));
+                               : std::max(1, static_cast<int>(std::ceil(std::sqrt(static_cast<double>(n)))));
     const int rows = static_cast<int>(std::ceil(static_cast<double>(n) / cols));
     const int cw   = cell_w_ > 0 ? cell_w_ : images_[0].cols();
     const int ch   = cell_h_ > 0 ? cell_h_ : images_[0].rows();
 
-    const int total_w = cols * cw + (cols - 1) * gap_;
-    const int total_h = rows * ch + (rows - 1) * gap_;
+    const long long w64 = (long long)cols * cw + (long long)(cols - 1) * gap_;
+    const long long h64 = (long long)rows * ch + (long long)(rows - 1) * gap_;
+    if (w64 > INT_MAX || h64 > INT_MAX)
+        throw ParameterError{"output_dimensions", "total width or height exceeds INT_MAX", "Montage"};
+    const int total_w = static_cast<int>(w64);
+    const int total_h = static_cast<int>(h64);
 
     cv::Mat canvas(total_h, total_w, CV_8UC3, bg_);
 
