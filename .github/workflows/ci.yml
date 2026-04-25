@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-13]
+        os: [ubuntu-latest, macos-latest]
 
     runs-on: ${{ matrix.os }}
 
@@ -30,33 +30,43 @@ jobs:
       - name: Detect Conan profile
         run: conan profile detect --force
 
+      - name: Remove OpenCV from Conan requirements (use system install)
+        run: |
+          python3 -c "
+          import pathlib
+          f = pathlib.Path('conandata.yml')
+          f.write_text(''.join(l for l in f.read_text().splitlines(keepends=True) if 'opencv' not in l.lower()))
+          "
+
       - name: Cache Conan packages
         uses: actions/cache@v4
         with:
           path: ~/.conan2/p
-          key: conan-${{ matrix.os }}-${{ hashFiles('conanfile.py') }}
+          key: conan-${{ matrix.os }}-${{ hashFiles('conandata.yml') }}
           restore-keys: conan-${{ matrix.os }}-
 
-      - name: Allow Conan to install system packages (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          echo "tools.system.package_manager:mode=install" >> ~/.conan2/global.conf
-          echo "tools.system.package_manager:sudo=True"    >> ~/.conan2/global.conf
-
-      - name: Install Linux system dependencies
+      - name: Install system OpenCV (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends \
-            build-essential cmake ninja-build \
-            libgtk-3-dev libglib2.0-dev
+            build-essential libopencv-dev ffmpeg
+
+      - name: Install system OpenCV (macOS)
+        if: runner.os == 'macOS'
+        run: brew install opencv
 
       - name: Configure CMake
         run: |
+          EXTRA=""
+          if [ "$(uname)" = "Darwin" ]; then
+            EXTRA="-DCMAKE_PREFIX_PATH=$(brew --prefix)"
+          fi
           cmake \
             -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="conan_provider.cmake" \
             -DCONAN_COMMAND=$(which conan) \
             -DCMAKE_BUILD_TYPE=Release \
+            $EXTRA \
             -B build .
 
       - name: Build
