@@ -53,6 +53,12 @@ jobs:
           key: conan-${{ matrix.os }}-${{ hashFiles('conandata.yml') }}
           restore-keys: conan-${{ matrix.os }}-
 
+      - name: Cache ONNX Runtime download
+        uses: actions/cache@v4
+        with:
+          path: ~/.cmake-fetchcontent
+          key: ort-${{ matrix.os }}-1.20.1
+
       - name: Install system OpenCV (Linux)
         if: runner.os == 'Linux'
         run: |
@@ -73,6 +79,7 @@ jobs:
             -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="conan_provider.cmake" \
             -DCONAN_COMMAND=$(which conan) \
             -DCMAKE_BUILD_TYPE=Release \
+            -DFETCHCONTENT_BASE_DIR=$HOME/.cmake-fetchcontent \
             $EXTRA \
             -B build .
 
@@ -81,5 +88,10 @@ jobs:
 
       - name: Run tests
         run: |
+          ORT_LIB=$(find $HOME/.cmake-fetchcontent -name "libonnxruntime*" -not -name "*.dSYM" | head -1 | xargs dirname 2>/dev/null || true)
+          if [ -n "$ORT_LIB" ]; then
+            export LD_LIBRARY_PATH="$ORT_LIB:${LD_LIBRARY_PATH:-}"
+            export DYLD_LIBRARY_PATH="$ORT_LIB:${DYLD_LIBRARY_PATH:-}"
+          fi
           ./build/improc_tests \
             --gtest_filter="-VideoWriterTest.WritesToMp4AndCreatesFile:VideoWriterTest.WritesToAvi"
