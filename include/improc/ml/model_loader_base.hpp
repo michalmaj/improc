@@ -23,6 +23,12 @@ namespace improc::ml {
 template<typename Derived, typename ModelType>
 class ModelLoaderBase {
 public:
+  /**
+   * @brief Validates the path and delegates loading to the derived class.
+   * @param path Path to the model file (.yml, .yaml, or .xml).
+   * @throws improc::ModelError if the path is invalid, the extension is unsupported,
+   *         or the derived loader fails to parse the file.
+   */
   void load_model(const std::filesystem::path& path) {
     auto result = check_path(path);
     if (!result)
@@ -30,10 +36,19 @@ public:
     static_cast<Derived*>(this)->load_impl(result.value());
   }
 
+  /**
+   * @brief Returns the loaded model, or an error if loading has not been performed.
+   * @return The model on success, or an `improc::Error` on failure.
+   */
   [[nodiscard]] std::expected<ModelType, improc::Error> get_model() const {
     return static_cast<const Derived*>(this)->get_impl();
   }
 
+  /**
+   * @brief Validates that the path exists and has a supported extension.
+   * @param path Path to the model file to validate.
+   * @return The path on success, or an `improc::Error` describing the problem.
+   */
   static std::expected<std::filesystem::path, improc::Error> check_path(const std::filesystem::path& path) {
     auto ext = std::ranges::to<std::string>(
         path.extension().string() | std::views::transform(::tolower));
@@ -48,6 +63,7 @@ public:
   }
 
 protected:
+  /// @brief Returns the set of supported file extensions: `.yml`, `.yaml`, `.xml`.
   static const std::unordered_set<std::string>& valid_extensions() {
     static const std::unordered_set<std::string> exts = { ".yml", ".yaml", ".xml" };
     return exts;
