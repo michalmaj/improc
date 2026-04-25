@@ -23,6 +23,11 @@ namespace improc::core {
  * @endcode
  */
 struct Brightness {
+    /**
+     * @brief Sets the additive brightness offset.
+     * @param d Offset applied to every pixel channel; positive brightens, negative darkens.
+     * @return Reference to this op for method chaining.
+     */
     Brightness& delta(double d) { delta_ = d; return *this; }
 
     template<AnyFormat F>

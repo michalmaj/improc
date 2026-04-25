@@ -21,6 +21,7 @@ namespace improc::ml {
  */
 class ImageLoader {
 public:
+  /// @brief Constructs an ImageLoader with no images loaded.
   ImageLoader() = default;
 
   /**
@@ -42,6 +43,7 @@ private:
   std::string          last_dir_;
   inline static std::unordered_set<std::string> valid_extensions_{ ".jpg", ".jpeg", ".png" };
 
+  /// @brief Returns a lowercase copy of @p str.
   static std::string to_lower(const std::string& str);
 };
 

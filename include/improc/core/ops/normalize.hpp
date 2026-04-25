@@ -36,7 +36,9 @@ struct Normalize {
 struct NormalizeTo {
     /**
      * @brief Constructs NormalizeTo with output range [min_val, max_val].
-     * @throws improc::ParameterError if min_val >= max_val.
+     * @param min Lower bound of the target range.
+     * @param max Upper bound of the target range; must be greater than @p min.
+     * @throws improc::ParameterError if @p min >= @p max.
      */
     explicit NormalizeTo(float min, float max);
     /// @brief Scales pixel values of img to [min_val, max_val].
@@ -59,7 +61,9 @@ private:
 struct Standardize {
     /**
      * @brief Constructs Standardize with the given mean and standard deviation.
-     * @throws improc::ParameterError if std_dev <= 0.
+     * @param mean    Mean value subtracted from every pixel.
+     * @param std_dev Standard deviation used as the divisor; must be positive.
+     * @throws improc::ParameterError if @p std_dev <= 0.
      */
     explicit Standardize(float mean, float std_dev);
     /// @brief Standardizes img by subtracting mean and dividing by std_dev.

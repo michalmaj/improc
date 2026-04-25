@@ -42,23 +42,33 @@ public:
                                                          float val_ratio = 0.1f,
                                                          std::optional<size_t> max_per_class = std::nullopt);
 
+    /// @brief Returns the training split images.
     const std::vector<cv::Mat>& train_images() const;
+    /// @brief Returns the validation split images.
     const std::vector<cv::Mat>& val_images() const;
+    /// @brief Returns the test split images.
     const std::vector<cv::Mat>& test_images() const;
 
+    /// @brief Returns the integer class labels for the training split.
     const std::vector<int>& train_labels() const;
+    /// @brief Returns the integer class labels for the validation split.
     const std::vector<int>& val_labels() const;
+    /// @brief Returns the integer class labels for the test split.
     const std::vector<int>& test_labels() const;
 
+    /// @brief Returns the mapping from class name to integer label index.
     const std::unordered_map<std::string, int>& class_mapping() const;
 
     /**
-     * @brief Get class name for given integer label
+     * @brief Returns the class name for the given integer label.
+     * @param label Integer label index as stored in the label vectors.
+     * @return The corresponding class name string.
      */
     std::string class_name_for(int label) const;
 
     /**
-     * @brief Set random seed for deterministic splitting
+     * @brief Sets the random seed used when shuffling samples before splitting.
+     * @param seed Seed value for the internal `std::mt19937`.
      */
     void set_shuffle_seed(unsigned int seed);
 
