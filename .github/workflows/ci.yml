@@ -27,6 +27,14 @@ jobs:
       - name: Install Conan
         run: pip install "conan>=2,<3"
 
+      - name: Install GCC 14 (Linux — required for std::ranges::to in C++23)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y gcc-14 g++-14
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 100
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 100
+
       - name: Detect Conan profile
         run: conan profile detect --force
 
@@ -48,7 +56,6 @@ jobs:
       - name: Install system OpenCV (Linux)
         if: runner.os == 'Linux'
         run: |
-          sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends \
             build-essential libopencv-dev ffmpeg
 
