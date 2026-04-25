@@ -22,6 +22,52 @@ if(NOT TARGET opencv::opencv)
     target_include_directories(opencv::opencv INTERFACE ${OpenCV_INCLUDE_DIRS})
 endif()
 
+# === ONNX Runtime (optional, CPU + CoreML on Apple) ===
+option(IMPROC_WITH_ONNX "Build with ONNX Runtime inference support" ON)
+
+if(IMPROC_WITH_ONNX)
+    set(ORT_VERSION "1.20.1")
+
+    if(APPLE)
+        if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
+            set(_ort_archive "onnxruntime-osx-arm64-${ORT_VERSION}.tgz")
+        else()
+            set(_ort_archive "onnxruntime-osx-x86_64-${ORT_VERSION}.tgz")
+        endif()
+    elseif(UNIX)
+        set(_ort_archive "onnxruntime-linux-x64-${ORT_VERSION}.tgz")
+    else()
+        message(FATAL_ERROR "IMPROC_WITH_ONNX: unsupported platform")
+    endif()
+
+    include(FetchContent)
+    FetchContent_Declare(onnxruntime
+        URL      "https://github.com/microsoft/onnxruntime/releases/download/v${ORT_VERSION}/${_ort_archive}"
+        DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+    )
+    FetchContent_MakeAvailable(onnxruntime)
+
+    # The archive extracts with a named top-level directory inside SOURCE_DIR
+    file(GLOB _ort_candidates LIST_DIRECTORIES true "${onnxruntime_SOURCE_DIR}/onnxruntime-*")
+    if(_ort_candidates)
+        list(GET _ort_candidates 0 ORT_ROOT)
+    else()
+        set(ORT_ROOT "${onnxruntime_SOURCE_DIR}")
+    endif()
+
+    find_library(ORT_LIBRARY NAMES onnxruntime
+        PATHS "${ORT_ROOT}/lib" NO_DEFAULT_PATH REQUIRED)
+
+    add_library(onnxruntime::onnxruntime SHARED IMPORTED GLOBAL)
+    set_target_properties(onnxruntime::onnxruntime PROPERTIES
+        IMPORTED_LOCATION             "${ORT_LIBRARY}"
+        IMPORTED_NO_SONAME            TRUE
+        INTERFACE_INCLUDE_DIRECTORIES "${ORT_ROOT}/include"
+    )
+
+    message(STATUS "ONNX Runtime ${ORT_VERSION}: ${ORT_LIBRARY}")
+endif()
+
 # === improc LIBRARY ===
 file(GLOB_RECURSE IMPROC_HEADERS CONFIGURE_DEPENDS include/improc/**/*.hpp)
 file(GLOB_RECURSE IMPROC_SOURCES CONFIGURE_DEPENDS src/**/*.cpp)
@@ -34,6 +80,10 @@ target_include_directories(improc PUBLIC
 
 target_link_libraries(improc PUBLIC
         opencv::opencv
+        $<$<BOOL:${IMPROC_WITH_ONNX}>:onnxruntime::onnxruntime>
+)
+target_compile_definitions(improc PUBLIC
+        $<$<BOOL:${IMPROC_WITH_ONNX}>:IMPROC_WITH_ONNX>
 )
 
 enable_testing()
@@ -42,6 +92,11 @@ file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS tests/*.cpp)
 
 add_executable(improc_tests ${TEST_SOURCES})
 target_link_libraries(improc_tests PRIVATE improc GTest::gtest GTest::gtest_main)
+
+if(IMPROC_WITH_ONNX)
+    list(APPEND CMAKE_BUILD_RPATH "${ORT_ROOT}/lib")
+    set_property(TARGET improc_tests APPEND PROPERTY BUILD_RPATH "${ORT_ROOT}/lib")
+endif()
 
 include(GoogleTest)
 gtest_discover_tests(improc_tests)

@@ -27,7 +27,10 @@ struct Error {
         InsufficientPoints, ///< `find_homography`: fewer than 4 or mismatched point pairs.
         HomographyFailed,   ///< `find_homography`: RANSAC returned an invalid homography.
         ImageReadFailed,    ///< `cv::imread` returned an empty mat.
-        ImageWriteFailed,   ///< `cv::imwrite` returned false.
+        ImageWriteFailed,      ///< `cv::imwrite` returned false.
+        OnnxModelLoadFailed,   ///< ONNX Runtime failed to parse or load the model file.
+        OnnxInferenceFailed,   ///< ONNX Runtime session run returned an error.
+        OnnxSessionNotLoaded,  ///< `OnnxSession::run()` called before `load()`.
     };
 
     Code        code;    ///< Machine-readable error category.
@@ -120,6 +123,32 @@ struct Error {
      */
     static Error image_write_failed(const std::string& path) {
         return {Code::ImageWriteFailed, "Failed to write image: " + path};
+    }
+
+    /**
+     * @brief Returns an error when ONNX Runtime fails to load the model.
+     * @param path   Path to the `.onnx` file.
+     * @param reason Human-readable reason string from the ORT exception.
+     */
+    static Error onnx_model_load_failed(const std::string& path, const std::string& reason) {
+        return {Code::OnnxModelLoadFailed,
+                "Failed to load ONNX model '" + path + "': " + reason};
+    }
+
+    /**
+     * @brief Returns an error when an ONNX Runtime session run fails.
+     * @param reason Human-readable reason string from the ORT exception.
+     */
+    static Error onnx_inference_failed(const std::string& reason) {
+        return {Code::OnnxInferenceFailed, "ONNX inference failed: " + reason};
+    }
+
+    /**
+     * @brief Returns an error when `OnnxSession::run()` is called before `load()`.
+     */
+    static Error onnx_session_not_loaded() {
+        return {Code::OnnxSessionNotLoaded,
+                "OnnxSession::run() called before load() — call load() first"};
     }
 };
 
