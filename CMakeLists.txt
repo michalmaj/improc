@@ -15,6 +15,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(OpenCV REQUIRED)
 find_package(GTest REQUIRED)
 
+# Compatibility shim: system OpenCV uses OpenCV_LIBS, Conan uses opencv::opencv
+if(NOT TARGET opencv::opencv)
+    add_library(opencv::opencv INTERFACE IMPORTED GLOBAL)
+    target_link_libraries(opencv::opencv INTERFACE ${OpenCV_LIBS})
+    target_include_directories(opencv::opencv INTERFACE ${OpenCV_INCLUDE_DIRS})
+endif()
+
 # === improc LIBRARY ===
 file(GLOB_RECURSE IMPROC_HEADERS CONFIGURE_DEPENDS include/improc/**/*.hpp)
 file(GLOB_RECURSE IMPROC_SOURCES CONFIGURE_DEPENDS src/**/*.cpp)
