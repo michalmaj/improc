@@ -9,9 +9,6 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.1.0] — 2026-04-26
 
-First versioned release. Establishes the full namespace surface and API conventions
-that subsequent releases will extend without breaking.
-
 ### Added
 
 #### `improc::core`
