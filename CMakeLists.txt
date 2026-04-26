@@ -197,6 +197,10 @@ target_link_libraries(demo_image_io PRIVATE improc)
 add_executable(demo_video_reader examples/io/demo_video_reader.cpp)
 target_link_libraries(demo_video_reader PRIVATE improc)
 
+# Montage demo
+add_executable(demo_montage examples/visualization/demo_montage.cpp)
+target_link_libraries(demo_montage PRIVATE improc)
+
 # Benchmarks (opt-in: cmake -DIMPROC_BENCHMARKS=ON ...)
 if(IMPROC_BENCHMARKS)
     include(FetchContent)
