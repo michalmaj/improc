@@ -6,7 +6,7 @@
 
 ## Status
 
-> **Pre-1.0 — active development.** APIs may change between releases.
+> **v0.1.0** — first versioned release. APIs are stabilising but may still change between minor versions.
 
 | Namespace | Status | Notes |
 |---|---|---|
