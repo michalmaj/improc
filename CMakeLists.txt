@@ -193,6 +193,21 @@ target_link_libraries(demo_color_adjust PRIVATE improc)
 add_executable(demo_image_io examples/io/demo_image_io.cpp)
 target_link_libraries(demo_image_io PRIVATE improc)
 
+# Video Reader demo
+add_executable(demo_video_reader examples/io/demo_video_reader.cpp)
+target_link_libraries(demo_video_reader PRIVATE improc)
+
+# Montage demo
+add_executable(demo_montage examples/visualization/demo_montage.cpp)
+target_link_libraries(demo_montage PRIVATE improc)
+
+# ONNX inference demo
+if(IMPROC_WITH_ONNX)
+    add_executable(demo_onnx_inference examples/ml/demo_onnx_inference.cpp)
+    target_link_libraries(demo_onnx_inference PRIVATE improc)
+    set_property(TARGET demo_onnx_inference APPEND PROPERTY BUILD_RPATH "${ORT_ROOT}/lib")
+endif()
+
 # Benchmarks (opt-in: cmake -DIMPROC_BENCHMARKS=ON ...)
 if(IMPROC_BENCHMARKS)
     include(FetchContent)
