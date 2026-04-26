@@ -193,6 +193,10 @@ target_link_libraries(demo_color_adjust PRIVATE improc)
 add_executable(demo_image_io examples/io/demo_image_io.cpp)
 target_link_libraries(demo_image_io PRIVATE improc)
 
+# Video Reader demo
+add_executable(demo_video_reader examples/io/demo_video_reader.cpp)
+target_link_libraries(demo_video_reader PRIVATE improc)
+
 # Benchmarks (opt-in: cmake -DIMPROC_BENCHMARKS=ON ...)
 if(IMPROC_BENCHMARKS)
     include(FetchContent)
