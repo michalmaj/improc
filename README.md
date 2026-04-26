@@ -15,8 +15,8 @@
 | `improc::ml` | ✅ Stable | New ops added regularly |
 | `improc::threading` | ✅ Stable | |
 | `improc::visualization` | ✅ Stable | New ops added regularly |
+| `improc::onnx` | ✅ Stable | ONNX Runtime 1.20.1; CPU + CoreML on Apple Silicon |
 | `improc::cuda` | 🔜 Planned | GPU-accelerated ops via OpenCV CUDA |
-| ONNX Runtime backend | 🔜 Planned | `OrtClassifier`, `OrtDetector`, `OrtForward` |
 
 ## Getting Started
 
@@ -86,7 +86,7 @@ Format mismatches (e.g. passing `Image<Float32>` where `Image<BGR>` is expected)
 - **Not a Python library.** No bindings planned — use OpenCV's Python API for scripting workflows.
 - **Not a general-purpose image editor.** No GUI, no layers, no undo — this is a processing pipeline toolkit.
 - **Not a training framework.** No autograd, no loss functions — use PyTorch/TensorFlow for training; improc++ handles inference and preprocessing.
-- **No CUDA yet.** All ops run on CPU. GPU acceleration (`improc::cuda`) is planned but not implemented.
+- **No CUDA yet.** All ops run on CPU (ONNX Runtime uses CoreML EP on Apple Silicon). CUDA acceleration (`improc::cuda`) is planned.
 - **OpenCV dependency is visible.** `cv::Mat`, `cv::Point2f` etc. appear in the public API — improc++ wraps, not hides, OpenCV.
 - **C++23 required.** No support for older standards.
 
@@ -106,6 +106,7 @@ OpenCV is powerful but its raw API is stringly-typed, mutation-heavy, and easy t
 - **Augmentation** — stochastic training augmentations constrained by C++20 concepts: `RandomFlip`, `RandomRotate`, `RandomCrop`, `RandomResize`, `RandomBrightness`, `RandomContrast`, `ColorJitter`, `RandomGaussianNoise`, `RandomSaltAndPepper`, `Compose`, `RandomApply`, `OneOf`
 - **Dataset loading** — load image datasets from class-labeled directories with train/val/test splitting
 - **DNN inference** — `DnnClassifier`, `DnnDetector` (YOLO & SSD), `DnnForward` backed by OpenCV DNN; pipeline-composable
+- **ONNX Runtime inference** — `OnnxClassifier`, `OnnxDetector` (YOLOv5 & YOLOv8 & SSD), `OnnxSession` (raw tensor I/O); CPU + CoreML EP on Apple Silicon; train in Python, export to ONNX, run here
 - **Camera capture** — asynchronous threaded frame capture via `CameraCapture`; `getFrame()` returns `std::expected<cv::Mat, Error>` for safe error handling
 - **Video recording** — synchronous RAII `VideoWriter` with auto codec detection and pipeline support (`img | Show{"preview"} | writer`)
 - **Haar Cascade loader** — CRTP-based model loader for OpenCV cascade classifiers
@@ -168,6 +169,9 @@ All ops are functors that compose via `operator|`. The `pipeline.hpp` umbrella h
 #include "improc/ml/dnn_classifier.hpp"
 #include "improc/ml/dataset.hpp"
 
+// ONNX Runtime inference
+#include "improc/onnx/onnx.hpp"           // OnnxSession, OnnxClassifier, OnnxDetector
+
 // Visualization
 #include "improc/visualization/visualization.hpp"
 ```
@@ -227,6 +231,43 @@ w.fps(25).size(640, 480).codec("MJPG");
 
 Supported auto-codecs: `.mp4`/`.mov` → `mp4v`, `.avi` → `MJPG`, `.mkv` → `XVID`.
 
+## ONNX Runtime Inference
+
+Train models in Python and run inference here. `OnnxClassifier` and `OnnxDetector` share the same fluent API as their `Dnn*` counterparts. `OnnxSession` gives you raw tensor access for custom model architectures.
+
+```cpp
+#include "improc/onnx/onnx.hpp"
+using namespace improc::onnx;
+
+// Classification — export from PyTorch with torch.onnx.export()
+OnnxClassifier cls{"mobilenet.onnx"};
+cls.input_size(224, 224)
+   .mean(0.485f, 0.456f, 0.406f)
+   .scale(1.0f / 255.0f)
+   .labels(class_names)
+   .top_k(5);
+
+auto results = cls(img);  // std::expected<std::vector<ClassResult>, Error>
+if (results)
+    for (const auto& r : *results)
+        std::cout << r.label << ": " << r.score << "\n";
+
+// Detection — YOLOv8 ONNX export: model.export(format="onnx")
+OnnxDetector det{"yolov8n.onnx"};
+det.input_size(640, 640).confidence_threshold(0.5f).labels(class_names);
+
+auto boxes = det(frame);  // std::expected<std::vector<Detection>, Error>
+if (boxes)
+    frame | DrawBoundingBoxes{*boxes} | Show{"Detections"}.wait_ms(1);
+
+// Raw session — custom architectures, multiple outputs
+OnnxSession session;
+session.load("encoder.onnx");
+auto outputs = session.run({{session.input_names()[0], {1,3,224,224}, data}});
+```
+
+On **Apple Silicon**, the CoreML execution provider is registered automatically — compatible ops run on the Neural Engine with transparent CPU fallback.
+
 ## Edge Detection & Enhancement
 
 ```cpp
@@ -269,10 +310,9 @@ Image<BGR> boxes_only = frame | DrawBoundingBoxes{detections}
 
 - C++23 or later
 - [OpenCV](https://opencv.org/) 4.8+
-- [Eigen](https://eigen.tuxfamily.org/) 3.4+
+- [ONNX Runtime](https://onnxruntime.ai/) 1.20.1 (auto-downloaded via CMake FetchContent)
 - [GoogleTest](https://github.com/google/googletest) 1.16+
 - [Conan 2.0](https://conan.io/) for dependency management
-- macOS: Accelerate framework (built-in); Linux/Windows: OpenBLAS
 
 ## Installation
 

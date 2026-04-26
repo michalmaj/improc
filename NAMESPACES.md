@@ -37,8 +37,11 @@ struct Error {
         NoImages, EmptyDataset, DirectoryNotFound,
         InvalidModelFile, CameraUnavailable, CameraFrameEmpty,
         InsufficientPoints, HomographyFailed,
-        ImageReadFailed,   // cv::imread returned empty mat
-        ImageWriteFailed   // cv::imwrite returned false
+        ImageReadFailed,      // cv::imread returned empty mat
+        ImageWriteFailed,     // cv::imwrite returned false
+        OnnxModelLoadFailed,  // ORT failed to parse / load the .onnx file
+        OnnxInferenceFailed,  // ORT session Run() returned an error
+        OnnxSessionNotLoaded  // run() called before load()
     };
     Code        code;
     std::string message;
@@ -53,6 +56,9 @@ struct Error {
     static Error homography_failed();
     static Error image_read_failed(const std::string& path);
     static Error image_write_failed(const std::string& path);
+    static Error onnx_model_load_failed(const std::string& path, const std::string& reason);
+    static Error onnx_inference_failed(const std::string& reason);
+    static Error onnx_session_not_loaded();
 };
 ```
 
@@ -381,8 +387,6 @@ std::vector<float> blob = DnnForward{"encoder.onnx"}(img);
 
 **`DnnForward`** — minimal wrapper: `blobFromImage` → `forward` → flatten to `std::vector<float>`. Use for models with non-standard output formats that require custom parsing. Defaults: 224×224, scale=1/255, swap_rb=true.
 
-Future: `OrtClassifier`, `OrtDetector`, `OrtForward` will provide the same API with ONNX Runtime backend — no changes to calling code needed, just swap the class name.
-
 ### Augmentation (`augmentation.hpp`)
 
 Stochastic image augmentation ops for training data pipelines. All ops are header-only and templated on `Image<Format>`. Each op exposes two interfaces:
@@ -572,6 +576,112 @@ Arranges a `vector<Image<BGR>>` into a grid. Setters: `.cols(int)`, `.cell_size(
 ```cpp
 #include "improc/visualization/visualization.hpp"  // includes all five
 ```
+
+---
+
+---
+
+## `improc::onnx` — ONNX Runtime inference
+
+**Status: Implemented** (ONNX Runtime 1.20.1 — CPU + CoreML EP on Apple Silicon)
+
+**Umbrella header:** `improc/onnx/onnx.hpp`
+
+Downloaded automatically via CMake FetchContent — no separate installation required. On Apple Silicon the CoreML execution provider is registered for compatible ops with transparent CPU fallback.
+
+### `TensorInfo` (`onnx_session.hpp`)
+
+Exchange type between `OnnxSession` and its callers. Carries name, shape, and flat float data.
+
+```cpp
+struct TensorInfo {
+    std::string          name;   // input/output node name
+    std::vector<int64_t> shape;  // e.g. {1, 3, 224, 224}
+    std::vector<float>   data;   // flat row-major floats
+};
+```
+
+### `OnnxSession` (`onnx_session.hpp`)
+
+Thin wrapper over `Ort::Session`. ORT types are fully hidden behind a pimpl — including `onnx_session.hpp` does not require `onnxruntime_cxx_api.h` in caller code.
+
+```cpp
+OnnxSession session;
+auto err = session.load("model.onnx");  // std::expected<void, Error>
+if (!err) { std::cerr << err.error().message; }
+
+auto outputs = session.run({{session.input_names()[0], {1,3,224,224}, data}});
+// returns std::expected<std::vector<TensorInfo>, Error>
+
+session.input_names();   // std::vector<std::string>
+session.output_names();  // std::vector<std::string>
+session.is_loaded();     // bool
+```
+
+`load()` returns `Error{Code::InvalidModelFile}` for a missing file or wrong extension; `Error{Code::OnnxModelLoadFailed}` if ORT rejects the model. `run()` returns `Error{Code::OnnxSessionNotLoaded}` if called before `load()`, or `Error{Code::OnnxInferenceFailed}` on ORT error.
+
+`OnnxSession` is **non-copyable, movable**.
+
+### `OnnxClassifier` (`onnx_classifier.hpp`)
+
+Wraps `OnnxSession` with a complete image preprocessing pipeline and top-K post-processing. Mirrors the `DnnClassifier` fluent API.
+
+```cpp
+OnnxClassifier cls{"mobilenet.onnx"};
+cls.input_size(224, 224)
+   .mean(0.485f, 0.456f, 0.406f)   // B, G, R order
+   .scale(1.0f / 255.0f)
+   .swap_rb(true)                   // BGR → RGB before inference
+   .labels(class_names)
+   .top_k(5);
+
+auto result = cls(img);  // std::expected<std::vector<ClassResult>, Error>
+```
+
+Expects the model's first output to be a 1-D score vector `[1, N]`. Results are sorted by score descending. Constructor throws `ModelError` if the model cannot be loaded.
+
+| Setter | Default | Throws |
+|---|---|---|
+| `top_k(int k)` | 5 | `ParameterError` if k ≤ 0 |
+| `input_size(int w, int h)` | 224 × 224 | `ParameterError` if either ≤ 0 |
+| `mean(float b, float g, float r)` | 0, 0, 0 | — |
+| `scale(float s)` | 1/255 | `ParameterError` if s ≤ 0 |
+| `swap_rb(bool)` | `true` | — |
+| `labels(vector<string>)` | empty | — |
+
+### `OnnxDetector` (`onnx_detector.hpp`)
+
+Wraps `OnnxSession` with image preprocessing, format-aware YOLO/SSD output parsing, and NMS. Mirrors the `DnnDetector` fluent API.
+
+```cpp
+OnnxDetector det{"yolov8n.onnx"};
+det.input_size(640, 640)
+   .confidence_threshold(0.5f)
+   .nms_threshold(0.4f)
+   .labels(class_names);
+
+auto boxes = det(frame);  // std::expected<std::vector<Detection>, Error>
+```
+
+Two output formats are supported via `Style`:
+
+| Style | Output layout | Notes |
+|---|---|---|
+| `Style::YOLO` (default) | `[1, N, 5+C]` (YOLOv5) or `[1, 4+C, N]` (YOLOv8) | Auto-detected by shape heuristic |
+| `Style::SSD` | boxes `[1,N,4]` (y1,x1,y2,x2 norm.) + scores `[1,N,C]` | Two output tensors required |
+
+YOLOv8 ONNX export via `model.export(format="onnx")` produces `[1, 4+C, N]` — handled automatically. Box coordinates are rescaled to the original image dimensions before NMS.
+
+| Setter | Default | Throws |
+|---|---|---|
+| `style(Style)` | `YOLO` | — |
+| `confidence_threshold(float)` | 0.5 | `ParameterError` if outside [0,1] |
+| `nms_threshold(float)` | 0.4 | `ParameterError` if outside [0,1] |
+| `input_size(int w, int h)` | 640 × 640 | `ParameterError` if either ≤ 0 |
+| `mean(float b, float g, float r)` | 0, 0, 0 | — |
+| `scale(float s)` | 1/255 | `ParameterError` if s ≤ 0 |
+| `swap_rb(bool)` | `true` | — |
+| `labels(vector<string>)` | empty | — |
 
 ---
 
