@@ -685,6 +685,42 @@ YOLOv8 ONNX export via `model.export(format="onnx")` produces `[1, 4+C, N]` — 
 
 ---
 
+## `improc::views` — Lazy Image Pipeline
+
+**Header:** `#include "improc/views/views.hpp"`
+
+Lazy, ranges-style pipeline layer. Unlike the eager `operator|` in `improc::core`,
+adapters from `improc::views` build a deferred computation chain that executes only
+when `views::to<T>()` is called — avoiding intermediate `Image<F>` copies.
+
+### M1 — Single Image
+
+| Symbol | Description |
+|---|---|
+| `views::transform(op)` | Wraps any `improc::core` op into a lazy adapter; no computation at this point |
+| `views::to<Image<F>>()` | Materializes the lazy chain into `Image<F>`; triggers the full op sequence |
+
+Format mismatch between the view and `to<>()` is a **compile error** — no runtime check needed.
+
+**Example:**
+```cpp
+#include "improc/views/views.hpp"
+namespace views = improc::views;
+using namespace improc::core;
+
+auto view = img
+    | views::transform(Resize{}.width(224).height(224))
+    | views::transform(GaussianBlur{}.kernel_size(3))
+    | views::transform(Brightness{}.delta(10.0));
+
+Image<BGR> result = view | views::to<Image<BGR>>();
+```
+
+**Coming in M2–M4:** `views::filter`, `views::take`, `views::drop`, `views::batch`,
+`views::from_dir`, `views::zip`, `views::enumerate`.
+
+---
+
 ## Planned namespaces
 
 | Namespace | Purpose |
