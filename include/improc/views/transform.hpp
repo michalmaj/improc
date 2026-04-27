@@ -17,11 +17,11 @@ using improc::core::AnyFormat;
 template<AnyFormat F, typename... Ops>
 class TransformView {
 public:
-    Image<F>           source_;   // public for tuple_cat chaining operator|
-    std::tuple<Ops...> ops_;
-
     TransformView(Image<F> src, std::tuple<Ops...> ops)
         : source_(std::move(src)), ops_(std::move(ops)) {}
+
+    const Image<F>&           source() const { return source_; }
+    const std::tuple<Ops...>& ops()    const { return ops_; }
 
     /// Apply all ops left-to-right on the source. Called by views::to<>.
     Image<F> eval() const {
@@ -31,6 +31,10 @@ public:
         }, ops_);
         return result;
     }
+
+private:
+    Image<F>           source_;
+    std::tuple<Ops...> ops_;
 };
 
 // ── TransformAdapter ──────────────────────────────────────────────────────────
@@ -67,11 +71,11 @@ auto operator|(TransformView<F, Ops...> view, TransformAdapter<Op> adapter)
     -> TransformView<F, Ops..., Op>
 {
     auto new_ops = std::tuple_cat(
-        std::move(view.ops_),
+        view.ops(),
         std::make_tuple(std::move(adapter.op))
     );
     return TransformView<F, Ops..., Op>{
-        std::move(view.source_),
+        view.source().clone(),
         std::move(new_ops)
     };
 }
