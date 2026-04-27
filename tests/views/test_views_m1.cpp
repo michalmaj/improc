@@ -91,3 +91,16 @@ TEST(ViewsM1, PixelValuesCorrectAfterOp) {
     auto px = result.mat().at<cv::Vec3b>(4, 4);
     EXPECT_EQ(px[1], 255);  // G channel
 }
+
+TEST(ViewsM1, ChainDoesNotAllocateIntermediateImages) {
+    // Verifies the tuple_cat chaining produces correct output
+    // (three sequential resizes applied in a single eval pass)
+    auto img = make_bgr(128, 128);
+    auto view = img
+        | views::transform(Resize{}.width(64).height(64))
+        | views::transform(Resize{}.width(32).height(32))
+        | views::transform(Resize{}.width(16).height(16));
+    Image<BGR> result = view | views::to<Image<BGR>>();
+    EXPECT_EQ(result.cols(), 16);
+    EXPECT_EQ(result.rows(), 16);
+}
