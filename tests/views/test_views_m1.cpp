@@ -29,11 +29,16 @@ TEST(ViewsM1, SingleTransformMaterializesCorrectSize) {
 }
 
 TEST(ViewsM1, SourceImageUnchangedAfterEval) {
-    auto img  = make_bgr(64, 64);
+    auto img  = make_bgr(64, 64);  // color {100, 150, 200}
     auto view = img | views::transform(Resize{}.width(32).height(32));
     [[maybe_unused]] Image<BGR> result = view | views::to<Image<BGR>>();
     EXPECT_EQ(img.cols(), 64);
     EXPECT_EQ(img.rows(), 64);
+    // Verify pixel data is intact, not just dimensions
+    auto px = img.mat().at<cv::Vec3b>(32, 32);
+    EXPECT_EQ(px[0], 100);  // B
+    EXPECT_EQ(px[1], 150);  // G
+    EXPECT_EQ(px[2], 200);  // R
 }
 
 TEST(ViewsM1, EvalTwiceGivesSameShape) {
