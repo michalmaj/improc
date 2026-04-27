@@ -4,7 +4,7 @@
 #include "improc/views/views.hpp"
 
 using namespace improc::core;
-using namespace improc;  // makes views:: prefix resolvable
+namespace views = improc::views;  // explicit alias — makes views:: prefix work without pulling in all of improc
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -92,7 +92,7 @@ TEST(ViewsM1, PixelValuesCorrectAfterOp) {
     EXPECT_EQ(px[1], 255);  // G channel
 }
 
-TEST(ViewsM1, ChainDoesNotAllocateIntermediateImages) {
+TEST(ViewsM1, TupleAccumulationProducesCorrectResult) {
     // Verifies the tuple_cat chaining produces correct output
     // (three sequential resizes applied in a single eval pass)
     auto img = make_bgr(128, 128);
