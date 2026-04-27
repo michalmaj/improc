@@ -4,7 +4,7 @@
 #include "improc/views/views.hpp"
 
 using namespace improc::core;
-using namespace improc::views;
+using namespace improc;  // makes views:: prefix resolvable
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
