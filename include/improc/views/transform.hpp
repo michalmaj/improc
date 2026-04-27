@@ -25,7 +25,7 @@ public:
 
     /// Apply all ops left-to-right on the source. Called by views::to<>.
     Image<F> eval() const {
-        Image<F> result = source_;
+        Image<F> result = source_.clone();
         std::apply([&result](const auto&... ops) {
             ((result = ops(result)), ...);
         }, ops_);
