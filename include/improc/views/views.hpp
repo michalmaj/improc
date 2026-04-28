@@ -39,6 +39,7 @@
  * auto batch = images
  *     | views::transform(Resize{}.width(224).height(224))
  *     | views::filter([](const Image<BGR>& img) { return img.cols() > 0; })
+ *     | views::drop(10)
  *     | views::take(32)
  *     | views::to<std::vector<Image<BGR>>>();
  * @endcode
