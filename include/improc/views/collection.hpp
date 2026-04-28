@@ -79,6 +79,10 @@ auto operator|(const std::vector<Image<F>>& vec, TransformAdapter<Op> adapter)
     return {VectorView<F>{vec}, std::move(adapter.op)};
 }
 
+/// Prevents binding a temporary vector — VectorView stores a pointer; the source must outlive it.
+template<AnyFormat F, typename Op>
+auto operator|(std::vector<Image<F>>&&, TransformAdapter<Op>) -> void = delete;
+
 /// CollectionTransformView | views::transform(op2)  →  wrap in another layer
 template<typename Inner, typename Op1, typename Op2>
 auto operator|(CollectionTransformView<Inner, Op1> view, TransformAdapter<Op2> adapter)

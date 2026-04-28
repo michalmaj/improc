@@ -2,6 +2,7 @@
 #pragma once
 
 #include <cstddef>
+#include <utility>
 #include "improc/core/image.hpp"
 #include "improc/core/concepts.hpp"
 #include "improc/views/collection.hpp"
@@ -95,6 +96,10 @@ auto operator|(const std::vector<Image<F>>& vec, TakeAdapter a)
     return {VectorView<F>{vec}, a.n};
 }
 
+/// Prevents binding a temporary vector — VectorView stores a pointer; the source must outlive it.
+template<AnyFormat F>
+auto operator|(std::vector<Image<F>>&&, TakeAdapter) -> void = delete;
+
 template<typename Inner, typename Op>
 auto operator|(CollectionTransformView<Inner, Op> view, TakeAdapter a)
     -> TakeView<CollectionTransformView<Inner, Op>>
@@ -131,6 +136,9 @@ auto operator|(const std::vector<Image<F>>& vec, DropAdapter a)
 {
     return {VectorView<F>{vec}, a.n};
 }
+
+template<AnyFormat F>
+auto operator|(std::vector<Image<F>>&&, DropAdapter) -> void = delete;
 
 template<typename Inner, typename Op>
 auto operator|(CollectionTransformView<Inner, Op> view, DropAdapter a)

@@ -1,6 +1,7 @@
 // include/improc/views/filter.hpp
 #pragma once
 
+#include <utility>
 #include "improc/core/image.hpp"
 #include "improc/core/concepts.hpp"
 #include "improc/views/collection.hpp"
@@ -73,6 +74,10 @@ auto operator|(const std::vector<Image<F>>& vec, FilterAdapter<Pred> adapter)
 {
     return {VectorView<F>{vec}, std::move(adapter.pred)};
 }
+
+/// Prevents binding a temporary vector — VectorView stores a pointer; the source must outlive it.
+template<AnyFormat F, typename Pred>
+auto operator|(std::vector<Image<F>>&&, FilterAdapter<Pred>) -> void = delete;
 
 /// CollectionTransformView | views::filter(pred)
 template<typename Inner, typename Op, typename Pred>
