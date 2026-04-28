@@ -28,3 +28,4 @@
  */
 #include "improc/views/transform.hpp"
 #include "improc/views/to.hpp"
+#include "improc/views/collection.hpp"
