@@ -1,9 +1,12 @@
 // include/improc/views/to.hpp
 #pragma once
 
+#include <vector>
+
 #include "improc/core/image.hpp"
 #include "improc/core/concepts.hpp"
 #include "improc/views/transform.hpp"
+#include "improc/views/collection.hpp"
 
 namespace improc::views {
 
@@ -30,6 +33,20 @@ auto to() -> ToTag<T> {
 template<AnyFormat F, typename... Ops>
 auto operator|(TransformView<F, Ops...> view, ToTag<Image<F>>) -> Image<F> {
     return view.eval();
+}
+
+// ── Collection materializer ───────────────────────────────────────────────────
+
+/// Any iterable collection view | views::to<std::vector<Image<F>>>()
+/// Works for CollectionTransformView, FilterView, TakeView, DropView and any
+/// future type satisfying ImageCollectionView<V, F>.
+template<AnyFormat F, typename V>
+    requires ImageCollectionView<V, F>
+auto operator|(V view, ToTag<std::vector<Image<F>>>) -> std::vector<Image<F>> {
+    std::vector<Image<F>> result;
+    for (auto img : view)
+        result.push_back(std::move(img));
+    return result;
 }
 
 } // namespace improc::views

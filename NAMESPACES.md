@@ -716,8 +716,32 @@ auto view = img
 Image<BGR> result = view | views::to<Image<BGR>>();
 ```
 
-**Coming in M2–M4:** `views::filter`, `views::take`, `views::drop`, `views::batch`,
-`views::from_dir`, `views::zip`, `views::enumerate`.
+### M2 — In-Memory Collections (`std::vector<Image<F>>`)
+
+| Symbol | Description |
+|---|---|
+| `views::transform(op)` | Applies op lazily to each collection element |
+| `views::filter(pred)` | Skips elements where `pred(img)` returns `false` |
+| `views::take(n)` | Stops iteration after `n` elements |
+| `views::drop(n)` | Skips the first `n` elements |
+| `views::to<std::vector<Image<F>>>()` | Collects all remaining elements into a vector |
+
+**Example:**
+```cpp
+std::vector<Image<BGR>> images = load_dataset("path/");
+
+auto batch = images
+    | views::transform(Resize{}.width(224).height(224))
+    | views::filter([](const Image<BGR>& img) { return img.cols() > 0; })
+    | views::drop(10)
+    | views::take(32)
+    | views::to<std::vector<Image<BGR>>>();
+
+// Or iterate lazily — one image processed at a time
+for (const auto& img : images | views::transform(Resize{}.width(224).height(224))) {
+    process(img);
+}
+```
 
 ---
 
