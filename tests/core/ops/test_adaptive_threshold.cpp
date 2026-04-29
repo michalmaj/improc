@@ -2,7 +2,6 @@
 #include <gtest/gtest.h>
 #include "improc/exceptions.hpp"
 #include "improc/core/pipeline.hpp"
-#include "improc/core/ops/adaptive_threshold.hpp"
 
 using namespace improc::core;
 
@@ -25,7 +24,7 @@ TEST(AdaptiveThresholdTest, OutputTypeIsGray) {
     EXPECT_EQ(result.mat().type(), CV_8UC1);
 }
 
-TEST(AdaptiveThresholdTest, GaussianMethodAllPixelsBelowThresholdAreZero) {
+TEST(AdaptiveThresholdTest, GaussianMethodAllPixelsAboveThresholdAreMaxValue) {
     // Uniform bright image, large C → local_mean - C is low → all pixels above → all 255
     Image<Gray> img = make_gray(20, 20, 200);
     Image<Gray> result = img | AdaptiveThreshold{}.block_size(11).C(50);

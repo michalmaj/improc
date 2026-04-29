@@ -4,6 +4,7 @@
 #include <string>
 #include <opencv2/imgproc.hpp>
 #include "improc/core/image.hpp"
+#include "improc/core/concepts.hpp"
 #include "improc/exceptions.hpp"
 
 namespace improc::core {
@@ -39,23 +40,18 @@ enum class AdaptiveMethod {
  * @endcode
  */
 struct AdaptiveThreshold {
-    /// @brief Sets the maximum output value for above-threshold pixels (default: 255).
     AdaptiveThreshold& max_value(double v)     { max_value_  = v; return *this; }
-    /// @brief Sets the local neighbourhood method (default: AdaptiveMethod::Gaussian).
     AdaptiveThreshold& method(AdaptiveMethod m) { method_     = m; return *this; }
-    /// @brief When called, switches output to BinaryInv (above-threshold → 0).
     AdaptiveThreshold& invert(bool v = true)   { invert_     = v; return *this; }
-    /// @brief Sets the neighbourhood block size; must be odd and >= 3 (default: 11).
     AdaptiveThreshold& block_size(int v) {
         if (v < 3 || v % 2 == 0)
             throw ParameterError{"block_size", "must be odd and >= 3", "AdaptiveThreshold"};
         block_size_ = v; return *this;
     }
-    /// @brief Sets the constant subtracted from the local mean (default: 2.0).
     AdaptiveThreshold& C(double v) { C_ = v; return *this; }
 
-    /// @brief Applies adaptive thresholding to a grayscale image.
-    Image<Gray> operator()(Image<Gray> img) const {
+    template<GrayFormat Format>
+    Image<Format> operator()(Image<Format> img) const {
         const int cv_method = (method_ == AdaptiveMethod::Gaussian)
             ? cv::ADAPTIVE_THRESH_GAUSSIAN_C
             : cv::ADAPTIVE_THRESH_MEAN_C;
@@ -67,7 +63,7 @@ struct AdaptiveThreshold {
         } catch (const cv::Exception& e) {
             throw ParameterError{"block_size/C", std::string(e.what()), "AdaptiveThreshold"};
         }
-        return Image<Gray>(std::move(dst));
+        return Image<Format>(std::move(dst));
     }
 
 private:
