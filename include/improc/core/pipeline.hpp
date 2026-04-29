@@ -1,7 +1,7 @@
 /**
  * @brief Umbrella include for all `improc::core` pipeline ops.
  *
- * Including this header pulls in every op (Resize, Crop, Flip, Rotate, Pad,
+ * Including this header pulls in every op (Resize, Crop, CenterCrop, LetterBox, Flip, Rotate, Pad,
  * GaussianBlur, MedianBlur, Dilate, Erode, Threshold, CLAHE, GammaCorrection,
  * BilateralFilter, UnsharpMask, SobelEdge, CannyEdge, Normalize, NormalizeTo,
  * Standardize, ApplyMask, WarpAffine, WarpPerspective, ToGray, ToFloat32,
@@ -25,6 +25,8 @@
 #include "improc/core/ops/axis.hpp"
 #include "improc/core/ops/resize.hpp"
 #include "improc/core/ops/crop.hpp"
+#include "improc/core/ops/center_crop.hpp"
+#include "improc/core/ops/letter_box.hpp"
 #include "improc/core/ops/flip.hpp"
 #include "improc/core/ops/rotate.hpp"
 #include "improc/core/ops/normalize.hpp"

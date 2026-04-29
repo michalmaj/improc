@@ -158,6 +158,10 @@ target_link_libraries(demo_apply_mask PRIVATE improc)
 add_executable(demo_unsharp_mask examples/core/demo_unsharp_mask.cpp)
 target_link_libraries(demo_unsharp_mask PRIVATE improc)
 
+# CenterCrop + LetterBox demo
+add_executable(demo_geometric_preprocessing examples/core/demo_geometric_preprocessing.cpp)
+target_link_libraries(demo_geometric_preprocessing PRIVATE improc)
+
 # Threading demos
 add_executable(demo_thread_pool examples/threading/demo_thread_pool.cpp)
 target_link_libraries(demo_thread_pool PRIVATE improc)
