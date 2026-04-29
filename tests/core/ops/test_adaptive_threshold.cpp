@@ -76,6 +76,16 @@ TEST(AdaptiveThresholdTest, ThrowsOnBlockSizeTwo) {
     EXPECT_THROW(AdaptiveThreshold{}.block_size(2), improc::ParameterError);
 }
 
+TEST(AdaptiveThresholdTest, ThrowsOnNegativeBlockSize) {
+    EXPECT_THROW(AdaptiveThreshold{}.block_size(-1), improc::ParameterError);
+}
+
+TEST(AdaptiveThresholdTest, MinimumValidBlockSizeWorks) {
+    cv::Mat mat(10, 10, CV_8UC1, cv::Scalar(200));
+    Image<Gray> img{mat};
+    EXPECT_NO_THROW((img | AdaptiveThreshold{}.block_size(3).C(50)));
+}
+
 TEST(AdaptiveThresholdTest, CustomBlockSizeWorks) {
     // 30x30 image, block_size=15 (odd, >= 3, fits in image)
     cv::Mat mat(30, 30, CV_8UC1, cv::Scalar(200));

@@ -40,14 +40,24 @@ enum class AdaptiveMethod {
  * @endcode
  */
 struct AdaptiveThreshold {
+    /// @brief Sets the maximum output value for above-threshold pixels. Default: 255.
     AdaptiveThreshold& max_value(double v)     { max_value_  = v; return *this; }
+
+    /// @brief Sets the local neighbourhood method. Default: AdaptiveMethod::Gaussian.
     AdaptiveThreshold& method(AdaptiveMethod m) { method_     = m; return *this; }
+
+    /// @brief Switches output to BinaryInv mode when `true` (above-threshold → 0). Default: false.
     AdaptiveThreshold& invert(bool v = true)   { invert_     = v; return *this; }
+
+    /// @brief Sets the neighbourhood block size; must be odd and >= 3. Default: 11.
+    /// @throws improc::ParameterError if the value is even or < 3.
     AdaptiveThreshold& block_size(int v) {
         if (v < 3 || v % 2 == 0)
             throw ParameterError{"block_size", "must be odd and >= 3", "AdaptiveThreshold"};
         block_size_ = v; return *this;
     }
+
+    /// @brief Sets the constant C subtracted from the local mean. Default: 2.0.
     AdaptiveThreshold& C(double v) { C_ = v; return *this; }
 
     template<GrayFormat Format>
