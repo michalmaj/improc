@@ -18,7 +18,7 @@ using improc::core::BGR;
 /**
  * @brief OpenCV DNN-backed object detector with NMS post-processing.
  *
- * Supports two output formats selectable via @ref Style: YOLO-style single-blob
+ * Supports two output formats selectable via `Style`: YOLO-style single-blob
  * output and SSD-style dual-blob (boxes + scores) output. Bounding boxes are
  * rescaled to the original image dimensions and filtered through NMS before
  * being returned as `Detection` values.

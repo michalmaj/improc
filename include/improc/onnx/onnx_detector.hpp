@@ -23,7 +23,7 @@ using improc::ml::Detection;
  * resize → float conversion → mean subtraction → optional channel swap →
  * HWC→CHW → inference → format-specific parsing → NMS → coordinate rescaling.
  *
- * Two output formats are supported via @ref Style:
+ * Two output formats are supported via `Style`:
  * - **YOLO**: single blob `[1, 4+C, N]` — `cx,cy,w,h` + per-class scores.
  * - **SSD**: two blobs — boxes `[1, N, 4]` (y1,x1,y2,x2 normalised) and
  *   scores `[1, N, C]`.

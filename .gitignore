@@ -7,6 +7,9 @@ cmake-build-*
 **/.DS_Store
 ._*
 
+# Doxygen generated output
+docs/doxygen/
+
 # Claude Code working files
 memory/
 docs/superpowers/
