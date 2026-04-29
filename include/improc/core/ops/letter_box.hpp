@@ -3,7 +3,8 @@
 
 #include <optional>
 #include <cmath>
-#include <format>
+#include <algorithm>
+#include <string>
 #include <opencv2/imgproc.hpp>
 #include "improc/core/image.hpp"
 #include "improc/core/concepts.hpp"
@@ -54,11 +55,15 @@ struct LetterBox {
         const double scale = std::min(
             static_cast<double>(tw) / img.cols(),
             static_cast<double>(th) / img.rows());
-        const int new_w = static_cast<int>(std::round(img.cols() * scale));
-        const int new_h = static_cast<int>(std::round(img.rows() * scale));
+        const int new_w = std::max(1, static_cast<int>(std::round(img.cols() * scale)));
+        const int new_h = std::max(1, static_cast<int>(std::round(img.rows() * scale)));
 
         cv::Mat resized;
-        cv::resize(img.mat(), resized, cv::Size(new_w, new_h), 0, 0, cv::INTER_LINEAR);
+        try {
+            cv::resize(img.mat(), resized, cv::Size(new_w, new_h), 0, 0, cv::INTER_LINEAR);
+        } catch (const cv::Exception& e) {
+            throw ParameterError{"width/height", std::string(e.what()), "LetterBox"};
+        }
 
         const int pad_h = th - new_h;
         const int pad_w = tw - new_w;
@@ -68,9 +73,13 @@ struct LetterBox {
         const int right  = pad_w - left;
 
         cv::Mat dst;
-        cv::copyMakeBorder(resized, dst,
-                           top, bottom, left, right,
-                           cv::BORDER_CONSTANT, value_);
+        try {
+            cv::copyMakeBorder(resized, dst,
+                               top, bottom, left, right,
+                               cv::BORDER_CONSTANT, value_);
+        } catch (const cv::Exception& e) {
+            throw ParameterError{"value", std::string(e.what()), "LetterBox"};
+        }
         return Image<Format>(std::move(dst));
     }
 
