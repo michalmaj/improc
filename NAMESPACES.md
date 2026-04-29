@@ -175,6 +175,8 @@ Image<Gray> eq2 = gray | CLAHE{}.clip_limit(2.0).tile_grid_size(8, 8);
 Image<BGR>  eq3 = bgr  | CLAHE{}.clip_limit(3.0);                 // colour-safe via LAB
 ```
 
+**`AdaptiveThreshold`** accepts only `Image<Gray>`. Throws `ParameterError` if `block_size` is even or < 3. Default: Gaussian method, Binary output, block_size = 11, C = 2.0.
+
 **Geometric ops** throw `ParameterError` when required parameters are missing or invalid (e.g. no dimension in `Resize`, ROI out of bounds in `Crop`, no angle in `Rotate`).
 
 **`CenterCrop`** throws `ParameterError` if either dimension is missing, non-positive, or exceeds the source image size.
@@ -184,8 +186,6 @@ Image<BGR>  eq3 = bgr  | CLAHE{}.clip_limit(3.0);                 // colour-safe
 **Normalization ops** throw `ParameterError` at construction if parameters are invalid (`NormalizeTo` requires `min < max`; `Standardize` requires `std_dev > 0`). A uniform image passed to `Normalize` or `NormalizeTo` returns a zero-filled image.
 
 **`CLAHE`** throws `ParameterError` for non-positive `clip_limit` or tile dimensions. On BGR input the operation is colour-safe: it converts to LAB, equalises the L channel only, and converts back — so hue and saturation are preserved.
-
-**`AdaptiveThreshold`** accepts only `Image<Gray>`. Throws `ParameterError` if `block_size` is even or < 3. Default: Gaussian method, Binary output, block_size = 11, C = 2.0.
 
 ```cpp
 // GammaCorrection — any format (Gray, BGR, Float32, Float32C3)
