@@ -22,10 +22,10 @@ using improc::core::AnyFormat;
 /// The last chunk may be smaller than n if the source has fewer remaining elements.
 template<typename Inner>
 class BatchView {
+public:
     using inner_iter = decltype(std::declval<Inner>().begin());
     using elem_t     = std::decay_t<decltype(*std::declval<inner_iter>())>;
 
-public:
     BatchView(Inner inner, std::size_t n)
         : inner_(std::move(inner)), n_(n) {}
 
