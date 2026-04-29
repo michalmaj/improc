@@ -168,4 +168,22 @@ auto operator|(TakeView<Inner> view, DropAdapter a)
     return {std::move(view), a.n};
 }
 
+// ── operator| for transform (missing from M2) ─────────────────────────────────
+
+/// TakeView | views::transform(op)  →  CollectionTransformView<TakeView<Inner>, Op>
+template<typename Inner, typename Op>
+auto operator|(TakeView<Inner> view, TransformAdapter<Op> adapter)
+    -> CollectionTransformView<TakeView<Inner>, Op>
+{
+    return {std::move(view), std::move(adapter.op)};
+}
+
+/// DropView | views::transform(op)  →  CollectionTransformView<DropView<Inner>, Op>
+template<typename Inner, typename Op>
+auto operator|(DropView<Inner> view, TransformAdapter<Op> adapter)
+    -> CollectionTransformView<DropView<Inner>, Op>
+{
+    return {std::move(view), std::move(adapter.op)};
+}
+
 } // namespace improc::views
