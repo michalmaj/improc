@@ -20,6 +20,7 @@ using improc::core::BGR;
 /// Lazy single-pass view over a VideoReader.
 /// Non-owning: the VideoReader must outlive this view and all iterators obtained from it.
 /// Each call to begin() reads the next frame from the VideoReader — do not call begin() twice.
+/// Note: views::drop(n) eagerly consumes n frames from the VideoReader when the view is iterated.
 class VideoView {
 public:
     explicit VideoView(improc::io::VideoReader& reader) : reader_(&reader) {}
@@ -36,7 +37,7 @@ public:
         Image<BGR> operator*() const { return *current_; }
 
         iterator& operator++() {
-            current_ = reader_ ? reader_->next() : std::nullopt;
+            if (reader_ && current_) current_ = reader_->next();
             return *this;
         }
 
