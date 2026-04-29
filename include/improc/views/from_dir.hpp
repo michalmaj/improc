@@ -82,6 +82,7 @@ public:
             if (std::find(exts_.begin(), exts_.end(), ext) != exts_.end())
                 paths.push_back(entry.path());
         }
+        std::sort(paths.begin(), paths.end());
         return iterator{std::move(paths)};
     }
 
