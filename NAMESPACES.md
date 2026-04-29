@@ -160,6 +160,9 @@ Image<Gray> otsu   = gray | Threshold{}.mode(ThresholdMode::Otsu);
 // Padding ops — templated, work on any Image<Format>
 Image<BGR>  padded = src | Pad{}.top(10).bottom(10).left(20).right(20).mode(PadMode::Reflect);
 Image<BGR>  square = src | PadToSquare{}.value({114, 114, 114});  // letterbox for inference
+Image<BGR> cc  = src | CenterCrop{}.width(224).height(224);           // centered crop
+Image<BGR> lb  = src | LetterBox{}.width(640).height(640);            // resize+pad to canvas
+Image<BGR> lb2 = src | LetterBox{}.width(640).height(640).value({0, 0, 0}); // black fill
 
 // CLAHE — Image<Gray> (direct) or Image<BGR> (applied to L channel in LAB)
 Image<Gray> eq  = gray | CLAHE{};                                  // defaults: clip=40, tile=8×8
@@ -168,6 +171,10 @@ Image<BGR>  eq3 = bgr  | CLAHE{}.clip_limit(3.0);                 // colour-safe
 ```
 
 **Geometric ops** throw `ParameterError` when required parameters are missing or invalid (e.g. no dimension in `Resize`, ROI out of bounds in `Crop`, no angle in `Rotate`).
+
+**`CenterCrop`** throws `ParameterError` if either dimension is missing, non-positive, or exceeds the source image size.
+
+**`LetterBox`** throws `ParameterError` if either dimension is missing or non-positive. Output is always exactly `width × height` pixels; default fill color is `{114, 114, 114}` (YOLO convention).
 
 **Normalization ops** throw `ParameterError` at construction if parameters are invalid (`NormalizeTo` requires `min < max`; `Standardize` requires `std_dev > 0`). A uniform image passed to `Normalize` or `NormalizeTo` returns a zero-filled image.
 
