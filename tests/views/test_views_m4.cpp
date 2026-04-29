@@ -313,3 +313,79 @@ TEST_F(ViewsM4VideoBatch, VideoViewEnumerateIndices) {
     for (std::size_t i = 0; i < indices.size(); ++i)
         EXPECT_EQ(indices[i], i);
 }
+
+// ── views::zip ────────────────────────────────────────────────────────────────
+
+TEST(ViewsM4, ZipTwoVectorsEqualLength) {
+    auto imgs  = make_batch(4, 64, 64);
+    auto masks = make_batch(4, 64, 64);
+    std::size_t count = 0;
+    for (const auto& [img, mask] : views::zip(imgs, masks)) {
+        EXPECT_EQ(img.cols(), 64);
+        EXPECT_EQ(mask.cols(), 64);
+        ++count;
+    }
+    EXPECT_EQ(count, 4u);
+}
+
+TEST(ViewsM4, ZipStopsAtShorterFirst) {
+    auto imgs  = make_batch(3);
+    auto masks = make_batch(6);
+    std::size_t count = 0;
+    for (const auto& [img, mask] : views::zip(imgs, masks)) ++count;
+    EXPECT_EQ(count, 3u);
+}
+
+TEST(ViewsM4, ZipStopsAtShorterSecond) {
+    auto imgs  = make_batch(6);
+    auto masks = make_batch(4);
+    std::size_t count = 0;
+    for (const auto& [img, mask] : views::zip(imgs, masks)) ++count;
+    EXPECT_EQ(count, 4u);
+}
+
+TEST(ViewsM4, ZipEmptyFirst) {
+    std::vector<Image<BGR>> empty;
+    auto masks = make_batch(4);
+    std::size_t count = 0;
+    for (const auto& [img, mask] : views::zip(empty, masks)) ++count;
+    EXPECT_EQ(count, 0u);
+}
+
+TEST(ViewsM4, ZipEmptySecond) {
+    auto imgs = make_batch(4);
+    std::vector<Image<BGR>> empty;
+    std::size_t count = 0;
+    for (const auto& [img, mask] : views::zip(imgs, empty)) ++count;
+    EXPECT_EQ(count, 0u);
+}
+
+TEST(ViewsM4, ZipPreservesBothElements) {
+    auto imgs  = make_batch(3, 64, 64);
+    auto masks = make_batch(3, 32, 32);
+    for (const auto& [img, mask] : views::zip(imgs, masks)) {
+        EXPECT_EQ(img.cols(), 64);
+        EXPECT_EQ(mask.cols(), 32);
+    }
+}
+
+TEST(ViewsM4, ZipWithTransformedSource) {
+    auto imgs  = make_batch(4, 64, 64);
+    auto masks = make_batch(4, 64, 64);
+    auto resized = imgs
+        | views::transform(Resize{}.width(32).height(32))
+        | views::to<std::vector<Image<BGR>>>();
+    std::size_t count = 0;
+    for (const auto& [img, mask] : views::zip(resized, masks)) {
+        EXPECT_EQ(img.cols(), 32);
+        EXPECT_EQ(mask.cols(), 64);
+        ++count;
+    }
+    EXPECT_EQ(count, 4u);
+}
+
+TEST(ViewsM4, ZipBothSameImage) {
+    auto imgs = make_batch(3, 64, 64);
+    for (const auto& [a, b] : views::zip(imgs, imgs))
+        EXPECT_EQ(a.cols(), b.cols());
+}

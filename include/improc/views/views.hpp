@@ -67,5 +67,6 @@
 #include "improc/views/take_drop.hpp"
 #include "improc/views/batch.hpp"
 #include "improc/views/enumerate.hpp"
+#include "improc/views/zip.hpp"
 #include "improc/views/video_source.hpp"
 #include "improc/views/from_dir.hpp"
