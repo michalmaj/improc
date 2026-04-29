@@ -25,6 +25,7 @@
 #include "improc/core/ops/axis.hpp"
 #include "improc/core/ops/resize.hpp"
 #include "improc/core/ops/crop.hpp"
+#include "improc/core/ops/center_crop.hpp"
 #include "improc/core/ops/flip.hpp"
 #include "improc/core/ops/rotate.hpp"
 #include "improc/core/ops/normalize.hpp"
