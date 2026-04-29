@@ -282,3 +282,34 @@ TEST(ViewsM4, EnumerateAfterDrop) {
     ASSERT_EQ(indices.size(), 3u);
     EXPECT_EQ(indices[0], 0u);
 }
+
+// ── enumerate: DirView source ─────────────────────────────────────────────────
+
+TEST_F(ViewsM4DirBatch, DirViewEnumerateIndices) {
+    std::vector<std::size_t> indices;
+    for (const auto& [idx, img] : views::from_dir(dir_, {".png"}) | views::enumerate)
+        indices.push_back(idx);
+    ASSERT_EQ(indices.size(), 6u);
+    for (std::size_t i = 0; i < indices.size(); ++i)
+        EXPECT_EQ(indices[i], i);
+}
+
+TEST_F(ViewsM4DirBatch, DirViewEnumeratePreservesImage) {
+    for (const auto& [idx, img] : views::from_dir(dir_, {".png"}) | views::enumerate) {
+        EXPECT_EQ(img.cols(), 64);
+        EXPECT_EQ(img.rows(), 64);
+    }
+}
+
+// ── enumerate: VideoView source ───────────────────────────────────────────────
+
+TEST_F(ViewsM4VideoBatch, VideoViewEnumerateIndices) {
+    if (!ffmpeg_ok() || !fs::exists(video_path_)) GTEST_SKIP();
+    VideoReader reader{video_path_};
+    std::vector<std::size_t> indices;
+    for (const auto& [idx, img] : views::VideoView{reader} | views::enumerate)
+        indices.push_back(idx);
+    ASSERT_EQ(indices.size(), 6u);
+    for (std::size_t i = 0; i < indices.size(); ++i)
+        EXPECT_EQ(indices[i], i);
+}

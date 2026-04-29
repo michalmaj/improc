@@ -10,6 +10,7 @@
 #include "improc/views/filter.hpp"
 #include "improc/views/take_drop.hpp"
 #include "improc/views/batch.hpp"
+#include "improc/views/enumerate.hpp"
 
 namespace improc::views {
 
@@ -95,6 +96,13 @@ inline auto operator|(VideoView view, BatchAdapter a)
     -> BatchView<VideoView>
 {
     return {std::move(view), a.n};
+}
+
+/// VideoView | views::enumerate  →  EnumerateView<VideoView>
+inline auto operator|(VideoView view, EnumerateTag)
+    -> EnumerateView<VideoView>
+{
+    return EnumerateView<VideoView>{std::move(view)};
 }
 
 } // namespace improc::views
