@@ -87,4 +87,20 @@ that subsequent releases will extend without breaking.
 
 ## [Unreleased]
 
-- `improc::cuda` — GPU-accelerated ops via OpenCV CUDA (planned)
+### Added
+
+#### `improc::views`
+- `views::transform(op)` — lazy single-image and collection transform; defers op execution until materialisation
+- `views::filter(pred)` — lazy predicate filter over image collections
+- `views::take(n)` / `views::drop(n)` — lazy size-limiting and offset adapters
+- `views::to<T>()` — materialisation sink: `to<Image<F>>()` for single images, `to<std::vector<Image<F>>>()` for collections
+- `views::from_dir(path, exts)` — lazy directory scanner; images are loaded only as they are iterated
+- `views::VideoView{reader}` — lazy frame-by-frame adapter over `VideoReader`
+- `views::batch(n)` — groups elements into `std::vector<Image<F>>` chunks of size ≤ n (last chunk may be smaller)
+- `views::enumerate` — pairs each element with a zero-based `std::size_t` index; yields `std::pair<std::size_t, Image<F>>`
+- `views::zip(v1, v2)` — pairs elements from two sources element-wise; stops at the shorter source
+- All adapters compose via `operator|`; `from_dir` and `VideoView` support the full adapter set
+- `views.hpp` umbrella include
+
+### Planned
+- `improc::cuda` — GPU-accelerated ops via OpenCV CUDA

@@ -15,6 +15,7 @@
 | `improc::ml` | ✅ Stable | New ops added regularly |
 | `improc::threading` | ✅ Stable | |
 | `improc::visualization` | ✅ Stable | New ops added regularly |
+| `improc::views` | ✅ Stable | Lazy image pipeline adapters |
 | `improc::onnx` | ✅ Stable | ONNX Runtime 1.20.1; CPU + CoreML on Apple Silicon |
 | `improc::cuda` | 🔜 Planned | GPU-accelerated ops via OpenCV CUDA |
 
@@ -112,6 +113,7 @@ OpenCV is powerful but its raw API is stringly-typed, mutation-heavy, and easy t
 - **Haar Cascade loader** — CRTP-based model loader for OpenCV cascade classifiers
 - **Threading** — `ThreadPool` and `FramePipeline<Result>` for real-time frame processing
 - **Visualization** — `Histogram`, `LinePlot`, `Scatter` chart functors, a `Show` passthrough display op, and `DrawBoundingBoxes` for annotating `Detection` results — all composable with `operator|`
+- **Lazy image views** — `improc::views` lazy pipeline adapters: `transform`, `filter`, `take`, `drop`, `batch(N)`, `enumerate`, `zip`; compose with `from_dir()`, `VideoView`, and `std::vector<Image<F>>` sources via `operator|`; zero work until materialised with `views::to<T>()`
 
 ## Quick Start
 
@@ -174,6 +176,9 @@ All ops are functors that compose via `operator|`. The `pipeline.hpp` umbrella h
 
 // Visualization
 #include "improc/visualization/visualization.hpp"
+
+// Lazy views
+#include "improc/views/views.hpp"
 ```
 
 ## Augmentation
@@ -305,6 +310,53 @@ Image<BGR> annotated = frame | DrawBoundingBoxes{detections}.thickness(2);
 Image<BGR> boxes_only = frame | DrawBoundingBoxes{detections}
     .show_label(false).show_confidence(false);
 ```
+
+## Lazy Views
+
+Lazy pipeline adapters over image collections. Nothing executes until you materialise with `views::to<T>()` or a range-for loop.
+
+```cpp
+#include "improc/views/views.hpp"
+namespace views = improc::views;
+using namespace improc::core;
+
+std::vector<Image<BGR>> images = ...;
+
+// transform + filter + take — materialise into a new vector
+auto result = images
+    | views::filter([](const Image<BGR>& img) { return img.cols() >= 128; })
+    | views::transform(Resize{}.width(64).height(64))
+    | views::take(10)
+    | views::to<std::vector<Image<BGR>>>();
+
+// lazy iteration over a directory — only loads images on demand
+for (const auto& img : views::from_dir("dataset/train", {".png", ".jpg"})) {
+    // process img ...
+}
+
+// batch(N) — iterate over fixed-size chunks
+for (const auto& chunk : views::from_dir("frames/", {".png"}) | views::batch(8)) {
+    // chunk is std::vector<Image<BGR>> of up to 8 images
+}
+
+// enumerate — zero-based index alongside each element
+for (const auto& [idx, img] : images | views::take(5) | views::enumerate) {
+    std::cout << idx << ": " << img.cols() << "x" << img.rows() << "\n";
+}
+
+// zip — pair two sources element-wise (stops at the shorter)
+for (const auto& [img, mask] : views::zip(images, masks)) {
+    // img and mask aligned by position
+}
+
+// compose freely — lazy VideoView source, then batch + enumerate
+VideoReader reader{"video.mp4"};
+for (const auto& [idx, chunk] : views::VideoView{reader} | views::batch(4) | views::enumerate) {
+    std::cout << "Batch " << idx << ": " << chunk.size() << " frames\n";
+}
+```
+
+See `examples/views/` for the full demo suite (M1–M4) and `NAMESPACES.md` for the complete symbol reference.
 
 ## Requirements
 
