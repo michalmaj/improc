@@ -157,6 +157,11 @@ Image<Gray> eroded  = mask | Erode{}.kernel_size(3).iterations(2);
 Image<Gray> binary = gray | Threshold{}.value(128).mode(ThresholdMode::Binary);
 Image<Gray> otsu   = gray | Threshold{}.mode(ThresholdMode::Otsu);
 
+// AdaptiveThreshold — Image<Gray> only; threshold computed locally per pixel
+Image<Gray> adapt  = gray | AdaptiveThreshold{}.block_size(11).C(2);
+Image<Gray> adapt2 = gray | AdaptiveThreshold{}.method(AdaptiveMethod::Mean).block_size(31).C(5);
+Image<Gray> adapt3 = gray | AdaptiveThreshold{}.block_size(11).C(2).invert();
+
 // Padding ops — templated, work on any Image<Format>
 Image<BGR>  padded = src | Pad{}.top(10).bottom(10).left(20).right(20).mode(PadMode::Reflect);
 Image<BGR>  square = src | PadToSquare{}.value({114, 114, 114});  // letterbox for inference
@@ -169,6 +174,8 @@ Image<Gray> eq  = gray | CLAHE{};                                  // defaults: 
 Image<Gray> eq2 = gray | CLAHE{}.clip_limit(2.0).tile_grid_size(8, 8);
 Image<BGR>  eq3 = bgr  | CLAHE{}.clip_limit(3.0);                 // colour-safe via LAB
 ```
+
+**`AdaptiveThreshold`** accepts only `Image<Gray>`. Throws `ParameterError` if `block_size` is even or < 3. Default: Gaussian method, Binary output, block_size = 11, C = 2.0.
 
 **Geometric ops** throw `ParameterError` when required parameters are missing or invalid (e.g. no dimension in `Resize`, ROI out of bounds in `Crop`, no angle in `Rotate`).
 

@@ -2,7 +2,7 @@
  * @brief Umbrella include for all `improc::core` pipeline ops.
  *
  * Including this header pulls in every op (Resize, Crop, CenterCrop, LetterBox, Flip, Rotate, Pad,
- * GaussianBlur, MedianBlur, Dilate, Erode, Threshold, CLAHE, GammaCorrection,
+ * GaussianBlur, MedianBlur, Dilate, Erode, Threshold, AdaptiveThreshold, CLAHE, GammaCorrection,
  * BilateralFilter, UnsharpMask, SobelEdge, CannyEdge, Normalize, NormalizeTo,
  * Standardize, ApplyMask, WarpAffine, WarpPerspective, ToGray, ToFloat32,
  * ToFloat32C3, ToHSV, ToBGR, Brightness, Contrast, WeightedBlend, AlphaBlend)
@@ -33,6 +33,7 @@
 #include "improc/core/ops/blur.hpp"
 #include "improc/core/ops/morphology.hpp"
 #include "improc/core/ops/threshold.hpp"
+#include "improc/core/ops/adaptive_threshold.hpp"
 #include "improc/core/ops/pad.hpp"
 #include "improc/core/ops/clahe.hpp"
 #include "improc/core/ops/gamma.hpp"
