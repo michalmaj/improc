@@ -16,6 +16,8 @@
 #include "improc/views/collection.hpp"
 #include "improc/views/filter.hpp"
 #include "improc/views/take_drop.hpp"
+#include "improc/views/batch.hpp"
+#include "improc/views/enumerate.hpp"
 
 namespace improc::views {
 
@@ -131,6 +133,20 @@ inline auto operator|(DirView view, DropAdapter a)
     -> DropView<DirView>
 {
     return {std::move(view), a.n};
+}
+
+/// DirView | views::batch(n)  →  BatchView<DirView>
+inline auto operator|(DirView view, BatchAdapter a)
+    -> BatchView<DirView>
+{
+    return {std::move(view), a.n};
+}
+
+/// DirView | views::enumerate  →  EnumerateView<DirView>
+inline auto operator|(DirView view, EnumerateTag)
+    -> EnumerateView<DirView>
+{
+    return EnumerateView<DirView>{std::move(view)};
 }
 
 } // namespace improc::views
