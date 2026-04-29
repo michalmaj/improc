@@ -153,3 +153,38 @@ TEST(ViewsM2, TransformFilterTakePipeline) {
         | views::to<std::vector<Image<BGR>>>();
     EXPECT_EQ(result.size(), 4u);
 }
+
+// ── filter/take/drop | transform (previously missing overloads) ───────────────
+
+TEST(ViewsM2, FilterThenTransform) {
+    auto imgs = make_batch(6, 64, 64);
+    auto result = imgs
+        | views::filter([](const Image<BGR>&) { return true; })
+        | views::transform(Resize{}.width(32).height(32))
+        | views::to<std::vector<Image<BGR>>>();
+    EXPECT_EQ(result.size(), 6u);
+    for (const auto& img : result)
+        EXPECT_EQ(img.cols(), 32);
+}
+
+TEST(ViewsM2, TakeThenTransform) {
+    auto imgs = make_batch(8, 64, 64);
+    auto result = imgs
+        | views::take(4)
+        | views::transform(Resize{}.width(16).height(16))
+        | views::to<std::vector<Image<BGR>>>();
+    EXPECT_EQ(result.size(), 4u);
+    for (const auto& img : result)
+        EXPECT_EQ(img.cols(), 16);
+}
+
+TEST(ViewsM2, DropThenTransform) {
+    auto imgs = make_batch(6, 64, 64);
+    auto result = imgs
+        | views::drop(2)
+        | views::transform(Resize{}.width(16).height(16))
+        | views::to<std::vector<Image<BGR>>>();
+    EXPECT_EQ(result.size(), 4u);
+    for (const auto& img : result)
+        EXPECT_EQ(img.cols(), 16);
+}

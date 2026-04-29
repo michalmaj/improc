@@ -87,6 +87,14 @@ auto operator|(CollectionTransformView<Inner, Op> view, FilterAdapter<Pred> adap
     return {std::move(view), std::move(adapter.pred)};
 }
 
+/// FilterView | views::transform(op)  →  CollectionTransformView<FilterView<Inner,Pred>, Op>
+template<typename Inner, typename Pred, typename Op>
+auto operator|(FilterView<Inner, Pred> view, TransformAdapter<Op> adapter)
+    -> CollectionTransformView<FilterView<Inner, Pred>, Op>
+{
+    return {std::move(view), std::move(adapter.op)};
+}
+
 /// FilterView | views::filter(pred) — chain two filters
 template<typename Inner, typename Pred1, typename Pred2>
 auto operator|(FilterView<Inner, Pred1> view, FilterAdapter<Pred2> adapter)
