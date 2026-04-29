@@ -33,6 +33,7 @@
 #include "improc/core/ops/blur.hpp"
 #include "improc/core/ops/morphology.hpp"
 #include "improc/core/ops/threshold.hpp"
+#include "improc/core/ops/adaptive_threshold.hpp"
 #include "improc/core/ops/pad.hpp"
 #include "improc/core/ops/clahe.hpp"
 #include "improc/core/ops/gamma.hpp"
