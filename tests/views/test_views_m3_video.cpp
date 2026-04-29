@@ -2,15 +2,52 @@
 #include <gtest/gtest.h>
 #include <filesystem>
 #include <memory>
+#include <cstdlib>
+#include <string>
 #include "improc/core/pipeline.hpp"
 #include "improc/io/video_reader.hpp"
-#include "improc/io/video_writer.hpp"
 #include "improc/views/views.hpp"
 
 using namespace improc::core;
 using namespace improc::io;
 namespace views = improc::views;
 namespace fs    = std::filesystem;
+
+namespace {
+
+/// Creates a small H.264 MP4 test video using the system ffmpeg.
+/// Returns false if ffmpeg is unavailable or the output file is empty.
+bool make_test_video(const fs::path& path, int frames, int w, int h) {
+    const char* ffmpeg_paths[] = {
+        "ffmpeg",
+        "/opt/homebrew/bin/ffmpeg",
+        "/usr/local/bin/ffmpeg",
+        "/usr/bin/ffmpeg",
+        nullptr
+    };
+    std::string ffmpeg_bin;
+    for (const char** p = ffmpeg_paths; *p; ++p) {
+        std::string probe = std::string(*p) + " -version >/dev/null 2>&1";
+        if (std::system(probe.c_str()) == 0) { ffmpeg_bin = *p; break; }
+    }
+    if (ffmpeg_bin.empty()) return false;
+
+    std::string cmd = ffmpeg_bin + " -y -f lavfi"
+        " -i color=c=blue:size=" + std::to_string(w) + "x" + std::to_string(h) +
+        ":rate=25"
+        " -vframes " + std::to_string(frames) +
+        " -vcodec libx264 -pix_fmt yuv420p"
+        " \"" + path.string() + "\""
+        " >/dev/null 2>&1";
+    if (std::system(cmd.c_str()) != 0 ||
+        !fs::exists(path) || fs::file_size(path) == 0) {
+        fs::remove(path);
+        return false;
+    }
+    return true;
+}
+
+} // namespace
 
 class VideoViewTest : public ::testing::Test {
 protected:
@@ -22,15 +59,9 @@ protected:
     std::unique_ptr<VideoReader>    reader_;
 
     void SetUp() override {
-        video_path_ = fs::temp_directory_path() / "improc_test_m3_video.avi";
-        {
-            VideoWriter writer{video_path_};
-            writer.fps(25.0);
-            for (int i = 0; i < kFrames; ++i) {
-                cv::Mat mat(kHeight, kWidth, CV_8UC3, cv::Scalar(i * 20, 100, 200));
-                writer(Image<BGR>{mat});
-            }
-        } // VideoWriter destructor finalises the file
+        video_path_ = fs::temp_directory_path() / "improc_test_m3_video.mp4";
+        if (!make_test_video(video_path_, kFrames, kWidth, kHeight))
+            GTEST_SKIP() << "video creation unavailable (no ffmpeg or H.264 encoder)";
         reader_ = std::make_unique<VideoReader>(video_path_);
     }
 
