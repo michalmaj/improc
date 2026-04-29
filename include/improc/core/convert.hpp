@@ -14,7 +14,6 @@ namespace improc::core {
  *
  * @tparam To    Target format tag.
  * @tparam From  Source format tag.
- * @param  src   Source image.
  * @return       New `Image<To>` containing the converted data.
  *
  * @code
