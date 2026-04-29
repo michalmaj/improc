@@ -162,6 +162,10 @@ target_link_libraries(demo_unsharp_mask PRIVATE improc)
 add_executable(demo_geometric_preprocessing examples/core/demo_geometric_preprocessing.cpp)
 target_link_libraries(demo_geometric_preprocessing PRIVATE improc)
 
+# AdaptiveThreshold demo
+add_executable(demo_adaptive_threshold examples/core/demo_adaptive_threshold.cpp)
+target_link_libraries(demo_adaptive_threshold PRIVATE improc)
+
 # Threading demos
 add_executable(demo_thread_pool examples/threading/demo_thread_pool.cpp)
 target_link_libraries(demo_thread_pool PRIVATE improc)

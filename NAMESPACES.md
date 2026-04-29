@@ -157,6 +157,11 @@ Image<Gray> eroded  = mask | Erode{}.kernel_size(3).iterations(2);
 Image<Gray> binary = gray | Threshold{}.value(128).mode(ThresholdMode::Binary);
 Image<Gray> otsu   = gray | Threshold{}.mode(ThresholdMode::Otsu);
 
+// AdaptiveThreshold — Image<Gray> only; threshold computed locally per pixel
+Image<Gray> adapt  = gray | AdaptiveThreshold{}.block_size(11).C(2);
+Image<Gray> adapt2 = gray | AdaptiveThreshold{}.method(AdaptiveMethod::Mean).block_size(31).C(5);
+Image<Gray> adapt3 = gray | AdaptiveThreshold{}.block_size(11).C(2).invert();
+
 // Padding ops — templated, work on any Image<Format>
 Image<BGR>  padded = src | Pad{}.top(10).bottom(10).left(20).right(20).mode(PadMode::Reflect);
 Image<BGR>  square = src | PadToSquare{}.value({114, 114, 114});  // letterbox for inference
@@ -179,6 +184,8 @@ Image<BGR>  eq3 = bgr  | CLAHE{}.clip_limit(3.0);                 // colour-safe
 **Normalization ops** throw `ParameterError` at construction if parameters are invalid (`NormalizeTo` requires `min < max`; `Standardize` requires `std_dev > 0`). A uniform image passed to `Normalize` or `NormalizeTo` returns a zero-filled image.
 
 **`CLAHE`** throws `ParameterError` for non-positive `clip_limit` or tile dimensions. On BGR input the operation is colour-safe: it converts to LAB, equalises the L channel only, and converts back — so hue and saturation are preserved.
+
+**`AdaptiveThreshold`** accepts only `Image<Gray>`. Throws `ParameterError` if `block_size` is even or < 3. Default: Gaussian method, Binary output, block_size = 11, C = 2.0.
 
 ```cpp
 // GammaCorrection — any format (Gray, BGR, Float32, Float32C3)
