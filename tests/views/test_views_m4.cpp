@@ -199,3 +199,86 @@ TEST_F(ViewsM4VideoBatch, VideoViewBatchSplitsEvenly) {
     for (const auto& batch : batches)
         EXPECT_EQ(batch.size(), 2u);
 }
+
+// ── views::enumerate ─────────────────────────────────────────────────────────
+
+TEST(ViewsM4, EnumerateStartsAtZero) {
+    auto imgs = make_batch(3);
+    std::size_t first_idx = 999;
+    for (const auto& [idx, img] : imgs | views::enumerate) {
+        first_idx = idx;
+        break;
+    }
+    EXPECT_EQ(first_idx, 0u);
+}
+
+TEST(ViewsM4, EnumerateIncrementsIndex) {
+    auto imgs = make_batch(4);
+    std::vector<std::size_t> indices;
+    for (const auto& [idx, img] : imgs | views::enumerate)
+        indices.push_back(idx);
+    ASSERT_EQ(indices.size(), 4u);
+    for (std::size_t i = 0; i < indices.size(); ++i)
+        EXPECT_EQ(indices[i], i);
+}
+
+TEST(ViewsM4, EnumeratePreservesImages) {
+    auto imgs = make_batch(3, 64, 64);
+    for (const auto& [idx, img] : imgs | views::enumerate) {
+        EXPECT_EQ(img.cols(), 64);
+        EXPECT_EQ(img.rows(), 64);
+    }
+}
+
+TEST(ViewsM4, EnumerateEmptySource) {
+    std::vector<Image<BGR>> empty;
+    int count = 0;
+    for (const auto& [idx, img] : empty | views::enumerate)
+        ++count;
+    EXPECT_EQ(count, 0);
+}
+
+TEST(ViewsM4, EnumerateAfterTransform) {
+    auto imgs = make_batch(3);
+    std::vector<std::size_t> indices;
+    for (const auto& [idx, img] : imgs
+            | views::transform(Resize{}.width(32).height(32))
+            | views::enumerate) {
+        indices.push_back(idx);
+        EXPECT_EQ(img.cols(), 32);
+    }
+    EXPECT_EQ(indices.size(), 3u);
+}
+
+TEST(ViewsM4, EnumerateAfterFilter) {
+    auto imgs = make_batch(6);
+    for (int i = 0; i < 3; ++i)
+        imgs[i] = make_bgr(128, 128);
+    std::vector<std::size_t> indices;
+    for (const auto& [idx, img] : imgs
+            | views::filter([](const Image<BGR>& img) { return img.cols() == 128; })
+            | views::enumerate)
+        indices.push_back(idx);
+    // enumerate resets to 0 for the filtered view (not original source indices)
+    ASSERT_EQ(indices.size(), 3u);
+    EXPECT_EQ(indices[0], 0u);
+    EXPECT_EQ(indices[2], 2u);
+}
+
+TEST(ViewsM4, EnumerateAfterTake) {
+    auto imgs = make_batch(8);
+    std::vector<std::size_t> indices;
+    for (const auto& [idx, img] : imgs | views::take(4) | views::enumerate)
+        indices.push_back(idx);
+    ASSERT_EQ(indices.size(), 4u);
+    EXPECT_EQ(indices.back(), 3u);
+}
+
+TEST(ViewsM4, EnumerateAfterDrop) {
+    auto imgs = make_batch(8);
+    std::vector<std::size_t> indices;
+    for (const auto& [idx, img] : imgs | views::drop(5) | views::enumerate)
+        indices.push_back(idx);
+    ASSERT_EQ(indices.size(), 3u);
+    EXPECT_EQ(indices[0], 0u);
+}
