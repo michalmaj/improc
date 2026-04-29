@@ -201,7 +201,7 @@ target_link_libraries(demo_video_reader PRIVATE improc)
 add_executable(demo_montage examples/visualization/demo_montage.cpp)
 target_link_libraries(demo_montage PRIVATE improc)
 
-# Views demos (M1: single-image lazy pipeline, M2: collection pipeline, M3: external sources)
+# Views demos (M1: single-image lazy pipeline, M2: collection pipeline, M3: external sources, M4: batch/enumerate/zip)
 add_executable(demo_views_m1 examples/views/demo_views_m1.cpp)
 target_link_libraries(demo_views_m1 PRIVATE improc)
 
@@ -210,6 +210,9 @@ target_link_libraries(demo_views_m2 PRIVATE improc)
 
 add_executable(demo_views_m3 examples/views/demo_views_m3.cpp)
 target_link_libraries(demo_views_m3 PRIVATE improc)
+
+add_executable(demo_views_m4 examples/views/demo_views_m4.cpp)
+target_link_libraries(demo_views_m4 PRIVATE improc)
 
 # ONNX inference demo
 if(IMPROC_WITH_ONNX)

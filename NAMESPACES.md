@@ -773,6 +773,37 @@ auto batch = views::from_dir("dataset/train/cats/", {".jpg", ".png"})
     | views::to<std::vector<Image<BGR>>>();
 ```
 
+### `improc::views` — M4 Advanced Adapters
+
+| Symbol | Description |
+|---|---|
+| `views::batch(n)` | Groups N consecutive elements into `std::vector<Image<F>>` chunks. Last chunk may be smaller. |
+| `views::enumerate` | Pairs each element with a zero-based `std::size_t` index. No parentheses — tag object. |
+| `views::zip(v1, v2)` | Pairs elements from two sources; stops at the shorter. Free function, not `operator\|`. |
+
+Works with all M1–M3 source types: `std::vector<Image<F>>`, `VideoView`, and `from_dir()`.
+
+```cpp
+namespace views = improc::views;
+using namespace improc::core;
+
+std::vector<Image<BGR>> images = load_dataset("train/");
+std::vector<Image<BGR>> masks  = load_dataset("masks/");
+
+// batch — ML training loop
+for (const auto& mini_batch : images | views::transform(Resize{}.width(224).height(224))
+                                     | views::batch(32))
+    model.train(mini_batch);
+
+// enumerate — index tracking
+for (const auto& [idx, img] : images | views::enumerate)
+    std::cout << std::format("frame {}: {}x{}\n", idx, img.cols(), img.rows());
+
+// zip — image + mask pairs
+for (const auto& [img, mask] : views::zip(images, masks))
+    result.push_back(img | ApplyMask{}.mask(mask));
+```
+
 ---
 
 ## Planned namespaces
