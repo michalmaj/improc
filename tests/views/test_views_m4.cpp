@@ -113,3 +113,89 @@ TEST(ViewsM4, BatchAfterDrop) {
     for (const auto& batch : batches)
         EXPECT_EQ(batch.size(), 2u);
 }
+
+// ── batch: DirView source ─────────────────────────────────────────────────────
+
+#include <filesystem>
+#include <format>
+namespace fs = std::filesystem;
+
+class ViewsM4DirBatch : public ::testing::Test {
+protected:
+    fs::path dir_;
+    void SetUp() override {
+        dir_ = fs::temp_directory_path() / "test_m4_dir_batch";
+        fs::create_directories(dir_);
+        for (int i = 0; i < 6; ++i) {
+            cv::Mat m(64, 64, CV_8UC3, cv::Scalar(i * 20, 100, 200));
+            cv::imwrite((dir_ / std::format("{:04d}.png", i)).string(), m);
+        }
+    }
+    void TearDown() override { fs::remove_all(dir_); }
+};
+
+TEST_F(ViewsM4DirBatch, DirViewBatchSplitsEvenly) {
+    std::vector<std::vector<Image<BGR>>> batches;
+    for (const auto& b : views::from_dir(dir_, {".png"}) | views::batch(2))
+        batches.push_back(b);
+    ASSERT_EQ(batches.size(), 3u);
+    for (const auto& batch : batches)
+        EXPECT_EQ(batch.size(), 2u);
+}
+
+TEST_F(ViewsM4DirBatch, DirViewBatchLastChunkSmaller) {
+    std::vector<std::vector<Image<BGR>>> batches;
+    for (const auto& b : views::from_dir(dir_, {".png"}) | views::batch(4))
+        batches.push_back(b);
+    ASSERT_EQ(batches.size(), 2u);
+    EXPECT_EQ(batches[0].size(), 4u);
+    EXPECT_EQ(batches[1].size(), 2u);
+}
+
+// ── batch: VideoView source ───────────────────────────────────────────────────
+
+#include "improc/io/video_reader.hpp"
+using improc::io::VideoReader;
+
+static bool ffmpeg_ok() {
+    return std::system("ffmpeg -version > /dev/null 2>&1") == 0;
+}
+
+static std::string make_video(const fs::path& dir, int n) {
+    auto path   = dir / "test.mp4";
+    auto frames = dir / "frames";
+    fs::create_directories(frames);
+    for (int i = 0; i < n; ++i) {
+        cv::Mat m(64, 64, CV_8UC3, cv::Scalar(i * 10, 100, 200));
+        cv::imwrite((frames / std::format("{:04d}.png", i)).string(), m);
+    }
+    std::system(std::format(
+        "ffmpeg -y -framerate 10 -i {}/%04d.png -c:v libx264 -pix_fmt yuv420p {} > /dev/null 2>&1",
+        frames.string(), path.string()).c_str());
+    fs::remove_all(frames);
+    return path.string();
+}
+
+class ViewsM4VideoBatch : public ::testing::Test {
+protected:
+    fs::path    dir_;
+    std::string video_path_;
+    void SetUp() override {
+        dir_ = fs::temp_directory_path() / "test_m4_video_batch";
+        fs::create_directories(dir_);
+        if (!ffmpeg_ok()) return;
+        video_path_ = make_video(dir_, 6);
+    }
+    void TearDown() override { fs::remove_all(dir_); }
+};
+
+TEST_F(ViewsM4VideoBatch, VideoViewBatchSplitsEvenly) {
+    if (!ffmpeg_ok() || !fs::exists(video_path_)) GTEST_SKIP();
+    VideoReader reader{video_path_};
+    std::vector<std::vector<Image<BGR>>> batches;
+    for (const auto& b : views::VideoView{reader} | views::batch(2))
+        batches.push_back(b);
+    EXPECT_EQ(batches.size(), 3u);
+    for (const auto& batch : batches)
+        EXPECT_EQ(batch.size(), 2u);
+}

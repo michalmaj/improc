@@ -9,6 +9,7 @@
 #include "improc/views/collection.hpp"
 #include "improc/views/filter.hpp"
 #include "improc/views/take_drop.hpp"
+#include "improc/views/batch.hpp"
 
 namespace improc::views {
 
@@ -85,6 +86,13 @@ inline auto operator|(VideoView view, TakeAdapter a)
 /// VideoView | views::drop(n)  →  DropView<VideoView>
 inline auto operator|(VideoView view, DropAdapter a)
     -> DropView<VideoView>
+{
+    return {std::move(view), a.n};
+}
+
+/// VideoView | views::batch(n)  →  BatchView<VideoView>
+inline auto operator|(VideoView view, BatchAdapter a)
+    -> BatchView<VideoView>
 {
     return {std::move(view), a.n};
 }

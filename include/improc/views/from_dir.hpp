@@ -16,6 +16,7 @@
 #include "improc/views/collection.hpp"
 #include "improc/views/filter.hpp"
 #include "improc/views/take_drop.hpp"
+#include "improc/views/batch.hpp"
 
 namespace improc::views {
 
@@ -129,6 +130,13 @@ inline auto operator|(DirView view, TakeAdapter a)
 /// DirView | views::drop(n)  →  DropView<DirView>
 inline auto operator|(DirView view, DropAdapter a)
     -> DropView<DirView>
+{
+    return {std::move(view), a.n};
+}
+
+/// DirView | views::batch(n)  →  BatchView<DirView>
+inline auto operator|(DirView view, BatchAdapter a)
+    -> BatchView<DirView>
 {
     return {std::move(view), a.n};
 }
