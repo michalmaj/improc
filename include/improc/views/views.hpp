@@ -16,13 +16,20 @@
  *
  * ### M2 — In-Memory Collections (`std::vector<Image<F>>`)
  *
- * | Symbol                        | Description                                        |
- * |-------------------------------|----------------------------------------------------|
- * | `views::transform(op)`        | Applies op lazily to each element                  |
- * | `views::filter(pred)`         | Skips elements where pred returns false            |
- * | `views::take(n)`              | Stops after n elements                             |
- * | `views::drop(n)`              | Skips the first n elements                         |
- * | `views::to<vector<Image<F>>>()` | Collects all elements into a vector              |
+ * | Symbol                          | Description                                       |
+ * |---------------------------------|---------------------------------------------------|
+ * | `views::transform(op)`          | Applies op lazily to each element                 |
+ * | `views::filter(pred)`           | Skips elements where pred returns false           |
+ * | `views::take(n)`                | Stops after n elements                            |
+ * | `views::drop(n)`                | Skips the first n elements                        |
+ * | `views::to<vector<Image<F>>>()` | Collects all elements into a vector               |
+ *
+ * ### M3 — External Sources
+ *
+ * | Symbol                    | Description                                               |
+ * |---------------------------|-----------------------------------------------------------|
+ * | `views::VideoView`        | Lazy single-pass view over `improc::io::VideoReader`      |
+ * | `views::from_dir(p, ext)` | Lazy view over image files in a directory by extension    |
  *
  * ### Usage
  * @code
@@ -35,12 +42,21 @@
  *     | views::transform(GaussianBlur{}.kernel_size(3));
  * Image<BGR> result = view | views::to<Image<BGR>>();
  *
- * // Collection — lazy pipeline
+ * // In-memory collection
  * auto batch = images
  *     | views::transform(Resize{}.width(224).height(224))
  *     | views::filter([](const Image<BGR>& img) { return img.cols() > 0; })
  *     | views::drop(10)
  *     | views::take(32)
+ *     | views::to<std::vector<Image<BGR>>>();
+ *
+ * // VideoReader source — O(1) RAM regardless of video length
+ * improc::io::VideoReader reader{"clip.mp4"};
+ * for (const auto& frame : views::VideoView{reader} | views::take(100)) { ... }
+ *
+ * // Directory source — loads images lazily one at a time
+ * auto dataset = views::from_dir("train/", {".jpg", ".png"})
+ *     | views::transform(Resize{}.width(224).height(224))
  *     | views::to<std::vector<Image<BGR>>>();
  * @endcode
  */

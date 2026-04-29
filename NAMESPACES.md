@@ -743,6 +743,36 @@ for (const auto& img : images | views::transform(Resize{}.width(224).height(224)
 }
 ```
 
+### M3 — External Sources
+
+| Symbol | Description |
+|---|---|
+| `views::VideoView{reader}` | Lazy single-pass wrapper over a `VideoReader` (non-owning; reader must outlive view) |
+| `views::from_dir(path, exts)` | Lazy view over matching image files in a directory; throws `FileNotFoundError` if path missing |
+
+Both sources compose with all M2 adapters (`transform`, `filter`, `take`, `drop`) and materialize via `views::to<std::vector<Image<BGR>>>()`.
+
+**Examples:**
+```cpp
+// VideoReader source — frames processed one at a time, O(1) RAM
+improc::io::VideoReader reader{"clip.mp4"};
+auto frames = views::VideoView{reader}
+    | views::transform(Resize{}.width(640).height(640))
+    | views::take(100)
+    | views::to<std::vector<Image<BGR>>>();
+
+// Or iterate lazily (no materialization)
+for (const auto& frame : views::VideoView{reader} | views::take(100)) {
+    process(frame);
+}
+
+// Directory source — loads files one at a time
+auto batch = views::from_dir("dataset/train/cats/", {".jpg", ".png"})
+    | views::transform(Resize{}.width(224).height(224))
+    | views::filter([](const Image<BGR>& img) { return !img.mat().empty(); })
+    | views::to<std::vector<Image<BGR>>>();
+```
+
 ---
 
 ## Planned namespaces
