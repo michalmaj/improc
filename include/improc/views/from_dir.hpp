@@ -60,7 +60,7 @@ public:
             current_ = std::nullopt;
         }
 
-        Image<BGR> operator*() const { return *current_; }
+        Image<BGR> operator*() const { return current_.value(); }
 
         iterator& operator++() { ++idx_; load_current(); return *this; }
 

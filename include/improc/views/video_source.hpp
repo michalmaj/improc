@@ -34,7 +34,7 @@ public:
         }
         iterator() : reader_(nullptr) {}  // end sentinel
 
-        Image<BGR> operator*() const { return *current_; }
+        Image<BGR> operator*() const { return current_.value(); }
 
         iterator& operator++() {
             if (reader_ && current_) current_ = reader_->next();
