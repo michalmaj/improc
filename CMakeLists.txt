@@ -166,6 +166,7 @@ target_link_libraries(demo_geometric_preprocessing PRIVATE improc)
 add_executable(demo_adaptive_threshold examples/core/demo_adaptive_threshold.cpp)
 target_link_libraries(demo_adaptive_threshold PRIVATE improc)
 
+# Invert + InRange demo
 add_executable(demo_invert_in_range examples/core/demo_invert_in_range.cpp)
 target_link_libraries(demo_invert_in_range PRIVATE improc)
 
