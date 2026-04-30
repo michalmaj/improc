@@ -162,6 +162,15 @@ Image<Gray> adapt  = gray | AdaptiveThreshold{}.block_size(11).C(2);
 Image<Gray> adapt2 = gray | AdaptiveThreshold{}.method(AdaptiveMethod::Mean).block_size(31).C(5);
 Image<Gray> adapt3 = gray | AdaptiveThreshold{}.block_size(11).C(2).invert();
 
+// Invert — any format; bitwise NOT, applying twice restores the original
+Image<Gray> inv_gray = gray | Invert{};
+Image<BGR>  inv_bgr  = bgr  | Invert{};
+
+// InRange — any input format, always returns Image<Gray>
+// Output pixel is 255 when all channels are within [lower, upper]
+Image<Gray> mask      = gray | InRange{}.lower({100}).upper({200});
+Image<Gray> green_msk = bgr  | InRange{}.lower({0, 200, 0}).upper({50, 255, 50});
+
 // Padding ops — templated, work on any Image<Format>
 Image<BGR>  padded = src | Pad{}.top(10).bottom(10).left(20).right(20).mode(PadMode::Reflect);
 Image<BGR>  square = src | PadToSquare{}.value({114, 114, 114});  // letterbox for inference
@@ -176,6 +185,10 @@ Image<BGR>  eq3 = bgr  | CLAHE{}.clip_limit(3.0);                 // colour-safe
 ```
 
 **`AdaptiveThreshold`** accepts only `Image<Gray>`. Throws `ParameterError` if `block_size` is even or < 3. Default: Gaussian method, Binary output, block_size = 11, C = 2.0.
+
+**`Invert`** works on integer formats (Gray, BGR, BGRA). Applies `cv::bitwise_not`; for 8-bit images, channel value v becomes 255 − v. Float formats are not supported. Applying twice returns the original image.
+
+**`InRange`** accepts any input format and always returns `Image<Gray>`. Throws `ParameterError` if either `lower` or `upper` is not set. Both bounds are inclusive.
 
 **Geometric ops** throw `ParameterError` when required parameters are missing or invalid (e.g. no dimension in `Resize`, ROI out of bounds in `Crop`, no angle in `Rotate`).
 
