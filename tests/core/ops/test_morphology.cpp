@@ -181,3 +181,63 @@ TEST(MorphologyTest, MorphOpenPipelineOp) {
     Image<Gray> result = img | MorphOpen{}.kernel_size(3);
     EXPECT_EQ(result.rows(), 20);
 }
+
+TEST(MorphologyTest, MorphCloseDefaultPreservesSizeAndType) {
+    cv::Mat mat(20, 20, CV_8UC1, cv::Scalar(255));
+    Image<Gray> img(mat);
+    Image<Gray> result = MorphClose{}(img);
+    EXPECT_EQ(result.rows(), 20);
+    EXPECT_EQ(result.cols(), 20);
+    EXPECT_EQ(result.mat().type(), CV_8UC1);
+}
+
+TEST(MorphologyTest, MorphCloseOnBGRPreservesType) {
+    cv::Mat mat(20, 20, CV_8UC3, cv::Scalar(255, 255, 255));
+    Image<BGR> img(mat);
+    Image<BGR> result = MorphClose{}(img);
+    EXPECT_EQ(result.mat().type(), CV_8UC3);
+}
+
+TEST(MorphologyTest, MorphCloseFillsSmallHoles) {
+    // Close = dilate then erode. An isolated dark pixel on a bright background is filled.
+    cv::Mat mat(20, 20, CV_8UC1, cv::Scalar(255));
+    mat.at<uchar>(10, 10) = 0;
+    Image<Gray> img(mat);
+    Image<Gray> result = img | MorphClose{}.kernel_size(3);
+    EXPECT_EQ(result.mat().at<uchar>(10, 10), 255);
+}
+
+TEST(MorphologyTest, MorphCloseWithEllipseShapePreservesSize) {
+    cv::Mat mat(20, 20, CV_8UC1, cv::Scalar(200));
+    Image<Gray> img(mat);
+    Image<Gray> result = MorphClose{}.shape(MorphShape::Ellipse)(img);
+    EXPECT_EQ(result.rows(), 20);
+    EXPECT_EQ(result.cols(), 20);
+}
+
+TEST(MorphologyTest, MorphCloseWithIterations2PreservesSize) {
+    cv::Mat mat(20, 20, CV_8UC1, cv::Scalar(200));
+    Image<Gray> img(mat);
+    Image<Gray> result = MorphClose{}.iterations(2)(img);
+    EXPECT_EQ(result.rows(), 20);
+    EXPECT_EQ(result.cols(), 20);
+}
+
+TEST(MorphologyTest, MorphCloseZeroKernelThrows) {
+    EXPECT_THROW(MorphClose{}.kernel_size(0), improc::ParameterError);
+}
+
+TEST(MorphologyTest, MorphCloseEvenKernelThrows) {
+    EXPECT_THROW(MorphClose{}.kernel_size(4), improc::ParameterError);
+}
+
+TEST(MorphologyTest, MorphCloseZeroIterationsThrows) {
+    EXPECT_THROW(MorphClose{}.iterations(0), improc::ParameterError);
+}
+
+TEST(MorphologyTest, MorphClosePipelineOp) {
+    cv::Mat mat(20, 20, CV_8UC1, cv::Scalar(200));
+    Image<Gray> img(mat);
+    Image<Gray> result = img | MorphClose{}.kernel_size(3);
+    EXPECT_EQ(result.rows(), 20);
+}
