@@ -186,7 +186,7 @@ Image<BGR>  eq3 = bgr  | CLAHE{}.clip_limit(3.0);                 // colour-safe
 
 **`AdaptiveThreshold`** accepts only `Image<Gray>`. Throws `ParameterError` if `block_size` is even or < 3. Default: Gaussian method, Binary output, block_size = 11, C = 2.0.
 
-**`Invert`** works on any format. Applies `cv::bitwise_not`; output type matches input. Applying twice returns the original image.
+**`Invert`** works on integer formats (Gray, BGR, BGRA). Applies `cv::bitwise_not`; for 8-bit images, channel value v becomes 255 − v. Float formats are not supported. Applying twice returns the original image.
 
 **`InRange`** accepts any input format and always returns `Image<Gray>`. Throws `ParameterError` if either `lower` or `upper` is not set. Both bounds are inclusive.
 

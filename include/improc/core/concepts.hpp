@@ -51,4 +51,14 @@ concept GrayFormat = AnyFormat<F> && std::same_as<F, Gray>;
 template<typename F>
 concept MultiChannelFormat = AnyFormat<F> && (FormatTraits<F>::channels > 1);
 
+/**
+ * @brief Satisfied by any non-floating-point format (Gray, BGR, BGRA, HSV).
+ *
+ * Use to constrain ops where bitwise operations or integer arithmetic are applied,
+ * such as `Invert`.
+ * @code static_assert(IntegerFormat<BGR>); static_assert(!IntegerFormat<Float32>); @endcode
+ */
+template<typename F>
+concept IntegerFormat = AnyFormat<F> && !FormatTraits<F>::is_float;
+
 } // namespace improc::core

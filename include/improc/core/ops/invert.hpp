@@ -10,8 +10,9 @@ namespace improc::core {
 /**
  * @brief Bitwise inversion of every pixel channel.
  *
- * Each 8-bit channel value v becomes 255 − v. Works on any format;
- * output type matches input. Applying twice restores the original image.
+ * Each channel value v becomes its bitwise complement. For 8-bit formats
+ * (Gray, BGR, BGRA), this maps v → 255 − v. Only integer formats are
+ * supported (not Float32 / Float32C3). Applying twice restores the original.
  *
  * @code
  * Image<Gray> inv     = gray | Invert{};
@@ -20,7 +21,7 @@ namespace improc::core {
  * @endcode
  */
 struct Invert {
-    template<AnyFormat Format>
+    template<IntegerFormat Format>
     Image<Format> operator()(Image<Format> img) const {
         cv::Mat dst;
         cv::bitwise_not(img.mat(), dst);
