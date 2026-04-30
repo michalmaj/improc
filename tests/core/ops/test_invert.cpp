@@ -63,7 +63,8 @@ TEST(InvertTest, InvertTwiceIsIdentity) {
 }
 
 TEST(InvertTest, PipelineSyntaxWorks) {
+    // 200 inverted = 55
     Image<Gray> img = make_gray(10, 10, 200);
     Image<Gray> result = img | Invert{};
-    EXPECT_EQ(result.rows(), 10);
+    EXPECT_EQ(result.mat().at<uchar>(5, 5), 55);
 }

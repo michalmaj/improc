@@ -20,7 +20,6 @@ namespace improc::core {
  * @endcode
  */
 struct Invert {
-    /// @brief Applies bitwise NOT to every pixel. Output type matches input.
     template<AnyFormat Format>
     Image<Format> operator()(Image<Format> img) const {
         cv::Mat dst;
