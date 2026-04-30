@@ -113,4 +113,51 @@ private:
     MorphShape shape_       = MorphShape::Rect;
 };
 
+/**
+ * @brief Morphological opening — erode then dilate; removes small bright noise.
+ *
+ * Useful for cleaning up binary masks: eliminates isolated bright pixels
+ * smaller than the structuring element while preserving larger foreground regions.
+ *
+ * @throws improc::ParameterError if kernel_size is not odd and positive.
+ * @throws improc::ParameterError if iterations <= 0.
+ *
+ * @code
+ * Image<Gray> opened = noisy | MorphOpen{}.kernel_size(3);
+ * @endcode
+ */
+struct MorphOpen {
+    /// @brief Sets kernel size. Must be odd and positive. Default: 3.
+    MorphOpen& kernel_size(int k) {
+        if (k <= 0 || k % 2 == 0)
+            throw ParameterError{"kernel_size",
+                std::format("must be odd and positive, got {}", k), "MorphOpen"};
+        kernel_size_ = k; return *this;
+    }
+    /// @brief Sets number of iterations. Must be >= 1. Default: 1.
+    MorphOpen& iterations(int n) {
+        if (n <= 0) throw ParameterError{"iterations", "must be positive", "MorphOpen"};
+        iterations_ = n; return *this;
+    }
+    /// @brief Sets the structuring element shape. Default: MorphShape::Rect.
+    MorphOpen& shape(MorphShape s) { shape_ = s; return *this; }
+
+    /// @brief Applies morphological opening (erode then dilate) to img.
+    template<AnyFormat Format>
+    Image<Format> operator()(Image<Format> img) const {
+        cv::Mat kernel = cv::getStructuringElement(
+            detail::morph_shape_to_cv(shape_),
+            cv::Size(kernel_size_, kernel_size_));
+        cv::Mat dst;
+        cv::morphologyEx(img.mat(), dst, cv::MORPH_OPEN, kernel,
+                         cv::Point(-1, -1), iterations_);
+        return Image<Format>(std::move(dst));
+    }
+
+private:
+    int        kernel_size_ = 3;
+    int        iterations_  = 1;
+    MorphShape shape_       = MorphShape::Rect;
+};
+
 } // namespace improc::core
