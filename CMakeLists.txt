@@ -166,6 +166,9 @@ target_link_libraries(demo_geometric_preprocessing PRIVATE improc)
 add_executable(demo_adaptive_threshold examples/core/demo_adaptive_threshold.cpp)
 target_link_libraries(demo_adaptive_threshold PRIVATE improc)
 
+add_executable(demo_invert_in_range examples/core/demo_invert_in_range.cpp)
+target_link_libraries(demo_invert_in_range PRIVATE improc)
+
 # Threading demos
 add_executable(demo_thread_pool examples/threading/demo_thread_pool.cpp)
 target_link_libraries(demo_thread_pool PRIVATE improc)
