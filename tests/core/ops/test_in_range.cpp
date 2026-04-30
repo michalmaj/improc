@@ -52,6 +52,23 @@ TEST(InRangeTest, FullRangeAllPixelsIncluded) {
     EXPECT_EQ(cv::countNonZero(result.mat()), 100);
 }
 
+TEST(InRangeTest, LowerGreaterThanUpperProducesZeroMask) {
+    // When lower > upper, cv::inRange produces all zeros
+    Image<Gray> img = make_gray(10, 10, 128);
+    Image<Gray> result = img | InRange{}.lower({200}).upper({100});
+    EXPECT_EQ(cv::countNonZero(result.mat()), 0);
+}
+
+TEST(InRangeTest, LowerEqualsUpperMatchesExactValue) {
+    // Only the exact value 128 should produce 255; 127 or 129 should not
+    Image<Gray> exact  = make_gray(10, 10, 128);
+    Image<Gray> off_by = make_gray(10, 10, 129);
+    Image<Gray> result_exact  = exact  | InRange{}.lower({128}).upper({128});
+    Image<Gray> result_off_by = off_by | InRange{}.lower({128}).upper({128});
+    EXPECT_EQ(cv::countNonZero(result_exact.mat()),  100);
+    EXPECT_EQ(cv::countNonZero(result_off_by.mat()),   0);
+}
+
 TEST(InRangeTest, ThrowsWhenLowerNotSet) {
     Image<Gray> img = make_gray(10, 10, 128);
     InRange op{};
