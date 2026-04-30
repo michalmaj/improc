@@ -121,3 +121,123 @@ TEST(MorphologyTest, ErodeWithIterations2PreservesSize) {
     EXPECT_EQ(result.rows(), 10);
     EXPECT_EQ(result.cols(), 10);
 }
+
+TEST(MorphologyTest, MorphOpenDefaultPreservesSizeAndType) {
+    cv::Mat mat(20, 20, CV_8UC1, cv::Scalar(0));
+    Image<Gray> img(mat);
+    Image<Gray> result = MorphOpen{}(img);
+    EXPECT_EQ(result.rows(), 20);
+    EXPECT_EQ(result.cols(), 20);
+    EXPECT_EQ(result.mat().type(), CV_8UC1);
+}
+
+TEST(MorphologyTest, MorphOpenOnBGRPreservesType) {
+    cv::Mat mat(20, 20, CV_8UC3, cv::Scalar(0, 0, 0));
+    Image<BGR> img(mat);
+    Image<BGR> result = MorphOpen{}(img);
+    EXPECT_EQ(result.mat().type(), CV_8UC3);
+}
+
+TEST(MorphologyTest, MorphOpenRemovesSmallNoise) {
+    // Open = erode then dilate. An isolated bright pixel on a dark background is removed.
+    cv::Mat mat(20, 20, CV_8UC1, cv::Scalar(0));
+    mat.at<uchar>(10, 10) = 255;
+    Image<Gray> img(mat);
+    Image<Gray> result = img | MorphOpen{}.kernel_size(3);
+    EXPECT_EQ(result.mat().at<uchar>(10, 10), 0);
+}
+
+TEST(MorphologyTest, MorphOpenWithEllipseShapePreservesSize) {
+    cv::Mat mat(20, 20, CV_8UC1, cv::Scalar(100));
+    Image<Gray> img(mat);
+    Image<Gray> result = MorphOpen{}.shape(MorphShape::Ellipse)(img);
+    EXPECT_EQ(result.rows(), 20);
+    EXPECT_EQ(result.cols(), 20);
+}
+
+TEST(MorphologyTest, MorphOpenWithIterations2PreservesSize) {
+    cv::Mat mat(20, 20, CV_8UC1, cv::Scalar(100));
+    Image<Gray> img(mat);
+    Image<Gray> result = MorphOpen{}.iterations(2)(img);
+    EXPECT_EQ(result.rows(), 20);
+    EXPECT_EQ(result.cols(), 20);
+}
+
+TEST(MorphologyTest, MorphOpenZeroKernelThrows) {
+    EXPECT_THROW(MorphOpen{}.kernel_size(0), improc::ParameterError);
+}
+
+TEST(MorphologyTest, MorphOpenEvenKernelThrows) {
+    EXPECT_THROW(MorphOpen{}.kernel_size(4), improc::ParameterError);
+}
+
+TEST(MorphologyTest, MorphOpenZeroIterationsThrows) {
+    EXPECT_THROW(MorphOpen{}.iterations(0), improc::ParameterError);
+}
+
+TEST(MorphologyTest, MorphOpenPipelineOp) {
+    cv::Mat mat(20, 20, CV_8UC1, cv::Scalar(100));
+    Image<Gray> img(mat);
+    Image<Gray> result = img | MorphOpen{}.kernel_size(3);
+    EXPECT_EQ(result.rows(), 20);
+}
+
+TEST(MorphologyTest, MorphCloseDefaultPreservesSizeAndType) {
+    cv::Mat mat(20, 20, CV_8UC1, cv::Scalar(255));
+    Image<Gray> img(mat);
+    Image<Gray> result = MorphClose{}(img);
+    EXPECT_EQ(result.rows(), 20);
+    EXPECT_EQ(result.cols(), 20);
+    EXPECT_EQ(result.mat().type(), CV_8UC1);
+}
+
+TEST(MorphologyTest, MorphCloseOnBGRPreservesType) {
+    cv::Mat mat(20, 20, CV_8UC3, cv::Scalar(255, 255, 255));
+    Image<BGR> img(mat);
+    Image<BGR> result = MorphClose{}(img);
+    EXPECT_EQ(result.mat().type(), CV_8UC3);
+}
+
+TEST(MorphologyTest, MorphCloseFillsSmallHoles) {
+    // Close = dilate then erode. An isolated dark pixel on a bright background is filled.
+    cv::Mat mat(20, 20, CV_8UC1, cv::Scalar(255));
+    mat.at<uchar>(10, 10) = 0;
+    Image<Gray> img(mat);
+    Image<Gray> result = img | MorphClose{}.kernel_size(3);
+    EXPECT_EQ(result.mat().at<uchar>(10, 10), 255);
+}
+
+TEST(MorphologyTest, MorphCloseWithEllipseShapePreservesSize) {
+    cv::Mat mat(20, 20, CV_8UC1, cv::Scalar(200));
+    Image<Gray> img(mat);
+    Image<Gray> result = MorphClose{}.shape(MorphShape::Ellipse)(img);
+    EXPECT_EQ(result.rows(), 20);
+    EXPECT_EQ(result.cols(), 20);
+}
+
+TEST(MorphologyTest, MorphCloseWithIterations2PreservesSize) {
+    cv::Mat mat(20, 20, CV_8UC1, cv::Scalar(200));
+    Image<Gray> img(mat);
+    Image<Gray> result = MorphClose{}.iterations(2)(img);
+    EXPECT_EQ(result.rows(), 20);
+    EXPECT_EQ(result.cols(), 20);
+}
+
+TEST(MorphologyTest, MorphCloseZeroKernelThrows) {
+    EXPECT_THROW(MorphClose{}.kernel_size(0), improc::ParameterError);
+}
+
+TEST(MorphologyTest, MorphCloseEvenKernelThrows) {
+    EXPECT_THROW(MorphClose{}.kernel_size(4), improc::ParameterError);
+}
+
+TEST(MorphologyTest, MorphCloseZeroIterationsThrows) {
+    EXPECT_THROW(MorphClose{}.iterations(0), improc::ParameterError);
+}
+
+TEST(MorphologyTest, MorphClosePipelineOp) {
+    cv::Mat mat(20, 20, CV_8UC1, cv::Scalar(200));
+    Image<Gray> img(mat);
+    Image<Gray> result = img | MorphClose{}.kernel_size(3);
+    EXPECT_EQ(result.rows(), 20);
+}

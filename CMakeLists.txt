@@ -170,6 +170,10 @@ target_link_libraries(demo_adaptive_threshold PRIVATE improc)
 add_executable(demo_invert_in_range examples/core/demo_invert_in_range.cpp)
 target_link_libraries(demo_invert_in_range PRIVATE improc)
 
+# MorphOpen + MorphClose demo
+add_executable(demo_morph_open_close examples/core/demo_morph_open_close.cpp)
+target_link_libraries(demo_morph_open_close PRIVATE improc)
+
 # Threading demos
 add_executable(demo_thread_pool examples/threading/demo_thread_pool.cpp)
 target_link_libraries(demo_thread_pool PRIVATE improc)

@@ -153,6 +153,11 @@ Image<Gray> median  = gray | MedianBlur{}.kernel_size(3);
 Image<Gray> dilated = mask | Dilate{}.kernel_size(5).shape(MorphShape::Ellipse);
 Image<Gray> eroded  = mask | Erode{}.kernel_size(3).iterations(2);
 
+// MorphOpen (erode→dilate): removes small bright noise
+// MorphClose (dilate→erode): fills small dark holes
+Image<Gray> opened = noisy | MorphOpen{}.kernel_size(3);
+Image<Gray> closed = holed | MorphClose{}.kernel_size(3);
+
 // Threshold — templated; Otsu only valid on Image<Gray> (CV_8U)
 Image<Gray> binary = gray | Threshold{}.value(128).mode(ThresholdMode::Binary);
 Image<Gray> otsu   = gray | Threshold{}.mode(ThresholdMode::Otsu);
@@ -189,6 +194,8 @@ Image<BGR>  eq3 = bgr  | CLAHE{}.clip_limit(3.0);                 // colour-safe
 **`Invert`** works on integer formats (Gray, BGR, BGRA). Applies `cv::bitwise_not`; for 8-bit images, channel value v becomes 255 − v. Float formats are not supported. Applying twice returns the original image.
 
 **`InRange`** accepts any input format and always returns `Image<Gray>`. Throws `ParameterError` if either `lower` or `upper` is not set. Both bounds are inclusive.
+
+**`MorphOpen`** and **`MorphClose`** share the same parameter contract as `Dilate`/`Erode`: `kernel_size` must be odd and positive; `iterations` must be >= 1. `MorphOpen` removes isolated bright regions (noise); `MorphClose` fills isolated dark regions (holes).
 
 **Geometric ops** throw `ParameterError` when required parameters are missing or invalid (e.g. no dimension in `Resize`, ROI out of bounds in `Crop`, no angle in `Rotate`).
 
