@@ -218,6 +218,15 @@ Image<Float32C3> fp = fp_img | GammaCorrection{}.gamma(1.8f);
 Image<BGR>  smooth = img | BilateralFilter{}.diameter(9).sigma_color(75).sigma_space(75);
 Image<Gray> s2     = gray | BilateralFilter{};  // defaults: d=9, sigma_color=75, sigma_space=75
 
+// HistogramEqualization — global contrast normalization; no parameters
+Image<Gray> heq_gray = gray | HistogramEqualization{};
+Image<BGR>  heq_bgr  = bgr  | HistogramEqualization{};  // equalizes Y channel in YCrCb
+
+// NLMeansDenoising — Non-Local Means noise reduction
+Image<Gray> nlm_gray = noisy | NLMeansDenoising{}.h(10.0f);
+Image<BGR>  nlm_bgr  = noisy | NLMeansDenoising{}.h(10.0f).h_color(10.0f);
+// defaults: h=3.0, h_color=3.0, template_window_size=7, search_window_size=21
+
 // SobelEdge — gradient magnitude; accepts Gray or BGR (auto-converts to Gray)
 // ksize must be 1, 3, 5, or 7
 Image<Gray> sob  = gray | SobelEdge{}.ksize(3);
@@ -235,6 +244,10 @@ Image<BGR> warped = src | WarpPerspective{}.homography(H).width(640).height(480)
 **`GammaCorrection`** throws `ParameterError` if `gamma <= 0`. Uses an 8-bit LUT for integer formats (fast); `cv::pow` + clamp for float formats.
 
 **`BilateralFilter`** throws `ParameterError` for non-positive `diameter`, `sigma_color`, or `sigma_space`. Supports `Gray` and `BGR` only (OpenCV bilateral requires 8-bit input).
+
+**`HistogramEqualization`** has no parameters. On `Image<Gray>` it calls `cv::equalizeHist` directly; on `Image<BGR>` it converts to YCrCb, equalizes the Y (luminance) channel only, and converts back — preserving hue and saturation.
+
+**`NLMeansDenoising`** throws `ParameterError` if `h` or `h_color` are not positive, or if `template_window_size` / `search_window_size` are not odd and positive. `h_color` is silently ignored when applied to `Image<Gray>`. Larger `h` removes more noise but may blur fine details.
 
 **`SobelEdge`** throws `ParameterError` if `ksize` is not in {1, 3, 5, 7}. Computes X and Y gradients in CV_32F, combines via `cv::magnitude`, and converts back to CV_8U.
 
