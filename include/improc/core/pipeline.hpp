@@ -3,7 +3,7 @@
  *
  * Including this header pulls in every op (Resize, Crop, CenterCrop, LetterBox, Flip, Rotate, Pad,
  * GaussianBlur, MedianBlur, Dilate, Erode, MorphOpen, MorphClose, Threshold, AdaptiveThreshold, InRange, Invert, CLAHE, GammaCorrection,
- * BilateralFilter, UnsharpMask, SobelEdge, CannyEdge, Normalize, NormalizeTo,
+ * BilateralFilter, HistogramEqualization, NLMeansDenoising, UnsharpMask, SobelEdge, CannyEdge, Normalize, NormalizeTo,
  * Standardize, ApplyMask, WarpAffine, WarpPerspective, ToGray, ToFloat32,
  * ToFloat32C3, ToHSV, ToBGR, Brightness, Contrast, WeightedBlend, AlphaBlend)
  * and the generic `operator|` pipeline dispatch.
@@ -40,6 +40,8 @@
 #include "improc/core/ops/clahe.hpp"
 #include "improc/core/ops/gamma.hpp"
 #include "improc/core/ops/bilateral_filter.hpp"
+#include "improc/core/ops/hist_eq.hpp"
+#include "improc/core/ops/nlmeans.hpp"
 #include "improc/core/ops/edge.hpp"
 #include "improc/core/ops/homography.hpp"
 #include "improc/core/ops/warp_affine.hpp"
