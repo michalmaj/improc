@@ -174,6 +174,10 @@ target_link_libraries(demo_invert_in_range PRIVATE improc)
 add_executable(demo_morph_open_close examples/core/demo_morph_open_close.cpp)
 target_link_libraries(demo_morph_open_close PRIVATE improc)
 
+# HistogramEqualization + NLMeansDenoising demo
+add_executable(demo_hist_eq_nlmeans examples/core/demo_hist_eq_nlmeans.cpp)
+target_link_libraries(demo_hist_eq_nlmeans PRIVATE improc)
+
 # Threading demos
 add_executable(demo_thread_pool examples/threading/demo_thread_pool.cpp)
 target_link_libraries(demo_thread_pool PRIVATE improc)
