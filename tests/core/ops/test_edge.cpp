@@ -174,3 +174,14 @@ TEST(LaplacianEdgeTest, ScaleZeroThrows) {
 TEST(LaplacianEdgeTest, ScaleNegativeThrows) {
     EXPECT_THROW(LaplacianEdge{}.scale(-1.0), improc::ParameterError);
 }
+
+TEST(LaplacianEdgeTest, KsizeNegativeThrows) {
+    EXPECT_THROW(LaplacianEdge{}.ksize(-1), improc::ParameterError);
+}
+
+TEST(LaplacianEdgeTest, DeltaShiftsOutput) {
+    // Flat image has zero Laplacian; delta=50 shifts output above zero
+    Image<Gray> flat(cv::Mat(20, 20, CV_8UC1, cv::Scalar(128)));
+    auto result = LaplacianEdge{}.delta(50.0)(flat);
+    EXPECT_GT(cv::mean(result.mat())[0], 40.0);
+}
