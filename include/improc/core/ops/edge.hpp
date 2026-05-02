@@ -156,13 +156,15 @@ struct HarrisCorner {
     HarrisCorner& block_size(int v) {
         if (v <= 0)
             throw ParameterError{"block_size", "must be positive", "HarrisCorner"};
-        block_size_ = v; return *this;
+        block_size_ = v;
+        return *this;
     }
     /// @brief Sobel kernel size. Must be 3, 5, or 7. Default 3.
     HarrisCorner& ksize(int v) {
         if (v != 3 && v != 5 && v != 7)
             throw ParameterError{"ksize", "must be 3, 5, or 7", "HarrisCorner"};
-        ksize_ = v; return *this;
+        ksize_ = v;
+        return *this;
     }
     /// @brief Harris sensitivity parameter. Must be in (0, 1). Default 0.04.
     HarrisCorner& k(double v) {

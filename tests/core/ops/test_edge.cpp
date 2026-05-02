@@ -248,3 +248,16 @@ TEST(HarrisCornerTest, KOneThrows) {
     EXPECT_THROW(HarrisCorner{}.k(1.0), improc::ParameterError);
     EXPECT_THROW(HarrisCorner{}.k(1.5), improc::ParameterError);
 }
+
+TEST(HarrisCornerTest, DetectsCornerOnWhiteSquare) {
+    // White square on black background — corners of the square have strong Harris response
+    cv::Mat mat(32, 32, CV_8UC1, cv::Scalar(0));
+    mat(cv::Rect(8, 8, 16, 16)) = 255;
+    Image<Gray> img(mat);
+    auto result = HarrisCorner{}(img);
+    // Corner at (8,8): should have non-zero response
+    // Flat interior at (16,16): should have low response
+    int corner_val  = result.mat().at<uchar>(8, 8);
+    int interior_val = result.mat().at<uchar>(16, 16);
+    EXPECT_GT(corner_val, interior_val);
+}
