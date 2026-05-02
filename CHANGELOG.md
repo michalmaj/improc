@@ -87,6 +87,10 @@ that subsequent releases will extend without breaking.
 
 ## [Unreleased]
 
+---
+
+## [0.2.0] — 2026-05-02
+
 ### Added
 
 #### `improc::core`
@@ -111,5 +115,3 @@ that subsequent releases will extend without breaking.
 - All adapters compose via `operator|`; `from_dir` and `VideoView` support the full adapter set
 - `views.hpp` umbrella include
 
-### Planned
-- `improc::cuda` — GPU-accelerated ops via OpenCV CUDA
