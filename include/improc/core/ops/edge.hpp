@@ -170,7 +170,8 @@ struct HarrisCorner {
     HarrisCorner& k(double v) {
         if (v <= 0.0 || v >= 1.0)
             throw ParameterError{"k", "must be in (0, 1)", "HarrisCorner"};
-        k_ = v; return *this;
+        k_ = v;
+        return *this;
     }
 
     /// @brief Returns normalized corner response map for a gray image.
