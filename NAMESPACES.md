@@ -258,7 +258,7 @@ Image<BGR> warped = src | WarpPerspective{}.homography(H).width(640).height(480)
 
 **`CannyEdge`** throws `ParameterError` for negative thresholds or invalid `aperture_size` (not in {3, 5, 7}).
 
-**`LaplacianEdge`** throws `ParameterError` if `ksize` is not odd and positive, or if `scale` is not positive. `delta` accepts any value. Uses CV_16S intermediate depth to preserve negative responses, then `cv::convertScaleAbs` to fold into CV_8U.
+**`LaplacianEdge`** throws `ParameterError` if `ksize` is not odd and positive, or if `scale` is not positive. `delta` accepts any value. Defaults: `ksize=1`, `scale=1.0`, `delta=0.0`. Uses CV_16S intermediate depth to preserve negative responses, then `cv::convertScaleAbs` to fold into CV_8U.
 
 **`find_homography(src, dst, threshold)`** — free function; computes a 3×3 homography matrix from ≥4 corresponding point pairs via RANSAC. Returns `std::expected<cv::Mat, Error>` — error if fewer than 4 points are provided or RANSAC fails to find a valid homography.
 
