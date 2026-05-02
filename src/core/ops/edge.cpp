@@ -35,4 +35,20 @@ Image<Gray> CannyEdge::operator()(Image<BGR> img) const {
     return (*this)(Image<Gray>(std::move(gray)));
 }
 
+// ── LaplacianEdge ─────────────────────────────────────────────────────────────
+
+Image<Gray> LaplacianEdge::operator()(Image<Gray> img) const {
+    cv::Mat dst16;
+    cv::Laplacian(img.mat(), dst16, CV_16S, ksize_, scale_, delta_);
+    cv::Mat dst8;
+    cv::convertScaleAbs(dst16, dst8);
+    return Image<Gray>(std::move(dst8));
+}
+
+Image<Gray> LaplacianEdge::operator()(Image<BGR> img) const {
+    cv::Mat gray;
+    cv::cvtColor(img.mat(), gray, cv::COLOR_BGR2GRAY);
+    return (*this)(Image<Gray>(std::move(gray)));
+}
+
 } // namespace improc::core

@@ -96,3 +96,81 @@ TEST(CannyEdgeTest, PipelineForm) {
     auto result = img | CannyEdge{}.threshold1(50).threshold2(150);
     EXPECT_EQ(result.mat().type(), CV_8UC1);
 }
+
+// ── LaplacianEdge ─────────────────────────────────────────────────────────────
+
+TEST(LaplacianEdgeTest, GrayDefaultPreservesSizeAndType) {
+    Image<Gray> img(cv::Mat(20, 20, CV_8UC1, cv::Scalar(128)));
+    auto result = LaplacianEdge{}(img);
+    EXPECT_EQ(result.mat().type(), CV_8UC1);
+    EXPECT_EQ(result.rows(), 20);
+    EXPECT_EQ(result.cols(), 20);
+}
+
+TEST(LaplacianEdgeTest, BGRDefaultPreservesSizeAndType) {
+    Image<BGR> img(cv::Mat(20, 20, CV_8UC3, cv::Scalar(80, 100, 120)));
+    auto result = LaplacianEdge{}(img);
+    EXPECT_EQ(result.mat().type(), CV_8UC1);
+    EXPECT_EQ(result.rows(), 20);
+    EXPECT_EQ(result.cols(), 20);
+}
+
+TEST(LaplacianEdgeTest, GrayDetectsEdges) {
+    // Left half black, right half white — strong edge at the boundary
+    cv::Mat mat(32, 32, CV_8UC1, cv::Scalar(0));
+    mat(cv::Rect(16, 0, 16, 32)) = 255;
+    Image<Gray> img(mat);
+    auto result = LaplacianEdge{}.ksize(1)(img);
+    // Pixels at the step edge (columns 15-16) should be non-zero
+    bool has_edge = false;
+    for (int r = 1; r < 31; ++r) {
+        if (result.mat().at<uchar>(r, 15) > 0 || result.mat().at<uchar>(r, 16) > 0) {
+            has_edge = true;
+            break;
+        }
+    }
+    EXPECT_TRUE(has_edge);
+}
+
+TEST(LaplacianEdgeTest, BGRDetectsEdges) {
+    cv::Mat mat(32, 32, CV_8UC3, cv::Scalar(0, 0, 0));
+    mat(cv::Rect(16, 0, 16, 32)) = cv::Scalar(255, 255, 255);
+    Image<BGR> img(mat);
+    auto result = LaplacianEdge{}.ksize(1)(img);
+    bool has_edge = false;
+    for (int r = 1; r < 31; ++r) {
+        if (result.mat().at<uchar>(r, 15) > 0 || result.mat().at<uchar>(r, 16) > 0) {
+            has_edge = true;
+            break;
+        }
+    }
+    EXPECT_TRUE(has_edge);
+}
+
+TEST(LaplacianEdgeTest, GrayPipelineSyntax) {
+    Image<Gray> img(cv::Mat(20, 20, CV_8UC1, cv::Scalar(100)));
+    auto result = img | LaplacianEdge{};
+    EXPECT_EQ(result.mat().type(), CV_8UC1);
+}
+
+TEST(LaplacianEdgeTest, BGRPipelineSyntax) {
+    Image<BGR> img(cv::Mat(20, 20, CV_8UC3, cv::Scalar(80, 100, 120)));
+    auto result = img | LaplacianEdge{}.ksize(3);
+    EXPECT_EQ(result.mat().type(), CV_8UC1);
+}
+
+TEST(LaplacianEdgeTest, KsizeEvenThrows) {
+    EXPECT_THROW(LaplacianEdge{}.ksize(4), improc::ParameterError);
+}
+
+TEST(LaplacianEdgeTest, KsizeZeroThrows) {
+    EXPECT_THROW(LaplacianEdge{}.ksize(0), improc::ParameterError);
+}
+
+TEST(LaplacianEdgeTest, ScaleZeroThrows) {
+    EXPECT_THROW(LaplacianEdge{}.scale(0.0), improc::ParameterError);
+}
+
+TEST(LaplacianEdgeTest, ScaleNegativeThrows) {
+    EXPECT_THROW(LaplacianEdge{}.scale(-1.0), improc::ParameterError);
+}
