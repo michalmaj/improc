@@ -207,4 +207,109 @@ private:
     MorphShape shape_       = MorphShape::Rect;
 };
 
+/**
+ * @brief Morphological gradient — dilate minus erode; highlights object boundaries.
+ *
+ * @throws improc::ParameterError if kernel_size is not odd and positive.
+ *
+ * @code
+ * Image<Gray> grad = mask | MorphGradient{}.kernel_size(3);
+ * @endcode
+ */
+struct MorphGradient {
+    /// @brief Sets kernel size. Must be odd and positive. Default: 3.
+    MorphGradient& kernel_size(int v) {
+        if (v <= 0 || v % 2 == 0)
+            throw ParameterError{"kernel_size",
+                std::format("must be odd and positive, got {}", v), "MorphGradient"};
+        kernel_size_ = v; return *this;
+    }
+    /// @brief Sets the structuring element shape. Default: MorphShape::Rect.
+    MorphGradient& shape(MorphShape s) { shape_ = s; return *this; }
+
+    /// @brief Applies morphological gradient (dilate − erode) to img.
+    template<AnyFormat Format>
+    Image<Format> operator()(Image<Format> img) const {
+        cv::Mat kernel = cv::getStructuringElement(
+            detail::morph_shape_to_cv(shape_),
+            cv::Size(kernel_size_, kernel_size_));
+        cv::Mat dst;
+        cv::morphologyEx(img.mat(), dst, cv::MORPH_GRADIENT, kernel);
+        return Image<Format>(std::move(dst));
+    }
+private:
+    int        kernel_size_ = 3;
+    MorphShape shape_       = MorphShape::Rect;
+};
+
+/**
+ * @brief Top-hat transform — src minus MorphOpen; reveals bright features smaller than kernel.
+ *
+ * @throws improc::ParameterError if kernel_size is not odd and positive.
+ *
+ * @code
+ * Image<Gray> th = src | TopHat{}.kernel_size(5);
+ * @endcode
+ */
+struct TopHat {
+    /// @brief Sets kernel size. Must be odd and positive. Default: 3.
+    TopHat& kernel_size(int v) {
+        if (v <= 0 || v % 2 == 0)
+            throw ParameterError{"kernel_size",
+                std::format("must be odd and positive, got {}", v), "TopHat"};
+        kernel_size_ = v; return *this;
+    }
+    /// @brief Sets the structuring element shape. Default: MorphShape::Rect.
+    TopHat& shape(MorphShape s) { shape_ = s; return *this; }
+
+    /// @brief Applies top-hat transform (src − MorphOpen) to img.
+    template<AnyFormat Format>
+    Image<Format> operator()(Image<Format> img) const {
+        cv::Mat kernel = cv::getStructuringElement(
+            detail::morph_shape_to_cv(shape_),
+            cv::Size(kernel_size_, kernel_size_));
+        cv::Mat dst;
+        cv::morphologyEx(img.mat(), dst, cv::MORPH_TOPHAT, kernel);
+        return Image<Format>(std::move(dst));
+    }
+private:
+    int        kernel_size_ = 3;
+    MorphShape shape_       = MorphShape::Rect;
+};
+
+/**
+ * @brief Black-hat transform — MorphClose minus src; reveals dark features smaller than kernel.
+ *
+ * @throws improc::ParameterError if kernel_size is not odd and positive.
+ *
+ * @code
+ * Image<Gray> bh = src | BlackHat{}.kernel_size(5);
+ * @endcode
+ */
+struct BlackHat {
+    /// @brief Sets kernel size. Must be odd and positive. Default: 3.
+    BlackHat& kernel_size(int v) {
+        if (v <= 0 || v % 2 == 0)
+            throw ParameterError{"kernel_size",
+                std::format("must be odd and positive, got {}", v), "BlackHat"};
+        kernel_size_ = v; return *this;
+    }
+    /// @brief Sets the structuring element shape. Default: MorphShape::Rect.
+    BlackHat& shape(MorphShape s) { shape_ = s; return *this; }
+
+    /// @brief Applies black-hat transform (MorphClose − src) to img.
+    template<AnyFormat Format>
+    Image<Format> operator()(Image<Format> img) const {
+        cv::Mat kernel = cv::getStructuringElement(
+            detail::morph_shape_to_cv(shape_),
+            cv::Size(kernel_size_, kernel_size_));
+        cv::Mat dst;
+        cv::morphologyEx(img.mat(), dst, cv::MORPH_BLACKHAT, kernel);
+        return Image<Format>(std::move(dst));
+    }
+private:
+    int        kernel_size_ = 3;
+    MorphShape shape_       = MorphShape::Rect;
+};
+
 } // namespace improc::core
