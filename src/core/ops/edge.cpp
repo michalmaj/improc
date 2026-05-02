@@ -51,4 +51,21 @@ Image<Gray> LaplacianEdge::operator()(Image<BGR> img) const {
     return (*this)(Image<Gray>(std::move(gray)));
 }
 
+// ── HarrisCorner ──────────────────────────────────────────────────────────────
+
+Image<Gray> HarrisCorner::operator()(Image<Gray> img) const {
+    cv::Mat response;
+    cv::cornerHarris(img.mat(), response, block_size_, ksize_, k_);
+    cv::normalize(response, response, 0, 255, cv::NORM_MINMAX);
+    cv::Mat dst;
+    response.convertTo(dst, CV_8U);
+    return Image<Gray>(std::move(dst));
+}
+
+Image<Gray> HarrisCorner::operator()(Image<BGR> img) const {
+    cv::Mat gray;
+    cv::cvtColor(img.mat(), gray, cv::COLOR_BGR2GRAY);
+    return (*this)(Image<Gray>(std::move(gray)));
+}
+
 } // namespace improc::core
