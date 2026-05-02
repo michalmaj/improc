@@ -237,6 +237,11 @@ Image<Gray> sob2 = bgr  | SobelEdge{};  // BGR auto-converted to Gray before pro
 Image<Gray> canny = gray | CannyEdge{}.threshold1(50).threshold2(150);
 Image<Gray> c2    = bgr  | CannyEdge{}.threshold1(100).threshold2(200).aperture_size(3);
 
+// LaplacianEdge — second-derivative edge detection; accepts Gray or BGR
+// ksize must be odd and positive; scale must be > 0
+Image<Gray> lap  = gray | LaplacianEdge{};
+Image<Gray> lap2 = bgr  | LaplacianEdge{}.ksize(3).scale(2.0).delta(128.0);
+
 // WarpPerspective — apply a 3×3 homography to an image
 Image<BGR> warped = src | WarpPerspective{}.homography(H).width(640).height(480);
 ```
@@ -252,6 +257,8 @@ Image<BGR> warped = src | WarpPerspective{}.homography(H).width(640).height(480)
 **`SobelEdge`** throws `ParameterError` if `ksize` is not in {1, 3, 5, 7}. Computes X and Y gradients in CV_32F, combines via `cv::magnitude`, and converts back to CV_8U.
 
 **`CannyEdge`** throws `ParameterError` for negative thresholds or invalid `aperture_size` (not in {3, 5, 7}).
+
+**`LaplacianEdge`** throws `ParameterError` if `ksize` is not odd and positive, or if `scale` is not positive. `delta` accepts any value. Defaults: `ksize=1`, `scale=1.0`, `delta=0.0`. Uses CV_16S intermediate depth to preserve negative responses, then `cv::convertScaleAbs` to fold into CV_8U.
 
 **`find_homography(src, dst, threshold)`** — free function; computes a 3×3 homography matrix from ≥4 corresponding point pairs via RANSAC. Returns `std::expected<cv::Mat, Error>` — error if fewer than 4 points are provided or RANSAC fails to find a valid homography.
 
