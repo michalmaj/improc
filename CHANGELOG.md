@@ -89,6 +89,15 @@ that subsequent releases will extend without breaking.
 
 ### Added
 
+#### `improc::core`
+- **New geometric ops:** `CenterCrop` (center-anchored crop to target size), `LetterBox` (aspect-ratio preserving resize with configurable padding)
+- **New threshold op:** `AdaptiveThreshold` (Gaussian and mean block-local thresholding; Gray only; `block_size` must be odd ≥ 3)
+- **New pixel ops:** `Invert` (per-channel bitwise NOT for integer formats), `InRange` (binary mask from per-channel lower/upper range bounds)
+- **New morphology ops:** `MorphOpen` (Dilate→Erode sequence; removes small foreground blobs), `MorphClose` (Erode→Dilate sequence; fills small holes in foreground)
+- **New enhancement ops:** `HistogramEqualization` (contrast normalization via `cv::equalizeHist`; BGR variant operates on Y channel in YCrCb to preserve colour balance), `NLMeansDenoising` (Non-Local Means noise reduction via `cv::fastNlMeansDenoising` / `cv::fastNlMeansDenoisingColored`)
+- **New edge detection op:** `LaplacianEdge` (second-derivative edge detector; CV_16S intermediate captures negative responses, `cv::convertScaleAbs` folds to CV_8U; BGR auto-converted to Gray)
+- **New concept:** `IntegerFormat` — constrains ops to integer-type image formats
+
 #### `improc::views`
 - `views::transform(op)` — lazy single-image and collection transform; defers op execution until materialisation
 - `views::filter(pred)` — lazy predicate filter over image collections
