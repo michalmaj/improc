@@ -135,4 +135,54 @@ private:
     double delta_ = 0.0;
 };
 
+/**
+ * @brief Harris corner detector — returns corner response map as `Image<Gray>`.
+ *
+ * Computes `cv::cornerHarris`, normalizes to [0, 255] via `cv::NORM_MINMAX`,
+ * and converts to CV_8U. Brighter pixels = stronger corner response.
+ * BGR input is auto-converted to Gray. Typical k range: 0.04–0.06.
+ *
+ * @throws improc::ParameterError if block_size <= 0.
+ * @throws improc::ParameterError if ksize is not 3, 5, or 7.
+ * @throws improc::ParameterError if k is not in (0, 1).
+ *
+ * @code
+ * Image<Gray> corners = gray | HarrisCorner{};
+ * Image<Gray> c2      = bgr  | HarrisCorner{}.block_size(3).ksize(5).k(0.05);
+ * @endcode
+ */
+struct HarrisCorner {
+    /// @brief Neighbourhood size for covariance matrix. Default 2. Must be > 0.
+    HarrisCorner& block_size(int v) {
+        if (v <= 0)
+            throw ParameterError{"block_size", "must be positive", "HarrisCorner"};
+        block_size_ = v;
+        return *this;
+    }
+    /// @brief Sobel kernel size. Must be 3, 5, or 7. Default 3.
+    HarrisCorner& ksize(int v) {
+        if (v != 3 && v != 5 && v != 7)
+            throw ParameterError{"ksize", "must be 3, 5, or 7", "HarrisCorner"};
+        ksize_ = v;
+        return *this;
+    }
+    /// @brief Harris sensitivity parameter. Must be in (0, 1). Default 0.04.
+    HarrisCorner& k(double v) {
+        if (v <= 0.0 || v >= 1.0)
+            throw ParameterError{"k", "must be in (0, 1)", "HarrisCorner"};
+        k_ = v;
+        return *this;
+    }
+
+    /// @brief Returns normalized corner response map for a gray image.
+    Image<Gray> operator()(Image<Gray> img) const;
+    /// @brief Returns normalized corner response map (auto-converts BGR→Gray).
+    Image<Gray> operator()(Image<BGR>  img) const;
+
+private:
+    int    block_size_ = 2;
+    int    ksize_      = 3;
+    double k_          = 0.04;
+};
+
 } // namespace improc::core

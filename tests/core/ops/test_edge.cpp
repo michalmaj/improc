@@ -185,3 +185,79 @@ TEST(LaplacianEdgeTest, DeltaShiftsOutput) {
     auto result = LaplacianEdge{}.delta(50.0)(flat);
     EXPECT_GT(cv::mean(result.mat())[0], 40.0);
 }
+
+// ── HarrisCorner ──────────────────────────────────────────────────────────────
+
+TEST(HarrisCornerTest, GrayDefaultPreservesSizeAndType) {
+    Image<Gray> img(cv::Mat(32, 32, CV_8UC1, cv::Scalar(100)));
+    auto result = HarrisCorner{}(img);
+    EXPECT_EQ(result.mat().type(), CV_8UC1);
+    EXPECT_EQ(result.rows(), 32);
+    EXPECT_EQ(result.cols(), 32);
+}
+
+TEST(HarrisCornerTest, BGRDefaultPreservesSizeAndType) {
+    Image<BGR> img(cv::Mat(32, 32, CV_8UC3, cv::Scalar(80, 100, 120)));
+    auto result = HarrisCorner{}(img);
+    EXPECT_EQ(result.mat().type(), CV_8UC1);
+    EXPECT_EQ(result.rows(), 32);
+    EXPECT_EQ(result.cols(), 32);
+}
+
+TEST(HarrisCornerTest, GrayUniformImageNoCorners) {
+    // Uniform image has zero Harris response everywhere; after NORM_MINMAX it stays 0
+    Image<Gray> img(cv::Mat(32, 32, CV_8UC1, cv::Scalar(128)));
+    auto result = HarrisCorner{}(img);
+    EXPECT_EQ(cv::countNonZero(result.mat()), 0);
+}
+
+TEST(HarrisCornerTest, GrayPipelineSyntax) {
+    Image<Gray> img(cv::Mat(32, 32, CV_8UC1, cv::Scalar(100)));
+    auto result = img | HarrisCorner{};
+    EXPECT_EQ(result.mat().type(), CV_8UC1);
+}
+
+TEST(HarrisCornerTest, BGRPipelineSyntax) {
+    Image<BGR> img(cv::Mat(32, 32, CV_8UC3, cv::Scalar(80, 100, 120)));
+    auto result = img | HarrisCorner{}.ksize(3);
+    EXPECT_EQ(result.mat().type(), CV_8UC1);
+}
+
+TEST(HarrisCornerTest, KsizeInvalidThrows) {
+    EXPECT_THROW(HarrisCorner{}.ksize(2), improc::ParameterError);
+    EXPECT_THROW(HarrisCorner{}.ksize(4), improc::ParameterError);
+    EXPECT_THROW(HarrisCorner{}.ksize(1), improc::ParameterError);
+}
+
+TEST(HarrisCornerTest, KsizeValidDoesNotThrow) {
+    EXPECT_NO_THROW(HarrisCorner{}.ksize(5));
+    EXPECT_NO_THROW(HarrisCorner{}.ksize(7));
+}
+
+TEST(HarrisCornerTest, BlockSizeZeroThrows) {
+    EXPECT_THROW(HarrisCorner{}.block_size(0), improc::ParameterError);
+    EXPECT_THROW(HarrisCorner{}.block_size(-1), improc::ParameterError);
+}
+
+TEST(HarrisCornerTest, KZeroThrows) {
+    EXPECT_THROW(HarrisCorner{}.k(0.0), improc::ParameterError);
+    EXPECT_THROW(HarrisCorner{}.k(-0.01), improc::ParameterError);
+}
+
+TEST(HarrisCornerTest, KOneThrows) {
+    EXPECT_THROW(HarrisCorner{}.k(1.0), improc::ParameterError);
+    EXPECT_THROW(HarrisCorner{}.k(1.5), improc::ParameterError);
+}
+
+TEST(HarrisCornerTest, DetectsCornerOnWhiteSquare) {
+    // White square on black background — corners of the square have strong Harris response
+    cv::Mat mat(32, 32, CV_8UC1, cv::Scalar(0));
+    mat(cv::Rect(8, 8, 16, 16)) = 255;
+    Image<Gray> img(mat);
+    auto result = HarrisCorner{}(img);
+    // Corner at (8,8): should have non-zero response
+    // Flat interior at (16,16): should have low response
+    int corner_val  = result.mat().at<uchar>(8, 8);
+    int interior_val = result.mat().at<uchar>(16, 16);
+    EXPECT_GT(corner_val, interior_val);
+}

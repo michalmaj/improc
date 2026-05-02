@@ -158,6 +158,13 @@ Image<Gray> eroded  = mask | Erode{}.kernel_size(3).iterations(2);
 Image<Gray> opened = noisy | MorphOpen{}.kernel_size(3);
 Image<Gray> closed = holed | MorphClose{}.kernel_size(3);
 
+// MorphGradient — dilate − erode; highlights object boundaries
+// TopHat — src − MorphOpen; reveals bright features smaller than kernel
+// BlackHat — MorphClose − src; reveals dark features smaller than kernel
+Image<Gray> grad     = mask | MorphGradient{}.kernel_size(3);
+Image<Gray> tophat   = mask | TopHat{}.kernel_size(5);
+Image<Gray> blackhat = mask | BlackHat{}.kernel_size(5);
+
 // Threshold — templated; Otsu only valid on Image<Gray> (CV_8U)
 Image<Gray> binary = gray | Threshold{}.value(128).mode(ThresholdMode::Binary);
 Image<Gray> otsu   = gray | Threshold{}.mode(ThresholdMode::Otsu);
@@ -196,6 +203,8 @@ Image<BGR>  eq3 = bgr  | CLAHE{}.clip_limit(3.0);                 // colour-safe
 **`InRange`** accepts any input format and always returns `Image<Gray>`. Throws `ParameterError` if either `lower` or `upper` is not set. Both bounds are inclusive.
 
 **`MorphOpen`** and **`MorphClose`** share the same parameter contract as `Dilate`/`Erode`: `kernel_size` must be odd and positive; `iterations` must be >= 1. `MorphOpen` removes isolated bright regions (noise); `MorphClose` fills isolated dark regions (holes).
+
+**`MorphGradient`**, **`TopHat`**, and **`BlackHat`** throw `ParameterError` if `kernel_size` is not odd and positive. They have no `iterations` setter. `MorphGradient` computes dilate − erode (boundary highlight); `TopHat` computes src − MorphOpen (small bright features on dark background); `BlackHat` computes MorphClose − src (small dark features on bright background).
 
 **Geometric ops** throw `ParameterError` when required parameters are missing or invalid (e.g. no dimension in `Resize`, ROI out of bounds in `Crop`, no angle in `Rotate`).
 
@@ -242,6 +251,11 @@ Image<Gray> c2    = bgr  | CannyEdge{}.threshold1(100).threshold2(200).aperture_
 Image<Gray> lap  = gray | LaplacianEdge{};
 Image<Gray> lap2 = bgr  | LaplacianEdge{}.ksize(3).scale(2.0).delta(128.0);
 
+// HarrisCorner — corner response map normalized to [0, 255]; accepts Gray or BGR
+// ksize must be 3, 5, or 7; k must be in (0, 1); block_size must be > 0
+Image<Gray> corners = gray | HarrisCorner{};
+Image<Gray> c2      = bgr  | HarrisCorner{}.block_size(3).ksize(5).k(0.05);
+
 // WarpPerspective — apply a 3×3 homography to an image
 Image<BGR> warped = src | WarpPerspective{}.homography(H).width(640).height(480);
 ```
@@ -259,6 +273,8 @@ Image<BGR> warped = src | WarpPerspective{}.homography(H).width(640).height(480)
 **`CannyEdge`** throws `ParameterError` for negative thresholds or invalid `aperture_size` (not in {3, 5, 7}).
 
 **`LaplacianEdge`** throws `ParameterError` if `ksize` is not odd and positive, or if `scale` is not positive. `delta` accepts any value. Defaults: `ksize=1`, `scale=1.0`, `delta=0.0`. Uses CV_16S intermediate depth to preserve negative responses, then `cv::convertScaleAbs` to fold into CV_8U.
+
+**`HarrisCorner`** throws `ParameterError` if `block_size <= 0`, if `ksize` is not in {3, 5, 7}, or if `k` is not in (0, 1). Returns a corner response map normalized to [0, 255] — brighter pixels indicate stronger corner response. Defaults: `block_size=2`, `ksize=3`, `k=0.04`.
 
 **`find_homography(src, dst, threshold)`** — free function; computes a 3×3 homography matrix from ≥4 corresponding point pairs via RANSAC. Returns `std::expected<cv::Mat, Error>` — error if fewer than 4 points are provided or RANSAC fails to find a valid homography.
 

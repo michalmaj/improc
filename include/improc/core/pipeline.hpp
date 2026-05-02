@@ -2,8 +2,8 @@
  * @brief Umbrella include for all `improc::core` pipeline ops.
  *
  * Including this header pulls in every op (Resize, Crop, CenterCrop, LetterBox, Flip, Rotate, Pad,
- * GaussianBlur, MedianBlur, Dilate, Erode, MorphOpen, MorphClose, Threshold, AdaptiveThreshold, InRange, Invert, CLAHE, GammaCorrection,
- * BilateralFilter, HistogramEqualization, NLMeansDenoising, UnsharpMask, SobelEdge, CannyEdge, LaplacianEdge, Normalize, NormalizeTo,
+ * GaussianBlur, MedianBlur, Dilate, Erode, MorphOpen, MorphClose, MorphGradient, TopHat, BlackHat, Threshold, AdaptiveThreshold, InRange, Invert, CLAHE, GammaCorrection,
+ * BilateralFilter, HistogramEqualization, NLMeansDenoising, UnsharpMask, SobelEdge, CannyEdge, LaplacianEdge, HarrisCorner, Normalize, NormalizeTo,
  * Standardize, ApplyMask, WarpAffine, WarpPerspective, ToGray, ToFloat32,
  * ToFloat32C3, ToHSV, ToBGR, Brightness, Contrast, WeightedBlend, AlphaBlend)
  * and the generic `operator|` pipeline dispatch.

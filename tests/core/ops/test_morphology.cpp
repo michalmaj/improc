@@ -241,3 +241,133 @@ TEST(MorphologyTest, MorphClosePipelineOp) {
     Image<Gray> result = img | MorphClose{}.kernel_size(3);
     EXPECT_EQ(result.rows(), 20);
 }
+
+// ── MorphGradient ─────────────────────────────────────────────────────────────
+
+TEST(MorphGradientTest, GrayDefaultPreservesSizeAndType) {
+    Image<Gray> img(cv::Mat(20, 20, CV_8UC1, cv::Scalar(128)));
+    auto result = MorphGradient{}(img);
+    EXPECT_EQ(result.mat().type(), CV_8UC1);
+    EXPECT_EQ(result.rows(), 20);
+    EXPECT_EQ(result.cols(), 20);
+}
+
+TEST(MorphGradientTest, BGRDefaultPreservesSizeAndType) {
+    Image<BGR> img(cv::Mat(20, 20, CV_8UC3, cv::Scalar(80, 100, 120)));
+    auto result = MorphGradient{}(img);
+    EXPECT_EQ(result.mat().type(), CV_8UC3);
+    EXPECT_EQ(result.rows(), 20);
+    EXPECT_EQ(result.cols(), 20);
+}
+
+TEST(MorphGradientTest, GrayUniformImageProducesZeroEdges) {
+    // Gradient = dilate − erode; on a flat image both are the same, so result is 0
+    Image<Gray> img(cv::Mat(20, 20, CV_8UC1, cv::Scalar(128)));
+    auto result = MorphGradient{}(img);
+    // Interior pixels should be 0; check a central pixel
+    EXPECT_EQ(result.mat().at<uchar>(10, 10), 0);
+}
+
+TEST(MorphGradientTest, GrayPipelineSyntax) {
+    Image<Gray> img(cv::Mat(20, 20, CV_8UC1, cv::Scalar(100)));
+    auto result = img | MorphGradient{};
+    EXPECT_EQ(result.mat().type(), CV_8UC1);
+}
+
+TEST(MorphGradientTest, KernelSizeEvenThrows) {
+    EXPECT_THROW(MorphGradient{}.kernel_size(4), improc::ParameterError);
+}
+
+TEST(MorphGradientTest, KernelSizeZeroThrows) {
+    EXPECT_THROW(MorphGradient{}.kernel_size(0), improc::ParameterError);
+}
+
+TEST(MorphGradientTest, KernelSizeNegativeThrows) {
+    EXPECT_THROW(MorphGradient{}.kernel_size(-1), improc::ParameterError);
+}
+
+// ── TopHat ────────────────────────────────────────────────────────────────────
+
+TEST(TopHatTest, GrayDefaultPreservesSizeAndType) {
+    Image<Gray> img(cv::Mat(20, 20, CV_8UC1, cv::Scalar(128)));
+    auto result = TopHat{}(img);
+    EXPECT_EQ(result.mat().type(), CV_8UC1);
+    EXPECT_EQ(result.rows(), 20);
+    EXPECT_EQ(result.cols(), 20);
+}
+
+TEST(TopHatTest, BGRDefaultPreservesSizeAndType) {
+    Image<BGR> img(cv::Mat(20, 20, CV_8UC3, cv::Scalar(80, 100, 120)));
+    auto result = TopHat{}(img);
+    EXPECT_EQ(result.mat().type(), CV_8UC3);
+    EXPECT_EQ(result.rows(), 20);
+    EXPECT_EQ(result.cols(), 20);
+}
+
+TEST(TopHatTest, GrayUniformImageProducesZeroOutput) {
+    // TopHat = src − MorphOpen; on a flat image MorphOpen = src, so result is 0
+    Image<Gray> img(cv::Mat(20, 20, CV_8UC1, cv::Scalar(128)));
+    auto result = TopHat{}(img);
+    EXPECT_EQ(result.mat().at<uchar>(10, 10), 0);
+}
+
+TEST(TopHatTest, GrayPipelineSyntax) {
+    Image<Gray> img(cv::Mat(20, 20, CV_8UC1, cv::Scalar(100)));
+    auto result = img | TopHat{};
+    EXPECT_EQ(result.mat().type(), CV_8UC1);
+}
+
+TEST(TopHatTest, KernelSizeEvenThrows) {
+    EXPECT_THROW(TopHat{}.kernel_size(4), improc::ParameterError);
+}
+
+TEST(TopHatTest, KernelSizeZeroThrows) {
+    EXPECT_THROW(TopHat{}.kernel_size(0), improc::ParameterError);
+}
+
+TEST(TopHatTest, KernelSizeNegativeThrows) {
+    EXPECT_THROW(TopHat{}.kernel_size(-1), improc::ParameterError);
+}
+
+// ── BlackHat ──────────────────────────────────────────────────────────────────
+
+TEST(BlackHatTest, GrayDefaultPreservesSizeAndType) {
+    Image<Gray> img(cv::Mat(20, 20, CV_8UC1, cv::Scalar(128)));
+    auto result = BlackHat{}(img);
+    EXPECT_EQ(result.mat().type(), CV_8UC1);
+    EXPECT_EQ(result.rows(), 20);
+    EXPECT_EQ(result.cols(), 20);
+}
+
+TEST(BlackHatTest, BGRDefaultPreservesSizeAndType) {
+    Image<BGR> img(cv::Mat(20, 20, CV_8UC3, cv::Scalar(80, 100, 120)));
+    auto result = BlackHat{}(img);
+    EXPECT_EQ(result.mat().type(), CV_8UC3);
+    EXPECT_EQ(result.rows(), 20);
+    EXPECT_EQ(result.cols(), 20);
+}
+
+TEST(BlackHatTest, GrayUniformImageProducesZeroOutput) {
+    // BlackHat = MorphClose − src; on a flat image MorphClose = src, so result is 0
+    Image<Gray> img(cv::Mat(20, 20, CV_8UC1, cv::Scalar(128)));
+    auto result = BlackHat{}(img);
+    EXPECT_EQ(result.mat().at<uchar>(10, 10), 0);
+}
+
+TEST(BlackHatTest, GrayPipelineSyntax) {
+    Image<Gray> img(cv::Mat(20, 20, CV_8UC1, cv::Scalar(100)));
+    auto result = img | BlackHat{};
+    EXPECT_EQ(result.mat().type(), CV_8UC1);
+}
+
+TEST(BlackHatTest, KernelSizeEvenThrows) {
+    EXPECT_THROW(BlackHat{}.kernel_size(4), improc::ParameterError);
+}
+
+TEST(BlackHatTest, KernelSizeZeroThrows) {
+    EXPECT_THROW(BlackHat{}.kernel_size(0), improc::ParameterError);
+}
+
+TEST(BlackHatTest, KernelSizeNegativeThrows) {
+    EXPECT_THROW(BlackHat{}.kernel_size(-1), improc::ParameterError);
+}
