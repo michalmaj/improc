@@ -218,11 +218,11 @@ private:
  */
 struct MorphGradient {
     /// @brief Sets kernel size. Must be odd and positive. Default: 3.
-    MorphGradient& kernel_size(int v) {
-        if (v <= 0 || v % 2 == 0)
+    MorphGradient& kernel_size(int k) {
+        if (k <= 0 || k % 2 == 0)
             throw ParameterError{"kernel_size",
-                std::format("must be odd and positive, got {}", v), "MorphGradient"};
-        kernel_size_ = v; return *this;
+                std::format("must be odd and positive, got {}", k), "MorphGradient"};
+        kernel_size_ = k; return *this;
     }
     /// @brief Sets the structuring element shape. Default: MorphShape::Rect.
     MorphGradient& shape(MorphShape s) { shape_ = s; return *this; }
@@ -237,6 +237,7 @@ struct MorphGradient {
         cv::morphologyEx(img.mat(), dst, cv::MORPH_GRADIENT, kernel);
         return Image<Format>(std::move(dst));
     }
+
 private:
     int        kernel_size_ = 3;
     MorphShape shape_       = MorphShape::Rect;
@@ -253,11 +254,11 @@ private:
  */
 struct TopHat {
     /// @brief Sets kernel size. Must be odd and positive. Default: 3.
-    TopHat& kernel_size(int v) {
-        if (v <= 0 || v % 2 == 0)
+    TopHat& kernel_size(int k) {
+        if (k <= 0 || k % 2 == 0)
             throw ParameterError{"kernel_size",
-                std::format("must be odd and positive, got {}", v), "TopHat"};
-        kernel_size_ = v; return *this;
+                std::format("must be odd and positive, got {}", k), "TopHat"};
+        kernel_size_ = k; return *this;
     }
     /// @brief Sets the structuring element shape. Default: MorphShape::Rect.
     TopHat& shape(MorphShape s) { shape_ = s; return *this; }
@@ -272,6 +273,7 @@ struct TopHat {
         cv::morphologyEx(img.mat(), dst, cv::MORPH_TOPHAT, kernel);
         return Image<Format>(std::move(dst));
     }
+
 private:
     int        kernel_size_ = 3;
     MorphShape shape_       = MorphShape::Rect;
@@ -288,11 +290,11 @@ private:
  */
 struct BlackHat {
     /// @brief Sets kernel size. Must be odd and positive. Default: 3.
-    BlackHat& kernel_size(int v) {
-        if (v <= 0 || v % 2 == 0)
+    BlackHat& kernel_size(int k) {
+        if (k <= 0 || k % 2 == 0)
             throw ParameterError{"kernel_size",
-                std::format("must be odd and positive, got {}", v), "BlackHat"};
-        kernel_size_ = v; return *this;
+                std::format("must be odd and positive, got {}", k), "BlackHat"};
+        kernel_size_ = k; return *this;
     }
     /// @brief Sets the structuring element shape. Default: MorphShape::Rect.
     BlackHat& shape(MorphShape s) { shape_ = s; return *this; }
@@ -307,6 +309,7 @@ struct BlackHat {
         cv::morphologyEx(img.mat(), dst, cv::MORPH_BLACKHAT, kernel);
         return Image<Format>(std::move(dst));
     }
+
 private:
     int        kernel_size_ = 3;
     MorphShape shape_       = MorphShape::Rect;

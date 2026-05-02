@@ -325,6 +325,10 @@ TEST(TopHatTest, KernelSizeZeroThrows) {
     EXPECT_THROW(TopHat{}.kernel_size(0), improc::ParameterError);
 }
 
+TEST(TopHatTest, KernelSizeNegativeThrows) {
+    EXPECT_THROW(TopHat{}.kernel_size(-1), improc::ParameterError);
+}
+
 // ── BlackHat ──────────────────────────────────────────────────────────────────
 
 TEST(BlackHatTest, GrayDefaultPreservesSizeAndType) {
@@ -362,4 +366,8 @@ TEST(BlackHatTest, KernelSizeEvenThrows) {
 
 TEST(BlackHatTest, KernelSizeZeroThrows) {
     EXPECT_THROW(BlackHat{}.kernel_size(0), improc::ParameterError);
+}
+
+TEST(BlackHatTest, KernelSizeNegativeThrows) {
+    EXPECT_THROW(BlackHat{}.kernel_size(-1), improc::ParameterError);
 }
