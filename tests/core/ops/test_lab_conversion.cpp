@@ -41,6 +41,15 @@ TEST(LabConversionTest, WhiteBGRRoundTrip) {
     EXPECT_NEAR(px[2], 255, 2);
 }
 
+TEST(LabConversionTest, BlackBGRRoundTrip) {
+    Image<BGR> src(cv::Mat(1, 1, CV_8UC3, cv::Scalar(0, 0, 0)));
+    Image<BGR> result = src | ToLAB{} | ToBGR{};
+    cv::Vec3b px = result.mat().at<cv::Vec3b>(0, 0);
+    EXPECT_NEAR(px[0], 0, 2);
+    EXPECT_NEAR(px[1], 0, 2);
+    EXPECT_NEAR(px[2], 0, 2);
+}
+
 TEST(LabConversionTest, ToLABOpMatchesFreeFunction) {
     Image<BGR> src(cv::Mat(4, 4, CV_8UC3, cv::Scalar(100, 150, 200)));
     Image<LAB> via_op       = src | ToLAB{};
