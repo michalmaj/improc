@@ -75,4 +75,18 @@ Image<BGR> convert<BGR, HSV>(const Image<HSV>& src) {
     return Image<BGR>(std::move(dst));
 }
 
+template<>
+Image<LAB> convert<LAB, BGR>(const Image<BGR>& src) {
+    cv::Mat dst;
+    cv::cvtColor(src.mat(), dst, cv::COLOR_BGR2Lab);
+    return Image<LAB>(std::move(dst));
+}
+
+template<>
+Image<BGR> convert<BGR, LAB>(const Image<LAB>& src) {
+    cv::Mat dst;
+    cv::cvtColor(src.mat(), dst, cv::COLOR_Lab2BGR);
+    return Image<BGR>(std::move(dst));
+}
+
 } // namespace improc::core

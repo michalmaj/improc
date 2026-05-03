@@ -73,6 +73,21 @@ template<> struct FormatTraits<HSV> {
     static constexpr std::string_view name = "HSV (CV_8UC3)";
 };
 
+/**
+ * @brief CIE L*a*b* color space. 8-bit, 3 channels.
+ * OpenCV 8-bit encoding: L ∈ [0, 255], a ∈ [0, 255], b ∈ [0, 255]
+ * (actual L* scaled by 255/100; a* and b* shifted by +128).
+ * @code Image<LAB> lab = bgr | ToLAB{}; @endcode
+ */
+struct LAB {};
+/// @brief Traits for LAB: CV_8UC3, 3 channels, integer.
+template<> struct FormatTraits<LAB> {
+    static constexpr int  cv_type  = CV_8UC3;
+    static constexpr int  channels = 3;
+    static constexpr bool is_float = false;
+    static constexpr std::string_view name = "LAB (CV_8UC3)";
+};
+
 /// @}
 
 } // namespace improc::core
