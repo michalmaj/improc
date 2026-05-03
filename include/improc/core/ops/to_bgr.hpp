@@ -2,6 +2,7 @@
 #include "improc/core/image.hpp"
 #include "improc/core/format_traits.hpp"
 #include "improc/core/convert.hpp"
+#include <utility>
 
 namespace improc::core {
 
