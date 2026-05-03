@@ -45,14 +45,14 @@ template<typename F>
 concept GrayFormat = AnyFormat<F> && std::same_as<F, Gray>;
 
 /**
- * @brief Satisfied by any format with more than one channel (BGR, BGRA, HSV, Float32C3).
+ * @brief Satisfied by any format with more than one channel (BGR, BGRA, HSV, LAB, YCrCb, Float32C3).
  * @code static_assert(MultiChannelFormat<BGR>); @endcode
  */
 template<typename F>
 concept MultiChannelFormat = AnyFormat<F> && (FormatTraits<F>::channels > 1);
 
 /**
- * @brief Satisfied by any non-floating-point format (Gray, BGR, BGRA, HSV).
+ * @brief Satisfied by any non-floating-point format (Gray, BGR, BGRA, HSV, LAB, YCrCb).
  *
  * Use to constrain ops where bitwise operations or integer arithmetic are applied,
  * such as `Invert`.

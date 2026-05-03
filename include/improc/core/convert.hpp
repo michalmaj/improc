@@ -44,5 +44,13 @@ template<> Image<BGR>       convert<BGR,       Float32C3>(const Image<Float32C3>
 template<> Image<HSV>       convert<HSV,       BGR>      (const Image<BGR>&       src);
 /// @brief HSV → BGR.
 template<> Image<BGR>       convert<BGR,       HSV>      (const Image<HSV>&       src);
+/// @brief BGR → CIE L*a*b*.
+template<> Image<LAB>       convert<LAB,       BGR>      (const Image<BGR>&       src);
+/// @brief LAB → BGR.
+template<> Image<BGR>       convert<BGR,       LAB>      (const Image<LAB>&       src);
+/// @brief BGR → YCrCb.
+template<> Image<YCrCb>     convert<YCrCb,     BGR>      (const Image<BGR>&       src);
+/// @brief YCrCb → BGR.
+template<> Image<BGR>       convert<BGR,       YCrCb>    (const Image<YCrCb>&     src);
 
 } // namespace improc::core
