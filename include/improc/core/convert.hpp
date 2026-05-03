@@ -48,5 +48,9 @@ template<> Image<BGR>       convert<BGR,       HSV>      (const Image<HSV>&     
 template<> Image<LAB>       convert<LAB,       BGR>      (const Image<BGR>&       src);
 /// @brief LAB → BGR.
 template<> Image<BGR>       convert<BGR,       LAB>      (const Image<LAB>&       src);
+/// @brief BGR → YCrCb.
+template<> Image<YCrCb>     convert<YCrCb,     BGR>      (const Image<BGR>&       src);
+/// @brief YCrCb → BGR.
+template<> Image<BGR>       convert<BGR,       YCrCb>    (const Image<YCrCb>&     src);
 
 } // namespace improc::core

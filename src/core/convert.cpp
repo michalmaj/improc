@@ -89,4 +89,18 @@ Image<BGR> convert<BGR, LAB>(const Image<LAB>& src) {
     return Image<BGR>(std::move(dst));
 }
 
+template<>
+Image<YCrCb> convert<YCrCb, BGR>(const Image<BGR>& src) {
+    cv::Mat dst;
+    cv::cvtColor(src.mat(), dst, cv::COLOR_BGR2YCrCb);
+    return Image<YCrCb>(std::move(dst));
+}
+
+template<>
+Image<BGR> convert<BGR, YCrCb>(const Image<YCrCb>& src) {
+    cv::Mat dst;
+    cv::cvtColor(src.mat(), dst, cv::COLOR_YCrCb2BGR);
+    return Image<BGR>(std::move(dst));
+}
+
 } // namespace improc::core

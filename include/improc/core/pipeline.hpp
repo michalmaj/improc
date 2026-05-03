@@ -50,6 +50,7 @@
 #include "improc/core/ops/to_hsv.hpp"
 #include "improc/core/ops/to_bgr.hpp"
 #include "improc/core/ops/to_lab.hpp"
+#include "improc/core/ops/to_ycrcb.hpp"
 #include "improc/core/ops/brightness.hpp"
 #include "improc/core/ops/contrast.hpp"
 #include "improc/core/ops/weighted_blend.hpp"

@@ -88,6 +88,19 @@ template<> struct FormatTraits<LAB> {
     static constexpr std::string_view name = "LAB (CV_8UC3)";
 };
 
+/**
+ * @brief YCbCr color space (OpenCV convention: Y, Cr, Cb channel order). 8-bit, 3 channels.
+ * @code Image<YCrCb> y = bgr | ToYCrCb{}; @endcode
+ */
+struct YCrCb {};
+/// @brief Traits for YCrCb: CV_8UC3, 3 channels, integer.
+template<> struct FormatTraits<YCrCb> {
+    static constexpr int  cv_type  = CV_8UC3;
+    static constexpr int  channels = 3;
+    static constexpr bool is_float = false;
+    static constexpr std::string_view name = "YCrCb (CV_8UC3)";
+};
+
 /// @}
 
 } // namespace improc::core
