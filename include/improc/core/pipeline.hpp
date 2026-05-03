@@ -5,7 +5,7 @@
  * GaussianBlur, MedianBlur, Dilate, Erode, MorphOpen, MorphClose, MorphGradient, TopHat, BlackHat, Threshold, AdaptiveThreshold, InRange, Invert, CLAHE, GammaCorrection,
  * BilateralFilter, HistogramEqualization, NLMeansDenoising, UnsharpMask, SobelEdge, CannyEdge, LaplacianEdge, HarrisCorner, Normalize, NormalizeTo,
  * Standardize, ApplyMask, WarpAffine, WarpPerspective, ToGray, ToFloat32,
- * ToFloat32C3, ToHSV, ToBGR, Brightness, Contrast, WeightedBlend, AlphaBlend)
+ * ToFloat32C3, ToHSV, ToLAB, ToYCrCb, ToBGR, Brightness, Contrast, WeightedBlend, AlphaBlend)
  * and the generic `operator|` pipeline dispatch.
  *
  * @code

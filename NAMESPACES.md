@@ -90,8 +90,14 @@ Empty structs used as template parameters. `FormatTraits<T>` maps each tag to it
 | `Float32` | `CV_32FC1` | 1 | `true` |
 | `Float32C3` | `CV_32FC3` | 3 | `true` |
 | `HSV` | `CV_8UC3` | 3 | `false` |
+| `LAB` | `CV_8UC3` | 3 | `false` |
+| `YCrCb` | `CV_8UC3` | 3 | `false` |
 
 **`struct HSV {}`** — format tag for HSV color space (H∈[0,179], S∈[0,255], V∈[0,255]).
+
+**`struct LAB {}`** — format tag for CIE L\*a\*b\* color space. 8-bit encoding: L ∈ [0, 255] (L* scaled by 255/100), a ∈ [0, 255] (a* shifted by +128), b ∈ [0, 255] (b* shifted by +128).
+
+**`struct YCrCb {}`** — format tag for YCbCr color space (OpenCV channel order: Y, Cr, Cb). 8-bit, 3 channels. Y carries luminance; Cr and Cb carry colour difference.
 
 All `FormatTraits<F>` specializations include `static constexpr bool is_float` — `false` for BGR/Gray/BGRA/HSV, `true` for Float32/Float32C3.
 
@@ -114,8 +120,9 @@ Free function template. Primary template is `= delete` — unsupported conversio
 - `BGR` ↔ `BGRA`
 - `Gray` ↔ `Float32` (scale ×1/255 / ×255)
 - `BGR` ↔ `Float32C3` (scale ×1/255 / ×255, 3-channel float)
-- `BGR` → `HSV` (OpenCV `COLOR_BGR2HSV`)
-- `HSV` → `BGR` (OpenCV `COLOR_HSV2BGR`)
+- `BGR` ↔ `HSV` (OpenCV `COLOR_BGR2HSV` / `COLOR_HSV2BGR`)
+- `BGR` ↔ `LAB` (OpenCV `COLOR_BGR2Lab` / `COLOR_Lab2BGR`)
+- `BGR` ↔ `YCrCb` (OpenCV `COLOR_BGR2YCrCb` / `COLOR_YCrCb2BGR`)
 
 ```cpp
 Image<Gray>     gray  = convert<Gray, BGR>(bgr_image);
@@ -131,7 +138,9 @@ Composes processing steps using the pipe operator. Each step is a small functor.
 Image<Float32>   result = bgr_image | ToGray{} | ToFloat32{};
 Image<Float32C3> result = bgr_image | ToFloat32C3{};
 Image<HSV>       hsv    = bgr_image | ToHSV{};
-Image<BGR>       bgr    = hsv_image | ToBGR{};  // also accepts Image<Gray> (existing overload)
+Image<LAB>       lab    = bgr_image | ToLAB{};
+Image<YCrCb>     ycrcb  = bgr_image | ToYCrCb{};
+Image<BGR>       bgr    = hsv_image | ToBGR{};  // also accepts Image<Gray>, Image<LAB>, Image<YCrCb>
 
 // Geometric ops — templated, work on any Image<Format>
 Image<BGR> r = src | Resize{}.width(224).height(224);   // both dims
@@ -275,6 +284,12 @@ Image<BGR> warped = src | WarpPerspective{}.homography(H).width(640).height(480)
 **`LaplacianEdge`** throws `ParameterError` if `ksize` is not odd and positive, or if `scale` is not positive. `delta` accepts any value. Defaults: `ksize=1`, `scale=1.0`, `delta=0.0`. Uses CV_16S intermediate depth to preserve negative responses, then `cv::convertScaleAbs` to fold into CV_8U.
 
 **`HarrisCorner`** throws `ParameterError` if `block_size <= 0`, if `ksize` is not in {3, 5, 7}, or if `k` is not in (0, 1). Returns a corner response map normalized to [0, 255] — brighter pixels indicate stronger corner response. Defaults: `block_size=2`, `ksize=3`, `k=0.04`.
+
+**`ToLAB`** converts BGR → CIE L\*a\*b\* using `cv::COLOR_BGR2Lab`. Output is `Image<LAB>` (CV_8UC3). OpenCV 8-bit encoding: L ∈ [0, 255], a ∈ [0, 255], b ∈ [0, 255] (L\* scaled by 255/100; a\* and b\* shifted by +128). Round-trip BGR → LAB → BGR introduces at most 2 per channel from quantization. No parameters; no error conditions.
+
+**`ToYCrCb`** converts BGR → YCrCb using `cv::COLOR_BGR2YCrCb`. Output is `Image<YCrCb>` (CV_8UC3). The Y channel carries luminance; Cr and Cb carry colour difference. Useful for luminance-only ops (e.g. histogram equalization on Y only). Round-trip BGR → YCrCb → BGR introduces at most 2 per channel from quantization. No parameters; no error conditions.
+
+**`ToBGR`** accepts `Image<Gray>`, `Image<HSV>`, `Image<LAB>`, and `Image<YCrCb>` — all return `Image<BGR>`. No error conditions.
 
 **`find_homography(src, dst, threshold)`** — free function; computes a 3×3 homography matrix from ≥4 corresponding point pairs via RANSAC. Returns `std::expected<cv::Mat, Error>` — error if fewer than 4 points are provided or RANSAC fails to find a valid homography.
 

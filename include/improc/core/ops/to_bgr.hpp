@@ -7,11 +7,13 @@
 namespace improc::core {
 
 /**
- * @brief Pipeline op: converts Gray or HSV image to BGR color space.
+ * @brief Pipeline op: converts Gray, HSV, LAB, or YCrCb image to BGR color space.
  *
  * @code
- * Image<BGR> bgr = hsv_img | ToBGR{};
- * Image<BGR> bgr2 = gray_img | ToBGR{};
+ * Image<BGR> bgr  = hsv_img   | ToBGR{};
+ * Image<BGR> bgr2 = gray_img  | ToBGR{};
+ * Image<BGR> bgr3 = lab_img   | ToBGR{};
+ * Image<BGR> bgr4 = ycrcb_img | ToBGR{};
  * @endcode
  */
 struct ToBGR {
