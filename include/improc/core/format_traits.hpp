@@ -89,7 +89,7 @@ template<> struct FormatTraits<LAB> {
 };
 
 /**
- * @brief YCbCr color space (OpenCV convention: Y, Cr, Cb channel order). 8-bit, 3 channels.
+ * @brief YCrCb color space (OpenCV convention: Y, Cr, Cb channel order). 8-bit, 3 channels.
  * @code Image<YCrCb> y = bgr | ToYCrCb{}; @endcode
  */
 struct YCrCb {};
