@@ -5,7 +5,8 @@
  * GaussianBlur, MedianBlur, Dilate, Erode, MorphOpen, MorphClose, MorphGradient, TopHat, BlackHat, Threshold, AdaptiveThreshold, InRange, Invert, CLAHE, GammaCorrection,
  * BilateralFilter, HistogramEqualization, NLMeansDenoising, UnsharpMask, SobelEdge, CannyEdge, LaplacianEdge, HarrisCorner, Normalize, NormalizeTo,
  * Standardize, ApplyMask, WarpAffine, WarpPerspective, ToGray, ToFloat32,
- * ToFloat32C3, ToHSV, ToLAB, ToYCrCb, ToBGR, Brightness, Contrast, WeightedBlend, AlphaBlend)
+ * ToFloat32C3, ToHSV, ToLAB, ToYCrCb, ToBGR, Brightness, Contrast, WeightedBlend, AlphaBlend,
+ * PyrDown, PyrUp, DrawText, DrawLine, DrawCircle, DrawRectangle)
  * and the generic `operator|` pipeline dispatch.
  *
  * @code
@@ -44,6 +45,7 @@
 #include "improc/core/ops/nlmeans.hpp"
 #include "improc/core/ops/edge.hpp"
 #include "improc/core/ops/pyramid.hpp"
+#include "improc/core/ops/drawing.hpp"
 #include "improc/core/ops/homography.hpp"
 #include "improc/core/ops/warp_affine.hpp"
 #include "improc/core/ops/apply_mask.hpp"
