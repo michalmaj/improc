@@ -126,6 +126,15 @@ TEST(DrawCircleTest, ThicknessMinusOneWorks) {
     EXPECT_NO_THROW((src | DrawCircle{{150, 100}, 50}.thickness(-1)));
 }
 
+TEST(DrawCircleTest, ChangesPixels) {
+    cv::Mat blank(200, 300, CV_8UC3, cv::Scalar(0, 0, 0));
+    Image<BGR> src(blank.clone());
+    Image<BGR> result = src | DrawCircle{{150, 100}, 50};
+    cv::Mat diff;
+    cv::absdiff(blank, result.mat(), diff);
+    EXPECT_GT(cv::countNonZero(diff.reshape(1)), 0);
+}
+
 TEST(DrawCircleTest, DoesNotMutateSource) {
     cv::Mat blank(200, 300, CV_8UC3, cv::Scalar(0, 0, 0));
     Image<BGR> src(blank.clone());
