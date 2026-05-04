@@ -43,6 +43,7 @@
 #include "improc/core/ops/hist_eq.hpp"
 #include "improc/core/ops/nlmeans.hpp"
 #include "improc/core/ops/edge.hpp"
+#include "improc/core/ops/pyramid.hpp"
 #include "improc/core/ops/homography.hpp"
 #include "improc/core/ops/warp_affine.hpp"
 #include "improc/core/ops/apply_mask.hpp"
