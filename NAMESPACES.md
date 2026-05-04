@@ -270,7 +270,7 @@ Image<Gray> c2      = bgr  | HarrisCorner{}.block_size(3).ksize(5).k(0.05);
 // Both work on any Image<Format>; no parameters.
 Image<Gray> small  = img  | PyrDown{};
 Image<BGR>  large  = bgr  | PyrUp{};
-Image<Gray> pyroud = img  | PyrDown{} | PyrDown{};  // two levels down
+Image<Gray> down2  = img  | PyrDown{} | PyrDown{};  // two levels down
 
 // Drawing ops — all accept and return Image<BGR>; source is never mutated
 Image<BGR> labeled   = bgr | DrawText{"Score: 0.95"}.position({10, 30}).color({0, 255, 0});
