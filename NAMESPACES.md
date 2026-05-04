@@ -265,6 +265,21 @@ Image<Gray> lap2 = bgr  | LaplacianEdge{}.ksize(3).scale(2.0).delta(128.0);
 Image<Gray> corners = gray | HarrisCorner{};
 Image<Gray> c2      = bgr  | HarrisCorner{}.block_size(3).ksize(5).k(0.05);
 
+// PyrDown — halves image dimensions (Gaussian pyramid down-step)
+// PyrUp   — doubles image dimensions (Gaussian pyramid up-step)
+// Both work on any Image<Format>; no parameters.
+Image<Gray> small  = img  | PyrDown{};
+Image<BGR>  large  = bgr  | PyrUp{};
+Image<Gray> down2  = img  | PyrDown{} | PyrDown{};  // two levels down
+
+// Drawing ops — all accept and return Image<BGR>; source is never mutated
+Image<BGR> labeled   = bgr | DrawText{"Score: 0.95"}.position({10, 30}).color({0, 255, 0});
+Image<BGR> with_line = bgr | DrawLine{{0, 0}, {320, 240}}.color({255, 0, 0}).thickness(2);
+Image<BGR> with_circ = bgr | DrawCircle{{160, 120}, 50}.color({0, 0, 255});
+Image<BGR> filled_c  = bgr | DrawCircle{{160, 120}, 50}.thickness(-1);  // filled
+Image<BGR> with_rect = bgr | DrawRectangle{cv::Rect{10, 10, 100, 80}}.color({255, 255, 0});
+Image<BGR> filled_r  = bgr | DrawRectangle{cv::Rect{10, 10, 100, 80}}.thickness(-1);
+
 // WarpPerspective — apply a 3×3 homography to an image
 Image<BGR> warped = src | WarpPerspective{}.homography(H).width(640).height(480);
 ```
@@ -284,6 +299,18 @@ Image<BGR> warped = src | WarpPerspective{}.homography(H).width(640).height(480)
 **`LaplacianEdge`** throws `ParameterError` if `ksize` is not odd and positive, or if `scale` is not positive. `delta` accepts any value. Defaults: `ksize=1`, `scale=1.0`, `delta=0.0`. Uses CV_16S intermediate depth to preserve negative responses, then `cv::convertScaleAbs` to fold into CV_8U.
 
 **`HarrisCorner`** throws `ParameterError` if `block_size <= 0`, if `ksize` is not in {3, 5, 7}, or if `k` is not in (0, 1). Returns a corner response map normalized to [0, 255] — brighter pixels indicate stronger corner response. Defaults: `block_size=2`, `ksize=3`, `k=0.04`.
+
+**`PyrDown`** reduces image dimensions to `ceil(rows/2) × ceil(cols/2)` using Gaussian pyramid blurring (`cv::pyrDown`). Works on any `Image<Format>`. No parameters; no error conditions.
+
+**`PyrUp`** doubles image dimensions to `2*rows × 2*cols` using Gaussian pyramid upsampling (`cv::pyrUp`). Works on any `Image<Format>`. No parameters; no error conditions.
+
+**`DrawText`** renders text on a clone of the BGR image using `cv::putText` (font: `FONT_HERSHEY_SIMPLEX`, antialiased). Defaults: `position=(10,30)`, `font_scale=1.0`, `color=(0,255,0)`, `thickness=1`. Throws `ParameterError` if `font_scale <= 0` or `thickness <= 0`.
+
+**`DrawLine`** draws an antialiased line (`cv::line`, `LINE_AA`) on a clone. Defaults: `color=(0,255,0)`, `thickness=1`. Throws `ParameterError` if `thickness <= 0`.
+
+**`DrawCircle`** draws an antialiased circle (`cv::circle`, `LINE_AA`) on a clone. Throws `ParameterError` at construction if `radius <= 0`. `thickness(-1)` fills the circle. Throws `ParameterError` for thickness not in {−1} ∪ ℤ⁺. Defaults: `color=(0,255,0)`, `thickness=1`.
+
+**`DrawRectangle`** draws an antialiased rectangle (`cv::rectangle`, `LINE_AA`) on a clone. `thickness(-1)` fills the rectangle. Throws `ParameterError` for thickness not in {−1} ∪ ℤ⁺. Defaults: `color=(0,255,0)`, `thickness=1`.
 
 **`ToLAB`** converts BGR → CIE L\*a\*b\* using `cv::COLOR_BGR2Lab`. Output is `Image<LAB>` (CV_8UC3). OpenCV 8-bit encoding: L ∈ [0, 255], a ∈ [0, 255], b ∈ [0, 255] (L\* scaled by 255/100; a\* and b\* shifted by +128). Round-trip BGR → LAB → BGR introduces at most 2 per channel from quantization. No parameters; no error conditions.
 
