@@ -1,5 +1,6 @@
 // include/improc/core/ops/pyramid.hpp
 #pragma once
+#include <utility>
 #include <opencv2/imgproc.hpp>
 #include "improc/core/image.hpp"
 #include "improc/core/concepts.hpp"
@@ -17,11 +18,11 @@ namespace improc::core {
  * @endcode
  */
 struct PyrDown {
-    template<AnyFormat F>
-    Image<F> operator()(Image<F> img) const {
+    template<AnyFormat Format>
+    Image<Format> operator()(Image<Format> img) const {
         cv::Mat dst;
         cv::pyrDown(img.mat(), dst);
-        return Image<F>(std::move(dst));
+        return Image<Format>(std::move(dst));
     }
 };
 
@@ -36,11 +37,11 @@ struct PyrDown {
  * @endcode
  */
 struct PyrUp {
-    template<AnyFormat F>
-    Image<F> operator()(Image<F> img) const {
+    template<AnyFormat Format>
+    Image<Format> operator()(Image<Format> img) const {
         cv::Mat dst;
         cv::pyrUp(img.mat(), dst);
-        return Image<F>(std::move(dst));
+        return Image<Format>(std::move(dst));
     }
 };
 
