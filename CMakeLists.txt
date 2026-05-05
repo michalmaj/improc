@@ -233,6 +233,10 @@ target_link_libraries(demo_montage PRIVATE improc)
 add_executable(demo_pyramid_drawing examples/core/demo_pyramid_drawing.cpp)
 target_link_libraries(demo_pyramid_drawing PRIVATE improc)
 
+# Contours demo
+add_executable(demo_contours examples/core/demo_contours.cpp)
+target_link_libraries(demo_contours PRIVATE improc)
+
 # Views demos (M1: single-image lazy pipeline, M2: collection pipeline, M3: external sources, M4: batch/enumerate/zip)
 add_executable(demo_views_m1 examples/views/demo_views_m1.cpp)
 target_link_libraries(demo_views_m1 PRIVATE improc)

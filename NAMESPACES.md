@@ -280,6 +280,20 @@ Image<BGR> filled_c  = bgr | DrawCircle{{160, 120}, 50}.thickness(-1);  // fille
 Image<BGR> with_rect = bgr | DrawRectangle{cv::Rect{10, 10, 100, 80}}.color({255, 255, 0});
 Image<BGR> filled_r  = bgr | DrawRectangle{cv::Rect{10, 10, 100, 80}}.thickness(-1);
 
+// FindContours — extracts contours from a binary Image<Gray>; returns ContourSet (not Image)
+// DrawContours — draws ContourSet onto a BGR clone; index(-1) = all, thickness(-1) = fill
+ContourSet cs      = binary | FindContours{};
+ContourSet cs_tree = binary | FindContours{}.mode(FindContours::Mode::Tree);
+Image<BGR> drawn   = bgr | DrawContours{cs}.color({0, 255, 0});
+Image<BGR> filled  = bgr | DrawContours{cs}.thickness(-1);
+Image<BGR> first   = bgr | DrawContours{cs}.index(0).color({255, 0, 0});
+
+// ContourSet accessors
+std::size_t n    = cs.size();
+double      a    = cs.area(0);        // cv::contourArea
+double      p    = cs.perimeter(0);   // cv::arcLength (closed)
+cv::Rect    br   = cs.bounding_rect(0);
+
 // WarpPerspective — apply a 3×3 homography to an image
 Image<BGR> warped = src | WarpPerspective{}.homography(H).width(640).height(480);
 ```
@@ -311,6 +325,12 @@ Image<BGR> warped = src | WarpPerspective{}.homography(H).width(640).height(480)
 **`DrawCircle`** draws an antialiased circle (`cv::circle`, `LINE_AA`) on a clone. Throws `ParameterError` at construction if `radius <= 0`. `thickness(-1)` fills the circle. Throws `ParameterError` for thickness not in {−1} ∪ ℤ⁺. Defaults: `color=(0,255,0)`, `thickness=1`.
 
 **`DrawRectangle`** draws an antialiased rectangle (`cv::rectangle`, `LINE_AA`) on a clone. `thickness(-1)` fills the rectangle. Throws `ParameterError` for thickness not in {−1} ∪ ℤ⁺. Defaults: `color=(0,255,0)`, `thickness=1`.
+
+**`FindContours`** finds contours in a binary `Image<Gray>` using `cv::findContours`. Returns `ContourSet` — not `Image<>` — so the pipe `gray | FindContours{}` short-circuits the normal image-to-image pipeline. Mode defaults to `External` (outermost contours only); method defaults to `Simple` (compressed horizontal/vertical/diagonal segments). No parameters throw; all combinations are valid.
+
+**`ContourSet`** — result type with public members `contours` (`std::vector<std::vector<cv::Point>>`) and `hierarchy` (`std::vector<cv::Vec4i>`). Convenience methods: `size()`, `empty()`, `area(i)` (`cv::contourArea`), `perimeter(i)` (`cv::arcLength`, closed), `bounding_rect(i)` (`cv::boundingRect`). Index-checked (`.at()`): out-of-bounds throws `std::out_of_range`.
+
+**`DrawContours`** draws contours from a `ContourSet` onto a BGR image clone using `cv::drawContours`. `index(-1)` draws all (default); pass a non-negative index to draw a single contour. `thickness(-1)` fills contours. Throws `ParameterError` for thickness not in {−1} ∪ ℤ⁺. Defaults: `index=-1`, `color=(0,255,0)`, `thickness=1`.
 
 **`ToLAB`** converts BGR → CIE L\*a\*b\* using `cv::COLOR_BGR2Lab`. Output is `Image<LAB>` (CV_8UC3). OpenCV 8-bit encoding: L ∈ [0, 255], a ∈ [0, 255], b ∈ [0, 255] (L\* scaled by 255/100; a\* and b\* shifted by +128). Round-trip BGR → LAB → BGR introduces at most 2 per channel from quantization. No parameters; no error conditions.
 
