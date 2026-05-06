@@ -323,6 +323,20 @@ std::size_t n_kp     = ks_orb.size();
 if (!ks_orb.empty())
     cv::KeyPoint kp  = ks_orb.keypoints[0];   // direct vector access
 
+// DescribeORB / DescribeSIFT / DescribeAKAZE — compute descriptors from keypoints
+// DescriptorSet — owns KeypointSet + cv::Mat descriptors (CV_32F for SIFT; CV_8U for ORB/AKAZE)
+DescriptorSet desc_orb   = gray | DescribeORB{ks_orb};
+DescriptorSet desc_sift  = gray | DescribeSIFT{ks_sift};
+DescriptorSet desc_akaze = gray | DescribeAKAZE{ks_akaze};
+
+// Works on Image<BGR> too — auto-converts to Gray internally
+Image<BGR> bgr_img{cv::Mat(200, 200, CV_8UC3, cv::Scalar(128, 128, 128))};
+DescriptorSet desc_bgr = bgr_img | DescribeORB{ks_orb};
+
+std::size_t n_desc = desc_orb.size();          // == desc_orb.keypoints.size()
+int desc_rows = desc_orb.descriptors.rows;     // == n_desc
+int desc_type = desc_orb.descriptors.type();   // CV_8U for ORB/AKAZE, CV_32F for SIFT
+
 // WarpPerspective — apply a 3×3 homography to an image
 Image<BGR> warped = src | WarpPerspective{}.homography(H).width(640).height(480);
 ```
@@ -374,6 +388,14 @@ Image<BGR> warped = src | WarpPerspective{}.homography(H).width(640).height(480)
 **`DetectSIFT`** detects SIFT keypoints in `Image<Gray>` using `cv::SIFT` (main OpenCV ≥ 4.4). Returns `KeypointSet`. Fluent setters: `max_features(n)` (default 0 = no limit), `n_octave_layers(n)` (default 3). No parameters throw.
 
 **`DetectAKAZE`** detects AKAZE keypoints in `Image<Gray>` using `cv::AKAZE`. Returns `KeypointSet`. Fluent setter: `threshold(f)` (default 0.001f). Higher threshold → stricter → fewer keypoints. No parameters throw.
+
+**`DescriptorSet`** — result type with a `KeypointSet keypoints` member and a `cv::Mat descriptors` member. `size()` returns `keypoints.size()`, which equals `descriptors.rows` after computation; `empty()` returns `true` when the stored `KeypointSet` is empty. Descriptor type: CV_32F for SIFT; CV_8U for ORB and AKAZE. A default-constructed `DescriptorSet` is empty. The underlying OpenCV `cv::Feature2D::compute()` call may prune keypoints that cannot be described; the stored `keypoints` reflects the pruned set.
+
+**`DescribeORB`** computes ORB descriptors (CV_8U, 32 bytes per keypoint) for a `KeypointSet`. Constructed with an explicit `KeypointSet`: `DescribeORB{kps}`. Accepts `Image<Gray>` or `Image<BGR>` (auto-converts to Gray). An empty input `KeypointSet` yields an empty `DescriptorSet`. No parameters throw.
+
+**`DescribeSIFT`** computes SIFT descriptors (CV_32F, 128 floats per keypoint) for a `KeypointSet`. Constructed with an explicit `KeypointSet`: `DescribeSIFT{kps}`. Accepts `Image<Gray>` or `Image<BGR>`. No parameters throw.
+
+**`DescribeAKAZE`** computes AKAZE descriptors (CV_8U) for a `KeypointSet`. Constructed with an explicit `KeypointSet`: `DescribeAKAZE{kps}`. Accepts `Image<Gray>` or `Image<BGR>`. No parameters throw.
 
 **`ToLAB`** converts BGR → CIE L\*a\*b\* using `cv::COLOR_BGR2Lab`. Output is `Image<LAB>` (CV_8UC3). OpenCV 8-bit encoding: L ∈ [0, 255], a ∈ [0, 255], b ∈ [0, 255] (L\* scaled by 255/100; a\* and b\* shifted by +128). Round-trip BGR → LAB → BGR introduces at most 2 per channel from quantization. No parameters; no error conditions.
 
