@@ -294,6 +294,21 @@ double      a    = cs.area(0);        // cv::contourArea
 double      p    = cs.perimeter(0);   // cv::arcLength (closed)
 cv::Rect    br   = cs.bounding_rect(0);
 
+// ConnectedComponents — labels connected regions in a binary Image<Gray>; returns ComponentMap (not Image)
+// ComponentMap — label 0 = background; labels 1..N-1 = components
+ComponentMap cm   = binary | ConnectedComponents{};
+ComponentMap cm4  = binary | ConnectedComponents{}.connectivity(ConnectedComponents::Connectivity::Four);
+int          n_labels = cm.count();      // total label count (including background)
+int          comp_area = cm.area(1);    // pixel area of label 1
+cv::Rect     br   = cm.bounding_rect(1);
+cv::Point2d  cen  = cm.centroid(1);
+cv::Mat      mask = cm.mask(1);          // CV_8U mask: 255 where label==1
+
+// DistanceTransform — Euclidean (or other) distance to nearest 0-pixel; returns Image<Float32>
+Image<Float32> dt    = binary | DistanceTransform{};
+Image<Float32> dt_l1 = binary | DistanceTransform{}.dist_type(DistanceTransform::DistType::L1);
+Image<Float32> dt_m5 = binary | DistanceTransform{}.mask_size(DistanceTransform::MaskSize::Mask5);
+
 // WarpPerspective — apply a 3×3 homography to an image
 Image<BGR> warped = src | WarpPerspective{}.homography(H).width(640).height(480);
 ```
@@ -331,6 +346,12 @@ Image<BGR> warped = src | WarpPerspective{}.homography(H).width(640).height(480)
 **`ContourSet`** — result type with public members `contours` (`std::vector<std::vector<cv::Point>>`) and `hierarchy` (`std::vector<cv::Vec4i>`). Convenience methods: `size()`, `empty()`, `area(i)` (`cv::contourArea`), `perimeter(i)` (`cv::arcLength`, closed), `bounding_rect(i)` (`cv::boundingRect`). Index-checked (`.at()`): out-of-bounds throws `std::out_of_range`.
 
 **`DrawContours`** draws contours from a `ContourSet` onto a BGR image clone using `cv::drawContours`. `index(-1)` draws all (default); pass a non-negative index to draw a single contour. `thickness(-1)` fills contours. Throws `ParameterError` for thickness not in {−1} ∪ ℤ⁺. Defaults: `index=-1`, `color=(0,255,0)`, `thickness=1`.
+
+**`ConnectedComponents`** labels connected regions in a binary `Image<Gray>` using `cv::connectedComponentsWithStats`. Returns `ComponentMap` — not `Image<>`. Label 0 is always the background. Connectivity defaults to `Eight`; use `Four` for stricter adjacency. No parameters throw.
+
+**`ComponentMap`** — result type with public members `labels` (CV_32S, same size as source), `stats` (N×5 int matrix), `centroids` (N×2 double matrix), and `num_labels` (int, including background). `count()` is an alias for `num_labels`. Accessors `area(i)`, `bounding_rect(i)`, `centroid(i)`, `mask(i)` are bounds-checked and throw `std::out_of_range` for invalid label (including -1 or label ≥ count()).
+
+**`DistanceTransform`** computes the distance of each non-zero pixel to the nearest zero pixel in a binary `Image<Gray>` using `cv::distanceTransform`. Returns `Image<Float32>`. Distance type defaults to `L2` (Euclidean); `L1` and `C` (Chebyshev) available. Mask size defaults to `Mask3`; `Mask5` and `Precise` also available. No parameters throw.
 
 **`ToLAB`** converts BGR → CIE L\*a\*b\* using `cv::COLOR_BGR2Lab`. Output is `Image<LAB>` (CV_8UC3). OpenCV 8-bit encoding: L ∈ [0, 255], a ∈ [0, 255], b ∈ [0, 255] (L\* scaled by 255/100; a\* and b\* shifted by +128). Round-trip BGR → LAB → BGR introduces at most 2 per channel from quantization. No parameters; no error conditions.
 
