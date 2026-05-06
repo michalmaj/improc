@@ -309,6 +309,20 @@ Image<Float32> dt    = binary | DistanceTransform{};
 Image<Float32> dt_l1 = binary | DistanceTransform{}.dist_type(DistanceTransform::DistType::L1);
 Image<Float32> dt_m5 = binary | DistanceTransform{}.mask_size(DistanceTransform::MaskSize::Mask5);
 
+// DetectORB / DetectSIFT / DetectAKAZE — keypoint detection; all return KeypointSet (not Image)
+// KeypointSet — plain struct: public `keypoints` vector + size()/empty() helpers
+KeypointSet ks_orb   = gray | DetectORB{};
+KeypointSet ks_sift  = gray | DetectSIFT{};
+KeypointSet ks_akaze = gray | DetectAKAZE{};
+
+KeypointSet few_orb  = gray | DetectORB{}.max_features(50);
+KeypointSet few_sift = gray | DetectSIFT{}.max_features(50);
+KeypointSet strict   = gray | DetectAKAZE{}.threshold(0.01f);
+
+std::size_t n_kp     = ks_orb.size();
+if (!ks_orb.empty())
+    cv::KeyPoint kp  = ks_orb.keypoints[0];   // direct vector access
+
 // WarpPerspective — apply a 3×3 homography to an image
 Image<BGR> warped = src | WarpPerspective{}.homography(H).width(640).height(480);
 ```
@@ -352,6 +366,14 @@ Image<BGR> warped = src | WarpPerspective{}.homography(H).width(640).height(480)
 **`ComponentMap`** — result type with public members `labels` (CV_32S, same size as source), `stats` (N×5 int matrix), `centroids` (N×2 double matrix), and `num_labels` (int, including background). `count()` is an alias for `num_labels`. Accessors `area(i)`, `bounding_rect(i)`, `centroid(i)`, `mask(i)` are bounds-checked and throw `std::out_of_range` for invalid label (including -1 or label ≥ count()).
 
 **`DistanceTransform`** computes the distance of each non-zero pixel to the nearest zero pixel in a binary `Image<Gray>` using `cv::distanceTransform`. Returns `Image<Float32>`. Distance type defaults to `L2` (Euclidean); `L1` and `C` (Chebyshev) available. Mask size defaults to `Mask3`; `Mask5` and `Precise` also available. No parameters throw.
+
+**`KeypointSet`** — result type with a public `keypoints` (`std::vector<cv::KeyPoint>`) member plus `size()` and `empty()` helpers. No bounds checking — use standard vector access. A default-constructed `KeypointSet` is empty.
+
+**`DetectORB`** detects ORB keypoints in `Image<Gray>` using `cv::ORB`. Returns `KeypointSet`. Fluent setters: `max_features(n)` (default 500), `scale_factor(f)` (default 1.2), `n_levels(n)` (default 8). `max_features` strictly limits the returned count. No parameters throw.
+
+**`DetectSIFT`** detects SIFT keypoints in `Image<Gray>` using `cv::SIFT` (main OpenCV ≥ 4.4). Returns `KeypointSet`. Fluent setters: `max_features(n)` (default 0 = no limit), `n_octave_layers(n)` (default 3). No parameters throw.
+
+**`DetectAKAZE`** detects AKAZE keypoints in `Image<Gray>` using `cv::AKAZE`. Returns `KeypointSet`. Fluent setter: `threshold(f)` (default 0.001f). Higher threshold → stricter → fewer keypoints. No parameters throw.
 
 **`ToLAB`** converts BGR → CIE L\*a\*b\* using `cv::COLOR_BGR2Lab`. Output is `Image<LAB>` (CV_8UC3). OpenCV 8-bit encoding: L ∈ [0, 255], a ∈ [0, 255], b ∈ [0, 255] (L\* scaled by 255/100; a\* and b\* shifted by +128). Round-trip BGR → LAB → BGR introduces at most 2 per channel from quantization. No parameters; no error conditions.
 

@@ -241,6 +241,10 @@ target_link_libraries(demo_contours PRIVATE improc)
 add_executable(demo_connected_components examples/core/demo_connected_components.cpp)
 target_link_libraries(demo_connected_components PRIVATE improc)
 
+# Feature Detection demo
+add_executable(demo_feature_detection examples/core/demo_feature_detection.cpp)
+target_link_libraries(demo_feature_detection PRIVATE improc)
+
 # Views demos (M1: single-image lazy pipeline, M2: collection pipeline, M3: external sources, M4: batch/enumerate/zip)
 add_executable(demo_views_m1 examples/views/demo_views_m1.cpp)
 target_link_libraries(demo_views_m1 PRIVATE improc)
