@@ -8,7 +8,8 @@
  * ToFloat32C3, ToHSV, ToLAB, ToYCrCb, ToBGR, Brightness, Contrast, WeightedBlend, AlphaBlend,
  * PyrDown, PyrUp, DrawText, DrawLine, DrawCircle, DrawRectangle,
  * FindContours, DrawContours, ConnectedComponents, DistanceTransform,
- * DetectORB, DetectSIFT, DetectAKAZE)
+ * DetectORB, DetectSIFT, DetectAKAZE,
+ * DescribeORB, DescribeSIFT, DescribeAKAZE)
  * and the generic `operator|` pipeline dispatch.
  *
  * @code

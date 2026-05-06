@@ -2,6 +2,7 @@
 #pragma once
 #include <vector>
 #include <cstddef>
+#include <utility>
 #include <opencv2/features2d.hpp>
 #include "improc/core/image.hpp"
 
@@ -87,6 +88,58 @@ struct DetectAKAZE {
 
 private:
     float threshold_{0.001f};
+};
+
+/**
+ * @brief Result of a descriptor-computation operation.
+ *
+ * Pairs the (possibly pruned) keypoints with their computed descriptors.
+ * `cv::Feature2D::compute()` may remove keypoints that cannot be described,
+ * so `keypoints` and `descriptors` are always consistent.
+ *
+ * Descriptor type depends on the algorithm:
+ * - ORB / AKAZE: `CV_8U`
+ * - SIFT: `CV_32F`
+ *
+ * @code
+ * KeypointSet kps  = gray | DetectORB{};
+ * DescriptorSet ds = gray | DescribeORB{kps};
+ * // ds.descriptors is CV_8U, ds.size() == ds.keypoints.size()
+ * @endcode
+ */
+struct DescriptorSet {
+    KeypointSet keypoints;
+    cv::Mat     descriptors;  // CV_32F for SIFT; CV_8U for ORB/AKAZE
+
+    std::size_t size()  const { return keypoints.size(); }
+    bool        empty() const { return keypoints.empty(); }
+};
+
+/// @brief Pipeline op: computes ORB descriptors for a given `KeypointSet`.
+struct DescribeORB {
+    explicit DescribeORB(KeypointSet kps) : kps_(std::move(kps)) {}
+    DescriptorSet operator()(Image<Gray> img) const;
+    DescriptorSet operator()(Image<BGR>  img) const;
+private:
+    KeypointSet kps_;
+};
+
+/// @brief Pipeline op: computes SIFT descriptors for a given `KeypointSet`.
+struct DescribeSIFT {
+    explicit DescribeSIFT(KeypointSet kps) : kps_(std::move(kps)) {}
+    DescriptorSet operator()(Image<Gray> img) const;
+    DescriptorSet operator()(Image<BGR>  img) const;
+private:
+    KeypointSet kps_;
+};
+
+/// @brief Pipeline op: computes AKAZE descriptors for a given `KeypointSet`.
+struct DescribeAKAZE {
+    explicit DescribeAKAZE(KeypointSet kps) : kps_(std::move(kps)) {}
+    DescriptorSet operator()(Image<Gray> img) const;
+    DescriptorSet operator()(Image<BGR>  img) const;
+private:
+    KeypointSet kps_;
 };
 
 } // namespace improc::core
