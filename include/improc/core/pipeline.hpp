@@ -7,7 +7,8 @@
  * Standardize, ApplyMask, WarpAffine, WarpPerspective, ToGray, ToFloat32,
  * ToFloat32C3, ToHSV, ToLAB, ToYCrCb, ToBGR, Brightness, Contrast, WeightedBlend, AlphaBlend,
  * PyrDown, PyrUp, DrawText, DrawLine, DrawCircle, DrawRectangle,
- * FindContours, DrawContours, ConnectedComponents, DistanceTransform)
+ * FindContours, DrawContours, ConnectedComponents, DistanceTransform,
+ * DetectORB, DetectSIFT, DetectAKAZE)
  * and the generic `operator|` pipeline dispatch.
  *
  * @code
@@ -50,6 +51,7 @@
 #include "improc/core/ops/contours.hpp"
 #include "improc/core/ops/connected_components.hpp"
 #include "improc/core/ops/distance_transform.hpp"
+#include "improc/core/ops/feature_detection.hpp"
 #include "improc/core/ops/homography.hpp"
 #include "improc/core/ops/warp_affine.hpp"
 #include "improc/core/ops/apply_mask.hpp"
