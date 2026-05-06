@@ -84,7 +84,14 @@ jobs:
             -B build .
 
       - name: Build
-        run: cmake --build build --parallel --target improc_tests
+        run: |
+          # Linux runners have 7 GB RAM; unlimited parallel compilation OOMs on
+          # heavy visualization TUs. Cap at 2 to stay well within budget.
+          if [ "$(uname)" = "Linux" ]; then
+            cmake --build build --parallel 2 --target improc_tests
+          else
+            cmake --build build --parallel --target improc_tests
+          fi
 
       - name: Run tests
         run: |
