@@ -48,12 +48,6 @@ TEST(DetectORBTest, BlankImageHasNoKeypoints) {
     EXPECT_EQ(ks.size(), 0u);
 }
 
-TEST(DetectORBTest, PipelineSyntax) {
-    Image<Gray> src = make_textured();
-    auto ks = src | DetectORB{};
-    EXPECT_GT(ks.size(), 0u);
-}
-
 TEST(DetectORBTest, MaxFeaturesLimitsCount) {
     Image<Gray> src = make_textured();
     KeypointSet ks = src | DetectORB{}.max_features(10);
@@ -74,12 +68,6 @@ TEST(DetectSIFTTest, BlankImageHasNoKeypoints) {
     EXPECT_EQ(ks.size(), 0u);
 }
 
-TEST(DetectSIFTTest, PipelineSyntax) {
-    Image<Gray> src = make_textured();
-    auto ks = src | DetectSIFT{};
-    EXPECT_GT(ks.size(), 0u);
-}
-
 TEST(DetectSIFTTest, MaxFeaturesLimitsCount) {
     Image<Gray> src = make_textured();
     KeypointSet ks = src | DetectSIFT{}.max_features(5);
@@ -98,12 +86,6 @@ TEST(DetectAKAZETest, BlankImageHasNoKeypoints) {
     Image<Gray> src = make_blank();
     KeypointSet ks = src | DetectAKAZE{};
     EXPECT_EQ(ks.size(), 0u);
-}
-
-TEST(DetectAKAZETest, PipelineSyntax) {
-    Image<Gray> src = make_textured();
-    auto ks = src | DetectAKAZE{};
-    EXPECT_GT(ks.size(), 0u);
 }
 
 TEST(DetectAKAZETest, HigherThresholdFewerKeypoints) {
