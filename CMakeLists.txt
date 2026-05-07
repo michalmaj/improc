@@ -253,6 +253,10 @@ target_link_libraries(demo_describe PRIVATE improc)
 add_executable(demo_matching examples/core/demo_matching.cpp)
 target_link_libraries(demo_matching PRIVATE improc)
 
+# DrawKeypoints / DrawMatches demo
+add_executable(demo_draw_matches examples/core/demo_draw_matches.cpp)
+target_link_libraries(demo_draw_matches PRIVATE improc)
+
 # Views demos (M1: single-image lazy pipeline, M2: collection pipeline, M3: external sources, M4: batch/enumerate/zip)
 add_executable(demo_views_m1 examples/views/demo_views_m1.cpp)
 target_link_libraries(demo_views_m1 PRIVATE improc)
