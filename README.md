@@ -6,7 +6,7 @@
 
 ## Status
 
-> **v0.1.0** — first versioned release. APIs are stabilising but may still change between minor versions.
+> **v0.3.0** — Core Completeness release. `improc::core` now covers the full classical 2D CV pipeline. APIs are stabilising but may still change between minor versions.
 
 | Namespace | Status | Notes |
 |---|---|---|
@@ -84,7 +84,7 @@ Format mismatches (e.g. passing `Image<Float32>` where `Image<BGR>` is expected)
 
 ## Non-Goals & Limitations
 
-- **Not a Python library.** No bindings planned — use OpenCV's Python API for scripting workflows.
+- **Not a Python library yet.** pybind11 bindings for `improc::core` and `improc::io` are planned for v0.5.0 — use OpenCV's Python API in the meantime.
 - **Not a general-purpose image editor.** No GUI, no layers, no undo — this is a processing pipeline toolkit.
 - **Not a training framework.** No autograd, no loss functions — use PyTorch/TensorFlow for training; improc++ handles inference and preprocessing.
 - **No CUDA yet.** All ops run on CPU (ONNX Runtime uses CoreML EP on Apple Silicon). CUDA acceleration (`improc::cuda`) is planned.
@@ -99,9 +99,16 @@ OpenCV is powerful but its raw API is stringly-typed, mutation-heavy, and easy t
 
 - **Type-safe image wrapper** — `Image<BGR>`, `Image<Gray>`, `Image<Float32>` etc. catch format mismatches at compile time
 - **Composable pipeline** — `image | Resize{}.width(224) | ToFloat32C3{}` syntax for readable processing chains
-- **Geometric operations** — `Resize` (aspect-ratio aware), `Crop`, `Flip`, `Rotate`, `Pad`, `PadToSquare`
-- **Filter & morphology** — `GaussianBlur`, `MedianBlur`, `Dilate`, `Erode`, `Threshold` (incl. Otsu), `CLAHE`, `GammaCorrection`, `BilateralFilter`
-- **Edge detection** — `SobelEdge` (gradient magnitude), `CannyEdge` (hysteresis thresholding); both accept `Image<Gray>` or `Image<BGR>` (auto-converted)
+- **Geometric operations** — `Resize` (aspect-ratio aware), `Crop`, `CenterCrop`, `LetterBox`, `Flip`, `Rotate`, `Pad`, `PadToSquare`, `WarpAffine`, `WarpPerspective`, `find_homography`
+- **Filter & morphology** — `GaussianBlur`, `MedianBlur`, `Dilate`, `Erode`, `MorphOpen`, `MorphClose`, `MorphGradient`, `TopHat`, `BlackHat`; `Threshold` (incl. Otsu & adaptive), `CLAHE`, `GammaCorrection`, `BilateralFilter`, `HistogramEqualization`, `NLMeansDenoising`, `UnsharpMask`
+- **Edge & corner detection** — `SobelEdge`, `CannyEdge`, `LaplacianEdge`, `HarrisCorner`; all accept `Image<Gray>` or `Image<BGR>` (auto-converted)
+- **Colour spaces** — `ToHSV`, `ToLAB`, `ToYCrCb`, `ToGray`, `ToBGR` (from any of the above); format tags `HSV`, `LAB`, `YCrCb` enforce colour-space safety at compile time
+- **Pyramid ops** — `PyrDown` (halves), `PyrUp` (doubles); work on any `Image<Format>`
+- **Drawing / annotation** — `DrawText`, `DrawLine`, `DrawCircle`, `DrawRectangle`; all operate on a clone (non-mutating)
+- **Contour analysis** — `FindContours` → `ContourSet` (with `area()`, `perimeter()`, `bounding_rect()`); `DrawContours` (fill or stroke, single or all)
+- **Connected components** — `ConnectedComponents` → `ComponentMap` (labels, stats, centroids, per-component masks); `DistanceTransform` → `Image<Float32>`
+- **Feature detection pipeline** — `DetectORB` / `DetectSIFT` / `DetectAKAZE` → `KeypointSet`; `DescribeORB` / `DescribeSIFT` / `DescribeAKAZE` → `DescriptorSet`; `MatchBF` / `MatchFlann` → `MatchSet`; `DrawKeypoints` / `DrawMatches` for visualisation
+- **Pixel ops** — `InRange` (binary mask from channel bounds), `Invert`, `Brightness`, `Contrast`, `WeightedBlend`, `AlphaBlend`, `ApplyMask`
 - **Normalization** — `Normalize`, `NormalizeTo`, `Standardize` for ML preprocessing
 - **Format conversions** — explicit, compiler-enforced free functions (`convert<Gray>(bgr_image)`)
 - **Augmentation** — stochastic training augmentations constrained by C++20 concepts: `RandomFlip`, `RandomRotate`, `RandomCrop`, `RandomResize`, `RandomBrightness`, `RandomContrast`, `ColorJitter`, `RandomGaussianNoise`, `RandomSaltAndPepper`, `Compose`, `RandomApply`, `OneOf`
@@ -112,7 +119,7 @@ OpenCV is powerful but its raw API is stringly-typed, mutation-heavy, and easy t
 - **Video recording** — synchronous RAII `VideoWriter` with auto codec detection and pipeline support (`img | Show{"preview"} | writer`)
 - **Haar Cascade loader** — CRTP-based model loader for OpenCV cascade classifiers
 - **Threading** — `ThreadPool` and `FramePipeline<Result>` for real-time frame processing
-- **Visualization** — `Histogram`, `LinePlot`, `Scatter` chart functors, a `Show` passthrough display op, and `DrawBoundingBoxes` for annotating `Detection` results — all composable with `operator|`
+- **Visualization** — `Histogram`, `LinePlot`, `Scatter` chart functors, a `Show` passthrough display op, `DrawBoundingBoxes` for annotating detections, and `Montage` for image grid composition — all composable with `operator|`
 - **Lazy image views** — `improc::views` lazy pipeline adapters: `transform`, `filter`, `take`, `drop`, `batch(N)`, `enumerate`, `zip`; compose with `from_dir()`, `VideoView`, and `std::vector<Image<F>>` sources via `operator|`; zero work until materialised with `views::to<T>()`
 
 ## Quick Start
@@ -357,6 +364,34 @@ for (const auto& [idx, chunk] : views::VideoView{reader} | views::batch(4) | vie
 ```
 
 See `examples/views/` for the full demo suite (M1–M4) and `NAMESPACES.md` for the complete symbol reference.
+
+## Feature Detection Pipeline
+
+```cpp
+#include "improc/core/pipeline.hpp"
+using namespace improc::core;
+
+Image<BGR> img1 = ..., img2 = ...;
+Image<Gray> gray1 = img1 | ToGray{}, gray2 = img2 | ToGray{};
+
+// Detect → Describe → Match
+KeypointSet   kps1  = gray1 | DetectORB{}.max_features(500);
+DescriptorSet desc1 = gray1 | DescribeORB{kps1};
+
+KeypointSet   kps2  = gray2 | DetectORB{}.max_features(500);
+DescriptorSet desc2 = gray2 | DescribeORB{kps2};
+
+MatchSet ms = MatchBF{desc1, desc2}.cross_check(true)();
+
+// Visualise
+Image<BGR> kp_vis    = img1 | DrawKeypoints{kps1};
+Image<BGR> match_vis = DrawMatches{img1, kps1, img2, kps2, ms}();
+
+// FLANN + Lowe ratio test (SIFT/float descriptors)
+KeypointSet   sift_kps  = gray1 | DetectSIFT{};
+DescriptorSet sift_desc = gray1 | DescribeSIFT{sift_kps};
+MatchSet      sift_ms   = MatchFlann{sift_desc, sift_desc}.ratio_threshold(0.7f)();
+```
 
 ## Requirements
 
