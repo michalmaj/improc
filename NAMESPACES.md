@@ -351,6 +351,15 @@ std::size_t n_matches = ms_bf.size();
 for (const cv::DMatch& m : ms_bf.matches)
     (void)m.distance;  // Hamming for ORB/AKAZE, L2 for SIFT
 
+// DrawKeypoints — pipeline op: draws keypoints; returns Image<BGR> from Gray or BGR input
+// DrawMatches   — callable: side-by-side match visualisation; NOT a pipeline op
+Image<BGR> kp_vis   = gray   | DrawKeypoints{ks_orb};           // Gray → BGR with keypoints
+Image<BGR> kp_vis2  = bgr_img | DrawKeypoints{ks_orb};          // BGR input also accepted
+
+// DrawMatches takes both images, both KeypointSets, and the MatchSet
+Image<BGR> match_vis = DrawMatches{bgr_img, ks_orb, bgr_img, ks_orb, ms_bf}();
+// output width = img1.cols + img2.cols; height = max(img1.rows, img2.rows)
+
 // WarpPerspective — apply a 3×3 homography to an image
 Image<BGR> warped = src | WarpPerspective{}.homography(H).width(640).height(480);
 ```
@@ -416,6 +425,10 @@ Image<BGR> warped = src | WarpPerspective{}.homography(H).width(640).height(480)
 **`MatchBF`** performs brute-force descriptor matching. Constructed with two `DescriptorSet` objects: `MatchBF{desc1, desc2}`. Norm type is auto-detected: `NORM_HAMMING` for CV_8U (ORB/AKAZE), `NORM_L2` for CV_32F (SIFT). Returns empty `MatchSet` for empty input. Fluent setters: `cross_check(bool)` (default false), `max_distance(f)` (default 0 = no filter; positive value keeps only matches with distance ≤ f). Invoked as `MatchBF{desc1, desc2}()`. Throws `ParameterError` if `max_distance < 0`.
 
 **`MatchFlann`** performs FLANN-based matching with Lowe ratio test. Constructed with two `DescriptorSet` objects: `MatchFlann{desc1, desc2}`. Runs `knnMatch(k=2)` and keeps matches where `distance1 < ratio_threshold × distance2`. Accepts CV_32F (float) descriptors only — throws `ParameterError` at call time for binary (CV_8U) descriptors. Returns empty `MatchSet` for empty input. Fluent setter: `ratio_threshold(f)` (default 0.7f; must be in (0, 1]; Lowe's recommended value is 0.7–0.8). Throws `ParameterError` if `ratio_threshold` is out of range (at setter) or if descriptors are binary (at call time).
+
+**`DrawKeypoints`** is a pipeline op that draws keypoints onto an image using `cv::DRAW_RICH_KEYPOINTS` (oriented, scaled circles). Constructed with an explicit `KeypointSet`: `DrawKeypoints{kps}`. Accepts `Image<Gray>` or `Image<BGR>`; always returns `Image<BGR>`. An empty `KeypointSet` produces a valid BGR image with no annotations. No parameters throw.
+
+**`DrawMatches`** renders two `Image<BGR>` images side-by-side with connecting lines for each match. Constructed with `DrawMatches{img1, kps1, img2, kps2, matches}` and invoked as `DrawMatches{...}()`. Output width is `img1.cols + img2.cols`; height is `max(img1.rows, img2.rows)`. An empty `MatchSet` produces a valid side-by-side image with no lines. No parameters throw.
 
 **`ToLAB`** converts BGR → CIE L\*a\*b\* using `cv::COLOR_BGR2Lab`. Output is `Image<LAB>` (CV_8UC3). OpenCV 8-bit encoding: L ∈ [0, 255], a ∈ [0, 255], b ∈ [0, 255] (L\* scaled by 255/100; a\* and b\* shifted by +128). Round-trip BGR → LAB → BGR introduces at most 2 per channel from quantization. No parameters; no error conditions.
 
