@@ -9,7 +9,8 @@
  * PyrDown, PyrUp, DrawText, DrawLine, DrawCircle, DrawRectangle,
  * FindContours, DrawContours, ConnectedComponents, DistanceTransform,
  * DetectORB, DetectSIFT, DetectAKAZE,
- * DescribeORB, DescribeSIFT, DescribeAKAZE)
+ * DescribeORB, DescribeSIFT, DescribeAKAZE,
+ * MatchSet, MatchBF, MatchFlann)
  * and the generic `operator|` pipeline dispatch.
  *
  * @code
@@ -53,6 +54,7 @@
 #include "improc/core/ops/connected_components.hpp"
 #include "improc/core/ops/distance_transform.hpp"
 #include "improc/core/ops/feature_detection.hpp"
+#include "improc/core/ops/matching.hpp"
 #include "improc/core/ops/homography.hpp"
 #include "improc/core/ops/warp_affine.hpp"
 #include "improc/core/ops/apply_mask.hpp"

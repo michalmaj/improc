@@ -337,6 +337,20 @@ std::size_t n_desc = desc_orb.size();          // == desc_orb.keypoints.size()
 int desc_rows = desc_orb.descriptors.rows;     // == n_desc
 int desc_type = desc_orb.descriptors.type();   // CV_8U for ORB/AKAZE, CV_32F for SIFT
 
+// MatchBF / MatchFlann — callable structs: Op{desc1, desc2}() — NOT pipeline ops
+// MatchSet — plain struct: public `matches` vector + size()/empty() helpers
+MatchSet ms_bf    = MatchBF{desc_orb, desc_orb}();                           // brute-force, auto norm
+MatchSet ms_cross = MatchBF{desc_orb, desc_orb}.cross_check(true)();         // mutual NN filter
+MatchSet ms_dist  = MatchBF{desc_orb, desc_orb}.max_distance(50.0f)();       // distance filter
+MatchSet ms_sift  = MatchBF{desc_sift, desc_sift}();                         // SIFT: auto L2 norm
+
+MatchSet ms_flann = MatchFlann{desc_sift, desc_sift}();                       // Lowe ratio 0.7
+MatchSet ms_tight = MatchFlann{desc_sift, desc_sift}.ratio_threshold(0.5f)(); // stricter
+
+std::size_t n_matches = ms_bf.size();
+for (const cv::DMatch& m : ms_bf.matches)
+    (void)m.distance;  // Hamming for ORB/AKAZE, L2 for SIFT
+
 // WarpPerspective — apply a 3×3 homography to an image
 Image<BGR> warped = src | WarpPerspective{}.homography(H).width(640).height(480);
 ```
@@ -396,6 +410,12 @@ Image<BGR> warped = src | WarpPerspective{}.homography(H).width(640).height(480)
 **`DescribeSIFT`** computes SIFT descriptors (CV_32F, 128 floats per keypoint) for a `KeypointSet`. Constructed with an explicit `KeypointSet`: `DescribeSIFT{kps}`. Accepts `Image<Gray>` or `Image<BGR>`. No parameters throw.
 
 **`DescribeAKAZE`** computes AKAZE descriptors (CV_8U) for a `KeypointSet`. Constructed with an explicit `KeypointSet`: `DescribeAKAZE{kps}`. Accepts `Image<Gray>` or `Image<BGR>`. No parameters throw.
+
+**`MatchSet`** — result type with a public `matches` (`std::vector<cv::DMatch>`) member plus `size()` and `empty()` helpers. A default-constructed `MatchSet` is empty.
+
+**`MatchBF`** performs brute-force descriptor matching. Constructed with two `DescriptorSet` objects: `MatchBF{desc1, desc2}`. Norm type is auto-detected: `NORM_HAMMING` for CV_8U (ORB/AKAZE), `NORM_L2` for CV_32F (SIFT). Returns empty `MatchSet` for empty input. Fluent setters: `cross_check(bool)` (default false), `max_distance(f)` (default 0 = no filter; positive value keeps only matches with distance ≤ f). Invoked as `MatchBF{desc1, desc2}()`. Throws `ParameterError` if `max_distance < 0`.
+
+**`MatchFlann`** performs FLANN-based matching with Lowe ratio test. Constructed with two `DescriptorSet` objects: `MatchFlann{desc1, desc2}`. Runs `knnMatch(k=2)` and keeps matches where `distance1 < ratio_threshold × distance2`. Accepts CV_32F (float) descriptors only — throws `ParameterError` at call time for binary (CV_8U) descriptors. Returns empty `MatchSet` for empty input. Fluent setter: `ratio_threshold(f)` (default 0.7f; must be in (0, 1]; Lowe's recommended value is 0.7–0.8). Throws `ParameterError` if `ratio_threshold` is out of range (at setter) or if descriptors are binary (at call time).
 
 **`ToLAB`** converts BGR → CIE L\*a\*b\* using `cv::COLOR_BGR2Lab`. Output is `Image<LAB>` (CV_8UC3). OpenCV 8-bit encoding: L ∈ [0, 255], a ∈ [0, 255], b ∈ [0, 255] (L\* scaled by 255/100; a\* and b\* shifted by +128). Round-trip BGR → LAB → BGR introduces at most 2 per channel from quantization. No parameters; no error conditions.
 
