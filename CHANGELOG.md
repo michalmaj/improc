@@ -115,3 +115,72 @@ that subsequent releases will extend without breaking.
 - All adapters compose via `operator|`; `from_dir` and `VideoView` support the full adapter set
 - `views.hpp` umbrella include
 
+---
+
+## [0.3.0] — 2026-05-07
+
+Core Completeness release. `improc::core` now covers the full classical 2D computer vision pipeline:
+morphological extras, colour space ops, pyramid ops, annotation drawing, contour analysis,
+connected-component labelling, distance transform, and the complete feature detection →
+description → matching → visualisation chain.
+
+### Added
+
+#### `improc::core` — Morphology
+
+- **`MorphGradient`** — morphological gradient (dilate − erode); highlights object boundaries; same fluent API as `MorphOpen`/`MorphClose` (`kernel_size`, `shape`)
+- **`TopHat`** — white top-hat (source − MorphOpen); isolates small bright features against a dark background
+- **`BlackHat`** — black top-hat (MorphClose − source); isolates small dark features against a bright background
+
+#### `improc::core` — Corner Detection
+
+- **`HarrisCorner`** — Harris–Stephens corner detector; returns a float corner-response map normalized to `Image<Gray>`; setters: `block_size` (default 2), `ksize` (Sobel kernel: 3/5/7, default 3), `k` (sensitivity, default 0.04; must be in (0, 1))
+
+#### `improc::core` — Colour Spaces
+
+- **`LAB`** format tag — CIE L\*a\*b\* (CV_8UC3); added to `format_traits.hpp`
+- **`YCrCb`** format tag — YCrCb (CV_8UC3); added to `format_traits.hpp`
+- **`ToLAB`** — converts `Image<BGR>` → `Image<LAB>` via `cv::COLOR_BGR2Lab`
+- **`ToYCrCb`** — converts `Image<BGR>` → `Image<YCrCb>` via `cv::COLOR_BGR2YCrCb`
+- **`ToBGR`** — two new overloads: `Image<LAB>` → `Image<BGR>` and `Image<YCrCb>` → `Image<BGR>`
+
+#### `improc::core` — Pyramid Ops
+
+- **`PyrDown`** — Gaussian pyramid downscale to `ceil(rows/2) × ceil(cols/2)` via `cv::pyrDown`; works on any `Image<Format>`
+- **`PyrUp`** — Gaussian pyramid upscale to `2*rows × 2*cols` via `cv::pyrUp`; works on any `Image<Format>`
+
+#### `improc::core` — Drawing / Annotation
+
+- **`DrawText`** — renders text on a BGR image clone; setters: `position`, `font_scale` (must be > 0), `color`, `thickness` (must be > 0)
+- **`DrawLine`** — draws an antialiased line; setters: `color`, `thickness` (must be > 0)
+- **`DrawCircle`** — draws an antialiased circle; `radius` validated at construction (must be > 0); `thickness(-1)` fills
+- **`DrawRectangle`** — draws an antialiased rectangle; `thickness(-1)` fills
+
+#### `improc::core` — Contour Analysis
+
+- **`ContourSet`** — result type with `contours` (`std::vector<std::vector<cv::Point>>`), `hierarchy` (`std::vector<cv::Vec4i>`), and bounds-checked accessors `area(i)`, `perimeter(i)`, `bounding_rect(i)`
+- **`FindContours`** — extracts contours from a binary `Image<Gray>`; setters: `mode` (External/List/CComp/Tree, default External), `method` (None/Simple/TehChin, default Simple)
+- **`DrawContours`** — draws a `ContourSet` onto a BGR image clone; setters: `index` (default −1 = all), `color`, `thickness` (−1 = fill)
+
+#### `improc::core` — Connected Components & Distance Transform
+
+- **`ComponentMap`** — result type with `labels` (CV_32S), `stats` (N×5), `centroids` (N×2), `num_labels`; bounds-checked accessors `area(i)`, `bounding_rect(i)`, `centroid(i)`, `mask(i)`
+- **`ConnectedComponents`** — labels connected regions in a binary `Image<Gray>` via `cv::connectedComponentsWithStats`; connectivity setter: `Four` or `Eight` (default Eight)
+- **`DistanceTransform`** — distance-to-nearest-zero-pixel for each non-zero pixel; returns `Image<Float32>`; setters: `dist_type` (L1/L2/C, default L2), `mask_size` (Mask3/Mask5/Precise, default Mask3)
+
+#### `improc::core` — Feature Detection Pipeline
+
+- **`KeypointSet`** — result type with `keypoints` (`std::vector<cv::KeyPoint>`), `size()`, `empty()`
+- **`DetectORB`** — ORB keypoint detector; setters: `max_features` (default 500, must be > 0), `scale_factor` (default 1.2), `n_levels` (default 8)
+- **`DetectSIFT`** — SIFT keypoint detector; setters: `max_features` (default 0 = no limit, must be ≥ 0), `n_octave_layers` (default 3)
+- **`DetectAKAZE`** — AKAZE keypoint detector; setter: `threshold` (default 0.001f, must be > 0)
+- **`DescriptorSet`** — result type with `KeypointSet keypoints` and `cv::Mat descriptors` (CV_32F for SIFT; CV_8U for ORB/AKAZE); `size()`, `empty()`
+- **`DescribeORB`** — computes ORB descriptors (CV_8U, 32 bytes/keypoint); accepts `Image<Gray>` or `Image<BGR>`
+- **`DescribeSIFT`** — computes SIFT descriptors (CV_32F, 128 floats/keypoint); accepts `Image<Gray>` or `Image<BGR>`
+- **`DescribeAKAZE`** — computes AKAZE descriptors (CV_8U); accepts `Image<Gray>` or `Image<BGR>`
+- **`MatchSet`** — result type with `matches` (`std::vector<cv::DMatch>`), `size()`, `empty()`
+- **`MatchBF`** — brute-force matcher; norm auto-detected (NORM_HAMMING for CV_8U, NORM_L2 for CV_32F); setters: `cross_check(bool)`, `max_distance(f)` (0 = no filter; must be ≥ 0)
+- **`MatchFlann`** — FLANN matcher with Lowe ratio test (`knnMatch k=2`); CV_32F descriptors only (throws `ParameterError` for binary); setter: `ratio_threshold(f)` (default 0.7f; must be in (0, 1])
+- **`DrawKeypoints`** — pipeline op; draws keypoints with `DRAW_RICH_KEYPOINTS`; accepts `Image<Gray>` or `Image<BGR>`; always returns `Image<BGR>`
+- **`DrawMatches`** — callable (not a pipeline op); renders two BGR images side-by-side with connecting match lines; output width = `img1.cols + img2.cols`
+
