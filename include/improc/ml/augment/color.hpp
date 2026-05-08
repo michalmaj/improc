@@ -3,6 +3,7 @@
 
 #include <random>
 #include <cmath>
+#include <type_traits>
 #include <vector>
 #include <opencv2/imgproc.hpp>
 #include "improc/core/image.hpp"
@@ -163,7 +164,7 @@ struct RandomGrayscale : detail::BindMixin<RandomGrayscale> {
     Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         std::bernoulli_distribution d(p_);
         if (!d(rng)) return img;
-        if constexpr (improc::core::FormatTraits<Format>::cv_type == CV_8UC3) {
+        if constexpr (std::is_same_v<Format, improc::core::BGR>) {
             cv::Mat gray, gray3;
             cv::cvtColor(img.mat(), gray, cv::COLOR_BGR2GRAY);
             cv::cvtColor(gray, gray3, cv::COLOR_GRAY2BGR);
@@ -259,7 +260,7 @@ struct RandomEqualize : detail::BindMixin<RandomEqualize> {
     Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         std::bernoulli_distribution d(p_);
         if (!d(rng)) return img;
-        if constexpr (improc::core::FormatTraits<Format>::cv_type == CV_8UC3) {
+        if constexpr (std::is_same_v<Format, improc::core::BGR>) {
             cv::Mat ycrcb;
             cv::cvtColor(img.mat(), ycrcb, cv::COLOR_BGR2YCrCb);
             std::vector<cv::Mat> ch;
@@ -269,7 +270,7 @@ struct RandomEqualize : detail::BindMixin<RandomEqualize> {
             cv::Mat dst;
             cv::cvtColor(ycrcb, dst, cv::COLOR_YCrCb2BGR);
             return Image<Format>(std::move(dst));
-        } else if constexpr (improc::core::FormatTraits<Format>::cv_type == CV_8UC1) {
+        } else if constexpr (std::is_same_v<Format, improc::core::Gray>) {
             cv::Mat dst;
             cv::equalizeHist(img.mat(), dst);
             return Image<Format>(std::move(dst));
