@@ -4,6 +4,7 @@
 #include <cmath>
 #include <random>
 #include <utility>
+#include <vector>
 #include <opencv2/imgproc.hpp>
 #include "improc/core/image.hpp"
 #include "improc/core/concepts.hpp"
@@ -141,6 +142,99 @@ struct RandomResize : detail::BindMixin<RandomResize> {
 private:
     int min_side_ = 224;
     int max_side_ = 256;
+};
+
+struct RandomZoom : detail::BindMixin<RandomZoom> {
+    RandomZoom& range(float min_scale, float max_scale) {
+        if (min_scale <= 0.0f || max_scale <= 0.0f || min_scale > 1.0f || max_scale > 1.0f)
+            throw ParameterError{"min_scale/max_scale", "must be in (0, 1]", "RandomZoom"};
+        if (min_scale > max_scale)
+            throw ParameterError{"min_scale", "must be <= max_scale", "RandomZoom"};
+        min_scale_ = min_scale; max_scale_ = max_scale; return *this;
+    }
+
+    template<AnyFormat F>
+    Image<F> operator()(Image<F> img, std::mt19937& rng) const {
+        int W = img.cols(), H = img.rows();
+        std::uniform_real_distribution<float> d(min_scale_, max_scale_);
+        float scale = d(rng);
+        int cw = std::max(1, static_cast<int>(W * scale));
+        int ch = std::max(1, static_cast<int>(H * scale));
+        std::uniform_int_distribution<int> xd(0, W - cw);
+        std::uniform_int_distribution<int> yd(0, H - ch);
+        int x = xd(rng), y = yd(rng);
+        cv::Mat crop = img.mat()(cv::Rect(x, y, cw, ch));
+        cv::Mat dst;
+        cv::resize(crop, dst, cv::Size(W, H), 0, 0, cv::INTER_LINEAR);
+        return Image<F>(std::move(dst));
+    }
+
+private:
+    float min_scale_ = 0.7f;
+    float max_scale_ = 1.0f;
+};
+
+struct RandomShear : detail::BindMixin<RandomShear> {
+    RandomShear& range(float min_deg, float max_deg) {
+        if (min_deg > max_deg)
+            throw ParameterError{"min_deg", "must be <= max_deg", "RandomShear"};
+        min_deg_ = min_deg; max_deg_ = max_deg; return *this;
+    }
+    RandomShear& axis(core::Axis a) { axis_ = a; return *this; }
+
+    template<AnyFormat F>
+    Image<F> operator()(Image<F> img, std::mt19937& rng) const {
+        std::uniform_real_distribution<float> d(min_deg_, max_deg_);
+        float angle_rad = d(rng) * static_cast<float>(M_PI) / 180.0f;
+        float shear = std::tan(angle_rad);
+        int W = img.cols(), H = img.rows();
+        cv::Mat M = cv::Mat::eye(2, 3, CV_32F);
+        if (axis_ == core::Axis::Horizontal)
+            M.at<float>(0, 1) = shear;
+        else
+            M.at<float>(1, 0) = shear;
+        cv::Mat dst;
+        cv::warpAffine(img.mat(), dst, M, cv::Size(W, H),
+                       cv::INTER_LINEAR, cv::BORDER_CONSTANT, cv::Scalar::all(0));
+        return Image<F>(std::move(dst));
+    }
+
+private:
+    float      min_deg_ = -15.0f;
+    float      max_deg_ =  15.0f;
+    core::Axis axis_    = core::Axis::Horizontal;
+};
+
+struct RandomPerspective : detail::BindMixin<RandomPerspective> {
+    RandomPerspective& distortion_scale(float s) {
+        if (s < 0.0f || s > 1.0f)
+            throw ParameterError{"distortion_scale", "must be in [0, 1]", "RandomPerspective"};
+        distortion_scale_ = s; return *this;
+    }
+
+    template<AnyFormat F>
+    Image<F> operator()(Image<F> img, std::mt19937& rng) const {
+        int W = img.cols(), H = img.rows();
+        float half_range = distortion_scale_ * std::min(W, H) / 2.0f;
+        std::uniform_real_distribution<float> d(-half_range, half_range);
+        std::vector<cv::Point2f> src_pts = {
+            {0.f, 0.f},
+            {static_cast<float>(W), 0.f},
+            {0.f, static_cast<float>(H)},
+            {static_cast<float>(W), static_cast<float>(H)}
+        };
+        std::vector<cv::Point2f> dst_pts;
+        dst_pts.reserve(4);
+        for (const auto& p : src_pts)
+            dst_pts.push_back({p.x + d(rng), p.y + d(rng)});
+        cv::Mat M = cv::getPerspectiveTransform(src_pts, dst_pts);
+        cv::Mat dst;
+        cv::warpPerspective(img.mat(), dst, M, cv::Size(W, H));
+        return Image<F>(std::move(dst));
+    }
+
+private:
+    float distortion_scale_ = 0.5f;
 };
 
 } // namespace improc::ml

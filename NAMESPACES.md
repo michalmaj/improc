@@ -654,6 +654,36 @@ Image<BGR> augmented = augmentor(img, rng);
 
 **Geometric ops** (`RandomFlip`, `RandomRotate`, `RandomCrop`, `RandomResize`) — work on any `Image<Format>`. `RandomCrop` throws `ParameterError` if crop exceeds image size or dimensions not set.
 
+#### Geometric Extras (v0.4.0)
+
+**`RandomZoom`** — crops a random sub-region and resizes back to original size; simulates zoom-in.
+
+```cpp
+std::mt19937 rng(42);
+Image<BGR> zoomed = RandomZoom{}.range(0.6f, 1.0f)(img, rng);
+// or pipeline:
+Image<BGR> zoomed2 = img | RandomZoom{}.range(0.7f, 0.9f).bind(rng);
+```
+
+Setters: `range(min_scale, max_scale)` — both in (0, 1], min ≤ max; default (0.7, 1.0).
+
+**`RandomShear`** — applies a random shear transform via affine warp; borders filled with 0.
+
+```cpp
+Image<BGR> sheared = RandomShear{}.range(-15.0f, 15.0f)(img, rng);
+Image<BGR> vshear  = RandomShear{}.range(-10.0f, 10.0f).axis(core::Axis::Vertical)(img, rng);
+```
+
+Setters: `range(min_deg, max_deg)` — min ≤ max; `axis(Axis)` — Horizontal (default) or Vertical.
+
+**`RandomPerspective`** — randomly perturbs the four image corners and applies a homography warp.
+
+```cpp
+Image<BGR> warped = RandomPerspective{}.distortion_scale(0.5f)(img, rng);
+```
+
+Setter: `distortion_scale(s)` — in [0, 1]; each corner offset ≤ s × min(w,h)/2; default 0.5.
+
 **Colour ops** (`RandomBrightness`, `RandomContrast`) — work on any `Image<Format>`. `ColorJitter` requires `Image<BGR>` (compile error on other formats).
 
 **Noise ops** (`RandomGaussianNoise`, `RandomSaltAndPepper`) — work on any `Image<Format>`. Clamp range adapts to pixel depth: `[0, 255]` for 8-bit, `[0, 1]` for float.
