@@ -722,6 +722,24 @@ Setter: `p(prob)` — [0, 1]; default 0.5.
 
 **Noise ops** (`RandomGaussianNoise`, `RandomSaltAndPepper`) — work on any `Image<Format>`. Clamp range adapts to pixel depth: `[0, 255]` for 8-bit, `[0, 1]` for float.
 
+#### Erase / Dropout (v0.4.0)
+
+**`RandomErasing`** — erases a randomly sampled rectangular region (fills with a constant value); up to 10 candidate rects sampled; falls back silently if none fits.
+
+```cpp
+Image<BGR> erased = RandomErasing{}.p(0.5f).scale(0.02f, 0.33f).ratio(0.3f, 3.3f).value(0)(img, rng);
+```
+
+Setters: `p(prob)` — [0, 1]; `scale(min, max)` — fraction of image area, 0 < min <= max <= 1; `ratio(min, max)` — aspect ratio, 0 < min <= max; `value(v)` — fill value [0, 255]. Defaults: p=0.5, scale=(0.02, 0.33), ratio=(0.3, 3.3), value=0.
+
+**`GridDropout`** — divides the image into cells and independently zeros each with probability `ratio`.
+
+```cpp
+Image<BGR> dropped = GridDropout{}.ratio(0.5f).unit_size(32).value(0)(img, rng);
+```
+
+Setters: `ratio(r)` — (0, 1); `unit_size(s)` — pixels, must be > 0; `value(v)` — [0, 255]. Defaults: ratio=0.5, unit_size=32, value=0.
+
 **Composition ops** (`Compose<F>`, `RandomApply<F>`, `OneOf<F>`) — parameterised on `Format`, use `std::function` for type erasure. `OneOf` throws `AugmentError` if called with no augmentations added. `RandomApply` throws `ParameterError` if `p` is outside `[0, 1]`.
 
 ---

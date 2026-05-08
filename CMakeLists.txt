@@ -217,6 +217,10 @@ target_link_libraries(demo_augment_geometric PRIVATE improc)
 add_executable(demo_augment_color examples/ml/demo_augment_color.cpp)
 target_link_libraries(demo_augment_color PRIVATE improc)
 
+# Erase augmentation demo (M3)
+add_executable(demo_augment_erase examples/ml/demo_augment_erase.cpp)
+target_link_libraries(demo_augment_erase PRIVATE improc)
+
 # Video Writer demo
 add_executable(demo_video_writer examples/io/demo_video_writer.cpp)
 target_link_libraries(demo_video_writer PRIVATE improc)
