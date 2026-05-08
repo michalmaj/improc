@@ -221,6 +221,10 @@ target_link_libraries(demo_augment_color PRIVATE improc)
 add_executable(demo_augment_erase examples/ml/demo_augment_erase.cpp)
 target_link_libraries(demo_augment_erase PRIVATE improc)
 
+# Blur extras augmentation demo (M4)
+add_executable(demo_augment_blur examples/ml/demo_augment_blur.cpp)
+target_link_libraries(demo_augment_blur PRIVATE improc)
+
 # Video Writer demo
 add_executable(demo_video_writer examples/io/demo_video_writer.cpp)
 target_link_libraries(demo_video_writer PRIVATE improc)

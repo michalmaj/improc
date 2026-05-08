@@ -742,6 +742,28 @@ Setters: `ratio(r)` — (0, 1); `unit_size(s)` — pixels, must be > 0; `value(v
 
 **Composition ops** (`Compose<F>`, `RandomApply<F>`, `OneOf<F>`) — parameterised on `Format`, use `std::function` for type erasure. `OneOf` throws `AugmentError` if called with no augmentations added. `RandomApply` throws `ParameterError` if `p` is outside `[0, 1]`.
 
+#### Blur Extras (v0.4.0)
+
+**`RandomBlur`** — randomly applies one of Gaussian / Median / Bilateral blur with a random odd kernel size.
+
+```cpp
+// All three types (default)
+Image<BGR> blurred = RandomBlur{}.kernel_size(3, 11)(img, rng);
+
+// Gaussian only (safe for Float32)
+Image<BGR> g = RandomBlur{}.types({RandomBlur::Type::Gaussian}).kernel_size(3, 7)(img, rng);
+```
+
+Setters: `types(vector<Type>)` — non-empty subset of {Gaussian, Median, Bilateral}; `kernel_size(min_k, max_k)` — both odd, in [3, 31], min <= max; default all three types, kernel (3, 7). **Note:** Bilateral throws `ParameterError` at call time for Float32/Float32C3 inputs.
+
+**`RandomSharpness`** — unsharp-mask sharpening (`out = img + strength * (img - GaussianBlur(img, 3))`); applied with probability `p`.
+
+```cpp
+Image<BGR> sharp = RandomSharpness{}.range(0.5f, 1.5f).p(0.7f)(img, rng);
+```
+
+Setters: `range(min_s, max_s)` — 0 <= min <= max; `p(prob)` — [0, 1]; defaults: range=(0, 1), p=0.5.
+
 ---
 
 ## `improc::threading` — Concurrency utilities
