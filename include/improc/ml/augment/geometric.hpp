@@ -2,6 +2,7 @@
 #pragma once
 
 #include <cmath>
+#include <numbers>
 #include <random>
 #include <utility>
 #include <vector>
@@ -153,8 +154,8 @@ struct RandomZoom : detail::BindMixin<RandomZoom> {
         min_scale_ = min_scale; max_scale_ = max_scale; return *this;
     }
 
-    template<AnyFormat F>
-    Image<F> operator()(Image<F> img, std::mt19937& rng) const {
+    template<AnyFormat Format>
+    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         int W = img.cols(), H = img.rows();
         std::uniform_real_distribution<float> d(min_scale_, max_scale_);
         float scale = d(rng);
@@ -166,7 +167,7 @@ struct RandomZoom : detail::BindMixin<RandomZoom> {
         cv::Mat crop = img.mat()(cv::Rect(x, y, cw, ch));
         cv::Mat dst;
         cv::resize(crop, dst, cv::Size(W, H), 0, 0, cv::INTER_LINEAR);
-        return Image<F>(std::move(dst));
+        return Image<Format>(std::move(dst));
     }
 
 private:
@@ -180,12 +181,16 @@ struct RandomShear : detail::BindMixin<RandomShear> {
             throw ParameterError{"min_deg", "must be <= max_deg", "RandomShear"};
         min_deg_ = min_deg; max_deg_ = max_deg; return *this;
     }
-    RandomShear& axis(core::Axis a) { axis_ = a; return *this; }
+    RandomShear& axis(core::Axis a) {
+        if (a == core::Axis::Both)
+            throw ParameterError{"axis", "Axis::Both is not supported; use Horizontal or Vertical", "RandomShear"};
+        axis_ = a; return *this;
+    }
 
-    template<AnyFormat F>
-    Image<F> operator()(Image<F> img, std::mt19937& rng) const {
+    template<AnyFormat Format>
+    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         std::uniform_real_distribution<float> d(min_deg_, max_deg_);
-        float angle_rad = d(rng) * static_cast<float>(M_PI) / 180.0f;
+        float angle_rad = d(rng) * std::numbers::pi_v<float> / 180.0f;
         float shear = std::tan(angle_rad);
         int W = img.cols(), H = img.rows();
         cv::Mat M = cv::Mat::eye(2, 3, CV_32F);
@@ -196,7 +201,7 @@ struct RandomShear : detail::BindMixin<RandomShear> {
         cv::Mat dst;
         cv::warpAffine(img.mat(), dst, M, cv::Size(W, H),
                        cv::INTER_LINEAR, cv::BORDER_CONSTANT, cv::Scalar::all(0));
-        return Image<F>(std::move(dst));
+        return Image<Format>(std::move(dst));
     }
 
 private:
@@ -212,8 +217,8 @@ struct RandomPerspective : detail::BindMixin<RandomPerspective> {
         distortion_scale_ = s; return *this;
     }
 
-    template<AnyFormat F>
-    Image<F> operator()(Image<F> img, std::mt19937& rng) const {
+    template<AnyFormat Format>
+    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         int W = img.cols(), H = img.rows();
         float half_range = distortion_scale_ * std::min(W, H) / 2.0f;
         std::uniform_real_distribution<float> d(-half_range, half_range);
@@ -230,7 +235,7 @@ struct RandomPerspective : detail::BindMixin<RandomPerspective> {
         cv::Mat M = cv::getPerspectiveTransform(src_pts, dst_pts);
         cv::Mat dst;
         cv::warpPerspective(img.mat(), dst, M, cv::Size(W, H));
-        return Image<F>(std::move(dst));
+        return Image<Format>(std::move(dst));
     }
 
 private:
