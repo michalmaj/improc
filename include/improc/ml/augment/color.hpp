@@ -194,8 +194,7 @@ struct RandomSolarize : detail::BindMixin<RandomSolarize> {
     Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         std::bernoulli_distribution d(p_);
         if (!d(rng)) return img;
-        if constexpr (improc::core::FormatTraits<Format>::cv_type == CV_32FC1 ||
-                      improc::core::FormatTraits<Format>::cv_type == CV_32FC3) {
+        if constexpr (improc::core::FormatTraits<Format>::is_float) {
             return img;
         } else {
             cv::Mat lut(1, 256, CV_8U);
@@ -229,8 +228,7 @@ struct RandomPosterize : detail::BindMixin<RandomPosterize> {
     Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         std::bernoulli_distribution d(p_);
         if (!d(rng)) return img;
-        if constexpr (improc::core::FormatTraits<Format>::cv_type == CV_32FC1 ||
-                      improc::core::FormatTraits<Format>::cv_type == CV_32FC3) {
+        if constexpr (improc::core::FormatTraits<Format>::is_float) {
             return img;
         } else {
             uchar mask = static_cast<uchar>(0xFF << (8 - bits_)) & 0xFF;

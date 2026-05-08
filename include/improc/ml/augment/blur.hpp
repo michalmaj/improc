@@ -61,7 +61,7 @@ struct RandomBlur : detail::BindMixin<RandomBlur> {
     }
 
 private:
-    std::vector<Type> types_  = {Type::Gaussian, Type::Median, Type::Bilateral};
+    std::vector<Type> types_  = {Type::Gaussian, Type::Median};
     int               min_k_  = 3;
     int               max_k_  = 7;
 };

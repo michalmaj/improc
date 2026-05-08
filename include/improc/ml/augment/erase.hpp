@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <random>
+#include <type_traits>
 #include <opencv2/imgproc.hpp>
 #include "improc/core/image.hpp"
 #include "improc/core/concepts.hpp"
@@ -54,7 +55,10 @@ struct RandomErasing : detail::BindMixin<RandomErasing> {
             std::uniform_int_distribution<int> xd(0, W - w);
             std::uniform_int_distribution<int> yd(0, H - h);
             int x = xd(rng), y = yd(rng);
-            dst(cv::Rect(x, y, w, h)).setTo(cv::Scalar::all(value_));
+            if constexpr (improc::core::FormatTraits<Format>::is_float)
+                dst(cv::Rect(x, y, w, h)).setTo(cv::Scalar::all(value_ / 255.0));
+            else
+                dst(cv::Rect(x, y, w, h)).setTo(cv::Scalar::all(value_));
             return Image<Format>(std::move(dst));
         }
         return Image<Format>(std::move(dst));
@@ -96,7 +100,10 @@ struct GridDropout : detail::BindMixin<GridDropout> {
                 if (d(rng)) {
                     int w = std::min(unit_size_, W - x);
                     int h = std::min(unit_size_, H - y);
-                    dst(cv::Rect(x, y, w, h)).setTo(cv::Scalar::all(value_));
+                    if constexpr (improc::core::FormatTraits<Format>::is_float)
+                        dst(cv::Rect(x, y, w, h)).setTo(cv::Scalar::all(value_ / 255.0));
+                    else
+                        dst(cv::Rect(x, y, w, h)).setTo(cv::Scalar::all(value_));
                 }
             }
         }

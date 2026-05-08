@@ -54,8 +54,7 @@ TEST(BlurAugTest, RandomBlurBilateralOnFloat32Throws) {
     cv::Mat mat(64, 64, CV_32FC1, cv::Scalar(0.5f));
     Image<Float32> img(mat);
     std::mt19937 rng(42);
-    // Default types include Bilateral — Float32 throws at call time
-    EXPECT_THROW(RandomBlur{}(img, rng), improc::ParameterError);
+    EXPECT_THROW(RandomBlur{}.types({RandomBlur::Type::Bilateral})(img, rng), improc::ParameterError);
 }
 
 TEST(BlurAugTest, RandomBlurBilateralExcludedFromFloat32Works) {

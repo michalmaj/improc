@@ -85,6 +85,10 @@ TEST(GeometricExtrasAugTest, RandomShearInvalidRangeThrows) {
     EXPECT_THROW(RandomShear{}.range(15.0f, -15.0f), improc::ParameterError);
 }
 
+TEST(GeometricExtrasAugTest, RandomShearAxisBothThrows) {
+    EXPECT_THROW(RandomShear{}.axis(improc::core::Axis::Both), improc::ParameterError);
+}
+
 TEST(GeometricExtrasAugTest, RandomShearBindRngPipelineOp) {
     cv::Mat mat(64, 64, CV_8UC3, cv::Scalar(100, 100, 100));
     Image<BGR> img(mat);
