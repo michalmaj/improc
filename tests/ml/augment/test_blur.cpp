@@ -140,6 +140,17 @@ TEST(BlurAugTest, RandomSharpnessBindRngPipelineOp) {
     EXPECT_EQ(result.cols(), 64);
 }
 
+TEST(BlurAugTest, RandomSharpnessFloat32ClampsToOne) {
+    cv::Mat mat(32, 32, CV_32FC1, cv::Scalar(0.9f));
+    Image<Float32> img(mat);
+    std::mt19937 rng(42);
+    Image<Float32> result = RandomSharpness{}.range(5.0f, 5.0f).p(1.0f)(img, rng);
+    double minVal, maxVal;
+    cv::minMaxLoc(result.mat(), &minVal, &maxVal);
+    EXPECT_LE(maxVal, 1.0);
+    EXPECT_GE(minVal, 0.0);
+}
+
 // ---- Compose integration ----
 
 TEST(BlurAugTest, ComposeBlurOps) {

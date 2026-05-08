@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <random>
+#include <vector>
 #include <opencv2/imgproc.hpp>
 #include "improc/core/image.hpp"
 #include "improc/core/concepts.hpp"
