@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <random>
-#include <vector>
 #include <opencv2/imgproc.hpp>
 #include "improc/core/image.hpp"
 #include "improc/core/concepts.hpp"
@@ -41,12 +40,8 @@ struct RandomBlur : detail::BindMixin<RandomBlur> {
         std::uniform_int_distribution<int> type_d(0, static_cast<int>(types_.size()) - 1);
         Type chosen = types_[type_d(rng)];
 
-        // Collect odd kernel sizes in [min_k_, max_k_]
-        std::vector<int> odd_ks;
-        for (int k = min_k_; k <= max_k_; k += 2)
-            odd_ks.push_back(k);
-        std::uniform_int_distribution<int> ks_d(0, static_cast<int>(odd_ks.size()) - 1);
-        int ks = odd_ks[ks_d(rng)];
+        std::uniform_int_distribution<int> ks_d(0, (max_k_ - min_k_) / 2);
+        int ks = min_k_ + ks_d(rng) * 2;
 
         cv::Mat dst;
         switch (chosen) {
@@ -94,8 +89,13 @@ struct RandomSharpness : detail::BindMixin<RandomSharpness> {
         img.mat().convertTo(src_f, CV_32F);
         blurred.convertTo(blur_f, CV_32F);
         cv::Mat dst_f = src_f + strength * (src_f - blur_f);
-        cv::min(dst_f, 255.0, dst_f);
-        cv::max(dst_f, 0.0,   dst_f);
+        if constexpr (improc::core::FormatTraits<Format>::is_float) {
+            cv::min(dst_f, 1.0, dst_f);
+            cv::max(dst_f, 0.0, dst_f);
+        } else {
+            cv::min(dst_f, 255.0, dst_f);
+            cv::max(dst_f, 0.0,   dst_f);
+        }
         cv::Mat dst;
         dst_f.convertTo(dst, img.mat().type());
         return Image<Format>(std::move(dst));
