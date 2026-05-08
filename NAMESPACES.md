@@ -686,6 +686,40 @@ Setter: `distortion_scale(s)` — in [0, 1]; each corner offset ≤ s × min(w,h
 
 **Colour ops** (`RandomBrightness`, `RandomContrast`) — work on any `Image<Format>`. `ColorJitter` requires `Image<BGR>` (compile error on other formats).
 
+#### Colour Extras (v0.4.0)
+
+**`RandomGrayscale`** — converts BGR image to grayscale (3-channel gray) with probability `p`; Gray input always returned unchanged.
+
+```cpp
+Image<BGR> gray = RandomGrayscale{}.p(0.2f)(img, rng);
+```
+
+Setter: `p(prob)` — in [0, 1]; default 0.1.
+
+**`RandomSolarize`** — inverts pixels at or above a threshold (efficient LUT); works on 8-bit types.
+
+```cpp
+Image<BGR> sol = RandomSolarize{}.threshold(128).p(0.5f)(img, rng);
+```
+
+Setters: `threshold(t)` — [0, 255]; `p(prob)` — [0, 1]; defaults: 128, 0.5.
+
+**`RandomPosterize`** — reduces bits-per-channel via bitmasking (efficient LUT); works on 8-bit types.
+
+```cpp
+Image<BGR> post = RandomPosterize{}.bits(4).p(0.5f)(img, rng);
+```
+
+Setters: `bits(b)` — [1, 8]; `p(prob)` — [0, 1]; defaults: 4, 0.5.
+
+**`RandomEqualize`** — histogram equalization with probability `p`; BGR: operates on Y channel in YCrCb; Gray: direct `cv::equalizeHist`.
+
+```cpp
+Image<BGR> eq = RandomEqualize{}.p(0.5f)(img, rng);
+```
+
+Setter: `p(prob)` — [0, 1]; default 0.5.
+
 **Noise ops** (`RandomGaussianNoise`, `RandomSaltAndPepper`) — work on any `Image<Format>`. Clamp range adapts to pixel depth: `[0, 255]` for 8-bit, `[0, 1]` for float.
 
 **Composition ops** (`Compose<F>`, `RandomApply<F>`, `OneOf<F>`) — parameterised on `Format`, use `std::function` for type erasure. `OneOf` throws `AugmentError` if called with no augmentations added. `RandomApply` throws `ParameterError` if `p` is outside `[0, 1]`.
