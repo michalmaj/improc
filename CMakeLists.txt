@@ -209,6 +209,22 @@ target_link_libraries(demo_dnn_inference PRIVATE improc)
 add_executable(demo_augmentation examples/ml/demo_augmentation.cpp)
 target_link_libraries(demo_augmentation PRIVATE improc)
 
+# Geometric extras augmentation demo (M1)
+add_executable(demo_augment_geometric examples/ml/demo_augment_geometric.cpp)
+target_link_libraries(demo_augment_geometric PRIVATE improc)
+
+# Colour extras augmentation demo (M2)
+add_executable(demo_augment_color examples/ml/demo_augment_color.cpp)
+target_link_libraries(demo_augment_color PRIVATE improc)
+
+# Erase augmentation demo (M3)
+add_executable(demo_augment_erase examples/ml/demo_augment_erase.cpp)
+target_link_libraries(demo_augment_erase PRIVATE improc)
+
+# Blur extras augmentation demo (M4)
+add_executable(demo_augment_blur examples/ml/demo_augment_blur.cpp)
+target_link_libraries(demo_augment_blur PRIVATE improc)
+
 # Video Writer demo
 add_executable(demo_video_writer examples/io/demo_video_writer.cpp)
 target_link_libraries(demo_video_writer PRIVATE improc)

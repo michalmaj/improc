@@ -3,6 +3,8 @@
 
 #include <random>
 #include <cmath>
+#include <type_traits>
+#include <vector>
 #include <opencv2/imgproc.hpp>
 #include "improc/core/image.hpp"
 #include "improc/core/concepts.hpp"
@@ -149,6 +151,134 @@ private:
     float ct_low_ = 0.8f,  ct_high_ = 1.2f;
     float sa_low_ = 0.8f,  sa_high_ = 1.2f;
     float hu_low_ = -10.f, hu_high_ = 10.0f;
+};
+
+struct RandomGrayscale : detail::BindMixin<RandomGrayscale> {
+    RandomGrayscale& p(float prob) {
+        if (prob < 0.0f || prob > 1.0f)
+            throw ParameterError{"p", "must be in [0, 1]", "RandomGrayscale"};
+        p_ = prob; return *this;
+    }
+
+    template<AnyFormat Format>
+    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
+        std::bernoulli_distribution d(p_);
+        if (!d(rng)) return img;
+        if constexpr (std::is_same_v<Format, improc::core::BGR>) {
+            cv::Mat gray, gray3;
+            cv::cvtColor(img.mat(), gray, cv::COLOR_BGR2GRAY);
+            cv::cvtColor(gray, gray3, cv::COLOR_GRAY2BGR);
+            return Image<Format>(std::move(gray3));
+        } else {
+            return img;
+        }
+    }
+
+private:
+    float p_ = 0.1f;
+};
+
+struct RandomSolarize : detail::BindMixin<RandomSolarize> {
+    RandomSolarize& threshold(int t) {
+        if (t < 0 || t > 255)
+            throw ParameterError{"threshold", "must be in [0, 255]", "RandomSolarize"};
+        threshold_ = t; return *this;
+    }
+    RandomSolarize& p(float prob) {
+        if (prob < 0.0f || prob > 1.0f)
+            throw ParameterError{"p", "must be in [0, 1]", "RandomSolarize"};
+        p_ = prob; return *this;
+    }
+
+    template<AnyFormat Format>
+    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
+        std::bernoulli_distribution d(p_);
+        if (!d(rng)) return img;
+        if constexpr (improc::core::FormatTraits<Format>::is_float) {
+            return img;
+        } else {
+            cv::Mat lut(1, 256, CV_8U);
+            auto* p_lut = lut.ptr<uchar>();
+            for (int i = 0; i < 256; ++i)
+                p_lut[i] = (i >= threshold_) ? static_cast<uchar>(255 - i) : static_cast<uchar>(i);
+            cv::Mat dst;
+            cv::LUT(img.mat(), lut, dst);
+            return Image<Format>(std::move(dst));
+        }
+    }
+
+private:
+    int   threshold_ = 128;
+    float p_         = 0.5f;
+};
+
+struct RandomPosterize : detail::BindMixin<RandomPosterize> {
+    RandomPosterize& bits(int b) {
+        if (b < 1 || b > 8)
+            throw ParameterError{"bits", "must be in [1, 8]", "RandomPosterize"};
+        bits_ = b; return *this;
+    }
+    RandomPosterize& p(float prob) {
+        if (prob < 0.0f || prob > 1.0f)
+            throw ParameterError{"p", "must be in [0, 1]", "RandomPosterize"};
+        p_ = prob; return *this;
+    }
+
+    template<AnyFormat Format>
+    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
+        std::bernoulli_distribution d(p_);
+        if (!d(rng)) return img;
+        if constexpr (improc::core::FormatTraits<Format>::is_float) {
+            return img;
+        } else {
+            uchar mask = static_cast<uchar>(0xFF << (8 - bits_)) & 0xFF;
+            cv::Mat lut(1, 256, CV_8U);
+            auto* p_lut = lut.ptr<uchar>();
+            for (int i = 0; i < 256; ++i)
+                p_lut[i] = static_cast<uchar>(i) & mask;
+            cv::Mat dst;
+            cv::LUT(img.mat(), lut, dst);
+            return Image<Format>(std::move(dst));
+        }
+    }
+
+private:
+    int   bits_ = 4;
+    float p_    = 0.5f;
+};
+
+struct RandomEqualize : detail::BindMixin<RandomEqualize> {
+    RandomEqualize& p(float prob) {
+        if (prob < 0.0f || prob > 1.0f)
+            throw ParameterError{"p", "must be in [0, 1]", "RandomEqualize"};
+        p_ = prob; return *this;
+    }
+
+    template<AnyFormat Format>
+    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
+        std::bernoulli_distribution d(p_);
+        if (!d(rng)) return img;
+        if constexpr (std::is_same_v<Format, improc::core::BGR>) {
+            cv::Mat ycrcb;
+            cv::cvtColor(img.mat(), ycrcb, cv::COLOR_BGR2YCrCb);
+            std::vector<cv::Mat> ch;
+            cv::split(ycrcb, ch);
+            cv::equalizeHist(ch[0], ch[0]);
+            cv::merge(ch, ycrcb);
+            cv::Mat dst;
+            cv::cvtColor(ycrcb, dst, cv::COLOR_YCrCb2BGR);
+            return Image<Format>(std::move(dst));
+        } else if constexpr (std::is_same_v<Format, improc::core::Gray>) {
+            cv::Mat dst;
+            cv::equalizeHist(img.mat(), dst);
+            return Image<Format>(std::move(dst));
+        } else {
+            return img;
+        }
+    }
+
+private:
+    float p_ = 0.5f;
 };
 
 } // namespace improc::ml

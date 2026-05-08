@@ -654,11 +654,115 @@ Image<BGR> augmented = augmentor(img, rng);
 
 **Geometric ops** (`RandomFlip`, `RandomRotate`, `RandomCrop`, `RandomResize`) — work on any `Image<Format>`. `RandomCrop` throws `ParameterError` if crop exceeds image size or dimensions not set.
 
+#### Geometric Extras (v0.4.0)
+
+**`RandomZoom`** — crops a random sub-region and resizes back to original size; simulates zoom-in.
+
+```cpp
+std::mt19937 rng(42);
+Image<BGR> zoomed = RandomZoom{}.range(0.6f, 1.0f)(img, rng);
+// or pipeline:
+Image<BGR> zoomed2 = img | RandomZoom{}.range(0.7f, 0.9f).bind(rng);
+```
+
+Setters: `range(min_scale, max_scale)` — both in (0, 1], min ≤ max; default (0.7, 1.0).
+
+**`RandomShear`** — applies a random shear transform via affine warp; borders filled with 0.
+
+```cpp
+Image<BGR> sheared = RandomShear{}.range(-15.0f, 15.0f)(img, rng);
+Image<BGR> vshear  = RandomShear{}.range(-10.0f, 10.0f).axis(core::Axis::Vertical)(img, rng);
+```
+
+Setters: `range(min_deg, max_deg)` — min ≤ max; `axis(Axis)` — Horizontal (default) or Vertical.
+
+**`RandomPerspective`** — randomly perturbs the four image corners and applies a homography warp.
+
+```cpp
+Image<BGR> warped = RandomPerspective{}.distortion_scale(0.5f)(img, rng);
+```
+
+Setter: `distortion_scale(s)` — in [0, 1]; each corner offset ≤ s × min(w,h)/2; default 0.5.
+
 **Colour ops** (`RandomBrightness`, `RandomContrast`) — work on any `Image<Format>`. `ColorJitter` requires `Image<BGR>` (compile error on other formats).
+
+#### Colour Extras (v0.4.0)
+
+**`RandomGrayscale`** — converts BGR image to grayscale (3-channel gray) with probability `p`; Gray input always returned unchanged.
+
+```cpp
+Image<BGR> gray = RandomGrayscale{}.p(0.2f)(img, rng);
+```
+
+Setter: `p(prob)` — in [0, 1]; default 0.1.
+
+**`RandomSolarize`** — inverts pixels at or above a threshold (efficient LUT); works on 8-bit types.
+
+```cpp
+Image<BGR> sol = RandomSolarize{}.threshold(128).p(0.5f)(img, rng);
+```
+
+Setters: `threshold(t)` — [0, 255]; `p(prob)` — [0, 1]; defaults: 128, 0.5.
+
+**`RandomPosterize`** — reduces bits-per-channel via bitmasking (efficient LUT); works on 8-bit types.
+
+```cpp
+Image<BGR> post = RandomPosterize{}.bits(4).p(0.5f)(img, rng);
+```
+
+Setters: `bits(b)` — [1, 8]; `p(prob)` — [0, 1]; defaults: 4, 0.5.
+
+**`RandomEqualize`** — histogram equalization with probability `p`; BGR: operates on Y channel in YCrCb; Gray: direct `cv::equalizeHist`.
+
+```cpp
+Image<BGR> eq = RandomEqualize{}.p(0.5f)(img, rng);
+```
+
+Setter: `p(prob)` — [0, 1]; default 0.5.
 
 **Noise ops** (`RandomGaussianNoise`, `RandomSaltAndPepper`) — work on any `Image<Format>`. Clamp range adapts to pixel depth: `[0, 255]` for 8-bit, `[0, 1]` for float.
 
+#### Erase / Dropout (v0.4.0)
+
+**`RandomErasing`** — erases a randomly sampled rectangular region (fills with a constant value); up to 10 candidate rects sampled; falls back silently if none fits.
+
+```cpp
+Image<BGR> erased = RandomErasing{}.p(0.5f).scale(0.02f, 0.33f).ratio(0.3f, 3.3f).value(0)(img, rng);
+```
+
+Setters: `p(prob)` — [0, 1]; `scale(min, max)` — fraction of image area, 0 < min <= max <= 1; `ratio(min, max)` — aspect ratio, 0 < min <= max; `value(v)` — fill value [0, 255] for integer formats; for float formats the integer is used as-is as a float channel value. Defaults: p=0.5, scale=(0.02, 0.33), ratio=(0.3, 3.3), value=0.
+
+**`GridDropout`** — divides the image into cells and independently zeros each with probability `ratio`.
+
+```cpp
+Image<BGR> dropped = GridDropout{}.ratio(0.5f).unit_size(32).value(0)(img, rng);
+```
+
+Setters: `ratio(r)` — (0, 1); `unit_size(s)` — pixels, must be > 0; `value(v)` — fill value [0, 255] for integer formats; for float formats the integer is used as-is as a float channel value. Defaults: ratio=0.5, unit_size=32, value=0.
+
 **Composition ops** (`Compose<F>`, `RandomApply<F>`, `OneOf<F>`) — parameterised on `Format`, use `std::function` for type erasure. `OneOf` throws `AugmentError` if called with no augmentations added. `RandomApply` throws `ParameterError` if `p` is outside `[0, 1]`.
+
+#### Blur Extras (v0.4.0)
+
+**`RandomBlur`** — randomly applies one of Gaussian / Median / Bilateral blur with a random odd kernel size.
+
+```cpp
+// All three types (default)
+Image<BGR> blurred = RandomBlur{}.kernel_size(3, 11)(img, rng);
+
+// Gaussian only (safe for Float32)
+Image<BGR> g = RandomBlur{}.types({RandomBlur::Type::Gaussian}).kernel_size(3, 7)(img, rng);
+```
+
+Setters: `types(vector<Type>)` — non-empty subset of {Gaussian, Median, Bilateral}; `kernel_size(min_k, max_k)` — both odd, in [3, 31], min <= max; default all three types, kernel (3, 7). **Note:** Bilateral throws `ParameterError` at call time for Float32/Float32C3 inputs.
+
+**`RandomSharpness`** — unsharp-mask sharpening (`out = img + strength * (img - GaussianBlur(img, 3))`); applied with probability `p`.
+
+```cpp
+Image<BGR> sharp = RandomSharpness{}.range(0.5f, 1.5f).p(0.7f)(img, rng);
+```
+
+Setters: `range(min_s, max_s)` — 0 <= min <= max; `p(prob)` — [0, 1]; defaults: range=(0, 1), p=0.5.
 
 ---
 
