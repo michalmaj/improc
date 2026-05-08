@@ -730,7 +730,7 @@ Setter: `p(prob)` — [0, 1]; default 0.5.
 Image<BGR> erased = RandomErasing{}.p(0.5f).scale(0.02f, 0.33f).ratio(0.3f, 3.3f).value(0)(img, rng);
 ```
 
-Setters: `p(prob)` — [0, 1]; `scale(min, max)` — fraction of image area, 0 < min <= max <= 1; `ratio(min, max)` — aspect ratio, 0 < min <= max; `value(v)` — fill value [0, 255]. Defaults: p=0.5, scale=(0.02, 0.33), ratio=(0.3, 3.3), value=0.
+Setters: `p(prob)` — [0, 1]; `scale(min, max)` — fraction of image area, 0 < min <= max <= 1; `ratio(min, max)` — aspect ratio, 0 < min <= max; `value(v)` — fill value [0, 255] for integer formats; for float formats the integer is used as-is as a float channel value. Defaults: p=0.5, scale=(0.02, 0.33), ratio=(0.3, 3.3), value=0.
 
 **`GridDropout`** — divides the image into cells and independently zeros each with probability `ratio`.
 
@@ -738,7 +738,7 @@ Setters: `p(prob)` — [0, 1]; `scale(min, max)` — fraction of image area, 0 <
 Image<BGR> dropped = GridDropout{}.ratio(0.5f).unit_size(32).value(0)(img, rng);
 ```
 
-Setters: `ratio(r)` — (0, 1); `unit_size(s)` — pixels, must be > 0; `value(v)` — [0, 255]. Defaults: ratio=0.5, unit_size=32, value=0.
+Setters: `ratio(r)` — (0, 1); `unit_size(s)` — pixels, must be > 0; `value(v)` — fill value [0, 255] for integer formats; for float formats the integer is used as-is as a float channel value. Defaults: ratio=0.5, unit_size=32, value=0.
 
 **Composition ops** (`Compose<F>`, `RandomApply<F>`, `OneOf<F>`) — parameterised on `Format`, use `std::function` for type erasure. `OneOf` throws `AugmentError` if called with no augmentations added. `RandomApply` throws `ParameterError` if `p` is outside `[0, 1]`.
 
