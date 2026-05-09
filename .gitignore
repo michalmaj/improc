@@ -14,3 +14,6 @@ docs/doxygen/
 memory/
 docs/superpowers/
 CLAUDE.md
+
+# Git worktrees
+.worktrees/
