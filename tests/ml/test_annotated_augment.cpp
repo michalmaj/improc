@@ -239,6 +239,7 @@ TEST(AnnotatedAugTest, RandomZoomIdentityPreservesBbox) {
     std::mt19937 rng(42);
     auto result = RandomZoom{}.range(1.0f, 1.0f)(std::move(ann), rng);
     EXPECT_EQ(result.image.rows(), 100);
+    ASSERT_EQ(result.boxes.size(), 1u);
     EXPECT_FLOAT_EQ(result.boxes[0].box.x,      10.f);
     EXPECT_FLOAT_EQ(result.boxes[0].box.y,      20.f);
     EXPECT_FLOAT_EQ(result.boxes[0].box.width,  30.f);

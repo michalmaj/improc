@@ -338,7 +338,7 @@ struct RandomZoom : detail::BindMixin<RandomZoom> {
                 bb.box.height * sy
             };
             cv::Rect2f clipped = detail::clip_to_image(transformed, W, H);
-            if (detail::keep_box(clipped, bb.box, min_area_ratio_)) {
+            if (detail::keep_box(clipped, transformed, min_area_ratio_)) {
                 bb.box = clipped;
                 kept.push_back(std::move(bb));
             }
