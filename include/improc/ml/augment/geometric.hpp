@@ -486,6 +486,40 @@ struct RandomPerspective : detail::BindMixin<RandomPerspective> {
         return Image<Format>(std::move(dst));
     }
 
+    template<AnyFormat Format>
+    AnnotatedImage<Format> operator()(AnnotatedImage<Format> ann, std::mt19937& rng) const {
+        int W = ann.image.cols(), H = ann.image.rows();
+        float half_range = distortion_scale_ * std::min(W, H) / 2.0f;
+        std::uniform_real_distribution<float> d(-half_range, half_range);
+        std::vector<cv::Point2f> src_pts = {
+            {0.f,             0.f},
+            {static_cast<float>(W), 0.f},
+            {0.f,             static_cast<float>(H)},
+            {static_cast<float>(W), static_cast<float>(H)}
+        };
+        std::vector<cv::Point2f> dst_pts;
+        dst_pts.reserve(4);
+        for (const auto& p : src_pts)
+            dst_pts.push_back({p.x + d(rng), p.y + d(rng)});
+        cv::Mat M = cv::getPerspectiveTransform(src_pts, dst_pts);
+        cv::Mat dst;
+        cv::warpPerspective(ann.image.mat(), dst, M, cv::Size(W, H));
+        ann.image = Image<Format>(std::move(dst));
+        std::vector<BBox> kept;
+        for (auto& bb : ann.boxes) {
+            auto corners = detail::bbox_corners(bb.box);
+            cv::perspectiveTransform(corners, corners, M);
+            cv::Rect2f new_box = detail::corners_to_aabb(corners);
+            cv::Rect2f clipped  = detail::clip_to_image(new_box, W, H);
+            if (detail::keep_box(clipped, new_box, min_area_ratio_)) {
+                bb.box = clipped;
+                kept.push_back(std::move(bb));
+            }
+        }
+        ann.boxes = std::move(kept);
+        return ann;
+    }
+
 private:
     float distortion_scale_ = 0.5f;
     float min_area_ratio_   = 0.1f;

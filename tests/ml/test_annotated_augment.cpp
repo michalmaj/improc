@@ -329,3 +329,36 @@ TEST(AnnotatedAugTest, RandomShearBBoxEmptyBoxesNoCrash) {
     auto result = RandomShear{}.range(-5.f, 5.f)(std::move(ann), rng);
     EXPECT_EQ(result.boxes.size(), 0u);
 }
+
+// ---- RandomPerspective bbox ----
+
+TEST(AnnotatedAugTest, RandomPerspectiveBBoxPreservesImageSize) {
+    cv::Mat mat(100, 100, CV_8UC3, cv::Scalar(0));
+    BBox bb{cv::Rect2f(20.f, 20.f, 30.f, 30.f)};
+    AnnotatedImage<BGR> ann{Image<BGR>(mat), {bb}};
+    std::mt19937 rng(42);
+    auto result = RandomPerspective{}.distortion_scale(0.3f)(std::move(ann), rng);
+    EXPECT_EQ(result.image.rows(), 100);
+    EXPECT_EQ(result.image.cols(), 100);
+}
+
+TEST(AnnotatedAugTest, RandomPerspectiveZeroDistortionBBoxUnchanged) {
+    cv::Mat mat(100, 100, CV_8UC3, cv::Scalar(0));
+    BBox bb{cv::Rect2f(20.f, 20.f, 30.f, 30.f)};
+    AnnotatedImage<BGR> ann{Image<BGR>(mat), {bb}};
+    std::mt19937 rng(42);
+    auto result = RandomPerspective{}.distortion_scale(0.f)(std::move(ann), rng);
+    ASSERT_EQ(result.boxes.size(), 1u);
+    EXPECT_NEAR(result.boxes[0].box.x,      20.f, 1.f);
+    EXPECT_NEAR(result.boxes[0].box.y,      20.f, 1.f);
+    EXPECT_NEAR(result.boxes[0].box.width,  30.f, 1.f);
+    EXPECT_NEAR(result.boxes[0].box.height, 30.f, 1.f);
+}
+
+TEST(AnnotatedAugTest, RandomPerspectiveBBoxEmptyBoxesNoCrash) {
+    cv::Mat mat(50, 50, CV_8UC3, cv::Scalar(0));
+    AnnotatedImage<BGR> ann{Image<BGR>(mat), {}};
+    std::mt19937 rng(0);
+    auto result = RandomPerspective{}.distortion_scale(0.5f)(std::move(ann), rng);
+    EXPECT_EQ(result.boxes.size(), 0u);
+}
