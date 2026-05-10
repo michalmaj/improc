@@ -179,3 +179,53 @@ TEST(AnnotatedAugTest, RandomResizeBBoxEmptyBoxesNoCrash) {
     auto result = RandomResize{}.range(100, 100)(std::move(ann), rng);
     EXPECT_EQ(result.boxes.size(), 0u);
 }
+
+// ---- RandomCrop bbox ----
+
+TEST(AnnotatedAugTest, RandomCropBBoxImageSizeCorrect) {
+    cv::Mat mat(100, 100, CV_8UC3, cv::Scalar(0));
+    BBox bb{cv::Rect2f(10.f, 10.f, 20.f, 20.f)};
+    AnnotatedImage<BGR> ann{Image<BGR>(mat), {bb}};
+    std::mt19937 rng(42);
+    auto result = RandomCrop{}.width(60).height(60)(std::move(ann), rng);
+    EXPECT_EQ(result.image.rows(), 60);
+    EXPECT_EQ(result.image.cols(), 60);
+}
+
+TEST(AnnotatedAugTest, RandomCropBBoxIdentityKeepsBbox) {
+    cv::Mat mat(100, 100, CV_8UC3, cv::Scalar(0));
+    BBox bb{cv::Rect2f(10.f, 10.f, 20.f, 20.f)};
+    AnnotatedImage<BGR> ann{Image<BGR>(mat), {bb}};
+    std::mt19937 rng(42);
+    auto result = RandomCrop{}.width(100).height(100)(std::move(ann), rng);
+    EXPECT_EQ(result.boxes.size(), 1u);
+    EXPECT_FLOAT_EQ(result.boxes[0].box.x, 10.f);
+    EXPECT_FLOAT_EQ(result.boxes[0].box.y, 10.f);
+}
+
+TEST(AnnotatedAugTest, RandomCropBBoxOutOfBoundsDropped) {
+    cv::Mat mat(100, 100, CV_8UC3, cv::Scalar(0));
+    BBox bb{cv::Rect2f(95.f, 10.f, 10.f, 20.f)};
+    AnnotatedImage<BGR> ann{Image<BGR>(mat), {bb}};
+    std::mt19937 rng(42);
+    auto result = RandomCrop{}.width(100).height(100).min_area_ratio(0.6f)(std::move(ann), rng);
+    EXPECT_EQ(result.boxes.size(), 0u);
+}
+
+TEST(AnnotatedAugTest, RandomCropBBoxPartialOverlapKept) {
+    cv::Mat mat(100, 100, CV_8UC3, cv::Scalar(0));
+    BBox bb{cv::Rect2f(95.f, 10.f, 10.f, 20.f)};
+    AnnotatedImage<BGR> ann{Image<BGR>(mat), {bb}};
+    std::mt19937 rng(42);
+    auto result = RandomCrop{}.width(100).height(100).min_area_ratio(0.4f)(std::move(ann), rng);
+    EXPECT_EQ(result.boxes.size(), 1u);
+    EXPECT_FLOAT_EQ(result.boxes[0].box.width, 5.f);
+}
+
+TEST(AnnotatedAugTest, RandomCropBBoxEmptyBoxesNoCrash) {
+    cv::Mat mat(100, 100, CV_8UC3, cv::Scalar(0));
+    AnnotatedImage<BGR> ann{Image<BGR>(mat), {}};
+    std::mt19937 rng(42);
+    auto result = RandomCrop{}.width(80).height(80)(std::move(ann), rng);
+    EXPECT_EQ(result.boxes.size(), 0u);
+}

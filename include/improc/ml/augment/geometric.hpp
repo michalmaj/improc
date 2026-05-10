@@ -188,6 +188,33 @@ struct RandomCrop : detail::BindMixin<RandomCrop> {
         return Image<Format>(std::move(dst));
     }
 
+    template<AnyFormat Format>
+    AnnotatedImage<Format> operator()(AnnotatedImage<Format> ann, std::mt19937& rng) const {
+        if (width_ <= 0 || height_ <= 0)
+            throw ParameterError{"width/height", "both must be set", "RandomCrop"};
+        if (width_ > ann.image.cols() || height_ > ann.image.rows())
+            throw ParameterError{"width/height",
+                std::format("crop {}x{} exceeds image {}x{}",
+                    width_, height_, ann.image.cols(), ann.image.rows()),
+                "RandomCrop"};
+        std::uniform_int_distribution<int> x_d(0, ann.image.cols() - width_);
+        std::uniform_int_distribution<int> y_d(0, ann.image.rows() - height_);
+        int cx = x_d(rng), cy = y_d(rng);
+        cv::Mat dst = ann.image.mat()(cv::Rect(cx, cy, width_, height_)).clone();
+        ann.image = Image<Format>(std::move(dst));
+        std::vector<BBox> kept;
+        for (auto& bb : ann.boxes) {
+            cv::Rect2f shifted{bb.box.x - cx, bb.box.y - cy, bb.box.width, bb.box.height};
+            cv::Rect2f clipped = detail::clip_to_image(shifted, width_, height_);
+            if (detail::keep_box(clipped, bb.box, min_area_ratio_)) {
+                bb.box = clipped;
+                kept.push_back(std::move(bb));
+            }
+        }
+        ann.boxes = std::move(kept);
+        return ann;
+    }
+
 private:
     int   width_           = 0;
     int   height_          = 0;
