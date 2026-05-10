@@ -11,6 +11,7 @@
 #include "improc/core/concepts.hpp"
 #include "improc/core/ops/axis.hpp"
 #include "improc/ml/augment/detail.hpp"
+#include "improc/ml/annotated.hpp"
 #include "improc/exceptions.hpp"
 
 namespace improc::ml {
@@ -40,6 +41,12 @@ struct RandomFlip : detail::BindMixin<RandomFlip> {
         cv::Mat dst;
         cv::flip(img.mat(), dst, flip_code);
         return Image<Format>(std::move(dst));
+    }
+
+    template<AnyFormat Format>
+    AnnotatedImage<Format> operator()(AnnotatedImage<Format> ann, std::mt19937& rng) const {
+        ann.image = (*this)(std::move(ann.image), rng);
+        return ann;
     }
 
 private:
