@@ -149,6 +149,35 @@ struct RandomRotate : detail::BindMixin<RandomRotate> {
         return Image<Format>(std::move(dst));
     }
 
+    template<AnyFormat Format>
+    AnnotatedImage<Format> operator()(AnnotatedImage<Format> ann, std::mt19937& rng) const {
+        std::uniform_real_distribution<float> d(min_deg_, max_deg_);
+        float angle = d(rng);
+        int W = ann.image.cols(), H = ann.image.rows();
+        cv::Point2f center(W / 2.0f, H / 2.0f);
+        cv::Mat M = cv::getRotationMatrix2D(center, angle, scale_);
+        cv::Mat dst;
+        try {
+            cv::warpAffine(ann.image.mat(), dst, M, ann.image.mat().size());
+        } catch (const cv::Exception& e) {
+            throw AugmentError{"RandomRotate: " + std::string(e.what())};
+        }
+        ann.image = Image<Format>(std::move(dst));
+        std::vector<BBox> kept;
+        for (auto& bb : ann.boxes) {
+            auto corners = detail::bbox_corners(bb.box);
+            cv::transform(corners, corners, M);
+            cv::Rect2f new_box = detail::corners_to_aabb(corners);
+            cv::Rect2f clipped  = detail::clip_to_image(new_box, W, H);
+            if (detail::keep_box(clipped, new_box, min_area_ratio_)) {
+                bb.box = clipped;
+                kept.push_back(std::move(bb));
+            }
+        }
+        ann.boxes = std::move(kept);
+        return ann;
+    }
+
 private:
     float min_deg_         = -15.0f;
     float max_deg_         =  15.0f;
