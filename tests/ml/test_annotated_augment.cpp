@@ -229,3 +229,36 @@ TEST(AnnotatedAugTest, RandomCropBBoxEmptyBoxesNoCrash) {
     auto result = RandomCrop{}.width(80).height(80)(std::move(ann), rng);
     EXPECT_EQ(result.boxes.size(), 0u);
 }
+
+// ---- RandomZoom bbox ----
+
+TEST(AnnotatedAugTest, RandomZoomIdentityPreservesBbox) {
+    cv::Mat mat(100, 100, CV_8UC3, cv::Scalar(0));
+    BBox bb{cv::Rect2f(10.f, 20.f, 30.f, 40.f)};
+    AnnotatedImage<BGR> ann{Image<BGR>(mat), {bb}};
+    std::mt19937 rng(42);
+    auto result = RandomZoom{}.range(1.0f, 1.0f)(std::move(ann), rng);
+    EXPECT_EQ(result.image.rows(), 100);
+    EXPECT_FLOAT_EQ(result.boxes[0].box.x,      10.f);
+    EXPECT_FLOAT_EQ(result.boxes[0].box.y,      20.f);
+    EXPECT_FLOAT_EQ(result.boxes[0].box.width,  30.f);
+    EXPECT_FLOAT_EQ(result.boxes[0].box.height, 40.f);
+}
+
+TEST(AnnotatedAugTest, RandomZoomBBoxOutputSizeUnchanged) {
+    cv::Mat mat(100, 100, CV_8UC3, cv::Scalar(0));
+    BBox bb{cv::Rect2f(30.f, 30.f, 20.f, 20.f)};
+    AnnotatedImage<BGR> ann{Image<BGR>(mat), {bb}};
+    std::mt19937 rng(42);
+    auto result = RandomZoom{}.range(0.8f, 0.8f)(std::move(ann), rng);
+    EXPECT_EQ(result.image.rows(), 100);
+    EXPECT_EQ(result.image.cols(), 100);
+}
+
+TEST(AnnotatedAugTest, RandomZoomBBoxEmptyBoxesNoCrash) {
+    cv::Mat mat(50, 50, CV_8UC3, cv::Scalar(0));
+    AnnotatedImage<BGR> ann{Image<BGR>(mat), {}};
+    std::mt19937 rng(0);
+    auto result = RandomZoom{}.range(0.9f, 1.0f)(std::move(ann), rng);
+    EXPECT_EQ(result.boxes.size(), 0u);
+}

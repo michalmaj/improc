@@ -313,6 +313,40 @@ struct RandomZoom : detail::BindMixin<RandomZoom> {
         return Image<Format>(std::move(dst));
     }
 
+    template<AnyFormat Format>
+    AnnotatedImage<Format> operator()(AnnotatedImage<Format> ann, std::mt19937& rng) const {
+        int W = ann.image.cols(), H = ann.image.rows();
+        std::uniform_real_distribution<float> d(min_scale_, max_scale_);
+        float scale = d(rng);
+        int cw = std::max(1, static_cast<int>(W * scale));
+        int ch = std::max(1, static_cast<int>(H * scale));
+        std::uniform_int_distribution<int> xd(0, W - cw);
+        std::uniform_int_distribution<int> yd(0, H - ch);
+        int zx = xd(rng), zy = yd(rng);
+        float sx = static_cast<float>(W) / static_cast<float>(cw);
+        float sy = static_cast<float>(H) / static_cast<float>(ch);
+        cv::Mat crop = ann.image.mat()(cv::Rect(zx, zy, cw, ch));
+        cv::Mat dst;
+        cv::resize(crop, dst, cv::Size(W, H), 0, 0, cv::INTER_LINEAR);
+        ann.image = Image<Format>(std::move(dst));
+        std::vector<BBox> kept;
+        for (auto& bb : ann.boxes) {
+            cv::Rect2f transformed{
+                (bb.box.x - zx) * sx,
+                (bb.box.y - zy) * sy,
+                bb.box.width  * sx,
+                bb.box.height * sy
+            };
+            cv::Rect2f clipped = detail::clip_to_image(transformed, W, H);
+            if (detail::keep_box(clipped, bb.box, min_area_ratio_)) {
+                bb.box = clipped;
+                kept.push_back(std::move(bb));
+            }
+        }
+        ann.boxes = std::move(kept);
+        return ann;
+    }
+
 private:
     float min_scale_       = 0.7f;
     float max_scale_       = 1.0f;
