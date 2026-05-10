@@ -7,3 +7,5 @@
 #include "improc/ml/augment/erase.hpp"
 #include "improc/ml/augment/blur.hpp"
 #include "improc/ml/augment/compose.hpp"
+#include "improc/ml/annotated.hpp"
+#include "improc/ml/augment/bbox_compose.hpp"
