@@ -416,6 +416,36 @@ struct RandomShear : detail::BindMixin<RandomShear> {
         return Image<Format>(std::move(dst));
     }
 
+    template<AnyFormat Format>
+    AnnotatedImage<Format> operator()(AnnotatedImage<Format> ann, std::mt19937& rng) const {
+        std::uniform_real_distribution<float> d(min_deg_, max_deg_);
+        float angle_rad = d(rng) * std::numbers::pi_v<float> / 180.0f;
+        float shear = std::tan(angle_rad);
+        int W = ann.image.cols(), H = ann.image.rows();
+        cv::Mat M = cv::Mat::eye(2, 3, CV_32F);
+        if (axis_ == core::Axis::Horizontal)
+            M.at<float>(0, 1) = shear;
+        else
+            M.at<float>(1, 0) = shear;
+        cv::Mat dst;
+        cv::warpAffine(ann.image.mat(), dst, M, cv::Size(W, H),
+                       cv::INTER_LINEAR, cv::BORDER_CONSTANT, cv::Scalar::all(0));
+        ann.image = Image<Format>(std::move(dst));
+        std::vector<BBox> kept;
+        for (auto& bb : ann.boxes) {
+            auto corners = detail::bbox_corners(bb.box);
+            cv::transform(corners, corners, M);
+            cv::Rect2f new_box = detail::corners_to_aabb(corners);
+            cv::Rect2f clipped  = detail::clip_to_image(new_box, W, H);
+            if (detail::keep_box(clipped, new_box, min_area_ratio_)) {
+                bb.box = clipped;
+                kept.push_back(std::move(bb));
+            }
+        }
+        ann.boxes = std::move(kept);
+        return ann;
+    }
+
 private:
     float      min_deg_        = -15.0f;
     float      max_deg_        =  15.0f;
