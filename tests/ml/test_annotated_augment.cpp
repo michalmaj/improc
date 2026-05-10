@@ -3,6 +3,8 @@
 #include <opencv2/core.hpp>
 #include "improc/ml/annotated.hpp"
 #include "improc/ml/augment/geometric.hpp"
+#include "improc/ml/augment/bbox_compose.hpp"
+#include "improc/exceptions.hpp"
 
 using namespace improc::core;
 using namespace improc::ml;
@@ -31,4 +33,34 @@ TEST(AnnotatedAugTest, OperatorPipeRoutesToOp) {
     auto result = std::move(ann) | RandomFlip{}.p(0.0f).bind(rng);
     EXPECT_EQ(result.image.rows(), 10);
     EXPECT_EQ(result.image.cols(), 10);
+}
+
+// ---- BBoxCompose ----
+
+TEST(AnnotatedAugTest, BBoxComposeSequentialApplication) {
+    cv::Mat mat(100, 100, CV_8UC3, cv::Scalar(128, 0, 0));
+    BBox bb{cv::Rect2f(10.f, 10.f, 30.f, 30.f), 0, "obj"};
+    AnnotatedImage<BGR> ann{Image<BGR>(mat), {bb}};
+    std::mt19937 rng(42);
+    BBoxCompose<BGR> pipeline;
+    pipeline.add([](auto a, auto& r){ return RandomFlip{}.p(0.0f)(std::move(a), r); });
+    pipeline.add([](auto a, auto& r){ return RandomFlip{}.p(0.0f)(std::move(a), r); });
+    auto result = pipeline(std::move(ann), rng);
+    EXPECT_EQ(result.image.rows(), 100);
+    EXPECT_EQ(result.boxes.size(), 1u);
+}
+
+TEST(AnnotatedAugTest, BBoxComposeBindPipeline) {
+    cv::Mat mat(50, 50, CV_8UC3, cv::Scalar(0));
+    AnnotatedImage<BGR> ann{Image<BGR>(mat), {}};
+    std::mt19937 rng(0);
+    BBoxCompose<BGR> pipeline;
+    pipeline.add([](auto a, auto& r){ return RandomFlip{}.p(0.0f)(std::move(a), r); });
+    auto result = std::move(ann) | pipeline.bind(rng);
+    EXPECT_EQ(result.image.rows(), 50);
+}
+
+TEST(AnnotatedAugTest, BBoxComposeNullOpThrows) {
+    BBoxCompose<BGR> pipeline;
+    EXPECT_THROW(pipeline.add(nullptr), improc::ParameterError);
 }
