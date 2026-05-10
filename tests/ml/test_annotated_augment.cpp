@@ -136,7 +136,6 @@ TEST(AnnotatedAugTest, RandomFlipBBoxEmptyBoxesNoCrash) {
 // ---- RandomResize bbox ----
 
 TEST(AnnotatedAugTest, RandomResizeBBoxScalesProportionally) {
-    // 100x100 square: shorter side = 100, target = 200 → sx=sy=2.0
     cv::Mat mat(100, 100, CV_8UC3, cv::Scalar(0));
     BBox bb{cv::Rect2f(10.f, 20.f, 30.f, 40.f)};
     AnnotatedImage<BGR> ann{Image<BGR>(mat), {bb}};
