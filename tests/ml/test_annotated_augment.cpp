@@ -7,8 +7,6 @@
 using namespace improc::core;
 using namespace improc::ml;
 
-// ---- BBox / AnnotatedImage types ----
-
 TEST(AnnotatedAugTest, BBoxDefaultClassId) {
     BBox bb{cv::Rect2f(10.f, 20.f, 30.f, 40.f)};
     EXPECT_EQ(bb.class_id, 0);

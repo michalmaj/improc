@@ -2,6 +2,7 @@
 #pragma once
 
 #include <string>
+#include <utility>
 #include <vector>
 #include <opencv2/core.hpp>
 #include "improc/core/image.hpp"
@@ -26,7 +27,7 @@ struct AnnotatedImage {
 
 template<AnyFormat Format, typename Op>
 auto operator|(AnnotatedImage<Format> ann, Op&& op) {
-    return op(std::move(ann));
+    return std::forward<Op>(op)(std::move(ann));
 }
 
 } // namespace improc::ml

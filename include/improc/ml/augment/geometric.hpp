@@ -45,7 +45,25 @@ struct RandomFlip : detail::BindMixin<RandomFlip> {
 
     template<AnyFormat Format>
     AnnotatedImage<Format> operator()(AnnotatedImage<Format> ann, std::mt19937& rng) const {
-        ann.image = (*this)(std::move(ann.image), rng);
+        std::bernoulli_distribution d(p_);
+        if (!d(rng)) return ann;
+        int W = ann.image.cols(), H = ann.image.rows();
+        int flip_code;
+        switch (axis_) {
+            case core::Axis::Horizontal: flip_code =  1; break;
+            case core::Axis::Vertical:   flip_code =  0; break;
+            case core::Axis::Both:       flip_code = -1; break;
+            default: std::unreachable();
+        }
+        cv::Mat dst;
+        cv::flip(ann.image.mat(), dst, flip_code);
+        ann.image = Image<Format>(std::move(dst));
+        for (auto& bb : ann.boxes) {
+            float x = bb.box.x, y = bb.box.y, w = bb.box.width, h = bb.box.height;
+            if (flip_code == 1 || flip_code == -1) x = static_cast<float>(W) - x - w;
+            if (flip_code == 0 || flip_code == -1) y = static_cast<float>(H) - y - h;
+            bb.box = {x, y, w, h};
+        }
         return ann;
     }
 
