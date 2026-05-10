@@ -77,3 +77,58 @@ TEST(AnnotatedAugTest, MinAreaRatioOutOfRangeThrows) {
     EXPECT_THROW(RandomShear{}.min_area_ratio(-0.001f),    improc::ParameterError);
     EXPECT_THROW(RandomPerspective{}.min_area_ratio(1.1f), improc::ParameterError);
 }
+
+// ---- RandomFlip bbox ----
+
+TEST(AnnotatedAugTest, RandomFlipBBoxPreservesSize) {
+    cv::Mat mat(100, 100, CV_8UC3, cv::Scalar(0));
+    BBox bb{cv::Rect2f(10.f, 20.f, 30.f, 40.f)};
+    AnnotatedImage<BGR> ann{Image<BGR>(mat), {bb}};
+    std::mt19937 rng(42);
+    auto result = RandomFlip{}.p(1.0f)(std::move(ann), rng);
+    EXPECT_EQ(result.image.rows(), 100);
+    EXPECT_EQ(result.image.cols(), 100);
+    EXPECT_EQ(result.boxes.size(), 1u);
+}
+
+TEST(AnnotatedAugTest, RandomFlipHorizontalBBoxCorrect) {
+    cv::Mat mat(100, 100, CV_8UC3, cv::Scalar(0));
+    BBox bb{cv::Rect2f(10.f, 20.f, 30.f, 40.f)};
+    AnnotatedImage<BGR> ann{Image<BGR>(mat), {bb}};
+    std::mt19937 rng(42);
+    auto result = RandomFlip{}.p(1.0f).axis(Axis::Horizontal)(std::move(ann), rng);
+    // new_x = W - x - w = 100 - 10 - 30 = 60
+    EXPECT_FLOAT_EQ(result.boxes[0].box.x,      60.f);
+    EXPECT_FLOAT_EQ(result.boxes[0].box.y,      20.f);
+    EXPECT_FLOAT_EQ(result.boxes[0].box.width,  30.f);
+    EXPECT_FLOAT_EQ(result.boxes[0].box.height, 40.f);
+}
+
+TEST(AnnotatedAugTest, RandomFlipVerticalBBoxCorrect) {
+    cv::Mat mat(100, 100, CV_8UC3, cv::Scalar(0));
+    BBox bb{cv::Rect2f(10.f, 20.f, 30.f, 40.f)};
+    AnnotatedImage<BGR> ann{Image<BGR>(mat), {bb}};
+    std::mt19937 rng(42);
+    auto result = RandomFlip{}.p(1.0f).axis(Axis::Vertical)(std::move(ann), rng);
+    // new_y = H - y - h = 100 - 20 - 40 = 40
+    EXPECT_FLOAT_EQ(result.boxes[0].box.x,  10.f);
+    EXPECT_FLOAT_EQ(result.boxes[0].box.y,  40.f);
+}
+
+TEST(AnnotatedAugTest, RandomFlipBBoxP0NeverFlips) {
+    cv::Mat mat(100, 100, CV_8UC3, cv::Scalar(0));
+    BBox bb{cv::Rect2f(10.f, 20.f, 30.f, 40.f)};
+    AnnotatedImage<BGR> ann{Image<BGR>(mat), {bb}};
+    std::mt19937 rng(42);
+    auto result = RandomFlip{}.p(0.0f)(std::move(ann), rng);
+    EXPECT_FLOAT_EQ(result.boxes[0].box.x, 10.f);
+    EXPECT_FLOAT_EQ(result.boxes[0].box.y, 20.f);
+}
+
+TEST(AnnotatedAugTest, RandomFlipBBoxEmptyBoxesNoCrash) {
+    cv::Mat mat(50, 50, CV_8UC3, cv::Scalar(0));
+    AnnotatedImage<BGR> ann{Image<BGR>(mat), {}};
+    std::mt19937 rng(0);
+    auto result = RandomFlip{}.p(1.0f)(std::move(ann), rng);
+    EXPECT_EQ(result.boxes.size(), 0u);
+}
