@@ -145,6 +145,22 @@ TEST(AnnotatedAugTest, RandomResizeBBoxScalesProportionally) {
     EXPECT_FLOAT_EQ(result.boxes[0].box.y,      40.f);
     EXPECT_FLOAT_EQ(result.boxes[0].box.width,  60.f);
     EXPECT_FLOAT_EQ(result.boxes[0].box.height, 80.f);
+    EXPECT_EQ(result.image.mat().rows, 200);
+    EXPECT_EQ(result.image.mat().cols, 200);
+}
+
+TEST(AnnotatedAugTest, RandomResizeBBoxScalesProportionallyTallImage) {
+    cv::Mat mat(100, 50, CV_8UC3, cv::Scalar(0));
+    BBox bb{cv::Rect2f(5.f, 10.f, 20.f, 30.f)};
+    AnnotatedImage<BGR> ann{Image<BGR>(mat), {bb}};
+    std::mt19937 rng(42);
+    auto result = RandomResize{}.range(200, 200)(std::move(ann), rng);
+    EXPECT_FLOAT_EQ(result.boxes[0].box.x,      20.f);
+    EXPECT_FLOAT_EQ(result.boxes[0].box.y,      40.f);
+    EXPECT_FLOAT_EQ(result.boxes[0].box.width,  80.f);
+    EXPECT_FLOAT_EQ(result.boxes[0].box.height, 120.f);
+    EXPECT_EQ(result.image.mat().rows, 400);
+    EXPECT_EQ(result.image.mat().cols, 200);
 }
 
 TEST(AnnotatedAugTest, RandomResizeBBoxPreservesCount) {
