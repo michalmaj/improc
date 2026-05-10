@@ -132,3 +132,35 @@ TEST(AnnotatedAugTest, RandomFlipBBoxEmptyBoxesNoCrash) {
     auto result = RandomFlip{}.p(1.0f)(std::move(ann), rng);
     EXPECT_EQ(result.boxes.size(), 0u);
 }
+
+// ---- RandomResize bbox ----
+
+TEST(AnnotatedAugTest, RandomResizeBBoxScalesProportionally) {
+    // 100x100 square: shorter side = 100, target = 200 → sx=sy=2.0
+    cv::Mat mat(100, 100, CV_8UC3, cv::Scalar(0));
+    BBox bb{cv::Rect2f(10.f, 20.f, 30.f, 40.f)};
+    AnnotatedImage<BGR> ann{Image<BGR>(mat), {bb}};
+    std::mt19937 rng(42);
+    auto result = RandomResize{}.range(200, 200)(std::move(ann), rng);
+    EXPECT_FLOAT_EQ(result.boxes[0].box.x,      20.f);
+    EXPECT_FLOAT_EQ(result.boxes[0].box.y,      40.f);
+    EXPECT_FLOAT_EQ(result.boxes[0].box.width,  60.f);
+    EXPECT_FLOAT_EQ(result.boxes[0].box.height, 80.f);
+}
+
+TEST(AnnotatedAugTest, RandomResizeBBoxPreservesCount) {
+    cv::Mat mat(100, 100, CV_8UC3, cv::Scalar(0));
+    BBox bb{cv::Rect2f(10.f, 10.f, 20.f, 20.f)};
+    AnnotatedImage<BGR> ann{Image<BGR>(mat), {bb}};
+    std::mt19937 rng(42);
+    auto result = RandomResize{}.range(150, 150)(std::move(ann), rng);
+    EXPECT_EQ(result.boxes.size(), 1u);
+}
+
+TEST(AnnotatedAugTest, RandomResizeBBoxEmptyBoxesNoCrash) {
+    cv::Mat mat(50, 50, CV_8UC3, cv::Scalar(0));
+    AnnotatedImage<BGR> ann{Image<BGR>(mat), {}};
+    std::mt19937 rng(0);
+    auto result = RandomResize{}.range(100, 100)(std::move(ann), rng);
+    EXPECT_EQ(result.boxes.size(), 0u);
+}

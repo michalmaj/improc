@@ -227,6 +227,29 @@ struct RandomResize : detail::BindMixin<RandomResize> {
         return Image<Format>(std::move(dst));
     }
 
+    template<AnyFormat Format>
+    AnnotatedImage<Format> operator()(AnnotatedImage<Format> ann, std::mt19937& rng) const {
+        std::uniform_int_distribution<int> d(min_side_, max_side_);
+        int target = d(rng);
+        const int h = ann.image.rows(), w = ann.image.cols();
+        int new_w, new_h;
+        if (h <= w) {
+            new_h = target;
+            new_w = static_cast<int>(std::round(static_cast<double>(w) * target / h));
+        } else {
+            new_w = target;
+            new_h = static_cast<int>(std::round(static_cast<double>(h) * target / w));
+        }
+        float sx = static_cast<float>(new_w) / static_cast<float>(w);
+        float sy = static_cast<float>(new_h) / static_cast<float>(h);
+        cv::Mat dst;
+        cv::resize(ann.image.mat(), dst, cv::Size(new_w, new_h), 0, 0, cv::INTER_LINEAR);
+        ann.image = Image<Format>(std::move(dst));
+        for (auto& bb : ann.boxes)
+            bb.box = {bb.box.x * sx, bb.box.y * sy, bb.box.width * sx, bb.box.height * sy};
+        return ann;
+    }
+
 private:
     int   min_side_        = 224;
     int   max_side_        = 256;
