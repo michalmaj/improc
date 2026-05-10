@@ -64,3 +64,16 @@ TEST(AnnotatedAugTest, BBoxComposeNullOpThrows) {
     BBoxCompose<BGR> pipeline;
     EXPECT_THROW(pipeline.add(nullptr), improc::ParameterError);
 }
+
+// ---- min_area_ratio setter validation ----
+
+TEST(AnnotatedAugTest, MinAreaRatioOutOfRangeThrows) {
+    EXPECT_THROW(RandomFlip{}.min_area_ratio(-0.1f),       improc::ParameterError);
+    EXPECT_THROW(RandomFlip{}.min_area_ratio(1.1f),        improc::ParameterError);
+    EXPECT_THROW(RandomRotate{}.min_area_ratio(-0.01f),    improc::ParameterError);
+    EXPECT_THROW(RandomCrop{}.min_area_ratio(1.01f),       improc::ParameterError);
+    EXPECT_THROW(RandomResize{}.min_area_ratio(-0.5f),     improc::ParameterError);
+    EXPECT_THROW(RandomZoom{}.min_area_ratio(2.0f),        improc::ParameterError);
+    EXPECT_THROW(RandomShear{}.min_area_ratio(-0.001f),    improc::ParameterError);
+    EXPECT_THROW(RandomPerspective{}.min_area_ratio(1.1f), improc::ParameterError);
+}

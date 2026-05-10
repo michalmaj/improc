@@ -1,6 +1,7 @@
 // include/improc/ml/augment/geometric.hpp
 #pragma once
 
+#include <algorithm>
 #include <cmath>
 #include <numbers>
 #include <random>
@@ -19,6 +20,44 @@ namespace improc::ml {
 using improc::core::AnyFormat;
 using improc::core::Image;
 
+namespace detail {
+
+inline std::vector<cv::Point2f> bbox_corners(const cv::Rect2f& r) {
+    return {
+        {r.x,           r.y},
+        {r.x + r.width, r.y},
+        {r.x + r.width, r.y + r.height},
+        {r.x,           r.y + r.height}
+    };
+}
+
+inline cv::Rect2f corners_to_aabb(const std::vector<cv::Point2f>& corners) {
+    float xmin = corners[0].x, xmax = corners[0].x;
+    float ymin = corners[0].y, ymax = corners[0].y;
+    for (const auto& c : corners) {
+        xmin = std::min(xmin, c.x); xmax = std::max(xmax, c.x);
+        ymin = std::min(ymin, c.y); ymax = std::max(ymax, c.y);
+    }
+    return {xmin, ymin, xmax - xmin, ymax - ymin};
+}
+
+inline cv::Rect2f clip_to_image(cv::Rect2f r, int W, int H) {
+    float x1 = std::max(0.f, r.x);
+    float y1 = std::max(0.f, r.y);
+    float x2 = std::min(static_cast<float>(W), r.x + r.width);
+    float y2 = std::min(static_cast<float>(H), r.y + r.height);
+    if (x2 <= x1 || y2 <= y1) return {};
+    return {x1, y1, x2 - x1, y2 - y1};
+}
+
+inline bool keep_box(cv::Rect2f clipped, cv::Rect2f original, float threshold) {
+    float orig_area = original.area();
+    if (orig_area <= 0.f || clipped.empty()) return false;
+    return (clipped.area() / orig_area) >= threshold;
+}
+
+} // namespace detail
+
 struct RandomFlip : detail::BindMixin<RandomFlip> {
     RandomFlip& p(float prob) {
         if (prob < 0.0f || prob > 1.0f)
@@ -26,6 +65,11 @@ struct RandomFlip : detail::BindMixin<RandomFlip> {
         p_ = prob; return *this;
     }
     RandomFlip& axis(core::Axis a) { axis_ = a; return *this; }
+    RandomFlip& min_area_ratio(float r) {
+        if (r < 0.0f || r > 1.0f)
+            throw ParameterError{"min_area_ratio", "must be in [0, 1]", "RandomFlip"};
+        min_area_ratio_ = r; return *this;
+    }
 
     template<AnyFormat Format>
     Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
@@ -68,8 +112,9 @@ struct RandomFlip : detail::BindMixin<RandomFlip> {
     }
 
 private:
-    float      p_    = 0.5f;
-    core::Axis axis_ = core::Axis::Horizontal;
+    float      p_               = 0.5f;
+    core::Axis axis_            = core::Axis::Horizontal;
+    float      min_area_ratio_  = 0.1f;
 };
 
 struct RandomRotate : detail::BindMixin<RandomRotate> {
@@ -82,6 +127,11 @@ struct RandomRotate : detail::BindMixin<RandomRotate> {
         if (s <= 0.0f)
             throw ParameterError{"scale", "must be > 0", "RandomRotate"};
         scale_ = s; return *this;
+    }
+    RandomRotate& min_area_ratio(float r) {
+        if (r < 0.0f || r > 1.0f)
+            throw ParameterError{"min_area_ratio", "must be in [0, 1]", "RandomRotate"};
+        min_area_ratio_ = r; return *this;
     }
 
     template<AnyFormat Format>
@@ -100,9 +150,10 @@ struct RandomRotate : detail::BindMixin<RandomRotate> {
     }
 
 private:
-    float min_deg_ = -15.0f;
-    float max_deg_ =  15.0f;
-    float scale_   =   1.0f;
+    float min_deg_         = -15.0f;
+    float max_deg_         =  15.0f;
+    float scale_           =   1.0f;
+    float min_area_ratio_  =   0.1f;
 };
 
 struct RandomCrop : detail::BindMixin<RandomCrop> {
@@ -113,6 +164,11 @@ struct RandomCrop : detail::BindMixin<RandomCrop> {
     RandomCrop& height(int h) {
         if (h <= 0) throw ParameterError{"height", "must be positive", "RandomCrop"};
         height_ = h; return *this;
+    }
+    RandomCrop& min_area_ratio(float r) {
+        if (r < 0.0f || r > 1.0f)
+            throw ParameterError{"min_area_ratio", "must be in [0, 1]", "RandomCrop"};
+        min_area_ratio_ = r; return *this;
     }
 
     template<AnyFormat Format>
@@ -133,8 +189,9 @@ struct RandomCrop : detail::BindMixin<RandomCrop> {
     }
 
 private:
-    int width_  = 0;
-    int height_ = 0;
+    int   width_           = 0;
+    int   height_          = 0;
+    float min_area_ratio_  = 0.1f;
 };
 
 struct RandomResize : detail::BindMixin<RandomResize> {
@@ -144,6 +201,11 @@ struct RandomResize : detail::BindMixin<RandomResize> {
         if (min_side > max_side)
             throw ParameterError{"min_side", "must be <= max_side", "RandomResize"};
         min_side_ = min_side; max_side_ = max_side; return *this;
+    }
+    RandomResize& min_area_ratio(float r) {
+        if (r < 0.0f || r > 1.0f)
+            throw ParameterError{"min_area_ratio", "must be in [0, 1]", "RandomResize"};
+        min_area_ratio_ = r; return *this;
     }
 
     template<AnyFormat Format>
@@ -166,8 +228,9 @@ struct RandomResize : detail::BindMixin<RandomResize> {
     }
 
 private:
-    int min_side_ = 224;
-    int max_side_ = 256;
+    int   min_side_        = 224;
+    int   max_side_        = 256;
+    float min_area_ratio_  = 0.1f;
 };
 
 struct RandomZoom : detail::BindMixin<RandomZoom> {
@@ -177,6 +240,11 @@ struct RandomZoom : detail::BindMixin<RandomZoom> {
         if (min_scale > max_scale)
             throw ParameterError{"min_scale", "must be <= max_scale", "RandomZoom"};
         min_scale_ = min_scale; max_scale_ = max_scale; return *this;
+    }
+    RandomZoom& min_area_ratio(float r) {
+        if (r < 0.0f || r > 1.0f)
+            throw ParameterError{"min_area_ratio", "must be in [0, 1]", "RandomZoom"};
+        min_area_ratio_ = r; return *this;
     }
 
     template<AnyFormat Format>
@@ -196,8 +264,9 @@ struct RandomZoom : detail::BindMixin<RandomZoom> {
     }
 
 private:
-    float min_scale_ = 0.7f;
-    float max_scale_ = 1.0f;
+    float min_scale_       = 0.7f;
+    float max_scale_       = 1.0f;
+    float min_area_ratio_  = 0.1f;
 };
 
 struct RandomShear : detail::BindMixin<RandomShear> {
@@ -210,6 +279,11 @@ struct RandomShear : detail::BindMixin<RandomShear> {
         if (a == core::Axis::Both)
             throw ParameterError{"axis", "Axis::Both is not supported; use Horizontal or Vertical", "RandomShear"};
         axis_ = a; return *this;
+    }
+    RandomShear& min_area_ratio(float r) {
+        if (r < 0.0f || r > 1.0f)
+            throw ParameterError{"min_area_ratio", "must be in [0, 1]", "RandomShear"};
+        min_area_ratio_ = r; return *this;
     }
 
     template<AnyFormat Format>
@@ -230,9 +304,10 @@ struct RandomShear : detail::BindMixin<RandomShear> {
     }
 
 private:
-    float      min_deg_ = -15.0f;
-    float      max_deg_ =  15.0f;
-    core::Axis axis_    = core::Axis::Horizontal;
+    float      min_deg_        = -15.0f;
+    float      max_deg_        =  15.0f;
+    core::Axis axis_           = core::Axis::Horizontal;
+    float      min_area_ratio_ =   0.1f;
 };
 
 struct RandomPerspective : detail::BindMixin<RandomPerspective> {
@@ -240,6 +315,11 @@ struct RandomPerspective : detail::BindMixin<RandomPerspective> {
         if (s < 0.0f || s > 1.0f)
             throw ParameterError{"distortion_scale", "must be in [0, 1]", "RandomPerspective"};
         distortion_scale_ = s; return *this;
+    }
+    RandomPerspective& min_area_ratio(float r) {
+        if (r < 0.0f || r > 1.0f)
+            throw ParameterError{"min_area_ratio", "must be in [0, 1]", "RandomPerspective"};
+        min_area_ratio_ = r; return *this;
     }
 
     template<AnyFormat Format>
@@ -265,6 +345,7 @@ struct RandomPerspective : detail::BindMixin<RandomPerspective> {
 
 private:
     float distortion_scale_ = 0.5f;
+    float min_area_ratio_   = 0.1f;
 };
 
 } // namespace improc::ml
