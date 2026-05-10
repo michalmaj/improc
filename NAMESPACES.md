@@ -742,6 +742,41 @@ Setters: `ratio(r)` — (0, 1); `unit_size(s)` — pixels, must be > 0; `value(v
 
 **Composition ops** (`Compose<F>`, `RandomApply<F>`, `OneOf<F>`) — parameterised on `Format`, use `std::function` for type erasure. `OneOf` throws `AugmentError` if called with no augmentations added. `RandomApply` throws `ParameterError` if `p` is outside `[0, 1]`.
 
+#### Bbox-aware geometric ops (`annotated.hpp`, `augment/bbox_compose.hpp`)
+
+All 7 geometric ops accept `AnnotatedImage<Format>` in addition to `Image<Format>`. After each transform boxes are clipped to image bounds; boxes where `clipped_area / original_area < min_area_ratio` (default 0.1) are dropped.
+
+```cpp
+#include "improc/ml/augmentation.hpp"
+
+struct BBox {
+    cv::Rect2f  box;       // pixel-coordinate annotation
+    int         class_id;  // default 0
+    std::string label;
+};
+
+template<AnyFormat Format>
+struct AnnotatedImage { Image<Format> image; std::vector<BBox> boxes; };
+
+// Each geometric op gains a second operator():
+AnnotatedImage<BGR> r = RandomFlip{}.p(0.5f)(ann, rng);
+AnnotatedImage<BGR> r = RandomRotate{}.range(-15.f, 15.f)(ann, rng);
+AnnotatedImage<BGR> r = RandomCrop{}.width(224).height(224)(ann, rng);
+// … same for RandomResize, RandomZoom, RandomShear, RandomPerspective
+
+// Tune the drop threshold per-op:
+RandomCrop{}.min_area_ratio(0.3f).width(200).height(200)(ann, rng);
+
+// BBoxCompose<F> — sequential bbox-aware pipeline with bind(rng) / operator|:
+BBoxCompose<BGR> pipeline;
+pipeline
+    .add([](auto a, auto& r){ return RandomFlip{}.p(0.5f)(std::move(a), r); })
+    .add([](auto a, auto& r){ return RandomRotate{}.range(-15.f,15.f)(std::move(a), r); });
+
+auto result = pipeline(ann, rng);           // direct call
+auto result = ann | pipeline.bind(rng);     // pipeline form
+```
+
 #### Blur Extras (v0.4.0)
 
 **`RandomBlur`** — randomly applies one of Gaussian / Median / Bilateral blur with a random odd kernel size.
