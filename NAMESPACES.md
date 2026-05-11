@@ -2,6 +2,24 @@
 
 The library is organized into modular namespaces under the root `improc` namespace. Each namespace has a single responsibility and maps to a corresponding directory under `include/improc/` and `src/`.
 
+## Table of Contents
+
+- [`improc`](#improc--root-namespace-exceptions-and-error-values) — Root namespace: exceptions and error values
+- [`improc::core`](#improccore--type-safe-image-primitives) — Type-safe image primitives
+- [`improc::io`](#improcio--inputoutput) — Input/Output
+- [`improc::ml`](#improcml--machine-learning-utilities) — Machine Learning utilities
+  - [Augmentation](#augmentation-augmentationhpp)
+  - [Geometric Extras (v0.4.0)](#geometric-extras-v040)
+  - [Colour Extras (v0.4.0)](#colour-extras-v040)
+  - [Erase / Dropout (v0.4.0)](#erase--dropout-v040)
+  - [Bbox-aware ops](#bbox-aware-geometric-ops-annotatedhpp-augmentbbox_composehpp)
+  - [Blur Extras (v0.4.0)](#blur-extras-v040)
+- [`improc::threading`](#improcthreading--concurrency-utilities) — Concurrency utilities
+- [`improc::visualization`](#improcvisualization--chart-and-display-utilities) — Chart and display utilities
+- [`improc::onnx`](#improconnx--onnx-runtime-inference) — ONNX Runtime inference
+- [`improc::views`](#improcviews--lazy-image-pipeline) — Lazy Image Pipeline
+- [Planned namespaces](#planned-namespaces)
+
 ---
 
 ## `improc` — Root namespace: exceptions and error values
@@ -948,8 +966,6 @@ Arranges a `vector<Image<BGR>>` into a grid. Setters: `.cols(int)`, `.cell_size(
 
 ---
 
----
-
 ## `improc::onnx` — ONNX Runtime inference
 
 **Status: Implemented** (ONNX Runtime 1.20.1 — CPU + CoreML EP on Apple Silicon)
@@ -1142,7 +1158,7 @@ auto batch = views::from_dir("dataset/train/cats/", {".jpg", ".png"})
     | views::to<std::vector<Image<BGR>>>();
 ```
 
-### `improc::views` — M4 Advanced Adapters
+### M4 — Advanced Adapters
 
 | Symbol | Description |
 |---|---|
