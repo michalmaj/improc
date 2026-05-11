@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Table of Contents
+
+- [[0.1.0]](#010--2026-04-26) — 2026-04-26 · First versioned release; full namespace surface established
+- [[0.2.0]](#020--2026-05-02) — 2026-05-02 · `improc::core` extras + `improc::views` lazy pipeline
+- [[0.3.0]](#030--2026-05-07) — 2026-05-07 · Core completeness: morphology, colour spaces, feature detection pipeline
+- [[Unreleased]](#unreleased)
+
 ---
 
 ## [0.1.0] — 2026-04-26
@@ -82,10 +89,6 @@ that subsequent releases will extend without breaking.
 - OpenCV 4.8+
 - Conan 2.0+ (for local builds)
 - ONNX Runtime 1.20.1 (auto-downloaded; requires `-DIMPROC_WITH_ONNX=ON`)
-
----
-
-## [Unreleased]
 
 ---
 
@@ -184,3 +187,6 @@ description → matching → visualisation chain.
 - **`DrawKeypoints`** — pipeline op; draws keypoints with `DRAW_RICH_KEYPOINTS`; accepts `Image<Gray>` or `Image<BGR>`; always returns `Image<BGR>`
 - **`DrawMatches`** — callable (not a pipeline op); renders two BGR images side-by-side with connecting match lines; output width = `img1.cols + img2.cols`
 
+---
+
+## [Unreleased]
