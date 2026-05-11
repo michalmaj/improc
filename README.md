@@ -4,9 +4,35 @@
 > C++ engineers and researchers building real-time computer vision and ML systems who want
 > compile-time safety, composable pipelines, and ML-ready utilities — without leaving the OpenCV ecosystem.
 
+## Table of Contents
+
+- [Status](#status)
+- [Getting Started](#getting-started)
+- [API Comparison](#api-comparison)
+- [Features](#features)
+- [Quick Start](#quick-start)
+- [Usage](#usage)
+- [Augmentation](#augmentation)
+- [Video Recording](#video-recording)
+- [ONNX Runtime Inference](#onnx-runtime-inference)
+- [Edge Detection & Enhancement](#edge-detection--enhancement)
+- [Drawing Detections](#drawing-detections)
+- [Lazy Views](#lazy-views)
+- [Feature Detection Pipeline](#feature-detection-pipeline)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [CMake Configuration (CLion)](#cmake-configuration-clion)
+- [Running Tests](#running-tests)
+- [Tested With](#tested-with)
+- [Non-Goals & Limitations](#non-goals--limitations)
+- [Motivation](#motivation)
+- [Contributing](#contributing)
+
 ## Status
 
-> **v0.3.0** — Core Completeness release. `improc::core` now covers the full classical 2D CV pipeline. APIs are stabilising but may still change between minor versions.
+> **Latest release: v0.3.0** — Core Completeness. `improc::core` covers the full classical 2D CV pipeline.  
+> **In development: v0.4.0** — Extended augmentation (12 new training ops, bbox-aware overloads, lazy views).  
+> APIs are stabilising but may still change between minor versions.
 
 | Namespace | Status | Notes |
 |---|---|---|
@@ -111,7 +137,7 @@ OpenCV is powerful but its raw API is stringly-typed, mutation-heavy, and easy t
 - **Pixel ops** — `InRange` (binary mask from channel bounds), `Invert`, `Brightness`, `Contrast`, `WeightedBlend`, `AlphaBlend`, `ApplyMask`
 - **Normalization** — `Normalize`, `NormalizeTo`, `Standardize` for ML preprocessing
 - **Format conversions** — explicit, compiler-enforced free functions (`convert<Gray>(bgr_image)`)
-- **Augmentation** — stochastic training augmentations constrained by C++20 concepts: `RandomFlip`, `RandomRotate`, `RandomCrop`, `RandomResize`, `RandomBrightness`, `RandomContrast`, `ColorJitter`, `RandomGaussianNoise`, `RandomSaltAndPepper`, `Compose`, `RandomApply`, `OneOf`
+- **Augmentation** — stochastic training augmentations constrained by C++20 concepts: `RandomFlip`, `RandomRotate`, `RandomCrop`, `RandomResize`, `RandomZoom`, `RandomShear`, `RandomPerspective`, `RandomBrightness`, `RandomContrast`, `ColorJitter`, `RandomGrayscale`, `RandomSolarize`, `RandomPosterize`, `RandomEqualize`, `RandomBlur`, `RandomSharpness`, `RandomGaussianNoise`, `RandomSaltAndPepper`, `RandomErasing`, `GridDropout`, `Compose`, `RandomApply`, `OneOf`; bbox-aware overloads via `BBox`, `AnnotatedImage<F>`, `BBoxCompose<F>` (all 7 geometric ops accept annotated images with automatic clip-and-drop filtering)
 - **Dataset loading** — load image datasets from class-labeled directories with train/val/test splitting
 - **DNN inference** — `DnnClassifier`, `DnnDetector` (YOLO & SSD), `DnnForward` backed by OpenCV DNN; pipeline-composable
 - **ONNX Runtime inference** — `OnnxClassifier`, `OnnxDetector` (YOLOv5 & YOLOv8 & SSD), `OnnxSession` (raw tensor I/O); CPU + CoreML EP on Apple Silicon; train in Python, export to ONNX, run here
@@ -220,6 +246,35 @@ Image<BGR> augmented = augmentor(img, rng);
 ```
 
 See `examples/ml/demo_augmentation.cpp` for a full walkthrough.
+
+### Bbox-Aware Augmentation
+
+All 7 geometric ops also accept `AnnotatedImage<Format>` — ground-truth boxes are transformed alongside the image. Boxes that fall too far outside the frame after the transform are automatically dropped.
+
+```cpp
+using namespace improc::ml;
+
+BBox cat{cv::Rect2f(50.f, 50.f, 200.f, 150.f), 0, "cat"};
+AnnotatedImage<BGR> ann{img, {cat}};
+
+// Single op — direct call
+AnnotatedImage<BGR> result = RandomFlip{}.p(0.5f)(ann, rng);
+
+// BBoxCompose pipeline
+BBoxCompose<BGR> pipeline;
+pipeline
+    .add([](auto a, auto& r){ return RandomFlip{}.p(0.5f)(std::move(a), r); })
+    .add([](auto a, auto& r){ return RandomRotate{}.range(-15.f, 15.f)(std::move(a), r); })
+    .add([](auto a, auto& r){ return RandomCrop{}.width(224).height(224)(std::move(a), r); });
+
+auto out = pipeline(std::move(ann), rng);
+// or: auto out = ann | pipeline.bind(rng);
+
+std::cout << out.boxes.size() << " boxes after augmentation\n";
+
+// Tune the drop threshold per-op (default 0.1 — drop if < 10% visible)
+RandomCrop{}.min_area_ratio(0.3f).width(200).height(200)(ann, rng);
+```
 
 ## Video Recording
 
