@@ -136,4 +136,34 @@ private:
     float p_     = 1.0f;
 };
 
+template<AnyFormat Format>
+struct MixCompose {
+    using Op = std::function<LabeledImage<Format>(LabeledImage<Format>,
+                                                   const LabeledImage<Format>&,
+                                                   std::mt19937&)>;
+
+    MixCompose& add(Op op) {
+        if (!op) throw ParameterError{"op", "must not be null", "MixCompose"};
+        ops_.push_back(std::move(op));
+        return *this;
+    }
+
+    LabeledImage<Format> operator()(LabeledImage<Format> primary,
+                                    const LabeledImage<Format>& secondary,
+                                    std::mt19937& rng) const {
+        for (const auto& op : ops_)
+            primary = op(std::move(primary), secondary, rng);
+        return primary;
+    }
+
+    [[nodiscard]] auto bind(const LabeledImage<Format>& secondary, std::mt19937& rng) const {
+        return [this, &secondary, &rng](LabeledImage<Format> primary) {
+            return (*this)(std::move(primary), secondary, rng);
+        };
+    }
+
+private:
+    std::vector<Op> ops_;
+};
+
 } // namespace improc::ml

@@ -188,3 +188,54 @@ TEST(MixAugTest, CutMixThrowsOnEmptyLabel) {
     std::mt19937 rng(0);
     EXPECT_THROW(CutMix{}(a, b, rng), ParameterError);
 }
+
+// ---- MixCompose ----
+
+TEST(MixAugTest, MixComposeEmptyReturnsIdentical) {
+    cv::Mat m1(50, 50, CV_8UC3, cv::Scalar(100));
+    cv::Mat m2(50, 50, CV_8UC3, cv::Scalar(200));
+    LabeledImage<BGR> a{Image<BGR>(m1), {1.0f, 0.0f}};
+    LabeledImage<BGR> b{Image<BGR>(m2), {0.0f, 1.0f}};
+    std::mt19937 rng(0);
+    MixCompose<BGR> pipe;
+    auto result = pipe(a, b, rng);
+    EXPECT_EQ(cv::norm(result.image.mat(), m1, cv::NORM_INF), 0.0);
+    EXPECT_EQ(result.label, a.label);
+}
+
+TEST(MixAugTest, MixComposeChainsBothOps) {
+    cv::Mat m1(100, 100, CV_8UC3, cv::Scalar(0, 0, 0));
+    cv::Mat m2(100, 100, CV_8UC3, cv::Scalar(255, 255, 255));
+    LabeledImage<BGR> a{Image<BGR>(m1), {1.0f, 0.0f}};
+    LabeledImage<BGR> b{Image<BGR>(m2), {0.0f, 1.0f}};
+    std::mt19937 rng(42);
+    MixCompose<BGR> pipe;
+    pipe.add([](auto a, const auto& b, auto& r){
+        return MixUp{}.alpha(0.4f).p(1.0f)(std::move(a), b, r);
+    });
+    auto result = pipe(a, b, rng);
+    EXPECT_GT(cv::norm(result.image.mat(), m1, cv::NORM_INF), 0.0);
+    ASSERT_EQ(result.label.size(), 2u);
+    EXPECT_NEAR(result.label[0] + result.label[1], 1.0f, 1e-5f);
+}
+
+TEST(MixAugTest, MixComposePipelineForm) {
+    cv::Mat m1(50, 50, CV_8UC3, cv::Scalar(10));
+    cv::Mat m2(50, 50, CV_8UC3, cv::Scalar(240));
+    LabeledImage<BGR> a{Image<BGR>(m1), {1.0f, 0.0f}};
+    LabeledImage<BGR> b{Image<BGR>(m2), {0.0f, 1.0f}};
+    std::mt19937 rng(42);
+    MixCompose<BGR> pipe;
+    pipe.add([](auto a, const auto& b, auto& r){
+        return MixUp{}.p(1.0f)(std::move(a), b, r);
+    });
+    auto result = a | pipe.bind(b, rng);
+    EXPECT_EQ(result.image.rows(), 50);
+    EXPECT_EQ(result.image.cols(), 50);
+    EXPECT_GT(cv::norm(result.image.mat(), m1, cv::NORM_INF), 0.0);
+}
+
+TEST(MixAugTest, MixComposeNullOpThrows) {
+    MixCompose<BGR> pipe;
+    EXPECT_THROW(pipe.add(nullptr), ParameterError);
+}
