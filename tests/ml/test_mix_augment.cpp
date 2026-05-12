@@ -213,10 +213,17 @@ TEST(MixAugTest, MixComposeChainsBothOps) {
     pipe.add([](auto a, const auto& b, auto& r){
         return MixUp{}.alpha(0.4f).p(1.0f)(std::move(a), b, r);
     });
+    pipe.add([](auto a, const auto& b, auto& r){
+        return CutMix{}.alpha(0.4f).p(1.0f)(std::move(a), b, r);
+    });
     auto result = pipe(a, b, rng);
+    // Two ops were chained: result must differ from the all-black primary
     EXPECT_GT(cv::norm(result.image.mat(), m1, cv::NORM_INF), 0.0);
     ASSERT_EQ(result.label.size(), 2u);
     EXPECT_NEAR(result.label[0] + result.label[1], 1.0f, 1e-5f);
+    // Labels should be a blend (neither pure primary nor pure secondary)
+    EXPECT_LT(result.label[0], 1.0f);
+    EXPECT_GT(result.label[1], 0.0f);
 }
 
 TEST(MixAugTest, MixComposePipelineForm) {

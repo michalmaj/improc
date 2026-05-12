@@ -156,6 +156,8 @@ struct MixCompose {
         return primary;
     }
 
+    // secondary, rng, and this MixCompose must outlive the returned functor.
+    // Intended for immediate operator| use: `li | pipe.bind(b, rng)`.
     [[nodiscard]] auto bind(const LabeledImage<Format>& secondary, std::mt19937& rng) const {
         return [this, &secondary, &rng](LabeledImage<Format> primary) {
             return (*this)(std::move(primary), secondary, rng);
