@@ -14,6 +14,7 @@ The library is organized into modular namespaces under the root `improc` namespa
   - [Erase / Dropout (v0.4.0)](#erase--dropout-v040)
   - [Bbox-aware ops](#bbox-aware-geometric-ops-annotatedhpp-augmentbbox_composehpp)
   - [Blur Extras (v0.4.0)](#blur-extras-v040)
+  - [MixUp / CutMix (v0.4.0-C)](#mixup--cutmix-v040-c)
 - [`improc::threading`](#improcthreading--concurrency-utilities) — Concurrency utilities
 - [`improc::visualization`](#improcvisualization--chart-and-display-utilities) — Chart and display utilities
 - [`improc::onnx`](#improconnx--onnx-runtime-inference) — ONNX Runtime inference
@@ -816,6 +817,39 @@ Image<BGR> sharp = RandomSharpness{}.range(0.5f, 1.5f).p(0.7f)(img, rng);
 ```
 
 Setters: `range(min_s, max_s)` — 0 <= min <= max; `p(prob)` — [0, 1]; defaults: range=(0, 1), p=0.5.
+
+#### MixUp / CutMix (v0.4.0-C)
+
+`LabeledImage<F>` pairs an image with a soft label vector (`std::vector<float>`). `MixUp` and `CutMix` are binary ops — they accept two `LabeledImage<F>` values and return a blended result. λ is sampled from Beta(α, α).
+
+```cpp
+#include "improc/ml/augmentation.hpp"
+using namespace improc::ml;
+using namespace improc::core;
+
+std::mt19937 rng(42);
+
+// 3-class one-hot labels
+LabeledImage<BGR> a{img_a, {1.0f, 0.0f, 0.0f}};
+LabeledImage<BGR> b{img_b, {0.0f, 1.0f, 0.0f}};
+
+// Standalone ops
+auto mu = MixUp{}.alpha(0.4f)(a, b, rng);   // λ·a + (1-λ)·b
+auto cm = CutMix{}.alpha(1.0f)(a, b, rng);  // paste rect from b; label by area ratio
+
+// MixCompose — sequential binary pipeline; secondary stays fixed
+MixCompose<BGR> pipe;
+pipe.add([](auto a, const auto& b, auto& r){ return MixUp{}.alpha(0.4f)(std::move(a), b, r); });
+
+auto result  = pipe(a, b, rng);        // direct call
+auto result2 = a | pipe.bind(b, rng);  // pipeline form
+```
+
+**`MixUp`** setters: `alpha(a)` — Beta parameter, must be > 0 (default 0.4); `p(prob)` — [0, 1] (default 1.0). Throws `ParameterError` if image sizes differ or label vectors are empty/mismatched.
+
+**`CutMix`** setters: `alpha(a)` — Beta parameter, must be > 0 (default 1.0); `p(prob)` — [0, 1] (default 1.0). Patch size: `w = W·sqrt(1-λ)`, `h = H·sqrt(1-λ)`; actual λ = 1 − (w·h)/(W·H). Throws `ParameterError` if image sizes differ or label vectors are empty/mismatched.
+
+**`MixCompose<F>`** chains binary ops sequentially — primary transforms through each op, secondary stays fixed. `bind(secondary, rng)` returns an `operator|`-compatible unary functor. Empty composer returns primary unchanged. Throws `ParameterError` for null ops.
 
 ---
 

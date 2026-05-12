@@ -9,3 +9,5 @@
 #include "improc/ml/augment/compose.hpp"
 #include "improc/ml/annotated.hpp"
 #include "improc/ml/augment/bbox_compose.hpp"
+#include "improc/ml/labeled.hpp"
+#include "improc/ml/augment/mixup.hpp"
