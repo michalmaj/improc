@@ -122,7 +122,8 @@ struct CutMix {
         cv::Rect patch(x1, y1, cut_w, cut_h);
         b.image.mat()(patch).copyTo(result(patch));
 
-        float lambda_actual = 1.0f - static_cast<float>(cut_w * cut_h) / static_cast<float>(W * H);
+        float lambda_actual = 1.0f - (static_cast<float>(cut_w) * static_cast<float>(cut_h)) /
+                                      (static_cast<float>(W) * static_cast<float>(H));
         std::vector<float> label(a.label.size());
         for (std::size_t i = 0; i < label.size(); ++i)
             label[i] = lambda_actual * a.label[i] + (1.0f - lambda_actual) * b.label[i];

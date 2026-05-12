@@ -129,14 +129,15 @@ TEST(MixAugTest, CutMixPOnePastesRegion) {
     LabeledImage<BGR> a{Image<BGR>(m1), {1.0f, 0.0f}};
     LabeledImage<BGR> b{Image<BGR>(m2), {0.0f, 1.0f}};
     std::mt19937 rng(42);
-    auto result = CutMix{}.alpha(1.0f).p(1.0f)(a, b, rng);
-    EXPECT_GT(cv::norm(result.image.mat(), m1, cv::NORM_INF), 0.0);
+    auto result = CutMix{}.alpha(0.4f).p(1.0f)(a, b, rng);
     ASSERT_EQ(result.label.size(), 2u);
     for (float v : result.label) {
         EXPECT_GE(v, 0.0f);
         EXPECT_LE(v, 1.0f);
     }
     EXPECT_NEAR(result.label[0] + result.label[1], 1.0f, 1e-5f);
+    // alpha=0.4 with 100x100 image virtually guarantees a non-trivial patch
+    EXPECT_GT(cv::norm(result.image.mat(), m1, cv::NORM_INF), 0.0);
 }
 
 TEST(MixAugTest, CutMixOutputSizeMatchesInput) {
@@ -170,4 +171,20 @@ TEST(MixAugTest, CutMixThrowsOnSizeMismatch) {
     LabeledImage<BGR> b{Image<BGR>(m2), {0.0f, 1.0f}};
     std::mt19937 rng(0);
     EXPECT_THROW(CutMix{}.p(1.0f)(a, b, rng), ParameterError);
+}
+
+TEST(MixAugTest, CutMixThrowsOnLabelSizeMismatch) {
+    cv::Mat m(50, 50, CV_8UC3, cv::Scalar(0));
+    LabeledImage<BGR> a{Image<BGR>(m), {1.0f, 0.0f}};
+    LabeledImage<BGR> b{Image<BGR>(m.clone()), {0.0f, 0.5f, 0.5f}};
+    std::mt19937 rng(0);
+    EXPECT_THROW(CutMix{}(a, b, rng), ParameterError);
+}
+
+TEST(MixAugTest, CutMixThrowsOnEmptyLabel) {
+    cv::Mat m(50, 50, CV_8UC3, cv::Scalar(0));
+    LabeledImage<BGR> a{Image<BGR>(m), {}};
+    LabeledImage<BGR> b{Image<BGR>(m.clone()), {1.0f}};
+    std::mt19937 rng(0);
+    EXPECT_THROW(CutMix{}(a, b, rng), ParameterError);
 }
