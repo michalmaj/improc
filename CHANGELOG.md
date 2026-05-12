@@ -190,3 +190,11 @@ description → matching → visualisation chain.
 ---
 
 ## [Unreleased]
+
+### Added
+
+#### `improc::ml`
+- **`LabeledImage<F>`** — paired image + soft label type (`std::vector<float>`) for classification augmentation; `operator|` support for pipeline use (`labeled.hpp`)
+- **`MixUp`** — blends two `LabeledImage<F>` with λ ~ Beta(α,α); image via `cv::addWeighted`, label as convex combination; setters: `alpha(a)` (> 0; default 0.4), `p(prob)` ([0,1]; default 1.0)
+- **`CutMix`** — pastes a random rectangular patch from secondary onto primary; label mixed by actual area ratio 1 − (w·h)/(W·H); setters: `alpha(a)` (> 0; default 1.0), `p(prob)` ([0,1]; default 1.0)
+- **`MixCompose<F>`** — sequential composer for binary mix ops; primary passes through each op sequentially with secondary fixed; `bind(secondary, rng)` returns `operator|`-compatible unary functor
