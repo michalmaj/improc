@@ -28,7 +28,11 @@ TEST(ThreadPoolTest, SubmitDetachedDoesNotBlock) {
         ran = true;
     });
     EXPECT_FALSE(ran.load());
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    // Poll instead of a fixed sleep: completes in ~30ms on fast machines,
+    // but gives 5 s of budget on loaded CI schedulers.
+    auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+    while (!ran.load() && std::chrono::steady_clock::now() < deadline)
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     EXPECT_TRUE(ran.load());
 }
 
