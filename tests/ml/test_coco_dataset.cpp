@@ -181,3 +181,132 @@ TEST_F(ParseCocoJsonTest, FilterUnknownDropsObjectsNotInMap) {
             EXPECT_EQ(bb.label, "cat");
     EXPECT_EQ(cm.size(), 1u);  // dog NOT added
 }
+
+// ── CocoDatasetTest fixture ──────────────────────────────────────────────────
+//
+// Uses its own temp directory ("improc_test_coco_ds") to avoid teardown
+// conflicts with ParseCocoJsonTest which manages "improc_test_coco_sample".
+
+class CocoDatasetTest : public testing::Test {
+protected:
+    static fs::path kCoco;
+
+    static void SetUpTestSuite() {
+        // setup_coco_sample() always recreates the directory from scratch.
+        // We redirect it by temporarily pointing at our own name via a
+        // lambda — actually we just call setup_coco_sample() and copy the
+        // result, as the function hard-codes the dir name. Instead, duplicate
+        // the fixture inline with a different root name.
+        auto root = fs::temp_directory_path() / "improc_test_coco_ds";
+        fs::remove_all(root);
+
+        write_png(root / "images" / "000001.png");
+        write_png(root / "images" / "000002.png");
+        write_png(root / "images" / "000003.png");
+
+        write_json(root / "annotations_train.json", R"({
+  "images": [
+    {"id": 1, "file_name": "000001.png"},
+    {"id": 2, "file_name": "000002.png"}
+  ],
+  "annotations": [
+    {"id": 1, "image_id": 1, "category_id": 3, "bbox": [10.0, 10.0, 40.0, 40.0], "iscrowd": 0},
+    {"id": 2, "image_id": 2, "category_id": 3, "bbox": [5.0, 5.0, 40.0, 40.0],   "iscrowd": 0},
+    {"id": 3, "image_id": 2, "category_id": 7, "bbox": [55.0, 55.0, 40.0, 40.0], "iscrowd": 0}
+  ],
+  "categories": [
+    {"id": 3, "name": "cat"},
+    {"id": 7, "name": "dog"}
+  ]
+})");
+
+        write_json(root / "annotations_val.json", R"({
+  "images": [
+    {"id": 3, "file_name": "000003.png"}
+  ],
+  "annotations": [
+    {"id": 4, "image_id": 3, "category_id": 7, "bbox": [20.0, 20.0, 60.0, 60.0], "iscrowd": 1}
+  ],
+  "categories": [
+    {"id": 3, "name": "cat"},
+    {"id": 7, "name": "dog"}
+  ]
+})");
+
+        kCoco = root;
+    }
+
+    static void TearDownTestSuite() {
+        fs::remove_all(kCoco);
+    }
+};
+
+fs::path CocoDatasetTest::kCoco;
+
+// ── CocoDataset tests ────────────────────────────────────────────────────────
+
+TEST_F(CocoDatasetTest, LoadTrainSizesCorrect) {
+    CocoDataset ds;
+    auto r = ds.load_train(kCoco / "annotations_train.json", kCoco / "images");
+    ASSERT_TRUE(r.has_value());
+    EXPECT_EQ(ds.train().size(), 2u);
+}
+
+TEST_F(CocoDatasetTest, LoadValSizesCorrect) {
+    CocoDataset ds;
+    // skip_crowd(true) is the default
+    auto r = ds.load_val(kCoco / "annotations_val.json", kCoco / "images");
+    ASSERT_TRUE(r.has_value());
+    ASSERT_EQ(ds.val().size(), 1u);
+    EXPECT_TRUE(ds.val()[0].boxes.empty());  // iscrowd=1 skipped
+}
+
+TEST_F(CocoDatasetTest, LoadTrainAndValShareClassMap) {
+    CocoDataset ds;
+    ASSERT_TRUE(ds.load_train(kCoco / "annotations_train.json", kCoco / "images").has_value());
+    ASSERT_TRUE(ds.load_val(kCoco / "annotations_val.json",   kCoco / "images").has_value());
+    const auto& cm = ds.class_mapping();
+    EXPECT_TRUE(cm.contains("cat"));
+    EXPECT_TRUE(cm.contains("dog"));
+    // Train encounters cat first, so cat=0, dog=1
+    EXPECT_EQ(cm.at("cat"), 0);
+    EXPECT_EQ(cm.at("dog"), 1);
+}
+
+TEST_F(CocoDatasetTest, ClassMappingBuiltCorrectly) {
+    CocoDataset ds;
+    ASSERT_TRUE(ds.load_train(kCoco / "annotations_train.json", kCoco / "images").has_value());
+    const auto& cm = ds.class_mapping();
+    EXPECT_TRUE(cm.contains("cat"));
+    EXPECT_TRUE(cm.contains("dog"));
+    // The two ids must be distinct and together form {0, 1}
+    EXPECT_NE(cm.at("cat"), cm.at("dog"));
+    EXPECT_EQ(cm.at("cat") + cm.at("dog"), 1);  // one is 0, the other is 1
+}
+
+TEST_F(CocoDatasetTest, ClassNameForRoundTrips) {
+    CocoDataset ds;
+    ASSERT_TRUE(ds.load_train(kCoco / "annotations_train.json", kCoco / "images").has_value());
+    const auto& cm = ds.class_mapping();
+    EXPECT_EQ(ds.class_name_for(cm.at("cat")), "cat");
+    EXPECT_EQ(ds.class_name_for(cm.at("dog")), "dog");
+    EXPECT_THROW(ds.class_name_for(99), std::out_of_range);
+}
+
+TEST_F(CocoDatasetTest, LoadTrainTwiceReplacesSplit) {
+    CocoDataset ds;
+    ASSERT_TRUE(ds.load_train(kCoco / "annotations_train.json", kCoco / "images").has_value());
+    EXPECT_EQ(ds.train().size(), 2u);
+    // Second load must replace, not accumulate
+    ASSERT_TRUE(ds.load_train(kCoco / "annotations_train.json", kCoco / "images").has_value());
+    EXPECT_EQ(ds.train().size(), 2u);
+}
+
+TEST_F(CocoDatasetTest, TrainBoxesCorrect) {
+    CocoDataset ds;
+    ASSERT_TRUE(ds.load_train(kCoco / "annotations_train.json", kCoco / "images").has_value());
+    // Sorted by img_id: train()[0] = 000001 (1 box), train()[1] = 000002 (2 boxes)
+    ASSERT_EQ(ds.train().size(), 2u);
+    EXPECT_EQ(ds.train()[0].boxes.size(), 1u);  // 000001: one cat box
+    EXPECT_EQ(ds.train()[1].boxes.size(), 2u);  // 000002: one cat + one dog box
+}
