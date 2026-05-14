@@ -33,6 +33,7 @@ struct Error {
         OnnxSessionNotLoaded,  ///< `OnnxSession::run()` called before `load()`.
         VocXmlParseFailed,     ///< VOC XML annotation file is missing, malformed, or references an unreadable image.
         CocoJsonParseFailed,   ///< COCO JSON annotation file is missing, malformed, or references an unreadable image.
+        VocSegParseFailed,   ///< VOC segmentation mask file is missing, malformed, or references an unreadable image.
     };
 
     Code        code;    ///< Machine-readable error category.
@@ -171,6 +172,16 @@ struct Error {
     static Error coco_json_parse_failed(const std::string& path, const std::string& reason) {
         return {Code::CocoJsonParseFailed,
                 "COCO JSON parse failed '" + path + "': " + reason};
+    }
+
+    /**
+     * @brief Returns an error when a VOC segmentation file cannot be parsed.
+     * @param path   Path to the file.
+     * @param reason Human-readable explanation.
+     */
+    static Error voc_seg_parse_failed(const std::string& path, const std::string& reason) {
+        return {Code::VocSegParseFailed,
+                "VOC segmentation parse failed '" + path + "': " + reason};
     }
 };
 
