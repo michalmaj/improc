@@ -13,6 +13,7 @@
 #include "improc/core/ops/axis.hpp"
 #include "improc/ml/augment/detail.hpp"
 #include "improc/ml/annotated.hpp"
+#include "improc/ml/segmented.hpp"
 #include "improc/exceptions.hpp"
 
 namespace improc::ml {
@@ -111,6 +112,27 @@ struct RandomFlip : detail::BindMixin<RandomFlip> {
         return ann;
     }
 
+    template<AnyFormat Format>
+    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+        std::bernoulli_distribution d(p_);
+        if (!d(rng)) return seg;
+        int flip_code;
+        switch (axis_) {
+            case core::Axis::Horizontal: flip_code =  1; break;
+            case core::Axis::Vertical:   flip_code =  0; break;
+            case core::Axis::Both:       flip_code = -1; break;
+            default: std::unreachable();
+        }
+        auto do_flip = [&](const cv::Mat& src) {
+            cv::Mat dst; cv::flip(src, dst, flip_code); return dst;
+        };
+        seg.image      = Image<Format>(do_flip(seg.image.mat()));
+        seg.class_mask = Image<Gray>(do_flip(seg.class_mask.mat()));
+        if (seg.instance_mask)
+            seg.instance_mask = Image<Gray>(do_flip(seg.instance_mask->mat()));
+        return seg;
+    }
+
 private:
     float      p_               = 0.5f;
     core::Axis axis_            = core::Axis::Horizontal;
@@ -176,6 +198,25 @@ struct RandomRotate : detail::BindMixin<RandomRotate> {
         }
         ann.boxes = std::move(kept);
         return ann;
+    }
+
+    template<AnyFormat Format>
+    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+        std::uniform_real_distribution<float> d(min_deg_, max_deg_);
+        float angle = d(rng);
+        cv::Point2f center(seg.image.cols() / 2.0f, seg.image.rows() / 2.0f);
+        cv::Mat M = cv::getRotationMatrix2D(center, angle, scale_);
+        cv::Size sz = seg.image.mat().size();
+        auto do_warp = [&](const cv::Mat& src, int interp) {
+            cv::Mat dst;
+            cv::warpAffine(src, dst, M, sz, interp, cv::BORDER_CONSTANT, cv::Scalar::all(0));
+            return dst;
+        };
+        seg.image      = Image<Format>(do_warp(seg.image.mat(), cv::INTER_LINEAR));
+        seg.class_mask = Image<Gray>(do_warp(seg.class_mask.mat(), cv::INTER_NEAREST));
+        if (seg.instance_mask)
+            seg.instance_mask = Image<Gray>(do_warp(seg.instance_mask->mat(), cv::INTER_NEAREST));
+        return seg;
     }
 
 private:
@@ -244,6 +285,26 @@ struct RandomCrop : detail::BindMixin<RandomCrop> {
         return ann;
     }
 
+    template<AnyFormat Format>
+    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+        if (width_ <= 0 || height_ <= 0)
+            throw ParameterError{"width/height", "both must be set", "RandomCrop"};
+        if (width_ > seg.image.cols() || height_ > seg.image.rows())
+            throw ParameterError{"width/height",
+                std::format("crop {}x{} exceeds image {}x{}",
+                    width_, height_, seg.image.cols(), seg.image.rows()),
+                "RandomCrop"};
+        std::uniform_int_distribution<int> x_d(0, seg.image.cols() - width_);
+        std::uniform_int_distribution<int> y_d(0, seg.image.rows() - height_);
+        int cx = x_d(rng), cy = y_d(rng);
+        cv::Rect roi(cx, cy, width_, height_);
+        seg.image      = Image<Format>(seg.image.mat()(roi).clone());
+        seg.class_mask = Image<Gray>(seg.class_mask.mat()(roi).clone());
+        if (seg.instance_mask)
+            seg.instance_mask = Image<Gray>(seg.instance_mask->mat()(roi).clone());
+        return seg;
+    }
+
 private:
     int   width_           = 0;
     int   height_          = 0;
@@ -304,6 +365,28 @@ struct RandomResize : detail::BindMixin<RandomResize> {
         for (auto& bb : ann.boxes)
             bb.box = {bb.box.x * sx, bb.box.y * sy, bb.box.width * sx, bb.box.height * sy};
         return ann;
+    }
+
+    template<AnyFormat Format>
+    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+        std::uniform_int_distribution<int> d(min_side_, max_side_);
+        int target = d(rng);
+        const int h = seg.image.rows(), w = seg.image.cols();
+        int new_w, new_h;
+        if (h <= w) { new_h = target; new_w = static_cast<int>(std::round(static_cast<double>(w) * target / h)); }
+        else        { new_w = target; new_h = static_cast<int>(std::round(static_cast<double>(h) * target / w)); }
+        cv::Size sz(new_w, new_h);
+        cv::Mat di, dm;
+        cv::resize(seg.image.mat(),      di, sz, 0, 0, cv::INTER_LINEAR);
+        cv::resize(seg.class_mask.mat(), dm, sz, 0, 0, cv::INTER_NEAREST);
+        seg.image      = Image<Format>(std::move(di));
+        seg.class_mask = Image<Gray>(std::move(dm));
+        if (seg.instance_mask) {
+            cv::Mat dinst;
+            cv::resize(seg.instance_mask->mat(), dinst, sz, 0, 0, cv::INTER_NEAREST);
+            seg.instance_mask = Image<Gray>(std::move(dinst));
+        }
+        return seg;
     }
 
 private:
@@ -376,6 +459,27 @@ struct RandomZoom : detail::BindMixin<RandomZoom> {
         return ann;
     }
 
+    template<AnyFormat Format>
+    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+        int W = seg.image.cols(), H = seg.image.rows();
+        std::uniform_real_distribution<float> d(min_scale_, max_scale_);
+        float scale = d(rng);
+        int cw = std::max(1, static_cast<int>(W * scale));
+        int ch = std::max(1, static_cast<int>(H * scale));
+        std::uniform_int_distribution<int> xd(0, W - cw), yd(0, H - ch);
+        int zx = xd(rng), zy = yd(rng);
+        cv::Rect roi(zx, zy, cw, ch);
+        cv::Size sz(W, H);
+        auto do_zoom = [&](const cv::Mat& src, int interp) {
+            cv::Mat dst; cv::resize(src(roi), dst, sz, 0, 0, interp); return dst;
+        };
+        seg.image      = Image<Format>(do_zoom(seg.image.mat(), cv::INTER_LINEAR));
+        seg.class_mask = Image<Gray>(do_zoom(seg.class_mask.mat(), cv::INTER_NEAREST));
+        if (seg.instance_mask)
+            seg.instance_mask = Image<Gray>(do_zoom(seg.instance_mask->mat(), cv::INTER_NEAREST));
+        return seg;
+    }
+
 private:
     float min_scale_       = 0.7f;
     float max_scale_       = 1.0f;
@@ -444,6 +548,28 @@ struct RandomShear : detail::BindMixin<RandomShear> {
         }
         ann.boxes = std::move(kept);
         return ann;
+    }
+
+    template<AnyFormat Format>
+    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+        std::uniform_real_distribution<float> d(min_deg_, max_deg_);
+        float angle_rad = d(rng) * std::numbers::pi_v<float> / 180.0f;
+        float shear = std::tan(angle_rad);
+        int W = seg.image.cols(), H = seg.image.rows();
+        cv::Mat M = cv::Mat::eye(2, 3, CV_32F);
+        if (axis_ == core::Axis::Horizontal) M.at<float>(0, 1) = shear;
+        else                                 M.at<float>(1, 0) = shear;
+        cv::Size sz(W, H);
+        auto do_warp = [&](const cv::Mat& src, int interp) {
+            cv::Mat dst;
+            cv::warpAffine(src, dst, M, sz, interp, cv::BORDER_CONSTANT, cv::Scalar::all(0));
+            return dst;
+        };
+        seg.image      = Image<Format>(do_warp(seg.image.mat(), cv::INTER_LINEAR));
+        seg.class_mask = Image<Gray>(do_warp(seg.class_mask.mat(), cv::INTER_NEAREST));
+        if (seg.instance_mask)
+            seg.instance_mask = Image<Gray>(do_warp(seg.instance_mask->mat(), cv::INTER_NEAREST));
+        return seg;
     }
 
 private:
@@ -518,6 +644,30 @@ struct RandomPerspective : detail::BindMixin<RandomPerspective> {
         }
         ann.boxes = std::move(kept);
         return ann;
+    }
+
+    template<AnyFormat Format>
+    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+        int W = seg.image.cols(), H = seg.image.rows();
+        float half_range = distortion_scale_ * std::min(W, H) / 2.0f;
+        std::uniform_real_distribution<float> d(-half_range, half_range);
+        std::vector<cv::Point2f> src_pts = {
+            {0.f, 0.f}, {static_cast<float>(W), 0.f},
+            {0.f, static_cast<float>(H)}, {static_cast<float>(W), static_cast<float>(H)}
+        };
+        std::vector<cv::Point2f> dst_pts;
+        dst_pts.reserve(4);
+        for (const auto& p : src_pts) dst_pts.push_back({p.x + d(rng), p.y + d(rng)});
+        cv::Mat M = cv::getPerspectiveTransform(src_pts, dst_pts);
+        cv::Size sz(W, H);
+        auto do_warp = [&](const cv::Mat& src, int interp) {
+            cv::Mat dst; cv::warpPerspective(src, dst, M, sz, interp); return dst;
+        };
+        seg.image      = Image<Format>(do_warp(seg.image.mat(), cv::INTER_LINEAR));
+        seg.class_mask = Image<Gray>(do_warp(seg.class_mask.mat(), cv::INTER_NEAREST));
+        if (seg.instance_mask)
+            seg.instance_mask = Image<Gray>(do_warp(seg.instance_mask->mat(), cv::INTER_NEAREST));
+        return seg;
     }
 
 private:
