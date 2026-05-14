@@ -10,7 +10,6 @@
 #include "improc/core/concepts.hpp"
 #include "improc/ml/annotated.hpp"
 #include "improc/error.hpp"
-#include "improc/exceptions.hpp"
 
 namespace improc::ml {
 
@@ -53,6 +52,7 @@ parse_coco_json(const std::filesystem::path& json_path,
 class CocoDataset {
 public:
     /// @brief Fix class order and filter unknown classes. Optional — auto-assign if not called.
+    /// MUST be called before the first load_* call; calling after a load has no effect.
     CocoDataset& classes(std::vector<std::string> cls);
 
     /// @brief Skip annotations with `"iscrowd": 1` (default: true).

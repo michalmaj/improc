@@ -2,7 +2,6 @@
 #include <gtest/gtest.h>
 #include <filesystem>
 #include <fstream>
-#include <format>
 #include <opencv2/imgcodecs.hpp>
 #include "improc/ml/coco_dataset.hpp"
 #include "improc/ml/annotated.hpp"
@@ -68,11 +67,25 @@ static fs::path setup_coco_sample() {
     return root;
 }
 
-static const fs::path kCoco = setup_coco_sample();
+// ── ParseCocoJsonTest fixture ────────────────────────────────────────────────
+
+class ParseCocoJsonTest : public testing::Test {
+protected:
+    static fs::path kCoco;
+
+    static void SetUpTestSuite() {
+        kCoco = setup_coco_sample();
+    }
+    static void TearDownTestSuite() {
+        fs::remove_all(kCoco);
+    }
+};
+
+fs::path ParseCocoJsonTest::kCoco;
 
 // ── parse_coco_json ─────────────────────────────────────────────────────────
 
-TEST(ParseCocoJsonTest, ValidJsonLoadsCorrectImageCount) {
+TEST_F(ParseCocoJsonTest, ValidJsonLoadsCorrectImageCount) {
     std::unordered_map<std::string, int> cm;
     auto r = parse_coco_json(kCoco / "annotations_train.json",
                              kCoco / "images", cm);
@@ -80,7 +93,7 @@ TEST(ParseCocoJsonTest, ValidJsonLoadsCorrectImageCount) {
     EXPECT_EQ(r->size(), 2u);  // two images in train JSON
 }
 
-TEST(ParseCocoJsonTest, BBoxCoordinatesCorrect) {
+TEST_F(ParseCocoJsonTest, BBoxCoordinatesCorrect) {
     std::unordered_map<std::string, int> cm;
     auto r = parse_coco_json(kCoco / "annotations_train.json",
                              kCoco / "images", cm);
@@ -98,7 +111,7 @@ TEST(ParseCocoJsonTest, BBoxCoordinatesCorrect) {
     EXPECT_FLOAT_EQ(single->boxes[0].box.height, 40.f);
 }
 
-TEST(ParseCocoJsonTest, NonContiguousCocoIdsRemappedTo0Indexed) {
+TEST_F(ParseCocoJsonTest, NonContiguousCocoIdsRemappedTo0Indexed) {
     // cat=3, dog=7 in COCO → should be remapped to 0 and 1
     std::unordered_map<std::string, int> cm;
     auto r = parse_coco_json(kCoco / "annotations_train.json",
@@ -109,7 +122,7 @@ TEST(ParseCocoJsonTest, NonContiguousCocoIdsRemappedTo0Indexed) {
     EXPECT_EQ(cm["cat"] + cm["dog"], 1);  // one is 0, the other is 1
 }
 
-TEST(ParseCocoJsonTest, CrowdAnnotationSkippedByDefault) {
+TEST_F(ParseCocoJsonTest, CrowdAnnotationSkippedByDefault) {
     std::unordered_map<std::string, int> cm;
     auto r = parse_coco_json(kCoco / "annotations_val.json",
                              kCoco / "images", cm);
@@ -118,7 +131,7 @@ TEST(ParseCocoJsonTest, CrowdAnnotationSkippedByDefault) {
     EXPECT_EQ(r->at(0).boxes.size(), 0u);  // iscrowd=1, skipped
 }
 
-TEST(ParseCocoJsonTest, CrowdAnnotationKeptWhenFlagFalse) {
+TEST_F(ParseCocoJsonTest, CrowdAnnotationKeptWhenFlagFalse) {
     std::unordered_map<std::string, int> cm;
     auto r = parse_coco_json(kCoco / "annotations_val.json",
                              kCoco / "images", cm, /*skip_crowd=*/false);
@@ -128,7 +141,7 @@ TEST(ParseCocoJsonTest, CrowdAnnotationKeptWhenFlagFalse) {
     EXPECT_EQ(r->at(0).boxes[0].label, "dog");
 }
 
-TEST(ParseCocoJsonTest, MissingFileReturnsError) {
+TEST_F(ParseCocoJsonTest, MissingFileReturnsError) {
     std::unordered_map<std::string, int> cm;
     auto r = parse_coco_json(kCoco / "nonexistent.json",
                              kCoco / "images", cm);
@@ -136,7 +149,7 @@ TEST(ParseCocoJsonTest, MissingFileReturnsError) {
     EXPECT_EQ(r.error().code, improc::Error::Code::CocoJsonParseFailed);
 }
 
-TEST(ParseCocoJsonTest, MalformedJsonReturnsError) {
+TEST_F(ParseCocoJsonTest, MalformedJsonReturnsError) {
     auto bad = fs::temp_directory_path() / "improc_test_bad_coco.json";
     std::ofstream(bad) << "{ not valid json !!!";
     std::unordered_map<std::string, int> cm;
@@ -146,7 +159,7 @@ TEST(ParseCocoJsonTest, MalformedJsonReturnsError) {
     fs::remove(bad);
 }
 
-TEST(ParseCocoJsonTest, MissingRequiredKeyReturnsError) {
+TEST_F(ParseCocoJsonTest, MissingRequiredKeyReturnsError) {
     auto bad = fs::temp_directory_path() / "improc_test_noann.json";
     std::ofstream(bad) << R"({"images": [], "categories": []})";  // no "annotations"
     std::unordered_map<std::string, int> cm;
@@ -156,7 +169,7 @@ TEST(ParseCocoJsonTest, MissingRequiredKeyReturnsError) {
     fs::remove(bad);
 }
 
-TEST(ParseCocoJsonTest, FilterUnknownDropsObjectsNotInMap) {
+TEST_F(ParseCocoJsonTest, FilterUnknownDropsObjectsNotInMap) {
     std::unordered_map<std::string, int> cm{{"cat", 0}};  // dog not in map
     auto r = parse_coco_json(kCoco / "annotations_train.json",
                              kCoco / "images", cm,
