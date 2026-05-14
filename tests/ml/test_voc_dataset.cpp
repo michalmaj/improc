@@ -178,3 +178,142 @@ TEST(ParseVocXmlTest, FilterUnknownDropsObjectsNotInMap) {
     EXPECT_EQ(r->boxes[0].label, "cat");
     EXPECT_EQ(cm.size(), 1u);         // dog NOT added to map
 }
+
+// ── VocDataset — VOC split mode ─────────────────────────────────────────────
+
+TEST(VocDatasetSplitTest, TrainValSizeMatchSplitFiles) {
+    VocDataset ds;
+    ASSERT_TRUE(ds.load_from_directory(kVocSample).has_value());
+    EXPECT_EQ(ds.train().size(), 2u);  // 000001, 000002
+    EXPECT_EQ(ds.val().size(),   1u);  // 000003
+    EXPECT_EQ(ds.test().size(),  0u);  // test.txt is empty
+}
+
+TEST(VocDatasetSplitTest, ClassMappingBuiltCorrectly) {
+    VocDataset ds;
+    ASSERT_TRUE(ds.load_from_directory(kVocSample).has_value());
+    const auto& cm = ds.class_mapping();
+    EXPECT_TRUE(cm.contains("cat"));
+    EXPECT_TRUE(cm.contains("dog"));
+    EXPECT_EQ(cm.size(), 2u);
+}
+
+TEST(VocDatasetSplitTest, ClassNameForRoundTrips) {
+    VocDataset ds;
+    ASSERT_TRUE(ds.load_from_directory(kVocSample).has_value());
+    const auto& cm = ds.class_mapping();
+    EXPECT_EQ(ds.class_name_for(cm.at("cat")), "cat");
+    EXPECT_EQ(ds.class_name_for(cm.at("dog")), "dog");
+}
+
+TEST(VocDatasetSplitTest, DifficultObjectSkippedInVocSplit) {
+    // 000003 has one dog marked difficult=1, skip_difficult=true by default
+    VocDataset ds;
+    ASSERT_TRUE(ds.load_from_directory(kVocSample).has_value());
+    ASSERT_EQ(ds.val().size(), 1u);
+    EXPECT_EQ(ds.val()[0].boxes.size(), 0u);
+}
+
+TEST(VocDatasetSplitTest, DifficultKeptWhenFlagFalse) {
+    VocDataset ds;
+    ds.skip_difficult(false);
+    ASSERT_TRUE(ds.load_from_directory(kVocSample).has_value());
+    ASSERT_EQ(ds.val().size(), 1u);
+    EXPECT_EQ(ds.val()[0].boxes.size(), 1u);
+    EXPECT_EQ(ds.val()[0].boxes[0].label, "dog");
+}
+
+// ── VocDataset — random split mode ─────────────────────────────────────────
+
+TEST(VocDatasetRandomSplitTest, SumOfSplitsEqualsTotal) {
+    VocDataset ds;
+    ds.shuffle_seed(42).test_ratio(0.2f).val_ratio(0.2f);
+    ASSERT_TRUE(ds.load_from_directory(kVocNoSplit).has_value());
+    EXPECT_EQ(ds.train().size() + ds.val().size() + ds.test().size(), 5u);
+}
+
+TEST(VocDatasetRandomSplitTest, SeedProducesDeterministicSplit) {
+    VocDataset ds1, ds2;
+    ds1.shuffle_seed(99).test_ratio(0.2f).val_ratio(0.2f);
+    ds2.shuffle_seed(99).test_ratio(0.2f).val_ratio(0.2f);
+    ASSERT_TRUE(ds1.load_from_directory(kVocNoSplit).has_value());
+    ASSERT_TRUE(ds2.load_from_directory(kVocNoSplit).has_value());
+    ASSERT_EQ(ds1.train().size(), ds2.train().size());
+    EXPECT_EQ(cv::norm(ds1.train()[0].image.mat(),
+                       ds2.train()[0].image.mat(), cv::NORM_INF), 0.0);
+}
+
+TEST(VocDatasetRandomSplitTest, RatiosRespected) {
+    // 5 images, test=0.2→1, val=0.2→1, train=3
+    VocDataset ds;
+    ds.shuffle_seed(0).test_ratio(0.2f).val_ratio(0.2f);
+    ASSERT_TRUE(ds.load_from_directory(kVocNoSplit).has_value());
+    EXPECT_EQ(ds.train().size(), 3u);
+    EXPECT_EQ(ds.val().size(),   1u);
+    EXPECT_EQ(ds.test().size(),  1u);
+}
+
+// ── VocDataset — classes() filter ──────────────────────────────────────────
+
+TEST(VocDatasetClassFilterTest, UnknownClassObjectsDropped) {
+    VocDataset ds;
+    ds.classes({"cat"});   // dog is not in list
+    ASSERT_TRUE(ds.load_from_directory(kVocSample).has_value());
+    EXPECT_FALSE(ds.class_mapping().contains("dog"));
+    for (const auto& ann : ds.train())
+        for (const auto& bb : ann.boxes)
+            EXPECT_EQ(bb.label, "cat");
+}
+
+TEST(VocDatasetClassFilterTest, UserListFixesIdOrder) {
+    VocDataset ds;
+    ds.classes({"dog", "cat"});   // dog=0, cat=1
+    ASSERT_TRUE(ds.load_from_directory(kVocSample).has_value());
+    EXPECT_EQ(ds.class_mapping().at("dog"), 0);
+    EXPECT_EQ(ds.class_mapping().at("cat"), 1);
+}
+
+TEST(VocDatasetClassFilterTest, ClassNameForUnknownThrows) {
+    VocDataset ds;
+    ASSERT_TRUE(ds.load_from_directory(kVocSample).has_value());
+    EXPECT_THROW(ds.class_name_for(99), std::out_of_range);
+}
+
+// ── VocDataset — edge cases ─────────────────────────────────────────────────
+
+TEST(VocDatasetEdgeTest, MissingRootReturnsError) {
+    VocDataset ds;
+    auto r = ds.load_from_directory("/nonexistent/path/voc");
+    ASSERT_FALSE(r.has_value());
+    EXPECT_EQ(r.error().code, improc::Error::Code::DirectoryNotFound);
+}
+
+TEST(VocDatasetEdgeTest, MissingAnnotationsDirReturnsError) {
+    auto root = fs::temp_directory_path() / "improc_test_voc_noanno";
+    fs::remove_all(root);
+    fs::create_directories(root / "JPEGImages");
+    VocDataset ds;
+    auto r = ds.load_from_directory(root);
+    ASSERT_FALSE(r.has_value());
+    EXPECT_EQ(r.error().code, improc::Error::Code::DirectoryNotFound);
+    fs::remove_all(root);
+}
+
+TEST(VocDatasetEdgeTest, AllDifficultObjectsResultsInEmptyBoxes) {
+    VocDataset ds;
+    ds.skip_difficult(true);
+    ASSERT_TRUE(ds.load_from_directory(kVocSample).has_value());
+    ASSERT_EQ(ds.val().size(), 1u);
+    EXPECT_TRUE(ds.val()[0].boxes.empty());
+}
+
+TEST(VocDatasetEdgeTest, MissingSplitFileGivesEmptyVector) {
+    auto root = fs::temp_directory_path() / "improc_test_voc_nosplitfile";
+    fs::remove_all(root);
+    fs::copy(kVocSample, root, fs::copy_options::recursive);
+    fs::remove(root / "ImageSets" / "Main" / "test.txt");
+    VocDataset ds;
+    ASSERT_TRUE(ds.load_from_directory(root).has_value());
+    EXPECT_EQ(ds.test().size(), 0u);
+    fs::remove_all(root);
+}
