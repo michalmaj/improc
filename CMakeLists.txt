@@ -68,6 +68,15 @@ if(IMPROC_WITH_ONNX)
     message(STATUS "ONNX Runtime ${ORT_VERSION}: ${ORT_LIBRARY}")
 endif()
 
+# === nlohmann/json (header-only, FetchContent) ===
+include(FetchContent)
+FetchContent_Declare(nlohmann_json
+    URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+)
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+FetchContent_MakeAvailable(nlohmann_json)
+
 # === improc LIBRARY ===
 file(GLOB_RECURSE IMPROC_HEADERS CONFIGURE_DEPENDS include/improc/**/*.hpp)
 file(GLOB_RECURSE IMPROC_SOURCES CONFIGURE_DEPENDS src/**/*.cpp)
@@ -82,6 +91,7 @@ target_link_libraries(improc PUBLIC
         opencv::opencv
         $<$<BOOL:${IMPROC_WITH_ONNX}>:onnxruntime::onnxruntime>
 )
+target_link_libraries(improc PRIVATE nlohmann_json::nlohmann_json)
 target_compile_definitions(improc PUBLIC
         $<$<BOOL:${IMPROC_WITH_ONNX}>:IMPROC_WITH_ONNX>
 )

@@ -32,6 +32,7 @@ struct Error {
         OnnxInferenceFailed,   ///< ONNX Runtime session run returned an error.
         OnnxSessionNotLoaded,  ///< `OnnxSession::run()` called before `load()`.
         VocXmlParseFailed,     ///< VOC XML annotation file is missing, malformed, or references an unreadable image.
+        CocoJsonParseFailed,   ///< COCO JSON annotation file is missing, malformed, or references an unreadable image.
     };
 
     Code        code;    ///< Machine-readable error category.
@@ -160,6 +161,16 @@ struct Error {
     static Error voc_xml_parse_failed(const std::string& path, const std::string& reason) {
         return {Code::VocXmlParseFailed,
                 "VOC XML parse failed '" + path + "': " + reason};
+    }
+
+    /**
+     * @brief Returns an error when a COCO JSON annotation file cannot be parsed.
+     * @param path   Path to the JSON file.
+     * @param reason Human-readable explanation.
+     */
+    static Error coco_json_parse_failed(const std::string& path, const std::string& reason) {
+        return {Code::CocoJsonParseFailed,
+                "COCO JSON parse failed '" + path + "': " + reason};
     }
 };
 
