@@ -10,7 +10,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - [[0.1.0]](#010--2026-04-26) — 2026-04-26 · First versioned release; full namespace surface established
 - [[0.2.0]](#020--2026-05-02) — 2026-05-02 · `improc::core` extras + `improc::views` lazy pipeline
 - [[0.3.0]](#030--2026-05-07) — 2026-05-07 · Core completeness: morphology, colour spaces, feature detection pipeline
-- [[Unreleased]](#unreleased)
+- [[0.4.0]](#040--2026-05-14) — 2026-05-14 · ML Pipeline: augmentation, dataset loaders (VOC/COCO), segmentation types + seg-aware augmentation + VOC seg loader
 
 ---
 
@@ -189,7 +189,7 @@ description → matching → visualisation chain.
 
 ---
 
-## [Unreleased]
+## [0.4.0] — 2026-05-14
 
 ### Added
 
