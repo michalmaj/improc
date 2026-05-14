@@ -920,6 +920,68 @@ auto items = parse_coco_json("instances_train.json", "images/", class_map);
 **`parse_coco_json` params:** `json_path`, `images_dir`, `class_map&`, `skip_crowd=true`, `filter_unknown=false`.  
 **COCO id remapping:** COCO category IDs are non-contiguous (e.g. 1, 2, …90 with gaps). They are remapped to 0-indexed sequential IDs in encounter order (or user-specified order via `.classes()`).
 
+#### Segmentation Types (`segmented.hpp`, v0.4.0-F)
+
+`SegmentedImage<F>` holds an image, a per-pixel class mask, and an optional instance mask.
+
+```cpp
+template<AnyFormat Format>
+struct SegmentedImage {
+    Image<Format>              image;
+    Image<Gray>                class_mask;    // pixel = class_id; 255 = void (kept as-is)
+    std::optional<Image<Gray>> instance_mask; // nullopt when not loaded
+};
+
+// operator| pipeline support
+SegmentedImage<BGR> result = seg | RandomFlip{}.p(0.5f).bind(rng);
+```
+
+#### Segmentation Augmentation (v0.4.0-F/G)
+
+All geometric ops (`RandomFlip`, `RandomRotate`, `RandomCrop`, `RandomResize`, `RandomZoom`, `RandomShear`, `RandomPerspective`) accept `SegmentedImage<F>` — same spatial transform applied to image (INTER_LINEAR) and both masks (INTER_NEAREST). Color ops (`RandomBrightness`, `RandomContrast`, `ColorJitter`, `RandomGaussianNoise`, `RandomSaltAndPepper`, `RandomBlur`) apply to image only; masks pass through unchanged.
+
+`SegCompose<F>` — sequential composer, mirrors `BBoxCompose<F>`:
+```cpp
+SegCompose<BGR> pipeline;
+pipeline.add([](SegmentedImage<BGR> s, std::mt19937& r) { return RandomFlip{}.p(0.5f)(std::move(s), r); });
+pipeline.add([](SegmentedImage<BGR> s, std::mt19937& r) { return ColorJitter{}(std::move(s), r); });
+auto out = pipeline(seg, rng);
+// or: seg | pipeline.bind(rng)
+```
+
+#### VOC Segmentation Dataset Loader (`voc_seg_dataset.hpp`, v0.4.0-H)
+
+`VocSegDataset` loads VOC segmentation directories into `SegmentedImage<BGR>` train/val/test splits.
+
+```cpp
+#include "improc/ml/ml.hpp"
+using namespace improc::ml;
+
+VocSegDataset ds;
+ds.classes({"background","aeroplane","bicycle","bird","boat",
+            "bottle","bus","car","cat","chair","cow",
+            "diningtable","dog","horse","motorbike","person",
+            "pottedplant","sheep","sofa","train","tvmonitor"})
+  .load_instance_masks(true);
+
+auto ok = ds.load_from_directory("data/VOC2012");
+if (!ok) { std::cerr << ok.error().message; return 1; }
+
+for (const auto& seg : ds.train()) {
+    // seg.image: Image<BGR>
+    // seg.class_mask: Image<Gray> (pixel = class_id, 255 = void)
+    // seg.instance_mask: std::optional<Image<Gray>>
+}
+ds.class_name_for(15);  // "person"
+
+// Parse a single entry
+auto r = parse_voc_seg("2007_000032", "JPEGImages/", "SegmentationClass/", {});
+```
+
+**Directory structure:** `JPEGImages/`, `SegmentationClass/` (required), `SegmentationObject/` (optional, for instance masks), `ImageSets/Segmentation/train.txt` and `val.txt` (optional; falls back to 10%/10% random split).
+
+**Setters:** `classes(vector)` (index = class_id → name), `load_instance_masks(bool)` (default false).
+
 ---
 
 ## `improc::threading` — Concurrency utilities

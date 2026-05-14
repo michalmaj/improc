@@ -249,6 +249,10 @@ target_link_libraries(demo_voc_dataset PRIVATE improc)
 add_executable(demo_coco_dataset examples/ml/demo_coco_dataset.cpp)
 target_link_libraries(demo_coco_dataset PRIVATE improc)
 
+# VOC Segmentation dataset loader demo (v0.4.0-H)
+add_executable(demo_voc_seg_dataset examples/ml/demo_voc_seg_dataset.cpp)
+target_link_libraries(demo_voc_seg_dataset PRIVATE improc)
+
 # Video Writer demo
 add_executable(demo_video_writer examples/io/demo_video_writer.cpp)
 target_link_libraries(demo_video_writer PRIVATE improc)

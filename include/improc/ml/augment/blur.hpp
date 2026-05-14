@@ -9,6 +9,7 @@
 #include "improc/core/concepts.hpp"
 #include "improc/ml/augment/detail.hpp"
 #include "improc/exceptions.hpp"
+#include "improc/ml/segmented.hpp"
 
 namespace improc::ml {
 
@@ -60,6 +61,12 @@ struct RandomBlur : detail::BindMixin<RandomBlur> {
         return Image<Format>(std::move(dst));
     }
 
+    template<AnyFormat Format>
+    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+        seg.image = (*this)(std::move(seg.image), rng);
+        return seg;
+    }
+
 private:
     std::vector<Type> types_  = {Type::Gaussian, Type::Median};
     int               min_k_  = 3;
@@ -100,6 +107,12 @@ struct RandomSharpness : detail::BindMixin<RandomSharpness> {
         cv::Mat dst;
         dst_f.convertTo(dst, img.mat().type());
         return Image<Format>(std::move(dst));
+    }
+
+    template<AnyFormat Format>
+    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+        seg.image = (*this)(std::move(seg.image), rng);
+        return seg;
     }
 
 private:

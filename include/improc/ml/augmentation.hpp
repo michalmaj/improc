@@ -11,3 +11,5 @@
 #include "improc/ml/augment/bbox_compose.hpp"
 #include "improc/ml/labeled.hpp"
 #include "improc/ml/augment/mixup.hpp"
+#include "improc/ml/segmented.hpp"
+#include "improc/ml/augment/seg_compose.hpp"
