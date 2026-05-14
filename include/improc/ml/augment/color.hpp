@@ -10,6 +10,7 @@
 #include "improc/core/concepts.hpp"
 #include "improc/ml/augment/detail.hpp"
 #include "improc/exceptions.hpp"
+#include "improc/ml/segmented.hpp"
 
 namespace improc::ml {
 
@@ -39,6 +40,12 @@ struct RandomBrightness : detail::BindMixin<RandomBrightness> {
         return Image<Format>(std::move(dst));
     }
 
+    template<AnyFormat Format>
+    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+        seg.image = (*this)(std::move(seg.image), rng);
+        return seg;
+    }
+
 private:
     float low_  = 0.8f;
     float high_ = 1.2f;
@@ -65,6 +72,12 @@ struct RandomContrast : detail::BindMixin<RandomContrast> {
         cv::max(src_f, 0.0,   src_f);
         src_f.convertTo(dst, img.mat().type());
         return Image<Format>(std::move(dst));
+    }
+
+    template<AnyFormat Format>
+    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+        seg.image = (*this)(std::move(seg.image), rng);
+        return seg;
     }
 
 private:
@@ -146,6 +159,12 @@ struct ColorJitter : detail::BindMixin<ColorJitter> {
         }
     }
 
+    template<BGRFormat Format>
+    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+        seg.image = (*this)(std::move(seg.image), rng);
+        return seg;
+    }
+
 private:
     float br_low_ = 0.8f,  br_high_ = 1.2f;
     float ct_low_ = 0.8f,  ct_high_ = 1.2f;
@@ -172,6 +191,12 @@ struct RandomGrayscale : detail::BindMixin<RandomGrayscale> {
         } else {
             return img;
         }
+    }
+
+    template<AnyFormat Format>
+    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+        seg.image = (*this)(std::move(seg.image), rng);
+        return seg;
     }
 
 private:
@@ -205,6 +230,12 @@ struct RandomSolarize : detail::BindMixin<RandomSolarize> {
             cv::LUT(img.mat(), lut, dst);
             return Image<Format>(std::move(dst));
         }
+    }
+
+    template<AnyFormat Format>
+    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+        seg.image = (*this)(std::move(seg.image), rng);
+        return seg;
     }
 
 private:
@@ -242,6 +273,12 @@ struct RandomPosterize : detail::BindMixin<RandomPosterize> {
         }
     }
 
+    template<AnyFormat Format>
+    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+        seg.image = (*this)(std::move(seg.image), rng);
+        return seg;
+    }
+
 private:
     int   bits_ = 4;
     float p_    = 0.5f;
@@ -275,6 +312,12 @@ struct RandomEqualize : detail::BindMixin<RandomEqualize> {
         } else {
             return img;
         }
+    }
+
+    template<AnyFormat Format>
+    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+        seg.image = (*this)(std::move(seg.image), rng);
+        return seg;
     }
 
 private:

@@ -8,6 +8,7 @@
 using namespace improc::ml;
 using improc::core::BGR;
 using improc::core::Gray;
+using improc::ParameterError;
 
 // Helper: make a SegmentedImage with solid-colour image and given mask
 static SegmentedImage<BGR> make_seg(int rows, int cols,
@@ -229,4 +230,111 @@ TEST(SegAugmentTest, RandomResizeInstanceMaskPropagated) {
     ASSERT_TRUE(out.instance_mask.has_value());
     EXPECT_EQ(out.instance_mask->rows(), out.image.rows());
     EXPECT_EQ(out.instance_mask->cols(), out.image.cols());
+}
+
+#include "improc/ml/augment/color.hpp"
+#include "improc/ml/augment/noise.hpp"
+#include "improc/ml/augment/blur.hpp"
+#include "improc/ml/augment/seg_compose.hpp"
+
+// Helper: compare two Gray mats pixel-by-pixel
+static bool mats_equal(const cv::Mat& a, const cv::Mat& b) {
+    if (a.size() != b.size() || a.type() != b.type()) return false;
+    return cv::countNonZero(a != b) == 0;
+}
+
+TEST(SegAugmentTest, RandomBrightnessMaskUnchanged) {
+    std::mt19937 rng{0};
+    cv::Mat mask = make_quadrant_mask(32, 32);
+    auto seg = make_seg(32, 32, mask);
+    auto out = RandomBrightness{}(seg, rng);
+    EXPECT_TRUE(mats_equal(out.class_mask.mat(), mask));
+}
+
+TEST(SegAugmentTest, RandomContrastMaskUnchanged) {
+    std::mt19937 rng{0};
+    cv::Mat mask = make_quadrant_mask(32, 32);
+    auto seg = make_seg(32, 32, mask);
+    auto out = RandomContrast{}(seg, rng);
+    EXPECT_TRUE(mats_equal(out.class_mask.mat(), mask));
+}
+
+TEST(SegAugmentTest, ColorJitterMaskUnchanged) {
+    std::mt19937 rng{0};
+    cv::Mat mask = make_quadrant_mask(32, 32);
+    auto seg = make_seg(32, 32, mask);
+    auto out = ColorJitter{}(seg, rng);
+    EXPECT_TRUE(mats_equal(out.class_mask.mat(), mask));
+}
+
+TEST(SegAugmentTest, RandomGaussianNoiseMaskUnchanged) {
+    std::mt19937 rng{0};
+    cv::Mat mask = make_quadrant_mask(32, 32);
+    auto seg = make_seg(32, 32, mask);
+    auto out = RandomGaussianNoise{}(seg, rng);
+    EXPECT_TRUE(mats_equal(out.class_mask.mat(), mask));
+}
+
+TEST(SegAugmentTest, RandomSaltAndPepperMaskUnchanged) {
+    std::mt19937 rng{0};
+    cv::Mat mask = make_quadrant_mask(32, 32);
+    auto seg = make_seg(32, 32, mask);
+    auto out = RandomSaltAndPepper{}(seg, rng);
+    EXPECT_TRUE(mats_equal(out.class_mask.mat(), mask));
+}
+
+TEST(SegAugmentTest, RandomBlurMaskUnchanged) {
+    std::mt19937 rng{0};
+    cv::Mat mask = make_quadrant_mask(32, 32);
+    auto seg = make_seg(32, 32, mask);
+    auto out = RandomBlur{}(seg, rng);
+    EXPECT_TRUE(mats_equal(out.class_mask.mat(), mask));
+}
+
+TEST(SegAugmentTest, SegComposeSingleOp) {
+    std::mt19937 rng{0};
+    cv::Mat mask = make_quadrant_mask(32, 32);
+    auto seg = make_seg(32, 32, mask);
+    SegCompose<BGR> comp;
+    comp.add([](SegmentedImage<BGR> s, std::mt19937& r) {
+        return RandomBrightness{}(std::move(s), r);
+    });
+    auto out = comp(seg, rng);
+    EXPECT_EQ(out.class_mask.rows(), 32);
+    EXPECT_TRUE(mats_equal(out.class_mask.mat(), mask));
+}
+
+TEST(SegAugmentTest, SegComposeTwoOps) {
+    std::mt19937 rng{0};
+    cv::Mat mask = make_quadrant_mask(32, 32);
+    auto seg = make_seg(32, 32, mask);
+    SegCompose<BGR> comp;
+    comp.add([](SegmentedImage<BGR> s, std::mt19937& r) { return RandomFlip{}.p(1.0f)(std::move(s), r); });
+    comp.add([](SegmentedImage<BGR> s, std::mt19937& r) { return RandomBrightness{}(std::move(s), r); });
+    auto out = comp(seg, rng);
+    // After horizontal flip: top-left of mask is 1 (was 0)
+    EXPECT_EQ(out.class_mask.mat().at<uint8_t>(0, 0), 1);
+}
+
+TEST(SegAugmentTest, SegComposeNullOpThrows) {
+    SegCompose<BGR> comp;
+    EXPECT_THROW(comp.add(nullptr), ParameterError);
+}
+
+TEST(SegAugmentTest, SegPipelineOperator) {
+    std::mt19937 rng{0};
+    cv::Mat mask = make_quadrant_mask(32, 32);
+    auto seg = make_seg(32, 32, mask);
+    auto out = seg | RandomFlip{}.p(1.0f).bind(rng);
+    EXPECT_EQ(out.class_mask.mat().at<uint8_t>(0, 0), 1);
+}
+
+TEST(SegAugmentTest, ColorOpInstanceMaskUnchanged) {
+    std::mt19937 rng{0};
+    cv::Mat mask = make_quadrant_mask(32, 32);
+    cv::Mat inst_mat(32, 32, CV_8UC1, cv::Scalar(7));
+    auto seg = make_seg(32, 32, mask, /*with_instance=*/true);
+    auto out = RandomBrightness{}(seg, rng);
+    ASSERT_TRUE(out.instance_mask.has_value());
+    EXPECT_TRUE(mats_equal(out.instance_mask->mat(), seg.instance_mask->mat()));
 }
