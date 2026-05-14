@@ -10,3 +10,4 @@
 #include "improc/ml/image_loader.hpp"
 #include "improc/ml/model_loader_base.hpp"
 #include "improc/ml/result_types.hpp"
+#include "improc/ml/voc_dataset.hpp"

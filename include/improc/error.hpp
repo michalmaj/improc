@@ -31,6 +31,7 @@ struct Error {
         OnnxModelLoadFailed,   ///< ONNX Runtime failed to parse or load the model file.
         OnnxInferenceFailed,   ///< ONNX Runtime session run returned an error.
         OnnxSessionNotLoaded,  ///< `OnnxSession::run()` called before `load()`.
+        VocXmlParseFailed,     ///< VOC XML annotation file is missing, malformed, or references an unreadable image.
     };
 
     Code        code;    ///< Machine-readable error category.
@@ -149,6 +150,16 @@ struct Error {
     static Error onnx_session_not_loaded() {
         return {Code::OnnxSessionNotLoaded,
                 "OnnxSession::run() called before load() — call load() first"};
+    }
+
+    /**
+     * @brief Returns an error when a VOC XML annotation file cannot be parsed.
+     * @param path   Path to the XML file.
+     * @param reason Human-readable explanation.
+     */
+    static Error voc_xml_parse_failed(const std::string& path, const std::string& reason) {
+        return {Code::VocXmlParseFailed,
+                "VOC XML parse failed '" + path + "': " + reason};
     }
 };
 

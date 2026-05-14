@@ -198,3 +198,5 @@ description → matching → visualisation chain.
 - **`MixUp`** — blends two `LabeledImage<F>` with λ ~ Beta(α,α); image via `cv::addWeighted`, label as convex combination; setters: `alpha(a)` (> 0; default 0.4), `p(prob)` ([0,1]; default 1.0)
 - **`CutMix`** — pastes a random rectangular patch from secondary onto primary; label mixed by actual area ratio 1 − (w·h)/(W·H); setters: `alpha(a)` (> 0; default 1.0), `p(prob)` ([0,1]; default 1.0)
 - **`MixCompose<F>`** — sequential composer for binary mix ops; primary passes through each op sequentially with secondary fixed; `bind(secondary, rng)` returns `operator|`-compatible unary functor
+- **`VocDataset`** — loads Pascal VOC XML annotation datasets into `AnnotatedImage<BGR>` train/val/test splits; auto-detects VOC split (`ImageSets/Main/`) vs random split; class mapping auto-built or user-supplied via `.classes()`; `skip_difficult` (default true); fluent setter API consistent with `Dataset`
+- **`parse_voc_xml`** — free function; parses one VOC XML file + loads image; mutates a shared class map; `filter_unknown=true` drops objects not in the pre-filled map (used internally by `VocDataset`)

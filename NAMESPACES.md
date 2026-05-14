@@ -851,6 +851,41 @@ auto result2 = a | pipe.bind(b, rng);  // pipeline form
 
 **`MixCompose<F>`** chains binary ops sequentially — primary transforms through each op, secondary stays fixed. `bind(secondary, rng)` returns an `operator|`-compatible unary functor. Empty composer returns primary unchanged. Throws `ParameterError` for null ops.
 
+#### VOC Dataset Loader (v0.4.0-D)
+
+`VocDataset` loads Pascal VOC annotation datasets into `AnnotatedImage<BGR>` train/val/test splits. `parse_voc_xml` parses a single annotation file and can be used independently.
+
+```cpp
+#include "improc/ml/ml.hpp"
+using namespace improc::ml;
+
+// Full dataset loading
+VocDataset ds;
+ds.classes({"cat", "dog"})   // optional — fixes id order and filters others
+  .skip_difficult(true)       // default
+  .val_ratio(0.1f)
+  .test_ratio(0.2f)
+  .shuffle_seed(42);          // for random-split reproducibility
+
+auto ok = ds.load_from_directory("data/VOC2012");
+if (!ok) { std::cerr << ok.error().message; }
+
+for (const auto& ann : ds.train()) {
+    // ann.image: Image<BGR>
+    // ann.boxes: std::vector<BBox>  (each has .box, .class_id, .label)
+}
+ds.class_name_for(0);  // "cat"
+
+// Parse a single XML file
+std::unordered_map<std::string, int> class_map;
+auto ann = parse_voc_xml("Annotations/000001.xml", "JPEGImages/", class_map);
+```
+
+**Split detection:** If `<root>/ImageSets/Main/train.txt` exists, VOC split files are used. Otherwise all XMLs are randomly split by `val_ratio`/`test_ratio`.
+
+**`VocDataset` setters:** `classes(list)`, `skip_difficult(bool)`, `test_ratio(f)`, `val_ratio(f)`, `shuffle_seed(n)`.  
+**`parse_voc_xml` params:** `xml_path`, `images_dir`, `class_map&`, `skip_difficult=true`, `filter_unknown=false`.
+
 ---
 
 ## `improc::threading` — Concurrency utilities
