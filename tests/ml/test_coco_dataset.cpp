@@ -310,3 +310,109 @@ TEST_F(CocoDatasetTest, TrainBoxesCorrect) {
     EXPECT_EQ(ds.train()[0].boxes.size(), 1u);  // 000001: one cat box
     EXPECT_EQ(ds.train()[1].boxes.size(), 2u);  // 000002: one cat + one dog box
 }
+
+// ── CocoDatasetEdgeTest fixture ──────────────────────────────────────────────
+
+class CocoDatasetEdgeTest : public testing::Test {
+protected:
+    fs::path tmp_;
+
+    void SetUp() override {
+        tmp_ = fs::temp_directory_path() / "improc_coco_edge";
+        fs::remove_all(tmp_);
+        fs::create_directories(tmp_ / "images");
+    }
+    void TearDown() override {
+        fs::remove_all(tmp_);
+    }
+};
+
+// 1. Missing JSON file returns an error with CocoJsonParseFailed code.
+TEST_F(CocoDatasetEdgeTest, MissingJsonReturnsError) {
+    CocoDataset ds;
+    auto result = ds.load_train(tmp_ / "nonexistent.json", tmp_ / "images");
+    ASSERT_FALSE(result.has_value());
+    EXPECT_EQ(result.error().code, improc::Error::Code::CocoJsonParseFailed);
+}
+
+// 2. When all annotations have iscrowd=1 and skip_crowd is true, boxes must be empty.
+TEST_F(CocoDatasetEdgeTest, AllCrowdAnnotationsGivesEmptyBoxes) {
+    write_png(tmp_ / "images" / "img1.png", 10, 10);
+    write_json(tmp_ / "coco.json", R"({
+  "images": [{"id": 1, "file_name": "img1.png"}],
+  "annotations": [{"id": 1, "image_id": 1, "category_id": 1,
+                   "bbox": [0, 0, 10, 10], "iscrowd": 1}],
+  "categories": [{"id": 1, "name": "cat"}]
+})");
+
+    CocoDataset ds;
+    ds.skip_crowd(true);
+    auto result = ds.load_train(tmp_ / "coco.json", tmp_ / "images");
+    ASSERT_TRUE(result.has_value());
+    ASSERT_EQ(ds.train().size(), 1u);
+    EXPECT_TRUE(ds.train()[0].boxes.empty());
+}
+
+// 3. Pre-seeding classes with only "cat" filters out all "dog" annotations.
+TEST_F(CocoDatasetEdgeTest, UserClassesFiltersUnknowns) {
+    write_png(tmp_ / "images" / "img1.png", 10, 10);
+    write_json(tmp_ / "coco.json", R"({
+  "images": [{"id": 1, "file_name": "img1.png"}],
+  "annotations": [
+    {"id": 1, "image_id": 1, "category_id": 1, "bbox": [0, 0, 5, 5], "iscrowd": 0},
+    {"id": 2, "image_id": 1, "category_id": 2, "bbox": [5, 5, 5, 5], "iscrowd": 0}
+  ],
+  "categories": [
+    {"id": 1, "name": "cat"},
+    {"id": 2, "name": "dog"}
+  ]
+})");
+
+    CocoDataset ds;
+    ds.classes({"cat"});
+    auto result = ds.load_train(tmp_ / "coco.json", tmp_ / "images");
+    ASSERT_TRUE(result.has_value());
+    ASSERT_EQ(ds.train().size(), 1u);
+    for (const auto& bb : ds.train()[0].boxes)
+        EXPECT_EQ(bb.label, "cat");
+}
+
+// 4. User-specified class order overrides encounter order in the JSON.
+TEST_F(CocoDatasetEdgeTest, UserClassesFixesIdOrder) {
+    write_png(tmp_ / "images" / "img1.png", 10, 10);
+    write_json(tmp_ / "coco.json", R"({
+  "images": [{"id": 1, "file_name": "img1.png"}],
+  "annotations": [
+    {"id": 1, "image_id": 1, "category_id": 1, "bbox": [0, 0, 5, 5], "iscrowd": 0},
+    {"id": 2, "image_id": 1, "category_id": 2, "bbox": [5, 5, 5, 5], "iscrowd": 0}
+  ],
+  "categories": [
+    {"id": 1, "name": "cat"},
+    {"id": 2, "name": "dog"}
+  ]
+})");
+
+    CocoDataset ds;
+    ds.classes({"dog", "cat"});  // dog first — overrides JSON encounter order
+    auto result = ds.load_train(tmp_ / "coco.json", tmp_ / "images");
+    ASSERT_TRUE(result.has_value());
+    const auto& cm = ds.class_mapping();
+    EXPECT_EQ(cm.at("dog"), 0);
+    EXPECT_EQ(cm.at("cat"), 1);
+}
+
+// 5. An image with no annotations is still included but has empty boxes.
+TEST_F(CocoDatasetEdgeTest, EmptyAnnotationsGivesEmptyBoxes) {
+    write_png(tmp_ / "images" / "img1.png", 10, 10);
+    write_json(tmp_ / "coco.json", R"({
+  "images": [{"id": 1, "file_name": "img1.png"}],
+  "annotations": [],
+  "categories": [{"id": 1, "name": "cat"}]
+})");
+
+    CocoDataset ds;
+    auto result = ds.load_train(tmp_ / "coco.json", tmp_ / "images");
+    ASSERT_TRUE(result.has_value());
+    EXPECT_EQ(ds.train().size(), 1u);
+    EXPECT_TRUE(ds.train()[0].boxes.empty());
+}
