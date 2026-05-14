@@ -149,6 +149,15 @@ TEST(SegAugmentTest, RandomZoomMaskSameAsImage) {
     EXPECT_EQ(out.class_mask.cols(), out.image.cols());
 }
 
+TEST(SegAugmentTest, RandomZoomMaskInterNearest) {
+    std::mt19937 rng{0};
+    cv::Mat mask(32, 32, CV_8UC1, cv::Scalar(0));
+    mask(cv::Rect(16, 0, 16, 32)).setTo(1);
+    auto seg = make_seg(32, 32, mask);
+    auto out = RandomZoom{}.range(0.5f, 0.5f)(seg, rng);
+    EXPECT_TRUE(only_values(out.class_mask.mat(), {0, 1}));
+}
+
 // --- RandomShear ---
 TEST(SegAugmentTest, RandomShearMaskSameAsImage) {
     std::mt19937 rng{0};
@@ -156,6 +165,15 @@ TEST(SegAugmentTest, RandomShearMaskSameAsImage) {
     auto out = RandomShear{}.range(10.0f, 10.0f)(seg, rng);
     EXPECT_EQ(out.class_mask.rows(), out.image.rows());
     EXPECT_EQ(out.class_mask.cols(), out.image.cols());
+}
+
+TEST(SegAugmentTest, RandomShearMaskInterNearest) {
+    std::mt19937 rng{0};
+    cv::Mat mask(64, 64, CV_8UC1, cv::Scalar(0));
+    mask(cv::Rect(32, 0, 32, 64)).setTo(1);
+    auto seg = make_seg(64, 64, mask);
+    auto out = RandomShear{}.range(10.0f, 10.0f)(seg, rng);
+    EXPECT_TRUE(only_values(out.class_mask.mat(), {0, 1}));
 }
 
 // --- RandomPerspective ---
@@ -167,6 +185,15 @@ TEST(SegAugmentTest, RandomPerspectiveMaskSameAsImage) {
     EXPECT_EQ(out.class_mask.cols(), out.image.cols());
 }
 
+TEST(SegAugmentTest, RandomPerspectiveMaskInterNearest) {
+    std::mt19937 rng{0};
+    cv::Mat mask(64, 64, CV_8UC1, cv::Scalar(0));
+    mask(cv::Rect(32, 0, 32, 64)).setTo(1);
+    auto seg = make_seg(64, 64, mask);
+    auto out = RandomPerspective{}.distortion_scale(0.2f)(seg, rng);
+    EXPECT_TRUE(only_values(out.class_mask.mat(), {0, 1}));
+}
+
 // instance mask nullopt survives transform
 TEST(SegAugmentTest, NulloptInstanceMaskRemains) {
     std::mt19937 rng{0};
@@ -174,4 +201,32 @@ TEST(SegAugmentTest, NulloptInstanceMaskRemains) {
     ASSERT_FALSE(seg.instance_mask.has_value());
     auto out = RandomFlip{}.p(1.0f)(seg, rng);
     EXPECT_FALSE(out.instance_mask.has_value());
+}
+
+TEST(SegAugmentTest, RandomRotateInstanceMaskPropagated) {
+    std::mt19937 rng{42};
+    auto seg = make_seg(64, 64, make_quadrant_mask(64, 64), /*with_instance=*/true);
+    auto out = RandomRotate{}.range(30.0f, 30.0f)(seg, rng);
+    ASSERT_TRUE(out.instance_mask.has_value());
+    EXPECT_EQ(out.instance_mask->rows(), out.image.rows());
+    EXPECT_EQ(out.instance_mask->cols(), out.image.cols());
+}
+
+TEST(SegAugmentTest, RandomCropInstanceMaskPropagated) {
+    std::mt19937 rng{0};
+    auto seg = make_seg(64, 64, make_quadrant_mask(64, 64), /*with_instance=*/true);
+    auto out = RandomCrop{}.width(32).height(32)(seg, rng);
+    ASSERT_TRUE(out.instance_mask.has_value());
+    EXPECT_EQ(out.instance_mask->rows(), 32);
+    EXPECT_EQ(out.instance_mask->cols(), 32);
+}
+
+TEST(SegAugmentTest, RandomResizeInstanceMaskPropagated) {
+    std::mt19937 rng{0};
+    cv::Mat mask(64, 64, CV_8UC1, cv::Scalar(2));
+    auto seg = make_seg(64, 64, mask, /*with_instance=*/true);
+    auto out = RandomResize{}.range(128, 128)(seg, rng);
+    ASSERT_TRUE(out.instance_mask.has_value());
+    EXPECT_EQ(out.instance_mask->rows(), out.image.rows());
+    EXPECT_EQ(out.instance_mask->cols(), out.image.cols());
 }

@@ -661,7 +661,9 @@ struct RandomPerspective : detail::BindMixin<RandomPerspective> {
         cv::Mat M = cv::getPerspectiveTransform(src_pts, dst_pts);
         cv::Size sz(W, H);
         auto do_warp = [&](const cv::Mat& src, int interp) {
-            cv::Mat dst; cv::warpPerspective(src, dst, M, sz, interp); return dst;
+            cv::Mat dst;
+            cv::warpPerspective(src, dst, M, sz, interp, cv::BORDER_CONSTANT, cv::Scalar::all(0));
+            return dst;
         };
         seg.image      = Image<Format>(do_warp(seg.image.mat(), cv::INTER_LINEAR));
         seg.class_mask = Image<Gray>(do_warp(seg.class_mask.mat(), cv::INTER_NEAREST));
