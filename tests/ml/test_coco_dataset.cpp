@@ -69,3 +69,102 @@ static fs::path setup_coco_sample() {
 }
 
 static const fs::path kCoco = setup_coco_sample();
+
+// ── parse_coco_json ─────────────────────────────────────────────────────────
+
+TEST(ParseCocoJsonTest, ValidJsonLoadsCorrectImageCount) {
+    std::unordered_map<std::string, int> cm;
+    auto r = parse_coco_json(kCoco / "annotations_train.json",
+                             kCoco / "images", cm);
+    ASSERT_TRUE(r.has_value());
+    EXPECT_EQ(r->size(), 2u);  // two images in train JSON
+}
+
+TEST(ParseCocoJsonTest, BBoxCoordinatesCorrect) {
+    std::unordered_map<std::string, int> cm;
+    auto r = parse_coco_json(kCoco / "annotations_train.json",
+                             kCoco / "images", cm);
+    ASSERT_TRUE(r.has_value());
+    // Find the image with one box (image 000001 has only cat annotation id=1)
+    const auto* single = [&]() -> const AnnotatedImage<BGR>* {
+        for (const auto& ann : *r)
+            if (ann.boxes.size() == 1u) return &ann;
+        return nullptr;
+    }();
+    ASSERT_NE(single, nullptr);
+    EXPECT_FLOAT_EQ(single->boxes[0].box.x,      10.f);
+    EXPECT_FLOAT_EQ(single->boxes[0].box.y,      10.f);
+    EXPECT_FLOAT_EQ(single->boxes[0].box.width,  40.f);
+    EXPECT_FLOAT_EQ(single->boxes[0].box.height, 40.f);
+}
+
+TEST(ParseCocoJsonTest, NonContiguousCocoIdsRemappedTo0Indexed) {
+    // cat=3, dog=7 in COCO → should be remapped to 0 and 1
+    std::unordered_map<std::string, int> cm;
+    auto r = parse_coco_json(kCoco / "annotations_train.json",
+                             kCoco / "images", cm);
+    ASSERT_TRUE(r.has_value());
+    EXPECT_TRUE(cm.contains("cat"));
+    EXPECT_TRUE(cm.contains("dog"));
+    EXPECT_EQ(cm["cat"] + cm["dog"], 1);  // one is 0, the other is 1
+}
+
+TEST(ParseCocoJsonTest, CrowdAnnotationSkippedByDefault) {
+    std::unordered_map<std::string, int> cm;
+    auto r = parse_coco_json(kCoco / "annotations_val.json",
+                             kCoco / "images", cm);
+    ASSERT_TRUE(r.has_value());
+    ASSERT_EQ(r->size(), 1u);
+    EXPECT_EQ(r->at(0).boxes.size(), 0u);  // iscrowd=1, skipped
+}
+
+TEST(ParseCocoJsonTest, CrowdAnnotationKeptWhenFlagFalse) {
+    std::unordered_map<std::string, int> cm;
+    auto r = parse_coco_json(kCoco / "annotations_val.json",
+                             kCoco / "images", cm, /*skip_crowd=*/false);
+    ASSERT_TRUE(r.has_value());
+    ASSERT_EQ(r->size(), 1u);
+    EXPECT_EQ(r->at(0).boxes.size(), 1u);
+    EXPECT_EQ(r->at(0).boxes[0].label, "dog");
+}
+
+TEST(ParseCocoJsonTest, MissingFileReturnsError) {
+    std::unordered_map<std::string, int> cm;
+    auto r = parse_coco_json(kCoco / "nonexistent.json",
+                             kCoco / "images", cm);
+    ASSERT_FALSE(r.has_value());
+    EXPECT_EQ(r.error().code, improc::Error::Code::CocoJsonParseFailed);
+}
+
+TEST(ParseCocoJsonTest, MalformedJsonReturnsError) {
+    auto bad = fs::temp_directory_path() / "improc_test_bad_coco.json";
+    std::ofstream(bad) << "{ not valid json !!!";
+    std::unordered_map<std::string, int> cm;
+    auto r = parse_coco_json(bad, kCoco / "images", cm);
+    ASSERT_FALSE(r.has_value());
+    EXPECT_EQ(r.error().code, improc::Error::Code::CocoJsonParseFailed);
+    fs::remove(bad);
+}
+
+TEST(ParseCocoJsonTest, MissingRequiredKeyReturnsError) {
+    auto bad = fs::temp_directory_path() / "improc_test_noann.json";
+    std::ofstream(bad) << R"({"images": [], "categories": []})";  // no "annotations"
+    std::unordered_map<std::string, int> cm;
+    auto r = parse_coco_json(bad, kCoco / "images", cm);
+    ASSERT_FALSE(r.has_value());
+    EXPECT_EQ(r.error().code, improc::Error::Code::CocoJsonParseFailed);
+    fs::remove(bad);
+}
+
+TEST(ParseCocoJsonTest, FilterUnknownDropsObjectsNotInMap) {
+    std::unordered_map<std::string, int> cm{{"cat", 0}};  // dog not in map
+    auto r = parse_coco_json(kCoco / "annotations_train.json",
+                             kCoco / "images", cm,
+                             /*skip_crowd=*/true, /*filter_unknown=*/true);
+    ASSERT_TRUE(r.has_value());
+    // All boxes should be "cat" only
+    for (const auto& ann : *r)
+        for (const auto& bb : ann.boxes)
+            EXPECT_EQ(bb.label, "cat");
+    EXPECT_EQ(cm.size(), 1u);  // dog NOT added
+}
