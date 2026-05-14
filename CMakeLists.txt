@@ -245,6 +245,10 @@ target_link_libraries(demo_augment_mixup PRIVATE improc)
 add_executable(demo_voc_dataset examples/ml/demo_voc_dataset.cpp)
 target_link_libraries(demo_voc_dataset PRIVATE improc)
 
+# COCO dataset loader demo (v0.4.0-E)
+add_executable(demo_coco_dataset examples/ml/demo_coco_dataset.cpp)
+target_link_libraries(demo_coco_dataset PRIVATE improc)
+
 # Video Writer demo
 add_executable(demo_video_writer examples/io/demo_video_writer.cpp)
 target_link_libraries(demo_video_writer PRIVATE improc)

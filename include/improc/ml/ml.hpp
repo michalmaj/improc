@@ -11,3 +11,4 @@
 #include "improc/ml/model_loader_base.hpp"
 #include "improc/ml/result_types.hpp"
 #include "improc/ml/voc_dataset.hpp"
+#include "improc/ml/coco_dataset.hpp"

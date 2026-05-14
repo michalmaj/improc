@@ -886,6 +886,40 @@ auto ann = parse_voc_xml("Annotations/000001.xml", "JPEGImages/", class_map);
 **`VocDataset` setters:** `classes(list)`, `skip_difficult(bool)`, `test_ratio(f)`, `val_ratio(f)`, `shuffle_seed(n)`.  
 **`parse_voc_xml` params:** `xml_path`, `images_dir`, `class_map&`, `skip_difficult=true`, `filter_unknown=false`.
 
+#### COCO Dataset Loader (v0.4.0-E)
+
+`CocoDataset` loads COCO JSON annotation datasets into `AnnotatedImage<BGR>` splits. Each split is loaded independently via explicit `load_train`/`load_val`/`load_test` calls. Class mapping is shared across all splits and auto-built or user-supplied via `.classes()`. `parse_coco_json` parses a single COCO JSON file and can be used independently.
+
+```cpp
+#include "improc/ml/ml.hpp"
+using namespace improc::ml;
+
+// Full dataset loading
+CocoDataset ds;
+ds.classes({"cat", "dog"})  // optional — fixes id order and filters others; call before load_*
+  .skip_crowd(true);         // default
+
+auto ok = ds.load_train("annotations/instances_train2017.json", "images/train2017/");
+if (!ok) { std::cerr << ok.error().message; }
+
+ok = ds.load_val("annotations/instances_val2017.json", "images/val2017/");
+if (!ok) { std::cerr << ok.error().message; }
+
+for (const auto& ann : ds.train()) {
+    // ann.image: Image<BGR>
+    // ann.boxes: std::vector<BBox>  (each has .box, .class_id, .label)
+}
+ds.class_name_for(0);  // "cat"
+
+// Parse a single COCO JSON file
+std::unordered_map<std::string, int> class_map;
+auto items = parse_coco_json("instances_train.json", "images/", class_map);
+```
+
+**`CocoDataset` setters:** `classes(list)` (MUST call before first load_\*), `skip_crowd(bool)` (default true).  
+**`parse_coco_json` params:** `json_path`, `images_dir`, `class_map&`, `skip_crowd=true`, `filter_unknown=false`.  
+**COCO id remapping:** COCO category IDs are non-contiguous (e.g. 1, 2, …90 with gaps). They are remapped to 0-indexed sequential IDs in encounter order (or user-specified order via `.classes()`).
+
 ---
 
 ## `improc::threading` — Concurrency utilities
