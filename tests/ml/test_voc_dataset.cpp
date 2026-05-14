@@ -99,3 +99,82 @@ static fs::path setup_voc_nosplit() {
 
 static const fs::path kVocSample  = setup_voc_sample();
 static const fs::path kVocNoSplit = setup_voc_nosplit();
+
+// ── parse_voc_xml ───────────────────────────────────────────────────────────
+
+TEST(ParseVocXmlTest, ValidXmlLoadsSingleObject) {
+    std::unordered_map<std::string, int> cm;
+    auto r = parse_voc_xml(kVocSample / "Annotations" / "000001.xml",
+                           kVocSample / "JPEGImages", cm);
+    ASSERT_TRUE(r.has_value());
+    EXPECT_EQ(r->image.rows(), 100);
+    EXPECT_EQ(r->image.cols(), 100);
+    ASSERT_EQ(r->boxes.size(), 1u);
+    EXPECT_EQ(r->boxes[0].label, "cat");
+    EXPECT_EQ(r->boxes[0].class_id, 0);
+    EXPECT_FLOAT_EQ(r->boxes[0].box.x,      10.f);
+    EXPECT_FLOAT_EQ(r->boxes[0].box.y,      10.f);
+    EXPECT_FLOAT_EQ(r->boxes[0].box.width,  40.f);   // xmax-xmin = 50-10
+    EXPECT_FLOAT_EQ(r->boxes[0].box.height, 40.f);   // ymax-ymin = 50-10
+}
+
+TEST(ParseVocXmlTest, ValidXmlLoadsMultipleObjects) {
+    std::unordered_map<std::string, int> cm;
+    auto r = parse_voc_xml(kVocSample / "Annotations" / "000002.xml",
+                           kVocSample / "JPEGImages", cm);
+    ASSERT_TRUE(r.has_value());
+    ASSERT_EQ(r->boxes.size(), 2u);
+    EXPECT_EQ(r->boxes[0].label, "cat");
+    EXPECT_EQ(r->boxes[1].label, "dog");
+    EXPECT_EQ(cm.size(), 2u);
+}
+
+TEST(ParseVocXmlTest, DifficultObjectSkippedByDefault) {
+    std::unordered_map<std::string, int> cm;
+    auto r = parse_voc_xml(kVocSample / "Annotations" / "000003.xml",
+                           kVocSample / "JPEGImages", cm);
+    ASSERT_TRUE(r.has_value());
+    EXPECT_EQ(r->boxes.size(), 0u);   // difficult=1, skip_difficult=true
+}
+
+TEST(ParseVocXmlTest, DifficultObjectKeptWhenFlagFalse) {
+    std::unordered_map<std::string, int> cm;
+    auto r = parse_voc_xml(kVocSample / "Annotations" / "000003.xml",
+                           kVocSample / "JPEGImages", cm, /*skip_difficult=*/false);
+    ASSERT_TRUE(r.has_value());
+    ASSERT_EQ(r->boxes.size(), 1u);
+    EXPECT_EQ(r->boxes[0].label, "dog");
+}
+
+TEST(ParseVocXmlTest, MissingXmlReturnsError) {
+    std::unordered_map<std::string, int> cm;
+    auto r = parse_voc_xml(kVocSample / "Annotations" / "nonexistent.xml",
+                           kVocSample / "JPEGImages", cm);
+    ASSERT_FALSE(r.has_value());
+    EXPECT_EQ(r.error().code, improc::Error::Code::VocXmlParseFailed);
+}
+
+TEST(ParseVocXmlTest, MissingImageReturnsError) {
+    // Write an XML pointing to a non-existent image
+    auto xml_path = fs::temp_directory_path() / "improc_test_bad_img.xml";
+    std::ofstream(xml_path) <<
+        "<annotation><filename>no_such.png</filename>"
+        "<size><width>100</width><height>100</height><depth>3</depth></size>"
+        "</annotation>";
+    std::unordered_map<std::string, int> cm;
+    auto r = parse_voc_xml(xml_path, kVocSample / "JPEGImages", cm);
+    ASSERT_FALSE(r.has_value());
+    EXPECT_EQ(r.error().code, improc::Error::Code::ImageReadFailed);
+    fs::remove(xml_path);
+}
+
+TEST(ParseVocXmlTest, FilterUnknownDropsObjectsNotInMap) {
+    std::unordered_map<std::string, int> cm{{"cat", 0}};  // only cat
+    auto r = parse_voc_xml(kVocSample / "Annotations" / "000002.xml",
+                           kVocSample / "JPEGImages", cm,
+                           /*skip_difficult=*/true, /*filter_unknown=*/true);
+    ASSERT_TRUE(r.has_value());
+    ASSERT_EQ(r->boxes.size(), 1u);   // dog dropped, cat kept
+    EXPECT_EQ(r->boxes[0].label, "cat");
+    EXPECT_EQ(cm.size(), 1u);         // dog NOT added to map
+}
