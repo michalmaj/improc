@@ -33,7 +33,7 @@ struct Error {
         OnnxSessionNotLoaded,  ///< `OnnxSession::run()` called before `load()`.
         VocXmlParseFailed,     ///< VOC XML annotation file is missing, malformed, or references an unreadable image.
         CocoJsonParseFailed,   ///< COCO JSON annotation file is missing, malformed, or references an unreadable image.
-        VocSegParseFailed,   ///< VOC segmentation mask file is missing, malformed, or references an unreadable image.
+        VocSegParseFailed,     ///< VOC segmentation mask file is missing, malformed, or references an unreadable image.
     };
 
     Code        code;    ///< Machine-readable error category.

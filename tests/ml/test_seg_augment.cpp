@@ -29,3 +29,11 @@ TEST(SegAugmentTest, SegmentedImageConstructs) {
     EXPECT_EQ(seg.class_mask.cols(), 4);
     EXPECT_FALSE(seg.instance_mask.has_value());
 }
+
+TEST(SegAugmentTest, SegmentedImageWithInstanceMask) {
+    cv::Mat mask(4, 4, CV_8UC1, cv::Scalar(1));
+    auto seg = make_seg(4, 4, mask, /*with_instance=*/true);
+    ASSERT_TRUE(seg.instance_mask.has_value());
+    EXPECT_EQ(seg.instance_mask->cols(), 4);
+    EXPECT_EQ(seg.instance_mask->rows(), 4);
+}
