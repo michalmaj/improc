@@ -50,3 +50,26 @@ TEST(AveragePrecisionTest, ZeroCurve) {
     std::vector<float> p = {0.0f, 0.0f, 0.0f};
     EXPECT_FLOAT_EQ(average_precision(r, p), 0.0f);
 }
+
+TEST(AveragePrecisionTest, MismatchedSizeReturnsZero) {
+    std::vector<float> r = {0.0f, 0.5f, 1.0f};
+    std::vector<float> p = {1.0f, 1.0f};  // shorter than r
+    EXPECT_FLOAT_EQ(average_precision(r, p), 0.0f);
+}
+
+TEST(AveragePrecisionTest, EmptySpanReturnsZero) {
+    EXPECT_FLOAT_EQ(average_precision({}, {}), 0.0f);
+}
+
+TEST(AveragePrecisionTest, RealisticCurve) {
+    // 3 detections: first 2 are TP, last is FP
+    // recall:    0.5,  1.0,  1.0
+    // precision: 1.0,  1.0,  0.667
+    // 101-point COCO AP should be 1.0 (precision stays ≥ 1.0 for all recall thresholds ≤ 1.0)
+    std::vector<float> r = {0.5f, 1.0f, 1.0f};
+    std::vector<float> p = {1.0f, 1.0f, 0.667f};
+    // At recall thresholds 0.00..0.50: max prec ≥ 1.0
+    // At recall thresholds 0.51..1.00: max prec = 1.0 (second point)
+    // So AP = 1.0
+    EXPECT_NEAR(average_precision(r, p), 1.0f, 1e-3f);
+}

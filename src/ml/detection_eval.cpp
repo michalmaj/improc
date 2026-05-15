@@ -25,6 +25,7 @@ float iou(const BBox& a, const BBox& b) {
 
 float average_precision(std::span<const float> recalls,
                         std::span<const float> precisions) {
+    if (recalls.size() != precisions.size() || recalls.empty()) return 0.0f;
     float ap = 0.0f;
     for (int i = 0; i <= 100; ++i) {
         float thr = static_cast<float>(i) / 100.0f;

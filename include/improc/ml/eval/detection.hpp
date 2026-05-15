@@ -13,12 +13,12 @@ namespace improc::ml {
 
 // Intersection over Union of two bounding boxes.
 // Returns 0.0 when either box has zero area.
-float iou(const BBox& a, const BBox& b);
+[[nodiscard]] float iou(const BBox& a, const BBox& b);
 
 // Area under the precision-recall curve using 101-point COCO interpolation.
 // recalls and precisions must have the same length.
-float average_precision(std::span<const float> recalls,
-                        std::span<const float> precisions);
+[[nodiscard]] float average_precision(std::span<const float> recalls,
+                                      std::span<const float> precisions);
 
 struct DetectionMetrics {
     float mAP_50    = 0.0f;
@@ -29,7 +29,7 @@ struct DetectionMetrics {
 struct DetectionEval {
     void update(const std::vector<Detection>& preds,
                 const std::vector<BBox>&      gts);
-    DetectionMetrics compute() const;
+    [[nodiscard]] DetectionMetrics compute() const;
     void reset();
 
 private:
