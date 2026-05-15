@@ -73,3 +73,60 @@ TEST(AveragePrecisionTest, RealisticCurve) {
     // So AP = 1.0
     EXPECT_NEAR(average_precision(r, p), 1.0f, 1e-3f);
 }
+
+// ── DetectionEval ─────────────────────────────────────────────────────────
+
+TEST(DetectionEvalTest, PerfectPredictions) {
+    DetectionEval eval;
+    eval.update(
+        {{cv::Rect2f(0, 0, 10, 10), 0, 1.0f, "cat"}},
+        {make_box(0, 0, 10, 10, "cat")}
+    );
+    auto m = eval.compute();
+    EXPECT_NEAR(m.mAP_50, 1.0f, 1e-4f);
+}
+
+TEST(DetectionEvalTest, NoPredictions) {
+    DetectionEval eval;
+    eval.update({}, {make_box(0, 0, 10, 10, "cat")});
+    auto m = eval.compute();
+    EXPECT_FLOAT_EQ(m.mAP_50, 0.0f);
+}
+
+TEST(DetectionEvalTest, MultiClassMAP) {
+    DetectionEval eval;
+    // cat: perfect match
+    eval.update(
+        {{cv::Rect2f(0, 0, 10, 10), 0, 1.0f, "cat"}},
+        {make_box(0, 0, 10, 10, "cat")}
+    );
+    // dog: no prediction
+    eval.update({}, {make_box(0, 0, 10, 10, "dog", 1)});
+    auto m = eval.compute();
+    EXPECT_NEAR(m.per_class_AP.at("cat"), 1.0f, 1e-4f);
+    EXPECT_FLOAT_EQ(m.per_class_AP.at("dog"), 0.0f);
+    EXPECT_NEAR(m.mAP_50, 0.5f, 1e-4f);
+}
+
+TEST(DetectionEvalTest, CocoMAPBound) {
+    DetectionEval eval;
+    // imperfect overlap: mAP_50_95 <= mAP_50
+    eval.update(
+        {{cv::Rect2f(0, 0, 10, 10), 0, 1.0f, "cat"}},
+        {make_box(2, 2, 8, 8, "cat")}
+    );
+    auto m = eval.compute();
+    EXPECT_LE(m.mAP_50_95, m.mAP_50 + 1e-5f);
+}
+
+TEST(DetectionEvalTest, ResetClearsState) {
+    DetectionEval eval;
+    eval.update(
+        {{cv::Rect2f(0, 0, 10, 10), 0, 1.0f, "cat"}},
+        {make_box(0, 0, 10, 10, "cat")}
+    );
+    eval.reset();
+    auto m = eval.compute();
+    EXPECT_FLOAT_EQ(m.mAP_50, 0.0f);
+    EXPECT_TRUE(m.per_class_AP.empty());
+}
