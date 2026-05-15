@@ -37,15 +37,22 @@ TEST(SortTrackerTest, IdStabilityOverFrames) {
 TEST(SortTrackerTest, OcclusionRecovery) {
     SortTracker tracker;
     tracker.min_hits(1).max_age(3);
-    tracker.update({make_det(0, 0, 10, 10)});
-    auto r1 = tracker.update({make_det(0, 0, 10, 10)});
-    int saved_id = r1.empty() ? -1 : r1[0].id;
 
-    tracker.update({});  // occluded
-    tracker.update({});  // still occluded (age=2 <= max_age=3)
-    auto r4 = tracker.update({make_det(0, 0, 10, 10)});
-    ASSERT_FALSE(r4.empty());
-    EXPECT_EQ(r4[0].id, saved_id);
+    // Build a confirmed track
+    tracker.update({make_det(0, 0, 10, 10)});
+    auto r = tracker.update({make_det(0, 0, 10, 10)});
+    ASSERT_FALSE(r.empty());
+    int saved_id = r[0].id;
+
+    // Blank frames 1..max_age: track must survive every one
+    for (int i = 1; i <= 3; ++i) {
+        auto blank = tracker.update({});
+        EXPECT_FALSE(blank.empty()) << "track should survive blank frame " << i;
+    }
+
+    // One more blank frame (max_age+1): track must be removed
+    auto dead = tracker.update({});
+    EXPECT_TRUE(dead.empty()) << "track should be removed after max_age+1 blank frames";
 }
 
 TEST(SortTrackerTest, MultipleObjectsNoIdSwitch) {
