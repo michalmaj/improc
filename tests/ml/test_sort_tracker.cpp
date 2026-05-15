@@ -13,12 +13,11 @@ TEST(SortTrackerTest, ConfirmationThreshold) {
     tracker.min_hits(3).max_age(5);
     auto r1 = tracker.update({make_det(0, 0, 10, 10)});
     auto r2 = tracker.update({make_det(0, 0, 10, 10)});
-    for (const auto& t : r1) EXPECT_FALSE(t.is_confirmed);
-    for (const auto& t : r2) EXPECT_FALSE(t.is_confirmed);
+    EXPECT_EQ(r1.size(), 0u);  // unconfirmed on frame 1
+    EXPECT_EQ(r2.size(), 0u);  // unconfirmed on frame 2
     auto r3 = tracker.update({make_det(0, 0, 10, 10)});
-    bool any_confirmed = false;
-    for (const auto& t : r3) if (t.is_confirmed) any_confirmed = true;
-    EXPECT_TRUE(any_confirmed);
+    ASSERT_EQ(r3.size(), 1u);
+    EXPECT_TRUE(r3[0].is_confirmed);
 }
 
 TEST(SortTrackerTest, IdStabilityOverFrames) {
@@ -39,7 +38,7 @@ TEST(SortTrackerTest, OcclusionRecovery) {
     tracker.min_hits(1).max_age(3);
 
     // Build a confirmed track
-    tracker.update({make_det(0, 0, 10, 10)});
+    (void)tracker.update({make_det(0, 0, 10, 10)});
     auto r = tracker.update({make_det(0, 0, 10, 10)});
     ASSERT_FALSE(r.empty());
     int saved_id = r[0].id;
@@ -82,9 +81,9 @@ TEST(SortTrackerTest, MultipleObjectsNoIdSwitch) {
 TEST(SortTrackerTest, KalmanPredictsMissingDetection) {
     SortTracker tracker;
     tracker.min_hits(1).max_age(5);
-    tracker.update({make_det(0,  0, 10, 10)});
-    tracker.update({make_det(5,  0, 10, 10)});
-    tracker.update({make_det(10, 0, 10, 10)});
+    (void)tracker.update({make_det(0,  0, 10, 10)});
+    (void)tracker.update({make_det(5,  0, 10, 10)});
+    (void)tracker.update({make_det(10, 0, 10, 10)});
 
     auto r = tracker.update({});
     ASSERT_FALSE(r.empty());
@@ -95,8 +94,8 @@ TEST(SortTrackerTest, KalmanPredictsMissingDetection) {
 TEST(SortTrackerTest, ResetClearsState) {
     SortTracker tracker;
     tracker.min_hits(1);
-    tracker.update({make_det(0, 0, 10, 10)});
-    tracker.update({make_det(0, 0, 10, 10)});
+    (void)tracker.update({make_det(0, 0, 10, 10)});
+    (void)tracker.update({make_det(0, 0, 10, 10)});
     tracker.reset();
     auto r = tracker.update({make_det(0, 0, 10, 10)});
     for (const auto& t : r) EXPECT_EQ(t.id, 0);

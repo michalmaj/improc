@@ -50,7 +50,7 @@ std::vector<int> hungarian(const std::vector<std::vector<float>>& cost) {
     if (m == 0) return std::vector<int>(n, -1);
 
     int sz = std::max(n, m);
-    const float kInf = 1e18f;
+    const float kInf = 1e9f;
     std::vector<std::vector<float>> C(sz, std::vector<float>(sz, kInf));
     for (int i = 0; i < n; ++i)
         for (int j = 0; j < m; ++j)
@@ -161,8 +161,6 @@ SortTracker::~SortTracker() = default;
 // ── SortTracker::update ────────────────────────────────────────────────────────
 
 std::vector<Track> SortTracker::update(const std::vector<Detection>& dets) {
-    ++frame_;
-
     // 1. Predict all tracklets
     for (auto& trk : tracklets_) trk->predict();
 
@@ -179,7 +177,6 @@ std::vector<Track> SortTracker::update(const std::vector<Detection>& dets) {
 
     // 3. Hungarian assignment
     auto det_to_trk = (nd > 0 && nt > 0) ? hungarian(cost) : std::vector<int>(nd, -1);
-    std::vector<bool> trk_matched(nt, false);
 
     for (int i = 0; i < nd; ++i) {
         int j = (i < static_cast<int>(det_to_trk.size())) ? det_to_trk[i] : -1;
@@ -188,7 +185,6 @@ std::vector<Track> SortTracker::update(const std::vector<Detection>& dets) {
             float s = bbox_iou(det_box, tracklets_[j]->predicted_bbox);
             if (s >= iou_thr_) {
                 tracklets_[j]->correct(dets[i]);
-                trk_matched[j] = true;
                 continue;
             }
         }
@@ -202,18 +198,18 @@ std::vector<Track> SortTracker::update(const std::vector<Detection>& dets) {
     });
 
     // 5. Collect output
-    std::vector<Track> result;
-    for (const auto& t : tracklets_) {
+    for (auto& t : tracklets_)
         if (t->hits >= min_hits_) t->confirmed = true;
+
+    std::vector<Track> result;
+    for (const auto& t : tracklets_)
         if (t->confirmed) result.push_back(t->to_track());
-    }
     return result;
 }
 
 void SortTracker::reset() {
     tracklets_.clear();
     next_id_ = 0;
-    frame_   = 0;
 }
 
 } // namespace improc::ml

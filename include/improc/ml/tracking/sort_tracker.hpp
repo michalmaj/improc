@@ -13,15 +13,14 @@ struct SortTracker {
     SortTracker();
     ~SortTracker();
 
-    std::vector<Track> update(const std::vector<Detection>& dets);
+    [[nodiscard]] std::vector<Track> update(const std::vector<Detection>& dets);
     void reset();
 
-protected:
+private:
     int   max_age_  = 3;
     int   min_hits_ = 3;
     float iou_thr_  = 0.3f;
     int   next_id_  = 0;
-    int   frame_    = 0;
 
     struct KalmanTracklet;
     std::vector<std::unique_ptr<KalmanTracklet>> tracklets_;
