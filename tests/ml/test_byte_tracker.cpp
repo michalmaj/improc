@@ -11,7 +11,7 @@ static Detection make_det(float x, float y, float w, float h, float conf) {
 
 TEST(ByteTrackerTest, LowConfRecovery) {
     ByteTracker tracker;
-    tracker.min_hits(1).max_age(5)
+    tracker.min_hits(1).max_age(0)
            .high_conf_threshold(0.6f).low_conf_threshold(0.1f);
 
     tracker.update({make_det(0, 0, 10, 10, 0.9f)});
@@ -19,10 +19,10 @@ TEST(ByteTrackerTest, LowConfRecovery) {
     ASSERT_FALSE(r1.empty());
     int saved_id = r1[0].id;
 
-    // Frame 3: only a low-conf detection at the same position
+    // Frame 3: only a low-conf detection — Stage 1 has no high dets, Stage 2 must match
     auto r2 = tracker.update({make_det(4, 0, 10, 10, 0.3f)});
-    ASSERT_FALSE(r2.empty());
-    EXPECT_EQ(r2[0].id, saved_id);  // track survived via low-conf match
+    ASSERT_FALSE(r2.empty()) << "track should survive via Stage 2 low-conf match";
+    EXPECT_EQ(r2[0].id, saved_id);
 }
 
 TEST(ByteTrackerTest, HighConfOnlyBehavesLikeSORTWhenNoLowConf) {
@@ -57,15 +57,16 @@ TEST(ByteTrackerTest, BelowLowThresholdIgnored) {
 
 TEST(ByteTrackerTest, TwoStageMatchingUsesLowConf) {
     ByteTracker tracker;
-    tracker.min_hits(1).max_age(5)
+    tracker.min_hits(1).max_age(0)
            .high_conf_threshold(0.6f).low_conf_threshold(0.1f);
 
     tracker.update({make_det(0, 0, 20, 20, 0.9f)});
     tracker.update({make_det(0, 0, 20, 20, 0.9f)});
-    // Low-conf detection at same position should match in stage 2
+    // Low-conf detection at same position — no high-conf dets so Stage 1 skips; Stage 2 must match
     auto r = tracker.update({make_det(0, 0, 20, 20, 0.3f)});
-    ASSERT_FALSE(r.empty());
+    ASSERT_FALSE(r.empty()) << "track should survive via Stage 2 low-conf match";
     EXPECT_EQ(r[0].id, 0);
+    EXPECT_EQ(r[0].age, 0) << "age should be reset by correct_bbox in Stage 2";
 }
 
 TEST(ByteTrackerTest, ResetClearsState) {
@@ -75,5 +76,6 @@ TEST(ByteTrackerTest, ResetClearsState) {
     tracker.update({make_det(0, 0, 10, 10, 0.9f)});
     tracker.reset();
     auto r = tracker.update({make_det(0, 0, 10, 10, 0.9f)});
+    ASSERT_FALSE(r.empty());
     for (const auto& t : r) EXPECT_EQ(t.id, 0);
 }

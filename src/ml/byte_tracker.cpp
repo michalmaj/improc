@@ -220,7 +220,6 @@ std::vector<Track> ByteTracker::update(const std::vector<Detection>& dets) {
         if (best_d >= 0) {
             tracklets_[idx]->correct_bbox(
                 BBox{low_dets[best_d].box, low_dets[best_d].class_id, low_dets[best_d].label});
-            trk_matched[idx] = true;
         }
     }
 
