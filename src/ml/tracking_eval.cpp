@@ -69,36 +69,40 @@ void TrackingEval::update(const std::vector<Track>&   tracks,
     GT_total_ += static_cast<int>(gts.size());
     for (const auto& gt : gts) gt_total_[gt.id]++;
 
-    // Greedy match: for each track find best unmatched GT by IoU
+    // Collect all candidate pairs above threshold, sort by IoU descending (globally greedy)
+    struct Candidate { int ti, gi; float iou; };
+    std::vector<Candidate> candidates;
+    candidates.reserve(tracks.size() * gts.size());
+    for (int i = 0; i < static_cast<int>(tracks.size()); ++i)
+        for (int j = 0; j < static_cast<int>(gts.size()); ++j) {
+            float s = bbox_iou(tracks[i].bbox, gts[j].bbox);
+            if (s > iou_thr_) candidates.push_back({i, j, s});
+        }
+    std::sort(candidates.begin(), candidates.end(),
+              [](const Candidate& a, const Candidate& b) { return a.iou > b.iou; });
+
+    std::vector<bool> trk_matched(tracks.size(), false);
     std::vector<bool> gt_matched(gts.size(), false);
 
-    for (const auto& trk : tracks) {
-        float best   = iou_thr_;
-        int   best_j = -1;
-        for (std::size_t j = 0; j < gts.size(); ++j) {
-            if (gt_matched[j]) continue;
-            float s = bbox_iou(trk.bbox, gts[j].bbox);
-            if (s > best) { best = s; best_j = static_cast<int>(j); }
-        }
-        if (best_j >= 0) {
-            gt_matched[best_j] = true;
-            iou_sum_ += best;
-            ++match_count_;
-            int gt_id = gts[best_j].id;
+    for (const auto& c : candidates) {
+        if (trk_matched[c.ti] || gt_matched[c.gi]) continue;
+        trk_matched[c.ti] = gt_matched[c.gi] = true;
+        iou_sum_ += c.iou;
+        ++match_count_;
 
-            // ID switch: same GT was previously matched by a different track
-            auto it = last_track_for_gt_.find(gt_id);
-            if (it != last_track_for_gt_.end() && it->second != trk.id) ++IDSW_;
-            last_track_for_gt_[gt_id] = trk.id;
+        int gt_id = gts[c.gi].id;
+        auto it = last_track_for_gt_.find(gt_id);
+        if (it != last_track_for_gt_.end() && it->second != tracks[c.ti].id) ++IDSW_;
+        last_track_for_gt_[gt_id] = tracks[c.ti].id;
 
-            pair_frames_[{trk.id, gt_id}]++;
-            track_total_[trk.id]++;
-        } else {
-            ++FP_;
-            track_total_[trk.id]++;
-        }
+        pair_frames_[{tracks[c.ti].id, gt_id}]++;
+        track_total_[tracks[c.ti].id]++;
     }
-    for (std::size_t j = 0; j < gts.size(); ++j)
+
+    for (int i = 0; i < static_cast<int>(tracks.size()); ++i)
+        if (!trk_matched[i]) { ++FP_; track_total_[tracks[i].id]++; }
+
+    for (int j = 0; j < static_cast<int>(gts.size()); ++j)
         if (!gt_matched[j]) ++FN_;
 }
 

@@ -77,6 +77,9 @@ TEST(TrackingEvalTest, ResetClearsState) {
     eval.reset();
     auto m = eval.compute();
     EXPECT_FLOAT_EQ(m.MOTA, 0.0f);
-    EXPECT_EQ(m.FP, 0);
-    EXPECT_EQ(m.FN, 0);
+    EXPECT_FLOAT_EQ(m.MOTP, 0.0f);
+    EXPECT_FLOAT_EQ(m.IDF1, 0.0f);
+    EXPECT_EQ(m.FP,   0);
+    EXPECT_EQ(m.FN,   0);
+    EXPECT_EQ(m.IDSW, 0);
 }
