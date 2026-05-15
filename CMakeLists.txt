@@ -265,6 +265,10 @@ target_link_libraries(demo_seg_eval PRIVATE improc)
 add_executable(demo_class_eval examples/ml/demo_class_eval.cpp)
 target_link_libraries(demo_class_eval PRIVATE improc)
 
+# Tracking demo (v0.5.0-D)
+add_executable(demo_tracking examples/ml/demo_tracking.cpp)
+target_link_libraries(demo_tracking PRIVATE improc)
+
 # Video Writer demo
 add_executable(demo_video_writer examples/io/demo_video_writer.cpp)
 target_link_libraries(demo_video_writer PRIVATE improc)
