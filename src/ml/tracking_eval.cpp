@@ -130,12 +130,19 @@ TrackingMetrics TrackingEval::compute() const {
     int nt = static_cast<int>(tids.size());
     int ng = static_cast<int>(gids.size());
 
-    // Cost = -co_occurrence (Hungarian minimizes, so negate to maximize)
+    // Cost = max_co - co_occurrence: non-negative, minimizing this maximizes co-occurrence.
+    // Using -co_occurrence would give negative costs which break the Hungarian algorithm
+    // (negative delta causes j1=-1 → p[-1] out-of-bounds → SIGABRT on Linux).
+    float max_co = 0.0f;
+    for (const auto& [key, count] : pair_frames_)
+        max_co = std::max(max_co, static_cast<float>(count));
+
     std::vector<std::vector<float>> cost(nt, std::vector<float>(ng, 0.0f));
     for (int i = 0; i < nt; ++i)
         for (int j = 0; j < ng; ++j) {
             auto it = pair_frames_.find({tids[i], gids[j]});
-            cost[i][j] = -(it != pair_frames_.end() ? static_cast<float>(it->second) : 0.0f);
+            float co = it != pair_frames_.end() ? static_cast<float>(it->second) : 0.0f;
+            cost[i][j] = max_co - co;
         }
 
     auto asgn = hungarian(cost);
