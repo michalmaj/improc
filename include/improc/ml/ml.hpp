@@ -13,3 +13,4 @@
 #include "improc/ml/voc_dataset.hpp"
 #include "improc/ml/coco_dataset.hpp"
 #include "improc/ml/voc_seg_dataset.hpp"
+#include "improc/ml/eval/eval.hpp"
