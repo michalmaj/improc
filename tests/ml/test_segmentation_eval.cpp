@@ -38,6 +38,13 @@ TEST(PixelIouTest, VoidPixelsIgnored) {
     EXPECT_FLOAT_EQ(pixel_iou(Image<Gray>(pred_m), Image<Gray>(gt_m), 1), 0.0f);
 }
 
+TEST(PixelIouTest, DimensionMismatchThrows) {
+    cv::Mat pred_m(4, 4, CV_8U, cv::Scalar(1));
+    cv::Mat gt_m(8, 8, CV_8U, cv::Scalar(1));
+    EXPECT_THROW(pixel_iou(Image<Gray>(pred_m), Image<Gray>(gt_m), 1),
+                 std::invalid_argument);
+}
+
 // ── dice ─────────────────────────────────────────────────────────────────────
 
 TEST(DiceTest, PerfectMask) {

@@ -5,9 +5,11 @@
 namespace improc::ml {
 
 float pixel_iou(const Image<Gray>& pred, const Image<Gray>& gt, int class_id) {
-    int64_t tp = 0, fp = 0, fn = 0;
     const auto& pm = pred.mat();
     const auto& gm = gt.mat();
+    if (pm.rows != gm.rows || pm.cols != gm.cols)
+        throw std::invalid_argument("pixel_iou: pred and gt dimensions must match");
+    int64_t tp = 0, fp = 0, fn = 0;
     for (int r = 0; r < pm.rows; ++r) {
         for (int c = 0; c < pm.cols; ++c) {
             uint8_t p_val = pm.at<uint8_t>(r, c);
@@ -25,9 +27,11 @@ float pixel_iou(const Image<Gray>& pred, const Image<Gray>& gt, int class_id) {
 }
 
 float dice(const Image<Gray>& pred, const Image<Gray>& gt, int class_id) {
-    int64_t tp = 0, fp = 0, fn = 0;
     const auto& pm = pred.mat();
     const auto& gm = gt.mat();
+    if (pm.rows != gm.rows || pm.cols != gm.cols)
+        throw std::invalid_argument("dice: pred and gt dimensions must match");
+    int64_t tp = 0, fp = 0, fn = 0;
     for (int r = 0; r < pm.rows; ++r) {
         for (int c = 0; c < pm.cols; ++c) {
             uint8_t p_val = pm.at<uint8_t>(r, c);
