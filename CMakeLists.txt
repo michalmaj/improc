@@ -253,6 +253,22 @@ target_link_libraries(demo_coco_dataset PRIVATE improc)
 add_executable(demo_voc_seg_dataset examples/ml/demo_voc_seg_dataset.cpp)
 target_link_libraries(demo_voc_seg_dataset PRIVATE improc)
 
+# Detection eval demo (v0.5.0-A)
+add_executable(demo_detection_eval examples/ml/demo_detection_eval.cpp)
+target_link_libraries(demo_detection_eval PRIVATE improc)
+
+# Segmentation eval demo (v0.5.0-B)
+add_executable(demo_seg_eval examples/ml/demo_seg_eval.cpp)
+target_link_libraries(demo_seg_eval PRIVATE improc)
+
+# Classification eval demo (v0.5.0-C)
+add_executable(demo_class_eval examples/ml/demo_class_eval.cpp)
+target_link_libraries(demo_class_eval PRIVATE improc)
+
+# Tracking demo (v0.5.0-D)
+add_executable(demo_tracking examples/ml/demo_tracking.cpp)
+target_link_libraries(demo_tracking PRIVATE improc)
+
 # Video Writer demo
 add_executable(demo_video_writer examples/io/demo_video_writer.cpp)
 target_link_libraries(demo_video_writer PRIVATE improc)

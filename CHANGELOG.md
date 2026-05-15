@@ -14,6 +14,17 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **v0.5.0-A Detection Evaluation** — `iou()`, `average_precision()` free functions; `DetectionEval` accumulator with COCO-style `mAP@0.5` and `mAP@0.5:0.95`
+- **v0.5.0-B Segmentation Evaluation** — `pixel_iou()`, `dice()` free functions; `SegEval` accumulator with per-class IoU, mIoU, mean Dice; void-pixel (255) ignored
+- **v0.5.0-C Classification Evaluation** — `accuracy()`, `precision_score()`, `recall_score()`, `f1_score()` free functions; `ClassEval` accumulator with confusion matrix and per-class metrics
+- **v0.5.0-D Multi-Object Tracking** — `IouTracker` (greedy IoU), `SortTracker` (Kalman + Hungarian), `ByteTracker` (two-stage high/low-confidence matching); `TrackingEval` with MOTA, MOTP, IDF1; `TrackerType` C++20 concept
+
+---
+
 ## [0.1.0] — 2026-04-26
 
 First versioned release. Establishes the full namespace surface and API conventions
