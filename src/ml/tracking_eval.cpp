@@ -27,7 +27,15 @@ std::vector<int> hungarian(const std::vector<std::vector<float>>& cost) {
     if (m == 0) return std::vector<int>(n, -1);
     int sz = std::max(n, m);
     const float kInf = 1e9f;
-    std::vector<std::vector<float>> C(sz, std::vector<float>(sz, kInf));
+    // Padding cells must be finite (> all real costs, < kInf).
+    // kInf padding breaks augmentation when n > m: cur=kInf=minv[j], both
+    // strict-less checks fail, j1 stays -1, then p[-1] → OOB crash on Linux.
+    float kPad = 0.0f;
+    for (int i = 0; i < n; ++i)
+        for (int j = 0; j < m; ++j)
+            kPad = std::max(kPad, cost[i][j]);
+    kPad += 1.0f;
+    std::vector<std::vector<float>> C(sz, std::vector<float>(sz, kPad));
     for (int i = 0; i < n; ++i)
         for (int j = 0; j < m; ++j)
             C[i][j] = cost[i][j];
