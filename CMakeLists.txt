@@ -261,6 +261,10 @@ target_link_libraries(demo_detection_eval PRIVATE improc)
 add_executable(demo_seg_eval examples/ml/demo_seg_eval.cpp)
 target_link_libraries(demo_seg_eval PRIVATE improc)
 
+# Classification eval demo (v0.5.0-C)
+add_executable(demo_class_eval examples/ml/demo_class_eval.cpp)
+target_link_libraries(demo_class_eval PRIVATE improc)
+
 # Video Writer demo
 add_executable(demo_video_writer examples/io/demo_video_writer.cpp)
 target_link_libraries(demo_video_writer PRIVATE improc)
