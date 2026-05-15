@@ -61,3 +61,59 @@ TEST(DiceTest, SymmetricProperty) {
     Image<Gray> a(a_m), b(b_m);
     EXPECT_NEAR(dice(a, b, 1), dice(b, a, 1), 1e-6f);
 }
+
+// ── SegEval ───────────────────────────────────────────────────────────────────
+
+TEST(SegEvalTest, PerfectMasks) {
+    SegEval eval;
+    eval.num_classes(2);
+    cv::Mat m(8, 8, CV_8U, cv::Scalar(1));
+    Image<Gray> mask(m);
+    eval.update(mask, mask);
+    auto met = eval.compute();
+    EXPECT_NEAR(met.mIoU, 1.0f, 1e-4f);
+}
+
+TEST(SegEvalTest, VoidPixelsIgnored) {
+    SegEval eval;
+    eval.num_classes(2);
+    cv::Mat pred_m(4, 4, CV_8U, cv::Scalar(1));
+    cv::Mat gt_m(4, 4, CV_8U, cv::Scalar(255));  // all void
+    eval.update(Image<Gray>(pred_m), Image<Gray>(gt_m));
+    auto met = eval.compute();
+    // no non-void GT pixels → no class contributes → mIoU = 0 (no classes to average)
+    EXPECT_FLOAT_EQ(met.mIoU, 0.0f);
+}
+
+TEST(SegEvalTest, AbsentClassExcluded) {
+    SegEval eval;
+    eval.num_classes(3);  // classes 0, 1, 2
+    cv::Mat pred_m(4, 4, CV_8U, cv::Scalar(0));  // all class 0
+    cv::Mat gt_m(4, 4, CV_8U, cv::Scalar(0));    // all class 0
+    eval.update(Image<Gray>(pred_m), Image<Gray>(gt_m));
+    auto met = eval.compute();
+    // class 1 and 2 are absent — excluded from mean → mIoU based on class 0 only
+    EXPECT_NEAR(met.mIoU, 1.0f, 1e-4f);
+    EXPECT_EQ(met.per_class_iou.count(1), 0u);
+    EXPECT_EQ(met.per_class_iou.count(2), 0u);
+}
+
+TEST(SegEvalTest, MultiImageAccumulation) {
+    SegEval eval;
+    eval.num_classes(2);
+    cv::Mat perfect(4, 4, CV_8U, cv::Scalar(1));
+    eval.update(Image<Gray>(perfect), Image<Gray>(perfect));  // all TP for class 1
+    eval.update(Image<Gray>(perfect), Image<Gray>(perfect));  // all TP again
+    auto met = eval.compute();
+    EXPECT_NEAR(met.mIoU, 1.0f, 1e-4f);
+}
+
+TEST(SegEvalTest, ResetClearsState) {
+    SegEval eval;
+    eval.num_classes(2);
+    cv::Mat m(4, 4, CV_8U, cv::Scalar(1));
+    eval.update(Image<Gray>(m), Image<Gray>(m));
+    eval.reset();
+    auto met = eval.compute();
+    EXPECT_FLOAT_EQ(met.mIoU, 0.0f);
+}
