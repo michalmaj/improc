@@ -45,9 +45,11 @@ TEST(TrackingEvalTest, IdSwitch) {
 }
 
 TEST(TrackingEvalTest, MOTPComputation) {
-    TrackingEval eval;
     // GT=[0,0,10,10] pred=[2,2,10,10]
-    // intersection: [2,2,8,8] = 64; union: 100+100-64=136; IoU = 64/136
+    // intersection: [2,2,8,8] = 64; union: 100+100-64=136; IoU = 64/136 ~0.47
+    // Use threshold below the IoU so the pair is matched.
+    TrackingEval eval;
+    eval.iou_threshold(0.3f);
     eval.update({make_track(0, 2,2,10,10)}, {make_gt(0, 0,0,10,10)});
     auto m = eval.compute();
     EXPECT_NEAR(m.MOTP, 64.0f / 136.0f, 1e-3f);
