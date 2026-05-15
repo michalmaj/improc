@@ -8,7 +8,7 @@ struct IouTracker {
     IouTracker& min_iou(float t)    { min_iou_ = t; return *this; }
     IouTracker& max_age(int frames) { max_age_ = frames; return *this; }
 
-    std::vector<Track> update(const std::vector<Detection>& dets);
+    [[nodiscard]] std::vector<Track> update(const std::vector<Detection>& dets);
     void reset();
 
 private:
