@@ -55,8 +55,50 @@ ClassEval& ClassEval::class_names(std::vector<std::string> names) {
     return *this;
 }
 
-void ClassEval::update(int, int) {}
-ClassMetrics ClassEval::compute() const { return {}; }
+void ClassEval::update(int pred_class, int gt_class) {
+    int sz = std::max({mat_.rows, pred_class + 1, gt_class + 1});
+    if (sz > mat_.rows) {
+        cv::Mat_<int> bigger(sz, sz, 0);
+        if (!mat_.empty()) mat_.copyTo(bigger(cv::Rect(0, 0, mat_.cols, mat_.rows)));
+        mat_ = bigger;
+    }
+    mat_(gt_class, pred_class)++;
+}
+
+ClassMetrics ClassEval::compute() const {
+    if (mat_.empty()) return {};
+    int n = mat_.rows;
+    ClassMetrics m;
+    m.confusion_matrix = {mat_.clone(), n};
+
+    auto key = [&](int i) -> std::string {
+        return i < static_cast<int>(names_.size()) ? names_[i] : std::to_string(i);
+    };
+
+    int total = 0, correct = 0;
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) total += mat_(i, j);
+        correct += mat_(i, i);
+    }
+    m.accuracy = total > 0 ? static_cast<float>(correct) / total : 0.0f;
+
+    for (int c = 0; c < n; ++c) {
+        int tp = mat_(c, c);
+        int col = 0, row = 0;
+        for (int i = 0; i < n; ++i) col += mat_(i, c);
+        for (int j = 0; j < n; ++j) row += mat_(c, j);
+
+        float prec = col > 0 ? static_cast<float>(tp) / col : 0.0f;
+        float rec  = row > 0 ? static_cast<float>(tp) / row : 0.0f;
+        float f1   = (prec + rec) > 0.0f ? 2.0f * prec * rec / (prec + rec) : 0.0f;
+
+        std::string k = key(c);
+        m.per_class_precision[k] = prec;
+        m.per_class_recall[k]    = rec;
+        m.per_class_f1[k]        = f1;
+    }
+    return m;
+}
 void ClassEval::reset() { if (!mat_.empty()) mat_.setTo(0); }
 
 } // namespace improc::ml
