@@ -1,0 +1,79 @@
+// tests/ml/test_byte_tracker.cpp
+#include <gtest/gtest.h>
+#include "improc/ml/tracking/byte_tracker.hpp"
+#include "improc/ml/tracking/sort_tracker.hpp"
+
+using namespace improc::ml;
+
+static Detection make_det(float x, float y, float w, float h, float conf) {
+    return Detection{cv::Rect2f(x, y, w, h), 0, conf, "car"};
+}
+
+TEST(ByteTrackerTest, LowConfRecovery) {
+    ByteTracker tracker;
+    tracker.min_hits(1).max_age(5)
+           .high_conf_threshold(0.6f).low_conf_threshold(0.1f);
+
+    tracker.update({make_det(0, 0, 10, 10, 0.9f)});
+    auto r1 = tracker.update({make_det(2, 0, 10, 10, 0.9f)});
+    ASSERT_FALSE(r1.empty());
+    int saved_id = r1[0].id;
+
+    // Frame 3: only a low-conf detection at the same position
+    auto r2 = tracker.update({make_det(4, 0, 10, 10, 0.3f)});
+    ASSERT_FALSE(r2.empty());
+    EXPECT_EQ(r2[0].id, saved_id);  // track survived via low-conf match
+}
+
+TEST(ByteTrackerTest, HighConfOnlyBehavesLikeSORTWhenNoLowConf) {
+    ByteTracker bt;
+    bt.min_hits(1).max_age(3)
+      .high_conf_threshold(0.6f).low_conf_threshold(0.1f);
+
+    SortTracker sort;
+    sort.min_hits(1).max_age(3).iou_threshold(0.3f);
+
+    for (int f = 0; f < 4; ++f) {
+        float x = static_cast<float>(f) * 2.0f;
+        auto d = std::vector<Detection>{make_det(x, 0, 10, 10, 0.9f)};
+        auto r_bt   = bt.update(d);
+        auto r_sort = sort.update(d);
+        EXPECT_EQ(r_bt.size(), r_sort.size()) << "frame " << f;
+    }
+}
+
+TEST(ByteTrackerTest, BelowLowThresholdIgnored) {
+    ByteTracker tracker;
+    tracker.min_hits(1).max_age(1)
+           .high_conf_threshold(0.6f).low_conf_threshold(0.2f);
+
+    tracker.update({make_det(0, 0, 10, 10, 0.9f)});
+    // Detection with confidence below low threshold — should be ignored
+    tracker.update({make_det(0, 0, 10, 10, 0.05f)});
+    // Track should die (no match in either stage)
+    auto r2 = tracker.update({});
+    EXPECT_TRUE(r2.empty());
+}
+
+TEST(ByteTrackerTest, TwoStageMatchingUsesLowConf) {
+    ByteTracker tracker;
+    tracker.min_hits(1).max_age(5)
+           .high_conf_threshold(0.6f).low_conf_threshold(0.1f);
+
+    tracker.update({make_det(0, 0, 20, 20, 0.9f)});
+    tracker.update({make_det(0, 0, 20, 20, 0.9f)});
+    // Low-conf detection at same position should match in stage 2
+    auto r = tracker.update({make_det(0, 0, 20, 20, 0.3f)});
+    ASSERT_FALSE(r.empty());
+    EXPECT_EQ(r[0].id, 0);
+}
+
+TEST(ByteTrackerTest, ResetClearsState) {
+    ByteTracker tracker;
+    tracker.min_hits(1);
+    tracker.update({make_det(0, 0, 10, 10, 0.9f)});
+    tracker.update({make_det(0, 0, 10, 10, 0.9f)});
+    tracker.reset();
+    auto r = tracker.update({make_det(0, 0, 10, 10, 0.9f)});
+    for (const auto& t : r) EXPECT_EQ(t.id, 0);
+}
