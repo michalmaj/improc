@@ -14,20 +14,19 @@ namespace improc::visualization {
 using improc::core::Image;
 using improc::core::BGR;
 
-namespace {
-const cv::Scalar kCmpBg    {42,  23,  15};
-const cv::Scalar kCmpPanel {59,  41,  30};
-const cv::Scalar kCmpText  {184, 163, 148};
-const cv::Scalar kCmpMuted {139, 116, 100};
-const cv::Scalar kCmpAccent{250, 139, 167};
-const cv::Scalar kCmpAmber { 11, 158, 245};
-const cv::Scalar kCmpRed   { 68,  68, 239};
-} // namespace
+namespace detail::cmp {
+inline const cv::Scalar kCmpBg    {42,  23,  15};
+inline const cv::Scalar kCmpPanel {59,  41,  30};
+inline const cv::Scalar kCmpText  {184, 163, 148};
+inline const cv::Scalar kCmpMuted {139, 116, 100};
+inline const cv::Scalar kCmpAccent{250, 139, 167};
+inline const cv::Scalar kCmpAmber { 11, 158, 245};
+inline const cv::Scalar kCmpRed   { 68,  68, 239};
+} // namespace detail::cmp
 
 struct ConfusionMatrixPlot {
     // Struct form from ConfusionMatrix
-    explicit ConfusionMatrixPlot(const improc::ml::ConfusionMatrix& cm)
-        : num_classes_(cm.num_classes) {
+    explicit ConfusionMatrixPlot(const improc::ml::ConfusionMatrix& cm) {
         if (!cm.mat.empty()) {
             int n = cm.mat.rows;
             matrix_.resize(n, std::vector<int>(n));
@@ -45,8 +44,7 @@ struct ConfusionMatrixPlot {
     explicit ConfusionMatrixPlot(std::vector<std::vector<int>> matrix,
                                  std::vector<std::string> names = {})
         : matrix_(std::move(matrix))
-        , class_names_(std::move(names))
-        , num_classes_(static_cast<int>(matrix_.size())) {}
+        , class_names_(std::move(names)) {}
 
     ConfusionMatrixPlot& width(int w)          { width_ = w;              return *this; }
     ConfusionMatrixPlot& height(int h)         { height_ = h;             return *this; }
@@ -59,7 +57,7 @@ struct ConfusionMatrixPlot {
         if (width_ <= 0)  throw improc::ParameterError{"width",  "must be positive", "ConfusionMatrixPlot"};
         if (height_ <= 0) throw improc::ParameterError{"height", "must be positive", "ConfusionMatrixPlot"};
 
-        cv::Mat canvas(height_, width_, CV_8UC3, kCmpBg);
+        cv::Mat canvas(height_, width_, CV_8UC3, detail::cmp::kCmpBg);
         if (matrix_.empty()) return Image<BGR>(std::move(canvas));
 
         int n = static_cast<int>(matrix_.size());
@@ -67,6 +65,9 @@ struct ConfusionMatrixPlot {
         const int pw = width_ - ml - mr;
         const int ph = height_ - mt - mb;
         const int cw = pw / n, ch = ph / n;
+        if (cw < 1 || ch < 1)
+            throw improc::ParameterError{"width/height",
+                "too small for matrix size", "ConfusionMatrixPlot"};
 
         // Find max value for color scaling
         int max_val = 1;
@@ -78,13 +79,14 @@ struct ConfusionMatrixPlot {
             return cv::Scalar(42 + (237-42)*t, 23 + (58-23)*t, 15 + (124-15)*t);
         };
         auto off_col = [&](int val) -> cv::Scalar {
-            if (val == 0) return kCmpBg;
+            if (val == 0) return detail::cmp::kCmpBg;
             float t = std::min(1.0f, static_cast<float>(val) / max_val * 4.0f);
             if (t < 0.5f) {
                 float s = t * 2.0f;
                 return cv::Scalar(42*(1-s) + 11*s, 23*(1-s) + 158*s, 15*(1-s) + 245*s);
             }
-            return kCmpRed;
+            float s = (t - 0.5f) * 2.0f;
+            return cv::Scalar(11*(1-s) + 68*s, 158*(1-s) + 68*s, 245*(1-s) + 239*s);
         };
 
         // Draw cells
@@ -101,7 +103,7 @@ struct ConfusionMatrixPlot {
                 cv::Point tp(cell.x + (cw - sz.width)/2,
                              cell.y + (ch + sz.height)/2);
                 cv::Scalar tc = (static_cast<float>(val) / max_val > 0.35f)
-                    ? cv::Scalar(255,255,255) : kCmpText;
+                    ? cv::Scalar(255,255,255) : detail::cmp::kCmpText;
                 cv::putText(canvas, s, tp, cv::FONT_HERSHEY_SIMPLEX, 0.38, tc, 1, cv::LINE_AA);
             }
         }
@@ -109,24 +111,24 @@ struct ConfusionMatrixPlot {
         // Column headers
         cv::putText(canvas, "Predicted",
                     {ml + pw/2 - 32, mt - 20},
-                    cv::FONT_HERSHEY_SIMPLEX, 0.38, kCmpAccent, 1, cv::LINE_AA);
+                    cv::FONT_HERSHEY_SIMPLEX, 0.38, detail::cmp::kCmpAccent, 1, cv::LINE_AA);
         for (int c = 0; c < n; ++c) {
             std::string nm = c < static_cast<int>(class_names_.size())
                 ? class_names_[c] : std::to_string(c);
             cv::putText(canvas, nm, {ml + c*cw + 3, mt - 6},
-                        cv::FONT_HERSHEY_SIMPLEX, 0.3, kCmpText, 1, cv::LINE_AA);
+                        cv::FONT_HERSHEY_SIMPLEX, 0.3, detail::cmp::kCmpText, 1, cv::LINE_AA);
         }
 
         // Row headers + "True" label
         cv::putText(canvas, "True",
                     {4, mt + ph/2 + 4},
-                    cv::FONT_HERSHEY_SIMPLEX, 0.35, kCmpAccent, 1, cv::LINE_AA);
+                    cv::FONT_HERSHEY_SIMPLEX, 0.35, detail::cmp::kCmpAccent, 1, cv::LINE_AA);
         for (int r = 0; r < n; ++r) {
             std::string nm = r < static_cast<int>(class_names_.size())
                 ? class_names_[r] : std::to_string(r);
             cv::putText(canvas, nm,
                         {4, mt + r*ch + ch/2 + 4},
-                        cv::FONT_HERSHEY_SIMPLEX, 0.28, kCmpText, 1, cv::LINE_AA);
+                        cv::FONT_HERSHEY_SIMPLEX, 0.28, detail::cmp::kCmpText, 1, cv::LINE_AA);
         }
 
         // Colorbar (right margin)
@@ -137,9 +139,9 @@ struct ConfusionMatrixPlot {
             cv::line(canvas, {cbx, mt+y}, {cbx+10, mt+y}, col, 1);
         }
         cv::putText(canvas, std::to_string(max_val),
-                    {cbx, mt - 2}, cv::FONT_HERSHEY_SIMPLEX, 0.26, kCmpMuted, 1);
+                    {cbx, mt - 2}, cv::FONT_HERSHEY_SIMPLEX, 0.26, detail::cmp::kCmpMuted, 1);
         cv::putText(canvas, "0",
-                    {cbx, mt+ph+8}, cv::FONT_HERSHEY_SIMPLEX, 0.26, kCmpMuted, 1);
+                    {cbx, mt+ph+8}, cv::FONT_HERSHEY_SIMPLEX, 0.26, detail::cmp::kCmpMuted, 1);
 
         // Accuracy + Macro F1 badge
         {
@@ -160,16 +162,16 @@ struct ConfusionMatrixPlot {
             }
             float mf1 = n > 0 ? f1_sum / n : 0.f;
             int by = height_ - mb + 8;
-            cv::rectangle(canvas, {ml, by}, {ml+pw, by+26}, kCmpPanel, cv::FILLED);
+            cv::rectangle(canvas, {ml, by}, {ml+pw, by+26}, detail::cmp::kCmpPanel, cv::FILLED);
             auto txt = std::format("Accuracy: {:.1f}%  |  Macro F1: {:.2f}",
                                    acc * 100.f, mf1);
             cv::putText(canvas, txt, {ml + 8, by + 16},
-                        cv::FONT_HERSHEY_SIMPLEX, 0.34, kCmpAccent, 1, cv::LINE_AA);
+                        cv::FONT_HERSHEY_SIMPLEX, 0.34, detail::cmp::kCmpAccent, 1, cv::LINE_AA);
         }
 
         if (!title_.empty())
             cv::putText(canvas, title_, {ml, 18},
-                        cv::FONT_HERSHEY_SIMPLEX, 0.4, kCmpText, 1, cv::LINE_AA);
+                        cv::FONT_HERSHEY_SIMPLEX, 0.4, detail::cmp::kCmpText, 1, cv::LINE_AA);
 
         return Image<BGR>(std::move(canvas));
     }
@@ -177,7 +179,6 @@ struct ConfusionMatrixPlot {
 private:
     std::vector<std::vector<int>> matrix_;
     std::vector<std::string>      class_names_;
-    int    num_classes_ = 0;
     int    width_  = 400;
     int    height_ = 400;
     std::string title_;
