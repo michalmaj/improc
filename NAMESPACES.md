@@ -1076,12 +1076,14 @@ tracker.reset();
 
 ```cpp
 struct TrackingMetrics {
-    float MOTA = 0.0f;  // 1 − (FN + FP + IDSW) / GT_total
-    float MOTP = 0.0f;  // mean IoU of matched pairs
-    float IDF1 = 0.0f;  // 2·IDTP / (2·IDTP + IDFP + IDFN)
-    int   FP   = 0;
-    int   FN   = 0;
-    int   IDSW = 0;
+    float MOTA      = 0.0f;  // 1 − (FN + FP + IDSW) / GT_total
+    float MOTP      = 0.0f;  // mean IoU of matched pairs
+    float IDF1      = 0.0f;  // 2·IDTP / (2·IDTP + IDFP + IDFN)
+    float Precision = 0.0f;  // TP / (TP + FP)
+    float Recall    = 0.0f;  // TP / (TP + FN)
+    int   FP        = 0;
+    int   FN        = 0;
+    int   IDSW      = 0;
 };
 
 TrackingEval eval;
@@ -1233,6 +1235,33 @@ Image<BGR> result = frame
 
 `DrawBoundingBoxes` draws onto a **clone** — the source image is never modified. Throws `ParameterError` if `thickness <= 0` or `font_scale <= 0`.
 
+### `DrawTracks` (`visualization/draw_tracks.hpp`, header-only)
+
+Draws tracker output boxes and ID labels onto a clone of the source image. Takes a `std::vector<improc::ml::Track>` at construction and returns `Image<BGR>` — pipeline-compatible.
+
+```cpp
+#include "improc/visualization/draw_tracks.hpp"
+using namespace improc::visualization;
+
+std::vector<improc::ml::Track> tracks = tracker.update(dets);
+
+// Annotate with default settings (cyan boxes, thickness 2, "ID:N" label)
+Image<BGR> annotated = frame | DrawTracks{tracks};
+
+// Custom appearance
+Image<BGR> annotated = frame | DrawTracks{tracks}
+    .color({0, 165, 255})   // orange
+    .thickness(1)
+    .font_scale(0.4)
+    .show_id(false);
+
+// Full detection → tracking → annotation pipeline
+std::vector<Track> tracks = tracker.update(detector(frame));
+Image<BGR> result = frame | DrawTracks{tracks}.thickness(2) | Show{"Tracking"}.wait_ms(1);
+```
+
+`DrawTracks` draws onto a **clone** — the source image is never modified. Throws `ParameterError` if `thickness <= 0` or `font_scale <= 0`.
+
 ### `Montage` (`visualization/montage.hpp`)
 
 Arranges a `vector<Image<BGR>>` into a grid. Setters: `.cols(int)`, `.cell_size(int w, int h)`, `.gap(int)`, `.background(cv::Scalar)`. Returns a single tiled `Image<BGR>`.
@@ -1240,7 +1269,7 @@ Arranges a `vector<Image<BGR>>` into a grid. Setters: `.cols(int)`, `.cell_size(
 ### Umbrella include
 
 ```cpp
-#include "improc/visualization/visualization.hpp"  // includes all five
+#include "improc/visualization/visualization.hpp"  // includes all six
 ```
 
 ---

@@ -141,7 +141,7 @@ OpenCV is powerful but its raw API is stringly-typed, mutation-heavy, and easy t
 - **Normalization** — `Normalize`, `NormalizeTo`, `Standardize` for ML preprocessing
 - **Format conversions** — explicit, compiler-enforced free functions (`convert<Gray>(bgr_image)`)
 - **Augmentation** — stochastic training augmentations constrained by C++20 concepts: `RandomFlip`, `RandomRotate`, `RandomCrop`, `RandomResize`, `RandomZoom`, `RandomShear`, `RandomPerspective`, `RandomBrightness`, `RandomContrast`, `ColorJitter`, `RandomGrayscale`, `RandomSolarize`, `RandomPosterize`, `RandomEqualize`, `RandomBlur`, `RandomSharpness`, `RandomGaussianNoise`, `RandomSaltAndPepper`, `RandomErasing`, `GridDropout`, `Compose`, `RandomApply`, `OneOf`; bbox-aware overloads via `BBox`, `AnnotatedImage<F>`, `BBoxCompose<F>` (all 7 geometric ops accept annotated images with automatic clip-and-drop filtering)
-- **Multi-object tracking** — `IouTracker` (greedy IoU), `SortTracker` (constant-velocity Kalman + Hungarian, SORT algorithm), `ByteTracker` (two-stage BYTE algorithm: Stage 1 Hungarian on high-confidence dets, Stage 2 greedy IoU on low-confidence dets); all satisfy `TrackerType<T>` and are drop-in replaceable; `TrackingEval` accumulates MOTA, MOTP, IDF1, FP, FN, IDSW across frames
+- **Multi-object tracking** — `IouTracker` (greedy IoU), `SortTracker` (constant-velocity Kalman + Hungarian, SORT algorithm), `ByteTracker` (two-stage BYTE algorithm: Stage 1 Hungarian on high-confidence dets, Stage 2 greedy IoU on low-confidence dets); all satisfy `TrackerType<T>` and are drop-in replaceable; `TrackingEval` accumulates MOTA, MOTP, IDF1, Precision, Recall, FP, FN, IDSW across frames
 - **Dataset loading** — load image datasets from class-labeled directories with train/val/test splitting
 - **DNN inference** — `DnnClassifier`, `DnnDetector` (YOLO & SSD), `DnnForward` backed by OpenCV DNN; pipeline-composable
 - **ONNX Runtime inference** — `OnnxClassifier`, `OnnxDetector` (YOLOv5 & YOLOv8 & SSD), `OnnxSession` (raw tensor I/O); CPU + CoreML EP on Apple Silicon; train in Python, export to ONNX, run here
@@ -149,7 +149,7 @@ OpenCV is powerful but its raw API is stringly-typed, mutation-heavy, and easy t
 - **Video recording** — synchronous RAII `VideoWriter` with auto codec detection and pipeline support (`img | Show{"preview"} | writer`)
 - **Haar Cascade loader** — CRTP-based model loader for OpenCV cascade classifiers
 - **Threading** — `ThreadPool` and `FramePipeline<Result>` for real-time frame processing
-- **Visualization** — `Histogram`, `LinePlot`, `Scatter` chart functors, a `Show` passthrough display op, `DrawBoundingBoxes` for annotating detections, and `Montage` for image grid composition — all composable with `operator|`
+- **Visualization** — `Histogram`, `LinePlot`, `Scatter` chart functors, a `Show` passthrough display op, `DrawBoundingBoxes` for annotating detections, `DrawTracks` for annotating tracker output, and `Montage` for image grid composition — all composable with `operator|`
 - **Lazy image views** — `improc::views` lazy pipeline adapters: `transform`, `filter`, `take`, `drop`, `batch(N)`, `enumerate`, `zip`; compose with `from_dir()`, `VideoView`, and `std::vector<Image<F>>` sources via `operator|`; zero work until materialised with `views::to<T>()`
 
 ## Quick Start
@@ -394,8 +394,8 @@ for (auto& frame : video) {
     std::vector<Detection>  dets   = detector(frame);
     std::vector<Track>      tracks = tracker.update(dets);  // confirmed tracks only
 
-    for (const auto& t : tracks)
-        frame | DrawBoundingBoxes{{Detection{t.bbox.box, t.bbox.class_id, 1.f, std::to_string(t.id)}}};
+    // DrawTracks draws bbox + "ID:N" label — pipeline-compatible
+    Image<BGR> annotated = frame | DrawTracks{tracks}.thickness(2);
 }
 
 // --- ByteTracker — two-stage matching recovers occluded tracks ---
@@ -403,7 +403,7 @@ ByteTracker bt;
 bt.max_age(3).min_hits(3)
   .high_conf_threshold(0.6f).low_conf_threshold(0.1f);
 
-// --- Evaluation: MOTA / MOTP / IDF1 ---
+// --- Evaluation: MOTA / MOTP / IDF1 / Precision / Recall ---
 TrackingEval eval;
 eval.iou_threshold(0.5f);
 
@@ -413,10 +413,15 @@ for (int f = 0; f < n_frames; ++f)
 TrackingMetrics m = eval.compute();
 std::cout << "MOTA=" << m.MOTA << "  MOTP=" << m.MOTP
           << "  IDF1=" << m.IDF1
+          << "  P="   << m.Precision << "  R=" << m.Recall
           << "  IDSW=" << m.IDSW << "\n";
 ```
 
-All trackers are drop-in replaceable — swap `SortTracker` for `ByteTracker` with no other changes. See `NAMESPACES.md` for the full setter reference.
+All trackers are drop-in replaceable — swap `SortTracker` for `ByteTracker` with no other changes. `DrawTracks` is in `improc/visualization/draw_tracks.hpp` (included via `visualization.hpp`). See `NAMESPACES.md` for the full setter reference.
+
+<!-- TODO: Realistic tracking demo — requires a short MP4/AVI with trackable objects (people or cars).
+     Pipeline: VideoReader → DnnDetector (YOLO 640×640) → ByteTracker → DrawTracks → Show.
+     User will provide the video file; wire up examples/ml/demo_tracking_realworld.cpp once available. -->
 
 ## Lazy Views
 
