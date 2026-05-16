@@ -1,5 +1,7 @@
 # improc++: Modern C++ Image Processing Toolkit
 
+[![CI](https://github.com/michalmaj/improc/actions/workflows/ci.yml/badge.svg)](https://github.com/michalmaj/improc/actions/workflows/ci.yml)
+
 > **Who is this for?**  
 > C++ engineers and researchers building real-time computer vision and ML systems who want
 > compile-time safety, composable pipelines, and ML-ready utilities — without leaving the OpenCV ecosystem.
