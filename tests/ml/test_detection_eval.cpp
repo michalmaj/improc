@@ -130,3 +130,54 @@ TEST(DetectionEvalTest, ResetClearsState) {
     EXPECT_FLOAT_EQ(m.mAP_50, 0.0f);
     EXPECT_TRUE(m.per_class_AP.empty());
 }
+
+// ── pr_curves ────────────────────────────────────────────────────────────────
+
+TEST(DetectionEvalTest, PrCurvesEmptyReturnsEmptyMap) {
+    DetectionEval eval;
+    EXPECT_TRUE(eval.pr_curves().empty());
+}
+
+TEST(DetectionEvalTest, PrCurvesRecallsNonDecreasing) {
+    DetectionEval eval;
+    eval.update(
+        {{cv::Rect2f(0,0,10,10), 0, 0.9f, "cat"},
+         {cv::Rect2f(20,0,10,10), 0, 0.7f, "cat"}},
+        {make_box(0,0,10,10,"cat"), make_box(20,0,10,10,"cat")}
+    );
+    auto curves = eval.pr_curves();
+    ASSERT_TRUE(curves.count("cat"));
+    const auto& [rec, prec] = curves.at("cat");
+    ASSERT_FALSE(rec.empty());
+    for (std::size_t i = 1; i < rec.size(); ++i)
+        EXPECT_GE(rec[i], rec[i-1]) << "recalls must be non-decreasing at i=" << i;
+}
+
+TEST(DetectionEvalTest, PrCurvesPerfectPrediction) {
+    DetectionEval eval;
+    eval.update(
+        {{cv::Rect2f(0,0,10,10), 0, 1.0f, "cat"}},
+        {make_box(0,0,10,10,"cat")}
+    );
+    auto curves = eval.pr_curves();
+    ASSERT_TRUE(curves.count("cat"));
+    const auto& [rec, prec] = curves.at("cat");
+    EXPECT_FLOAT_EQ(rec.back(),  1.0f);
+    EXPECT_FLOAT_EQ(prec.back(), 1.0f);
+}
+
+TEST(DetectionEvalTest, PrCurvesMultiClass) {
+    DetectionEval eval;
+    eval.update(
+        {{cv::Rect2f(0,0,10,10), 0, 1.0f, "cat"}},
+        {make_box(0,0,10,10,"cat")}
+    );
+    eval.update(
+        {{cv::Rect2f(0,0,10,10), 1, 1.0f, "dog"}},
+        {make_box(0,0,10,10,"dog",1)}
+    );
+    auto curves = eval.pr_curves();
+    EXPECT_EQ(curves.size(), 2u);
+    EXPECT_TRUE(curves.count("cat"));
+    EXPECT_TRUE(curves.count("dog"));
+}
