@@ -1,14 +1,27 @@
 // include/improc/ml/tracking/sort_tracker.hpp
 #pragma once
 #include "improc/ml/tracking/track.hpp"
+#include "improc/exceptions.hpp"
 #include <memory>
 
 namespace improc::ml {
 
 struct SortTracker {
-    SortTracker& max_age(int frames)    { max_age_  = frames; return *this; }
-    SortTracker& min_hits(int hits)     { min_hits_ = hits;   return *this; }
-    SortTracker& iou_threshold(float t) { iou_thr_  = t;      return *this; }
+    SortTracker& max_age(int frames) {
+        if (frames < 0)
+            throw improc::ParameterError("max_age", "must be >= 0", "SortTracker");
+        max_age_ = frames; return *this;
+    }
+    SortTracker& min_hits(int hits) {
+        if (hits < 1)
+            throw improc::ParameterError("min_hits", "must be >= 1", "SortTracker");
+        min_hits_ = hits; return *this;
+    }
+    SortTracker& iou_threshold(float t) {
+        if (t < 0.f || t > 1.f)
+            throw improc::ParameterError("iou_threshold", "must be in [0, 1]", "SortTracker");
+        iou_thr_ = t; return *this;
+    }
 
     SortTracker();
     ~SortTracker();

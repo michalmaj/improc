@@ -163,6 +163,10 @@ ByteTracker::~ByteTracker() = default;
 // ── ByteTracker::update ────────────────────────────────────────────────────────
 
 std::vector<Track> ByteTracker::update(const std::vector<Detection>& dets) {
+    if (low_thr_ >= high_thr_)
+        throw improc::ParameterError("low_conf_threshold",
+            "must be strictly less than high_conf_threshold", "ByteTracker");
+
     // 1. Predict all existing tracklets
     for (auto& t : tracklets_) t->predict();
 

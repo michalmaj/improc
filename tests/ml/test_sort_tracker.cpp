@@ -1,6 +1,7 @@
 // tests/ml/test_sort_tracker.cpp
 #include <gtest/gtest.h>
 #include "improc/ml/tracking/sort_tracker.hpp"
+#include "improc/exceptions.hpp"
 
 using namespace improc::ml;
 
@@ -99,4 +100,21 @@ TEST(SortTrackerTest, ResetClearsState) {
     tracker.reset();
     auto r = tracker.update({make_det(0, 0, 10, 10)});
     for (const auto& t : r) EXPECT_EQ(t.id, 0);
+}
+
+TEST(SortTrackerTest, ThrowsOnInvalidParameters) {
+    SortTracker t;
+    EXPECT_THROW(t.max_age(-1),           improc::ParameterError);
+    EXPECT_THROW(t.min_hits(0),           improc::ParameterError);
+    EXPECT_THROW(t.iou_threshold(-0.1f),  improc::ParameterError);
+    EXPECT_THROW(t.iou_threshold(1.1f),   improc::ParameterError);
+    EXPECT_NO_THROW(t.max_age(0));
+    EXPECT_NO_THROW(t.min_hits(1));
+    EXPECT_NO_THROW(t.iou_threshold(0.0f));
+    EXPECT_NO_THROW(t.iou_threshold(1.0f));
+}
+
+TEST(SortTrackerTest, EmptyDetectionsOnFreshTrackerReturnsEmpty) {
+    SortTracker tracker;
+    EXPECT_TRUE(tracker.update({}).empty());
 }
