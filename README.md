@@ -149,7 +149,7 @@ OpenCV is powerful but its raw API is stringly-typed, mutation-heavy, and easy t
 - **Video recording** — synchronous RAII `VideoWriter` with auto codec detection and pipeline support (`img | Show{"preview"} | writer`)
 - **Haar Cascade loader** — CRTP-based model loader for OpenCV cascade classifiers
 - **Threading** — `ThreadPool` and `FramePipeline<Result>` for real-time frame processing
-- **Visualization** — `Histogram`, `LinePlot`, `Scatter` chart functors, a `Show` passthrough display op, `DrawBoundingBoxes` for annotating detections, `DrawTracks` for annotating tracker output, and `Montage` for image grid composition — all composable with `operator|`
+- **Visualization** — `Histogram`, `LinePlot`, `Scatter` chart functors, a `Show` passthrough display op, `DrawBoundingBoxes` for annotating detections, `DrawTracks` for annotating tracker output, and `Montage` for image grid composition — all composable with `operator|`; plus **ML-specific charts** via `ml_charts.hpp`: `ConfusionMatrixPlot` (heatmap), `PRCurvePlot` (precision-recall curves), `ROCCurvePlot` (ROC with AUC), `ClassBarChart` (P/R/F1 or AP bars), `IoUHistogram`
 - **Lazy image views** — `improc::views` lazy pipeline adapters: `transform`, `filter`, `take`, `drop`, `batch(N)`, `enumerate`, `zip`; compose with `from_dir()`, `VideoView`, and `std::vector<Image<F>>` sources via `operator|`; zero work until materialised with `views::to<T>()`
 
 ## Quick Start
