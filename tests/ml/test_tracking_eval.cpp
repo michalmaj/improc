@@ -112,3 +112,32 @@ TEST(TrackingEvalTest, EmptyTracksCountsFalseNegative) {
     EXPECT_EQ(m.FP, 0);
     EXPECT_EQ(m.IDSW, 0);
 }
+
+TEST(TrackingEvalTest, PrecisionRecallPerfect) {
+    TrackingEval eval;
+    for (int f = 0; f < 3; ++f)
+        eval.update({make_track(0, 0,0,10,10)}, {make_gt(0, 0,0,10,10)});
+    auto m = eval.compute();
+    EXPECT_NEAR(m.Precision, 1.0f, 1e-4f);
+    EXPECT_NEAR(m.Recall,    1.0f, 1e-4f);
+}
+
+TEST(TrackingEvalTest, PrecisionRecallAllMissed) {
+    // No detections → all FN, TP=0, Precision=0, Recall=0
+    TrackingEval eval;
+    eval.update({}, {make_gt(0, 0,0,10,10)});
+    auto m = eval.compute();
+    EXPECT_FLOAT_EQ(m.Precision, 0.0f);
+    EXPECT_FLOAT_EQ(m.Recall,    0.0f);
+}
+
+TEST(TrackingEvalTest, PrecisionWithFalsePositives) {
+    // Two tracks for one GT: only one matched (TP=1), the other is FP
+    TrackingEval eval;
+    eval.update({make_track(0, 0,0,10,10), make_track(1, 0,0,10,10)},
+                {make_gt(0, 0,0,10,10)});
+    auto m = eval.compute();
+    // TP=1, FP=1 → Precision = 1/2 = 0.5; TP=1, FN=0 → Recall = 1.0
+    EXPECT_NEAR(m.Precision, 0.5f, 1e-4f);
+    EXPECT_NEAR(m.Recall,    1.0f, 1e-4f);
+}

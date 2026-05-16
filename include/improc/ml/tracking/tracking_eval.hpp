@@ -9,12 +9,14 @@
 namespace improc::ml {
 
 struct TrackingMetrics {
-    float MOTA = 0.0f;  // 1 - (FN + FP + IDSW) / GT_total
-    float MOTP = 0.0f;  // mean IoU of matched pairs
-    float IDF1 = 0.0f;  // 2*IDTP / (2*IDTP + IDFP + IDFN)
-    int   FP   = 0;
-    int   FN   = 0;
-    int   IDSW = 0;
+    float MOTA      = 0.0f;  // 1 - (FN + FP + IDSW) / GT_total
+    float MOTP      = 0.0f;  // mean IoU of matched pairs
+    float IDF1      = 0.0f;  // 2*IDTP / (2*IDTP + IDFP + IDFN)
+    float Precision = 0.0f;  // TP / (TP + FP)
+    float Recall    = 0.0f;  // TP / (TP + FN)
+    int   FP        = 0;
+    int   FN        = 0;
+    int   IDSW      = 0;
 };
 
 struct TrackingEval {

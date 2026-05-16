@@ -116,14 +116,20 @@ void TrackingEval::update(const std::vector<Track>&   tracks,
 
 TrackingMetrics TrackingEval::compute() const {
     TrackingMetrics m;
-    m.FP   = FP_;
-    m.FN   = FN_;
-    m.IDSW = IDSW_;
-    m.MOTA = GT_total_ > 0
+    m.FP        = FP_;
+    m.FN        = FN_;
+    m.IDSW      = IDSW_;
+    m.MOTA      = GT_total_ > 0
         ? 1.0f - static_cast<float>(FN_ + FP_ + IDSW_) / GT_total_
         : 0.0f;
-    m.MOTP = match_count_ > 0
+    m.MOTP      = match_count_ > 0
         ? iou_sum_ / static_cast<float>(match_count_)
+        : 0.0f;
+    m.Precision = (match_count_ + FP_) > 0
+        ? static_cast<float>(match_count_) / static_cast<float>(match_count_ + FP_)
+        : 0.0f;
+    m.Recall    = (match_count_ + FN_) > 0
+        ? static_cast<float>(match_count_) / static_cast<float>(match_count_ + FN_)
         : 0.0f;
 
     // IDF1 via global track<->GT bipartite matching on co-occurrence counts
