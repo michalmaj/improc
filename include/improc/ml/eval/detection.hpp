@@ -30,6 +30,11 @@ struct DetectionEval {
     void update(const std::vector<Detection>& preds,
                 const std::vector<BBox>&      gts);
     [[nodiscard]] DetectionMetrics compute() const;
+    // Returns recall[] and precision[] per class at IoU=0.50.
+    // Recalls are non-decreasing. Returns empty map before any update() calls.
+    [[nodiscard]]
+    std::map<std::string, std::pair<std::vector<float>, std::vector<float>>>
+    pr_curves() const;
     void reset();
 
 private:

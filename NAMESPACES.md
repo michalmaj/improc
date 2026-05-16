@@ -1266,6 +1266,42 @@ Image<BGR> result = frame | DrawTracks{tracks}.thickness(2) | Show{"Tracking"}.w
 
 Arranges a `vector<Image<BGR>>` into a grid. Setters: `.cols(int)`, `.cell_size(int w, int h)`, `.gap(int)`, `.background(cv::Scalar)`. Returns a single tiled `Image<BGR>`.
 
+### ML Charts (`visualization/ml_charts.hpp`)
+
+Five functors that pair with `improc::ml` eval types and return `Image<BGR>`. Include via dedicated umbrella — does **not** modify the `visualization.hpp` dependency chain.
+
+```cpp
+#include "improc/visualization/ml_charts.hpp"
+using namespace improc::visualization;
+
+// 1. ConfusionMatrixPlot — heatmap (violet diagonal, amber/red errors)
+Image<BGR> hm = ConfusionMatrixPlot{class_eval.compute().confusion_matrix}
+                    .width(400).height(400)();
+// Raw form:
+Image<BGR> hm2 = ConfusionMatrixPlot{{{92,5,3},{8,87,5},{2,4,94}},
+                                      {"cat","dog","car"}}();
+
+// 2. PRCurvePlot — per-class precision-recall curves
+auto curves  = det_eval.pr_curves();
+auto det_m   = det_eval.compute();
+Image<BGR> pr = PRCurvePlot{curves}.mAP_50(det_m.mAP_50)
+                    .width(640).height(480)();
+
+// 3. ROCCurvePlot — per-class ROC with AUC (raw data only)
+// fpr_map and tpr_map: map<string, vector<float>> computed externally
+Image<BGR> roc = ROCCurvePlot{fpr_map, tpr_map}.width(640).height(480)();
+
+// 4. ClassBarChart — grouped P/R/F1 bars or single AP bars
+Image<BGR> bars    = ClassBarChart{class_eval.compute()}.width(640).height(400)();
+Image<BGR> ap_bars = ClassBarChart{det_eval.compute()}.width(640)();
+
+// 5. IoUHistogram — distribution with threshold line
+Image<BGR> hist = IoUHistogram{iou_scores}.bins(20).threshold(0.5f)
+                      .width(800).height(300)();
+```
+
+All five functors: fluent `.width(int)/.height(int)/.title(string)`, throw `ParameterError` on invalid params. `ROCCurvePlot` is raw-data-only — `ClassEval` stores count data, not confidence scores.
+
 ### Umbrella include
 
 ```cpp

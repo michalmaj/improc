@@ -124,6 +124,30 @@ DetectionMetrics DetectionEval::compute() const {
     return out;
 }
 
+std::map<std::string, std::pair<std::vector<float>, std::vector<float>>>
+DetectionEval::pr_curves() const {
+    std::map<std::string, std::pair<std::vector<float>, std::vector<float>>> result;
+    // Use IoU=0.50 (index 0 in kThresholds_)
+    for (const auto& [cls, matches] : matches_[0]) {
+        int gt_count = gt_counts_.count(cls) ? gt_counts_.at(cls) : 0;
+        if (gt_count == 0 || matches.empty()) continue;
+        auto sorted = matches;
+        std::sort(sorted.begin(), sorted.end(),
+                  [](const auto& a, const auto& b) { return a.first > b.first; });
+        std::vector<float> rec, prec;
+        rec.reserve(sorted.size());
+        prec.reserve(sorted.size());
+        int tp = 0, fp = 0;
+        for (const auto& [conf, ok] : sorted) {
+            if (ok) ++tp; else ++fp;
+            rec.push_back(static_cast<float>(tp) / gt_count);
+            prec.push_back(static_cast<float>(tp) / (tp + fp));
+        }
+        result[cls] = {std::move(rec), std::move(prec)};
+    }
+    return result;
+}
+
 void DetectionEval::reset() {
     for (auto& m : matches_) m.clear();
     gt_counts_.clear();
