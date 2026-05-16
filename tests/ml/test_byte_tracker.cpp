@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 #include "improc/ml/tracking/byte_tracker.hpp"
 #include "improc/ml/tracking/sort_tracker.hpp"
+#include "improc/exceptions.hpp"
 
 using namespace improc::ml;
 
@@ -78,4 +79,31 @@ TEST(ByteTrackerTest, ResetClearsState) {
     auto r = tracker.update({make_det(0, 0, 10, 10, 0.9f)});
     ASSERT_FALSE(r.empty());
     for (const auto& t : r) EXPECT_EQ(t.id, 0);
+}
+
+TEST(ByteTrackerTest, ThrowsOnInvalidSetterRange) {
+    ByteTracker t;
+    EXPECT_THROW(t.max_age(-1),                improc::ParameterError);
+    EXPECT_THROW(t.min_hits(0),                improc::ParameterError);
+    EXPECT_THROW(t.high_conf_threshold(-0.1f), improc::ParameterError);
+    EXPECT_THROW(t.high_conf_threshold(1.1f),  improc::ParameterError);
+    EXPECT_THROW(t.low_conf_threshold(-0.1f),  improc::ParameterError);
+    EXPECT_THROW(t.low_conf_threshold(1.1f),   improc::ParameterError);
+    EXPECT_NO_THROW(t.max_age(0));
+    EXPECT_NO_THROW(t.min_hits(1));
+    EXPECT_NO_THROW(t.high_conf_threshold(1.0f));
+    EXPECT_NO_THROW(t.low_conf_threshold(0.0f));
+}
+
+TEST(ByteTrackerTest, ThrowsWhenLowThreshNotLessThanHigh) {
+    // Cross-invariant checked at update() time to avoid order-dependency in setters
+    ByteTracker t;
+    t.high_conf_threshold(0.4f);
+    t.low_conf_threshold(0.4f);  // equal — not strictly less
+    EXPECT_THROW(t.update({}), improc::ParameterError);
+}
+
+TEST(ByteTrackerTest, EmptyDetectionsOnFreshTrackerReturnsEmpty) {
+    ByteTracker tracker;
+    EXPECT_TRUE(tracker.update({}).empty());
 }

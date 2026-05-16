@@ -1,6 +1,7 @@
 // tests/ml/test_tracking_eval.cpp
 #include <gtest/gtest.h>
 #include "improc/ml/tracking/tracking_eval.hpp"
+#include "improc/exceptions.hpp"
 
 using namespace improc::ml;
 
@@ -81,5 +82,33 @@ TEST(TrackingEvalTest, ResetClearsState) {
     EXPECT_FLOAT_EQ(m.IDF1, 0.0f);
     EXPECT_EQ(m.FP,   0);
     EXPECT_EQ(m.FN,   0);
+    EXPECT_EQ(m.IDSW, 0);
+}
+
+TEST(TrackingEvalTest, ThrowsOnInvalidIouThreshold) {
+    TrackingEval eval;
+    EXPECT_THROW(eval.iou_threshold(-0.1f), improc::ParameterError);
+    EXPECT_THROW(eval.iou_threshold(1.1f),  improc::ParameterError);
+    EXPECT_NO_THROW(eval.iou_threshold(0.0f));
+    EXPECT_NO_THROW(eval.iou_threshold(1.0f));
+}
+
+TEST(TrackingEvalTest, HungarianHandlesMoreTracksThanGTs) {
+    // nt=3, ng=1: exercises the n>m augmenting-path fix (kPad instead of kInf)
+    TrackingEval eval;
+    eval.update({make_track(0, 0,0,10,10)}, {make_gt(0, 0,0,10,10)});
+    eval.update({make_track(1, 0,0,10,10)}, {make_gt(0, 0,0,10,10)});
+    eval.update({make_track(2, 0,0,10,10)}, {make_gt(0, 0,0,10,10)});
+    auto m = eval.compute();  // must not crash
+    EXPECT_EQ(m.IDSW, 2);
+    EXPECT_LT(m.IDF1, 1.0f);
+}
+
+TEST(TrackingEvalTest, EmptyTracksCountsFalseNegative) {
+    TrackingEval eval;
+    eval.update({}, {make_gt(0, 0,0,10,10)});
+    auto m = eval.compute();
+    EXPECT_EQ(m.FN, 1);
+    EXPECT_EQ(m.FP, 0);
     EXPECT_EQ(m.IDSW, 0);
 }

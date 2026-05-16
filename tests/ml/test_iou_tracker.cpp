@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 #include "improc/ml/tracking/track.hpp"
 #include "improc/ml/tracking/iou_tracker.hpp"
+#include "improc/exceptions.hpp"
 
 using namespace improc::ml;
 
@@ -70,4 +71,23 @@ TEST(IouTrackerTest, ResetClearsState) {
     auto r = tracker.update({make_det(0, 0, 10, 10)});
     ASSERT_EQ(r.size(), 1u);
     EXPECT_EQ(r[0].id, 0);  // ID counter reset to 0
+}
+
+TEST(IouTrackerTest, ThrowsOnInvalidMinIou) {
+    IouTracker t;
+    EXPECT_THROW(t.min_iou(-0.1f), improc::ParameterError);
+    EXPECT_THROW(t.min_iou(1.1f),  improc::ParameterError);
+    EXPECT_NO_THROW(t.min_iou(0.0f));
+    EXPECT_NO_THROW(t.min_iou(1.0f));
+}
+
+TEST(IouTrackerTest, ThrowsOnNegativeMaxAge) {
+    IouTracker t;
+    EXPECT_THROW(t.max_age(-1), improc::ParameterError);
+    EXPECT_NO_THROW(t.max_age(0));
+}
+
+TEST(IouTrackerTest, EmptyDetectionsOnFreshTrackerReturnsEmpty) {
+    IouTracker tracker;
+    EXPECT_TRUE(tracker.update({}).empty());
 }

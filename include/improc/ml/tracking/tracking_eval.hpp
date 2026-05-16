@@ -4,6 +4,7 @@
 #include <utility>
 #include <vector>
 #include "improc/ml/tracking/track.hpp"
+#include "improc/exceptions.hpp"
 
 namespace improc::ml {
 
@@ -17,7 +18,11 @@ struct TrackingMetrics {
 };
 
 struct TrackingEval {
-    TrackingEval& iou_threshold(float t) { iou_thr_ = t; return *this; }
+    TrackingEval& iou_threshold(float t) {
+        if (t < 0.f || t > 1.f)
+            throw improc::ParameterError("iou_threshold", "must be in [0, 1]", "TrackingEval");
+        iou_thr_ = t; return *this;
+    }
 
     void update(const std::vector<Track>&   tracks,
                 const std::vector<TrackGT>& gts);
