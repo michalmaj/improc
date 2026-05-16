@@ -19,6 +19,7 @@
 - [ONNX Runtime Inference](#onnx-runtime-inference)
 - [Edge Detection & Enhancement](#edge-detection--enhancement)
 - [Drawing Detections](#drawing-detections)
+- [Object Tracking](#object-tracking)
 - [Lazy Views](#lazy-views)
 - [Feature Detection Pipeline](#feature-detection-pipeline)
 - [Requirements](#requirements)
@@ -32,8 +33,8 @@
 
 ## Status
 
-> **Latest release: v0.3.0** — Core Completeness. `improc::core` covers the full classical 2D CV pipeline.  
-> **In development: v0.4.0** — Extended augmentation (12 new training ops, bbox-aware overloads, lazy views).  
+> **Latest release: v0.5.0** — Multi-Object Tracking. `improc::ml` now ships `IouTracker`, `SortTracker` (Kalman + Hungarian, SORT algorithm), and `ByteTracker` (two-stage BYTE algorithm) plus `TrackingEval` for MOTA / MOTP / IDF1 evaluation.  
+> **Previous highlights:** v0.4.0 — extended augmentation, bbox-aware ops, VOC/COCO dataset loaders, segmentation support, lazy views, ONNX Runtime 1.20.1. v0.3.0 — complete classical 2D CV pipeline.  
 > APIs are stabilising but may still change between minor versions.
 
 | Namespace | Status | Notes |
@@ -112,7 +113,7 @@ Format mismatches (e.g. passing `Image<Float32>` where `Image<BGR>` is expected)
 
 ## Non-Goals & Limitations
 
-- **Not a Python library yet.** pybind11 bindings for `improc::core` and `improc::io` are planned for v0.5.0 — use OpenCV's Python API in the meantime.
+- **Not a Python library yet.** Python bindings are on the long-term roadmap — use OpenCV's Python API in the meantime.
 - **Not a general-purpose image editor.** No GUI, no layers, no undo — this is a processing pipeline toolkit.
 - **Not a training framework.** No autograd, no loss functions — use PyTorch/TensorFlow for training; improc++ handles inference and preprocessing.
 - **No CUDA yet.** All ops run on CPU (ONNX Runtime uses CoreML EP on Apple Silicon). CUDA acceleration (`improc::cuda`) is planned.
@@ -140,6 +141,7 @@ OpenCV is powerful but its raw API is stringly-typed, mutation-heavy, and easy t
 - **Normalization** — `Normalize`, `NormalizeTo`, `Standardize` for ML preprocessing
 - **Format conversions** — explicit, compiler-enforced free functions (`convert<Gray>(bgr_image)`)
 - **Augmentation** — stochastic training augmentations constrained by C++20 concepts: `RandomFlip`, `RandomRotate`, `RandomCrop`, `RandomResize`, `RandomZoom`, `RandomShear`, `RandomPerspective`, `RandomBrightness`, `RandomContrast`, `ColorJitter`, `RandomGrayscale`, `RandomSolarize`, `RandomPosterize`, `RandomEqualize`, `RandomBlur`, `RandomSharpness`, `RandomGaussianNoise`, `RandomSaltAndPepper`, `RandomErasing`, `GridDropout`, `Compose`, `RandomApply`, `OneOf`; bbox-aware overloads via `BBox`, `AnnotatedImage<F>`, `BBoxCompose<F>` (all 7 geometric ops accept annotated images with automatic clip-and-drop filtering)
+- **Multi-object tracking** — `IouTracker` (greedy IoU), `SortTracker` (constant-velocity Kalman + Hungarian, SORT algorithm), `ByteTracker` (two-stage BYTE algorithm: Stage 1 Hungarian on high-confidence dets, Stage 2 greedy IoU on low-confidence dets); all satisfy `TrackerType<T>` and are drop-in replaceable; `TrackingEval` accumulates MOTA, MOTP, IDF1, FP, FN, IDSW across frames
 - **Dataset loading** — load image datasets from class-labeled directories with train/val/test splitting
 - **DNN inference** — `DnnClassifier`, `DnnDetector` (YOLO & SSD), `DnnForward` backed by OpenCV DNN; pipeline-composable
 - **ONNX Runtime inference** — `OnnxClassifier`, `OnnxDetector` (YOLOv5 & YOLOv8 & SSD), `OnnxSession` (raw tensor I/O); CPU + CoreML EP on Apple Silicon; train in Python, export to ONNX, run here
@@ -202,7 +204,8 @@ All ops are functors that compose via `operator|`. The `pipeline.hpp` umbrella h
 #include "improc/io/video_writer.hpp"
 
 // ML utilities
-#include "improc/ml/augmentation.hpp"     // all augmentation ops
+#include "improc/ml/augmentation.hpp"        // all augmentation ops
+#include "improc/ml/tracking/tracking.hpp"   // IouTracker, SortTracker, ByteTracker, TrackingEval
 #include "improc/ml/dnn_classifier.hpp"
 #include "improc/ml/dataset.hpp"
 
@@ -374,6 +377,46 @@ Image<BGR> annotated = frame | DrawBoundingBoxes{detections}.thickness(2);
 Image<BGR> boxes_only = frame | DrawBoundingBoxes{detections}
     .show_label(false).show_confidence(false);
 ```
+
+## Object Tracking
+
+Three interchangeable trackers, all satisfying `TrackerType<T>`: `IouTracker` (greedy), `SortTracker` (Kalman + Hungarian, SORT), and `ByteTracker` (two-stage BYTE). Pair with `TrackingEval` for offline metric computation.
+
+```cpp
+#include "improc/ml/tracking/tracking.hpp"
+using namespace improc::ml;
+
+// --- SortTracker — Kalman-filter SORT algorithm ---
+SortTracker tracker;
+tracker.max_age(3).min_hits(3).iou_threshold(0.3f);
+
+for (auto& frame : video) {
+    std::vector<Detection>  dets   = detector(frame);
+    std::vector<Track>      tracks = tracker.update(dets);  // confirmed tracks only
+
+    for (const auto& t : tracks)
+        frame | DrawBoundingBoxes{{Detection{t.bbox.box, t.bbox.class_id, 1.f, std::to_string(t.id)}}};
+}
+
+// --- ByteTracker — two-stage matching recovers occluded tracks ---
+ByteTracker bt;
+bt.max_age(3).min_hits(3)
+  .high_conf_threshold(0.6f).low_conf_threshold(0.1f);
+
+// --- Evaluation: MOTA / MOTP / IDF1 ---
+TrackingEval eval;
+eval.iou_threshold(0.5f);
+
+for (int f = 0; f < n_frames; ++f)
+    eval.update(predicted_tracks[f], ground_truth[f]);
+
+TrackingMetrics m = eval.compute();
+std::cout << "MOTA=" << m.MOTA << "  MOTP=" << m.MOTP
+          << "  IDF1=" << m.IDF1
+          << "  IDSW=" << m.IDSW << "\n";
+```
+
+All trackers are drop-in replaceable — swap `SortTracker` for `ByteTracker` with no other changes. See `NAMESPACES.md` for the full setter reference.
 
 ## Lazy Views
 
