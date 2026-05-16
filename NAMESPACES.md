@@ -15,6 +15,7 @@ The library is organized into modular namespaces under the root `improc` namespa
   - [Bbox-aware ops](#bbox-aware-geometric-ops-annotatedhpp-augmentbbox_composehpp)
   - [Blur Extras (v0.4.0)](#blur-extras-v040)
   - [MixUp / CutMix (v0.4.0-C)](#mixup--cutmix-v040-c)
+  - [Multi-Object Tracking (v0.5.0)](#multi-object-tracking-v050)
 - [`improc::threading`](#improcthreading--concurrency-utilities) — Concurrency utilities
 - [`improc::visualization`](#improcvisualization--chart-and-display-utilities) — Chart and display utilities
 - [`improc::onnx`](#improconnx--onnx-runtime-inference) — ONNX Runtime inference
@@ -981,6 +982,119 @@ auto r = parse_voc_seg("2007_000032", "JPEGImages/", "SegmentationClass/", {});
 **Directory structure:** `JPEGImages/`, `SegmentationClass/` (required), `SegmentationObject/` (optional, for instance masks), `ImageSets/Segmentation/train.txt` and `val.txt` (optional; falls back to 10%/10% random split).
 
 **Setters:** `classes(vector)` (index = class_id → name), `load_instance_masks(bool)` (default false).
+
+#### Multi-Object Tracking (v0.5.0)
+
+**Umbrella header:** `#include "improc/ml/tracking/tracking.hpp"`
+
+**Core types** (`track.hpp`):
+
+```cpp
+struct Track {
+    int   id           = -1;   // persistent track ID
+    BBox  bbox;                // current bbox (pixel coords)
+    float confidence   = 0.0f;
+    int   age          = 0;    // frames since last detection match
+    bool  is_confirmed = false;
+};
+
+struct TrackGT {               // ground-truth annotation for evaluation
+    int  id;
+    BBox bbox;
+};
+
+// Concept satisfied by all tracker structs
+template<typename T>
+concept TrackerType = requires(T t, std::vector<Detection> d) {
+    { t.update(d) } -> std::same_as<std::vector<Track>>;
+    { t.reset()   } -> std::same_as<void>;
+};
+```
+
+All three trackers satisfy `TrackerType` and are drop-in replaceable.
+
+---
+
+**`IouTracker`** (`iou_tracker.hpp`) — Greedy IoU matching with age-based culling. No motion model; suitable for fast, static, or camera-fixed scenes.
+
+| Setter | Default | Description |
+|---|---|---|
+| `min_iou(float)` | 0.3 | Minimum IoU to match a detection to a track |
+| `max_age(int)` | 1 | Frames to keep a track alive without a match |
+
+```cpp
+IouTracker tracker;
+tracker.min_iou(0.3f).max_age(2);
+std::vector<Track> tracks = tracker.update(detections);
+tracker.reset();
+```
+
+---
+
+**`SortTracker`** (`sort_tracker.hpp`) — SORT algorithm: Hungarian assignment on (1 − IoU) cost, constant-velocity Kalman filter for motion prediction, confirmation gate.
+
+| Setter | Default | Description |
+|---|---|---|
+| `max_age(int)` | 3 | Frames to keep an unmatched track alive |
+| `min_hits(int)` | 3 | Hits required before a track is reported as confirmed |
+| `iou_threshold(float)` | 0.3 | Minimum IoU to accept a Hungarian assignment |
+
+```cpp
+SortTracker tracker;
+tracker.max_age(3).min_hits(3).iou_threshold(0.3f);
+std::vector<Track> tracks = tracker.update(detections);  // only confirmed tracks returned
+tracker.reset();
+```
+
+`Track::age` is the number of frames since the last detection match. `Track::is_confirmed` is `true` once `hits >= min_hits`. Tracks with `age > max_age` are removed.
+
+---
+
+**`ByteTracker`** (`byte_tracker.hpp`) — BYTE algorithm: two-stage matching that recovers occluded tracks via low-confidence detections.
+
+- **Stage 1** — Hungarian on high-confidence detections (`confidence >= high_conf_threshold`) vs all existing tracklets.
+- **Stage 2** — Greedy IoU on low-confidence detections (`low_conf_threshold <= confidence < high_conf_threshold`) vs unmatched tracklets from Stage 1.
+
+| Setter | Default | Description |
+|---|---|---|
+| `max_age(int)` | 3 | Frames to keep an unmatched track alive |
+| `min_hits(int)` | 3 | Hits required before a track is confirmed |
+| `high_conf_threshold(float)` | 0.6 | Stage 1 threshold |
+| `low_conf_threshold(float)` | 0.1 | Detections below this are discarded |
+
+```cpp
+ByteTracker tracker;
+tracker.max_age(3).min_hits(3)
+       .high_conf_threshold(0.6f).low_conf_threshold(0.1f);
+std::vector<Track> tracks = tracker.update(detections);  // only confirmed tracks returned
+tracker.reset();
+```
+
+---
+
+**`TrackingEval`** / **`TrackingMetrics`** (`tracking_eval.hpp`) — Frame-by-frame accumulator for standard MOT metrics.
+
+```cpp
+struct TrackingMetrics {
+    float MOTA = 0.0f;  // 1 − (FN + FP + IDSW) / GT_total
+    float MOTP = 0.0f;  // mean IoU of matched pairs
+    float IDF1 = 0.0f;  // 2·IDTP / (2·IDTP + IDFP + IDFN)
+    int   FP   = 0;
+    int   FN   = 0;
+    int   IDSW = 0;
+};
+
+TrackingEval eval;
+eval.iou_threshold(0.5f);           // default 0.5
+
+for (int f = 0; f < n_frames; ++f)
+    eval.update(predicted_tracks[f], ground_truth[f]);
+
+TrackingMetrics m = eval.compute(); // [[nodiscard]]
+eval.reset();                       // clears all accumulated state
+```
+
+`update()` uses globally-greedy IoU matching (all valid pairs sorted by IoU descending) — ties are broken by insertion order. An ID switch is counted when a GT is matched to a different track ID than in the previous frame. IDF1 is computed via global bipartite matching on co-occurrence counts (Hungarian).
 
 ---
 
