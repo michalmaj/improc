@@ -22,7 +22,6 @@ inline const cv::Scalar kBg    {42,  23,  15};
 inline const cv::Scalar kPanel {59,  41,  30};
 inline const cv::Scalar kText  {184, 163, 148};
 inline const cv::Scalar kMuted {139, 116, 100};
-inline const cv::Scalar kAccent{250, 139, 167};
 inline const std::vector<cv::Scalar> kColors{
     {250, 139, 167}, {153, 211,  52}, { 11, 158, 245}, {248, 189,  56}
 };
