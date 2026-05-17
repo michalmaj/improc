@@ -84,14 +84,11 @@ jobs:
             -B build .
 
       - name: Build
+        timeout-minutes: 30
         run: |
-          # Linux runners have 7 GB RAM; unlimited parallel compilation OOMs on
-          # heavy visualization TUs. Cap at 2 to stay well within budget.
-          if [ "$(uname)" = "Linux" ]; then
-            cmake --build build --parallel 2 --target improc_tests
-          else
-            cmake --build build --parallel --target improc_tests
-          fi
+          # Both Linux and macOS runners have 7 GB RAM; unlimited parallel
+          # compilation OOMs on heavy C++23/visualization TUs.
+          cmake --build build --parallel 2 --target improc_tests
 
       - name: Run tests
         run: |
