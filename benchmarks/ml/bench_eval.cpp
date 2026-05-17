@@ -64,8 +64,8 @@ static void BM_detection_eval_update(benchmark::State& state) {
     int n = static_cast<int>(state.range(0));
     auto preds = make_detections(n);
     auto gts   = make_gt_boxes(n);
-    DetectionEval eval{};
     for (auto _ : state) {
+        DetectionEval eval{};
         eval.update(preds, gts);
         benchmark::DoNotOptimize(preds);
     }

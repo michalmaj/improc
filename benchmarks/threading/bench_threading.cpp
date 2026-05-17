@@ -60,8 +60,8 @@ BENCHMARK(BM_sequential_frames);
 static void BM_threaded_frames(benchmark::State& state) {
     int n_threads = static_cast<int>(state.range(0));
     auto frames = make_frames(480, 640);
+    ThreadPool pool(n_threads);
     for (auto _ : state) {
-        ThreadPool pool(n_threads);
         std::vector<std::future<Image<BGR>>> futures;
         futures.reserve(frames.size());
         for (const auto& f : frames) {
