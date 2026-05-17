@@ -36,9 +36,10 @@ static void BM_raw_ml_pipeline(benchmark::State& state) {
     cv::Mat raw(1080, 1920, CV_8UC3);
     cv::randu(raw, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
 
-    cv::Mat resized, lab, blurred, float_img, normalized;
-    std::vector<cv::Mat> lab_planes;
     for (auto _ : state) {
+        // Mats declared inside the loop — same allocation pattern as improc pipeline.
+        cv::Mat resized, lab, float_img;
+        std::vector<cv::Mat> lab_planes;
 
         cv::resize(raw, resized, cv::Size(224, 224));
 
@@ -49,15 +50,19 @@ static void BM_raw_ml_pipeline(benchmark::State& state) {
         cv::merge(lab_planes, lab);
         cv::cvtColor(lab, resized, cv::COLOR_Lab2BGR);
 
-        cv::GaussianBlur(resized, blurred, cv::Size(3, 3), 0);
-        blurred.convertTo(float_img, CV_32FC3, 1.0 / 255.0);
+        cv::GaussianBlur(resized, resized, cv::Size(3, 3), 0);
+        resized.convertTo(float_img, CV_32FC3, 1.0 / 255.0);
         double mn, mx;
         cv::minMaxLoc(float_img.reshape(1), &mn, &mx);
-        float scale = (mx > mn) ? static_cast<float>(1.0 / (mx - mn)) : 1.0f;
-        float shift = static_cast<float>(-mn * scale);
-        float_img.convertTo(normalized, CV_32FC3, scale, shift);
+        if (mx > mn) {
+            double scale = 1.0 / (mx - mn);
+            double shift = -mn * scale;
+            float_img.convertTo(float_img, CV_32FC3, scale, shift);
+        } else {
+            float_img.setTo(0.0f);
+        }
 
-        benchmark::DoNotOptimize(normalized);
+        benchmark::DoNotOptimize(float_img);
     }
 
     state.SetItemsProcessed(state.iterations());

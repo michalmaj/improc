@@ -14,6 +14,14 @@ namespace improc::core {
  * On `Image<Gray>`: delegates to `cv::fastNlMeansDenoising`.
  * On `Image<BGR>`:  delegates to `cv::fastNlMeansDenoisingColored`.
  *
+ * @warning **Algorithmically slow.** NLM compares every patch against every
+ *          other patch in the search window — O(N² · patch²) per pixel.
+ *          Measured on Apple M4 Pro (single thread):
+ *          - 480×640:   ~122 ms (~8 fps)
+ *          - 1080×1920: ~247 ms (~4 fps)
+ *          Not suitable for real-time use. Consider `GaussianBlur` or
+ *          `BilateralFilter` when latency matters.
+ *
  * @throws improc::ParameterError if h or h_color are not positive.
  * @throws improc::ParameterError if template_window_size or search_window_size
  *         are not odd and positive.

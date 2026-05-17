@@ -19,39 +19,54 @@ float bbox_iou(const BBox& a, const BBox& b) {
 } // namespace
 
 std::vector<Track> IouTracker::update(const std::vector<Detection>& dets) {
-    const std::size_t n_existing = tracks_.size();
-    std::vector<bool> det_used(dets.size(), false);
-    std::vector<bool> trk_used(n_existing, false);
+    const std::size_t D = dets.size();
+    const std::size_t T = tracks_.size();
 
-    // Greedy: repeatedly pick best unmatched pair above min_iou_
-    while (true) {
-        float best = min_iou_;
-        int bi = -1, bj = -1;
-        for (std::size_t i = 0; i < dets.size(); ++i) {
-            if (det_used[i]) continue;
-            for (std::size_t j = 0; j < n_existing; ++j) {
-                if (trk_used[j]) continue;
-                BBox det_box{dets[i].box, dets[i].class_id, dets[i].label};
-                float s = bbox_iou(det_box, tracks_[j].bbox);
-                if (s > best) { best = s; bi = static_cast<int>(i); bj = static_cast<int>(j); }
-            }
+    // Pre-convert detections to BBox once — avoids repeated string allocations
+    // inside the matching loop.
+    std::vector<BBox> det_boxes;
+    det_boxes.reserve(D);
+    for (const auto& d : dets)
+        det_boxes.push_back({d.box, d.class_id, d.label});
+
+    std::vector<bool> det_used(D, false);
+    std::vector<bool> trk_used(T, false);
+
+    if (D > 0 && T > 0) {
+        // Build IoU matrix once (D×T) — previous code recomputed it min(D,T) times.
+        std::vector<float> iou_mat(D * T);
+        for (std::size_t i = 0; i < D; ++i)
+            for (std::size_t j = 0; j < T; ++j)
+                iou_mat[i * T + j] = bbox_iou(det_boxes[i], tracks_[j].bbox);
+
+        // Collect above-threshold pairs, sort by IoU descending, then greedily assign.
+        struct Pair { float iou; std::size_t di, ti; };
+        std::vector<Pair> pairs;
+        pairs.reserve(D * T);
+        for (std::size_t i = 0; i < D; ++i)
+            for (std::size_t j = 0; j < T; ++j)
+                if (iou_mat[i * T + j] > min_iou_)
+                    pairs.push_back({iou_mat[i * T + j], i, j});
+        std::sort(pairs.begin(), pairs.end(),
+                  [](const Pair& a, const Pair& b) { return a.iou > b.iou; });
+
+        for (const auto& p : pairs) {
+            if (det_used[p.di] || trk_used[p.ti]) continue;
+            auto& t = tracks_[p.ti];
+            t.track.bbox       = det_boxes[p.di];
+            t.track.confidence = dets[p.di].confidence;
+            t.track.age        = 0;
+            t.bbox             = t.track.bbox;
+            det_used[p.di] = trk_used[p.ti] = true;
         }
-        if (bi < 0) break;
-
-        auto& t = tracks_[bj];
-        t.track.bbox       = BBox{dets[bi].box, dets[bi].class_id, dets[bi].label};
-        t.track.confidence = dets[bi].confidence;
-        t.track.age        = 0;
-        t.bbox             = t.track.bbox;
-        det_used[bi] = trk_used[bj] = true;
     }
 
     // Unmatched detections → new confirmed tracks
-    for (std::size_t i = 0; i < dets.size(); ++i) {
+    for (std::size_t i = 0; i < D; ++i) {
         if (det_used[i]) continue;
         InternalTrack it;
         it.track.id           = next_id_++;
-        it.track.bbox         = BBox{dets[i].box, dets[i].class_id, dets[i].label};
+        it.track.bbox         = det_boxes[i];
         it.track.confidence   = dets[i].confidence;
         it.track.age          = 0;
         it.track.is_confirmed = true;
@@ -60,7 +75,7 @@ std::vector<Track> IouTracker::update(const std::vector<Detection>& dets) {
     }
 
     // Age unmatched existing tracks (not newly added ones)
-    for (std::size_t j = 0; j < n_existing; ++j)
+    for (std::size_t j = 0; j < T; ++j)
         if (!trk_used[j]) tracks_[j].track.age++;
 
     // Remove dead tracks

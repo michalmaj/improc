@@ -29,6 +29,7 @@
 - [Tested With](#tested-with)
 - [Non-Goals & Limitations](#non-goals--limitations)
 - [Motivation](#motivation)
+- [Benchmarks](#benchmarks)
 - [Contributing](#contributing)
 
 ## Status
@@ -559,6 +560,18 @@ cmake --build cmake-build-debug --target improc_tests
 - **OpenCV:** 4.8.1
 - **Eigen:** 3.4.0
 - **GoogleTest:** 1.16.0
+
+## Benchmarks
+
+Single-thread performance on Apple M4 Pro. Highlights:
+
+| Operation | Time |
+|---|---|
+| GaussianBlur 480×640 | 82 µs |
+| IouTracker @ 100 dets | 17.5 µs |
+| Lazy `take(16/256)` | 16× faster than eager |
+
+→ **[Full benchmark tables and engineering notes](BENCHMARKS.md)**
 
 ## Contributing
 
