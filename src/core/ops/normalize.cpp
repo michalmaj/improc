@@ -18,29 +18,27 @@ void global_min_max(const cv::Mat& mat, double& min_val, double& max_val) {
 Image<Float32> Normalize::operator()(Image<Float32> img) const {
     double min_val, max_val;
     global_min_max(img.mat(), min_val, max_val);
-    cv::Mat dst;
     if (std::abs(max_val - min_val) < 1e-10) {
-        dst = cv::Mat::zeros(img.mat().size(), CV_32FC1);
+        img.mat().setTo(0.0f);
     } else {
         const double scale = 1.0 / (max_val - min_val);
         const double shift = -min_val * scale;
-        img.mat().convertTo(dst, CV_32FC1, scale, shift);
+        img.mat().convertTo(img.mat(), CV_32FC1, scale, shift);
     }
-    return Image<Float32>(std::move(dst));
+    return img;
 }
 
 Image<Float32C3> Normalize::operator()(Image<Float32C3> img) const {
     double min_val, max_val;
     global_min_max(img.mat(), min_val, max_val);
-    cv::Mat dst;
     if (std::abs(max_val - min_val) < 1e-10) {
-        dst = cv::Mat::zeros(img.mat().size(), CV_32FC3);
+        img.mat().setTo(0.0f);
     } else {
         const double scale = 1.0 / (max_val - min_val);
         const double shift = -min_val * scale;
-        img.mat().convertTo(dst, CV_32FC3, scale, shift);
+        img.mat().convertTo(img.mat(), CV_32FC3, scale, shift);
     }
-    return Image<Float32C3>(std::move(dst));
+    return img;
 }
 
 NormalizeTo::NormalizeTo(float min, float max) : min_(min), max_(max) {
@@ -51,31 +49,27 @@ NormalizeTo::NormalizeTo(float min, float max) : min_(min), max_(max) {
 Image<Float32> NormalizeTo::operator()(Image<Float32> img) const {
     double min_val, max_val;
     global_min_max(img.mat(), min_val, max_val);
-    cv::Mat dst;
     if (std::abs(max_val - min_val) < 1e-10) {
-        // Uniform image: range is undefined, return zeros (same as Normalize)
-        dst = cv::Mat::zeros(img.mat().size(), CV_32FC1);
+        img.mat().setTo(0.0f);
     } else {
         const double scale = (max_ - min_) / (max_val - min_val);
         const double shift = min_ - min_val * scale;
-        img.mat().convertTo(dst, CV_32FC1, scale, shift);
+        img.mat().convertTo(img.mat(), CV_32FC1, scale, shift);
     }
-    return Image<Float32>(std::move(dst));
+    return img;
 }
 
 Image<Float32C3> NormalizeTo::operator()(Image<Float32C3> img) const {
     double min_val, max_val;
     global_min_max(img.mat(), min_val, max_val);
-    cv::Mat dst;
     if (std::abs(max_val - min_val) < 1e-10) {
-        // Uniform image: range is undefined, return zeros (same as Normalize)
-        dst = cv::Mat::zeros(img.mat().size(), CV_32FC3);
+        img.mat().setTo(0.0f);
     } else {
         const double scale = (max_ - min_) / (max_val - min_val);
         const double shift = min_ - min_val * scale;
-        img.mat().convertTo(dst, CV_32FC3, scale, shift);
+        img.mat().convertTo(img.mat(), CV_32FC3, scale, shift);
     }
-    return Image<Float32C3>(std::move(dst));
+    return img;
 }
 
 Standardize::Standardize(float mean, float std_dev) : mean_(mean), std_dev_(std_dev) {
@@ -84,15 +78,13 @@ Standardize::Standardize(float mean, float std_dev) : mean_(mean), std_dev_(std_
 }
 
 Image<Float32> Standardize::operator()(Image<Float32> img) const {
-    cv::Mat dst;
-    img.mat().convertTo(dst, CV_32FC1, 1.0 / std_dev_, -mean_ / std_dev_);
-    return Image<Float32>(std::move(dst));
+    img.mat().convertTo(img.mat(), CV_32FC1, 1.0 / std_dev_, -mean_ / std_dev_);
+    return img;
 }
 
 Image<Float32C3> Standardize::operator()(Image<Float32C3> img) const {
-    cv::Mat dst;
-    img.mat().convertTo(dst, CV_32FC3, 1.0 / std_dev_, -mean_ / std_dev_);
-    return Image<Float32C3>(std::move(dst));
+    img.mat().convertTo(img.mat(), CV_32FC3, 1.0 / std_dev_, -mean_ / std_dev_);
+    return img;
 }
 
 } // namespace improc::core
