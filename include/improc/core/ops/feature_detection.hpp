@@ -56,6 +56,15 @@ private:
  * Returns `KeypointSet`. Wraps `cv::SIFT` (available since OpenCV 4.4).
  * Defaults: `max_features=0` (no limit), `n_octave_layers=3`.
  *
+ * @warning **Slow at high resolution.** SIFT builds a Gaussian scale-space
+ *          pyramid and is significantly slower than ORB.
+ *          Measured on Apple M4 Pro (single thread):
+ *          - 480×640:   ~14 ms (~71 fps)
+ *          - 1080×1920: ~91 ms (~11 fps)
+ *          Full detect+describe+match pipeline @ 1080×1920: ~329 ms (~3 fps).
+ *          Use `DetectORB` when real-time performance is required
+ *          (ORB end-to-end @ 1080×1920: ~94 ms).
+ *
  * @code
  * KeypointSet ks = gray | DetectSIFT{}.max_features(100);
  * @endcode
@@ -124,7 +133,13 @@ private:
     KeypointSet kps_;
 };
 
-/// @brief Pipeline op: computes SIFT descriptors for a given `KeypointSet`.
+/**
+ * @brief Pipeline op: computes SIFT descriptors for a given `KeypointSet`.
+ *
+ * @warning **Slow.** SIFT descriptors (128-dimensional float vectors) take
+ *          ~9 ms @ 480×640 and ~64 ms @ 1080×1920 on Apple M4 Pro.
+ *          Use `DescribeORB` when throughput matters (ORB: ~1 ms @ 480×640).
+ */
 struct DescribeSIFT {
     explicit DescribeSIFT(KeypointSet kps) : kps_(std::move(kps)) {}
     DescriptorSet operator()(Image<Gray> img) const;
