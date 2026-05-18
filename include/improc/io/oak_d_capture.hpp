@@ -57,10 +57,14 @@ public:
     // Returns a CameraFrame with both rgb and depth populated on success.
     // Returns Error::Code::Timeout if either queue times out.
     // Returns Error::Code::CameraUnavailable if not started.
+    //
+    // Thread safety: getFrame() and stop() must not be called concurrently.
+    // FramePipeline guarantees this — it stops the pipeline before joining workers.
     std::expected<CameraFrame, improc::Error> getFrame();
 
 private:
     std::string mx_id_;          // empty = use first device
+    std::string source_id_;      // pre-computed "oak-d" or "oak-d:<mxid>"
     int timeout_ms_{1000};       // per-queue timeout in ms
     std::atomic<bool> started_{false};
 
@@ -83,8 +87,8 @@ public:
     void start()  { throw std::runtime_error("OakDCapture: built without -DIMPROC_WITH_DEPTHAI=ON"); }
     void stop()   {}
     std::expected<CameraFrame, improc::Error> getFrame() {
-        return std::unexpected(improc::Error{improc::Error::Code::CameraUnavailable,
-            "OakDCapture: built without -DIMPROC_WITH_DEPTHAI=ON"});
+        return std::unexpected(improc::Error::camera_unavailable(
+            "OakDCapture: built without -DIMPROC_WITH_DEPTHAI=ON"));
     }
 };
 

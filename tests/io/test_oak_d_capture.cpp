@@ -54,13 +54,24 @@ TEST(OakDCaptureTest, StubWithMxIdConstructsAndGetFrameReturnsError) {
 
 #ifdef IMPROC_WITH_DEPTHAI
 
+static bool oak_d_available() {
+    try {
+        dai::Device dev;
+        return true;
+    } catch (...) {
+        return false;
+    }
+}
+
 TEST(OakDCaptureIntegrationTest, StartStopDoesNotCrash) {
+    if (!oak_d_available()) GTEST_SKIP() << "No OAK-D device available.";
     OakDCapture oak;
     ASSERT_NO_THROW(oak.start());
     oak.stop();
 }
 
 TEST(OakDCaptureIntegrationTest, GetFrameReturnsRgbAndDepth) {
+    if (!oak_d_available()) GTEST_SKIP() << "No OAK-D device available.";
     OakDCapture oak;
     oak.start();
     auto result = oak.getFrame();
@@ -72,6 +83,7 @@ TEST(OakDCaptureIntegrationTest, GetFrameReturnsRgbAndDepth) {
 }
 
 TEST(OakDCaptureIntegrationTest, GetFrameNotStartedReturnsError) {
+    if (!oak_d_available()) GTEST_SKIP() << "No OAK-D device available.";
     OakDCapture oak;
     auto result = oak.getFrame();
     ASSERT_FALSE(result.has_value());
