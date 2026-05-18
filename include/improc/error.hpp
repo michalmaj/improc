@@ -35,6 +35,7 @@ struct Error {
         CocoJsonParseFailed,   ///< COCO JSON annotation file is missing, malformed, or references an unreadable image.
         VocSegParseFailed,     ///< VOC segmentation mask file is missing, malformed, or references an unreadable image.
         Timeout,               ///< Camera getFrame() timed out waiting for a frame.
+        EndOfFile,             ///< VideoFileCapture reached the end of the video file.
     };
 
     Code        code;    ///< Machine-readable error category.
@@ -201,6 +202,14 @@ struct Error {
     static Error timeout(const std::string& source_id) {
         return {Code::Timeout,
                 "Camera '" + source_id + "' timed out waiting for a frame"};
+    }
+
+    /**
+     * @brief Returns an error when a video file source reaches the end of the file.
+     * @param path Path to the video file.
+     */
+    static Error end_of_file(const std::string& path) {
+        return {Code::EndOfFile, "End of file: " + path};
     }
 };
 
