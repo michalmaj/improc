@@ -5,7 +5,6 @@
 #include "improc/core/pipeline.hpp"
 #include <iostream>
 #include <chrono>
-#include <thread>
 #include <opencv2/highgui.hpp>
 
 using namespace improc::io;
@@ -17,7 +16,7 @@ int main(int argc, char* argv[]) {
     AnyCameraSource source;
     if (argc > 1) {
         std::string arg = argv[1];
-        if (arg.starts_with("rtsp://") || arg.starts_with("http://")) {
+        if (arg.starts_with("rtsp://") || arg.starts_with("http://") || arg.starts_with("https://")) {
             std::cout << "Using IPCameraCapture: " << arg << "\n";
             source = AnyCameraSource::make<IPCameraCapture>(arg);
         } else {

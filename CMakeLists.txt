@@ -129,7 +129,7 @@ target_link_libraries(demo_camera_capture PRIVATE improc)
 
 # Unified Camera (AnyCameraSource — runtime selection between webcam and IP camera)
 add_executable(demo_unified_camera examples/io/demo_unified_camera.cpp)
-target_link_libraries(demo_unified_camera PRIVATE improc ${OpenCV_LIBS})
+target_link_libraries(demo_unified_camera PRIVATE improc)
 
 # Image Loader
 add_executable(demo_image_loader examples/ml/demo_image_loader.cpp)
