@@ -84,6 +84,15 @@ struct Error {
     }
 
     /**
+     * @brief Returns an error when a named camera source cannot be opened.
+     * @param source_id Human-readable source identifier (e.g. "oak-d", "rtsp://...").
+     */
+    static Error camera_unavailable(const std::string& source_id) {
+        return {Code::CameraUnavailable,
+                "Camera source '" + source_id + "' could not be opened"};
+    }
+
+    /**
      * @brief Returns an error when an open camera returns an empty frame.
      * @param device_id OpenCV camera device index.
      */
