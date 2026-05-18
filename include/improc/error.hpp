@@ -31,6 +31,7 @@ struct Error {
         OnnxModelLoadFailed,   ///< ONNX Runtime failed to parse or load the model file.
         OnnxInferenceFailed,   ///< ONNX Runtime session run returned an error.
         OnnxSessionNotLoaded,  ///< `OnnxSession::run()` called before `load()`.
+        Timeout,               ///< Camera getFrame() timed out waiting for a frame.
     };
 
     Code        code;    ///< Machine-readable error category.
@@ -149,6 +150,15 @@ struct Error {
     static Error onnx_session_not_loaded() {
         return {Code::OnnxSessionNotLoaded,
                 "OnnxSession::run() called before load() — call load() first"};
+    }
+
+    /**
+     * @brief Returns an error when a camera source times out waiting for a frame.
+     * @param source_id Human-readable identifier of the source (e.g. "oak-d", "webcam:0").
+     */
+    static Error timeout(const std::string& source_id) {
+        return {Code::Timeout,
+                "Camera '" + source_id + "' timed out waiting for a frame"};
     }
 };
 
