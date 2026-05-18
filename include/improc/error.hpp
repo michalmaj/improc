@@ -34,6 +34,7 @@ struct Error {
         VocXmlParseFailed,     ///< VOC XML annotation file is missing, malformed, or references an unreadable image.
         CocoJsonParseFailed,   ///< COCO JSON annotation file is missing, malformed, or references an unreadable image.
         VocSegParseFailed,     ///< VOC segmentation mask file is missing, malformed, or references an unreadable image.
+        Timeout,               ///< Camera getFrame() timed out waiting for a frame.
     };
 
     Code        code;    ///< Machine-readable error category.
@@ -83,6 +84,15 @@ struct Error {
     static Error camera_unavailable(int device_id) {
         return {Code::CameraUnavailable,
                 "Camera device " + std::to_string(device_id) + " could not be opened"};
+    }
+
+    /**
+     * @brief Returns an error when a named camera source cannot be opened.
+     * @param source_id Human-readable source identifier (e.g. "oak-d", "rtsp://...").
+     */
+    static Error camera_unavailable(const std::string& source_id) {
+        return {Code::CameraUnavailable,
+                "Camera source '" + source_id + "' could not be opened"};
     }
 
     /**
@@ -182,6 +192,15 @@ struct Error {
     static Error voc_seg_parse_failed(const std::string& path, const std::string& reason) {
         return {Code::VocSegParseFailed,
                 "VOC segmentation parse failed '" + path + "': " + reason};
+    }
+
+    /**
+     * @brief Returns an error when a camera source times out waiting for a frame.
+     * @param source_id Human-readable identifier of the source (e.g. "oak-d", "webcam:0").
+     */
+    static Error timeout(const std::string& source_id) {
+        return {Code::Timeout,
+                "Camera '" + source_id + "' timed out waiting for a frame"};
     }
 };
 

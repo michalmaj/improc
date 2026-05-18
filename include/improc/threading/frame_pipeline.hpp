@@ -10,8 +10,7 @@
 #include <queue>
 #include <thread>
 #include "improc/exceptions.hpp"
-#include <opencv2/core.hpp>
-#include "improc/io/camera_capture.hpp"
+#include "improc/io/camera_source.hpp"
 #include "improc/threading/thread_pool.hpp"
 
 namespace improc::threading {
@@ -19,26 +18,35 @@ namespace improc::threading {
 /**
  * @brief Threaded frame processing pipeline for real-time camera workflows.
  *
- * Holds references (not ownership) to a `CameraCapture` and a `ThreadPool`.
- * Call `start(processor)` to begin submitting frames asynchronously.
- * `tryPop()` returns `std::optional<Result>` with the next finished result.
+ * Holds references (via type-erased std::function lambdas) to any
+ * `CameraSourceType` and a `ThreadPool`. Call `start(processor)` to begin
+ * submitting frames asynchronously. `tryPop()` returns `std::optional<Result>`
+ * with the next finished result.
  *
  * @tparam Result  The return type of the processor callable.
  *
  * @code
- * FramePipeline<cv::Mat> pipeline(cam, pool);
- * pipeline.start([](cv::Mat f){ return f; });
+ * FramePipeline<int> pipeline(camera_source, pool);
+ * pipeline.start([](CameraFrame f){ return f.rgb->mat().rows; });
  * while (auto r = pipeline.tryPop()) { ... }
  * @endcode
+ *
+ * @note The source object must outlive the pipeline (lambdas capture by reference).
  */
 template<typename Result>
 class FramePipeline {
 public:
-    using Processor = std::function<Result(cv::Mat)>;
+    using Processor = std::function<Result(improc::io::CameraFrame)>;
 
-    /// @brief Constructs the pipeline holding references to `camera` and `pool`.
-    FramePipeline(improc::io::CameraCapture& camera, ThreadPool& pool)
-        : camera_(camera), pool_(pool) {}
+    /// @brief Constructs the pipeline holding references to `source` and `pool`.
+    /// @tparam Source Any type satisfying `improc::io::CameraSourceType`.
+    /// @note The source must outlive this pipeline.
+    template<improc::io::CameraSourceType Source>
+    FramePipeline(Source& source, ThreadPool& pool)
+        : source_start_([&source] { source.start(); })
+        , source_stop_([&source] { source.stop(); })
+        , source_get_frame_([&source] { return source.getFrame(); })
+        , pool_(pool) {}
 
     /// @brief Stops the pipeline and joins the polling thread.
     ~FramePipeline() { stop(); }
@@ -52,22 +60,25 @@ public:
     /// @brief Deleted move assignment — non-movable.
     FramePipeline& operator=(FramePipeline&&) = delete;
 
-    /// @brief Starts the polling thread, submitting frames to the pool via `fn`.
+    /// @brief Starts the source, then spawns the polling thread which submits frames to the pool via `fn`.
     /// @throws improc::Exception if the pipeline is already running.
-    void start(Processor fn) {
+    template<typename F>
+    void start(F&& fn) {
         bool expected = false;
         // Atomically transition running_ false→true; throws if already true.
         if (!running_.compare_exchange_strong(expected, true))
             throw Exception{"FramePipeline: start() called while already running"};
-        processor_ = std::move(fn);
+        processor_ = std::forward<F>(fn);
+        source_start_();
         poller_ = std::thread(&FramePipeline<Result>::pollLoop, this);
     }
 
-    /// @brief Signals the polling thread to stop, joins it, and discards pending futures.
+    /// @brief Signals the polling thread to stop, joins it, stops the source, and discards pending futures.
     void stop() {
         if (!running_) return;
         running_ = false;
         if (poller_.joinable()) poller_.join();
+        source_stop_();
         std::lock_guard<std::mutex> lock(pending_mutex_);
         while (!pending_.empty()) pending_.pop();
     }
@@ -88,14 +99,16 @@ private:
     void pollLoop() {
         Processor local_processor = processor_;  // safe: written before thread started
         while (running_) {
-            auto frame_result = camera_.getFrame();
+            auto frame_result = source_get_frame_();
             if (!frame_result) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 continue;
             }
-            cv::Mat frame = std::move(*frame_result);
+            auto frame = std::move(*frame_result);
             try {
-                auto future = pool_.submit([local_processor, frame]{ return local_processor(frame); });
+                auto future = pool_.submit([local_processor, frame] {
+                    return local_processor(frame);
+                });
                 std::lock_guard<std::mutex> lock(pending_mutex_);
                 pending_.push(std::move(future));
             } catch (...) {
@@ -106,7 +119,9 @@ private:
         }
     }
 
-    improc::io::CameraCapture& camera_;
+    std::function<void()>                                                  source_start_;
+    std::function<void()>                                                  source_stop_;
+    std::function<std::expected<improc::io::CameraFrame, improc::Error>()> source_get_frame_;
     ThreadPool& pool_;
     Processor processor_;
 
