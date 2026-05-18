@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.30)
-project(improc__ VERSION 0.4.0)
+project(improc__ VERSION 0.7.0)
 
 if(APPLE)
     string(REPLACE "--as-needed" "" CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
@@ -88,13 +88,15 @@ add_library(improc STATIC ${IMPROC_HEADERS} ${IMPROC_SOURCES})
 
 target_include_directories(improc PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
 )
 
 target_link_libraries(improc PUBLIC
         opencv::opencv
         $<$<BOOL:${IMPROC_WITH_ONNX}>:onnxruntime::onnxruntime>
+        $<BUILD_INTERFACE:nlohmann_json::nlohmann_json>
 )
-target_link_libraries(improc PRIVATE nlohmann_json::nlohmann_json)
+
 target_compile_definitions(improc PUBLIC
         $<$<BOOL:${IMPROC_WITH_ONNX}>:IMPROC_WITH_ONNX>
 )
@@ -116,6 +118,45 @@ if(IMPROC_WITH_DEPTHAI)
 endif()
 
 enable_testing()
+
+# === Installation + cmake package config =====================================
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
+install(TARGETS improc
+    EXPORT  improcTargets
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+install(DIRECTORY include/improc
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install(EXPORT improcTargets
+    FILE      improcTargets.cmake
+    NAMESPACE improc::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/improc
+)
+
+configure_package_config_file(
+    cmake/improcConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/improcConfig.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/improc
+)
+
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/improcConfigVersion.cmake
+    VERSION     ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+
+install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/improcConfig.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/improcConfigVersion.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/improc
+)
 
 file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS tests/*.cpp)
 
