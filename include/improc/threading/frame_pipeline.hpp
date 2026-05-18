@@ -93,7 +93,7 @@ private:
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 continue;
             }
-            cv::Mat frame = std::move(*frame_result);
+            cv::Mat frame = frame_result->rgb->mat().clone();
             try {
                 auto future = pool_.submit([local_processor, frame]{ return local_processor(frame); });
                 std::lock_guard<std::mutex> lock(pending_mutex_);

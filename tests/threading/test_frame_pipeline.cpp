@@ -20,6 +20,7 @@ static bool camera_available() {
 TEST(FramePipelineTest, TryPopBeforeStartReturnsNullopt) {
     if (!camera_available()) GTEST_SKIP() << "No camera available";
     CameraCapture camera(0);
+    camera.start();
     ThreadPool pool(2);
     FramePipeline<cv::Mat> pipeline(camera, pool);
     EXPECT_FALSE(pipeline.tryPop().has_value());
@@ -28,6 +29,7 @@ TEST(FramePipelineTest, TryPopBeforeStartReturnsNullopt) {
 TEST(FramePipelineTest, StartTwiceThrows) {
     if (!camera_available()) GTEST_SKIP() << "No camera available";
     CameraCapture camera(0);
+    camera.start();
     ThreadPool pool(2);
     FramePipeline<cv::Mat> pipeline(camera, pool);
     pipeline.start([](cv::Mat frame){ return frame; });
@@ -40,6 +42,7 @@ TEST(FramePipelineTest, StartTwiceThrows) {
 TEST(FramePipelineTest, StopIsIdempotent) {
     if (!camera_available()) GTEST_SKIP() << "No camera available";
     CameraCapture camera(0);
+    camera.start();
     ThreadPool pool(2);
     FramePipeline<cv::Mat> pipeline(camera, pool);
     pipeline.start([](cv::Mat frame){ return frame; });
@@ -50,6 +53,7 @@ TEST(FramePipelineTest, StopIsIdempotent) {
 TEST(FramePipelineTest, TryPopReturnsProcessedFrame) {
     if (!camera_available()) GTEST_SKIP() << "No camera available";
     CameraCapture camera(0);
+    camera.start();
     std::this_thread::sleep_for(std::chrono::milliseconds(500));  // camera warmup
     ThreadPool pool(2);
     FramePipeline<cv::Mat> pipeline(camera, pool);
@@ -70,6 +74,7 @@ TEST(FramePipelineTest, TryPopReturnsProcessedFrame) {
 TEST(FramePipelineTest, ProcessorTransformsFrame) {
     if (!camera_available()) GTEST_SKIP() << "No camera available";
     CameraCapture camera(0);
+    camera.start();
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
     ThreadPool pool(2);
     FramePipeline<int> pipeline(camera, pool);
