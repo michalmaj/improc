@@ -41,3 +41,21 @@ TEST(CameraFrameErrorTest, TimeoutCode) {
     EXPECT_FALSE(err.message.empty());
     EXPECT_TRUE(err.message.find("oak-d") != std::string::npos);
 }
+
+// --- compile-time concept check ---
+#include "improc/io/camera_source.hpp"
+
+namespace {
+struct MockSource {
+    void start() {}
+    void stop() {}
+    std::expected<CameraFrame, improc::Error> getFrame() {
+        CameraFrame f;
+        f.source_id = "mock";
+        f.timestamp = std::chrono::steady_clock::now();
+        return f;
+    }
+};
+static_assert(improc::io::CameraSourceType<MockSource>,
+              "MockSource must satisfy CameraSourceType");
+}
