@@ -1,63 +1,54 @@
-//
-// Created by Michał Maj on 09/04/2025.
-//
-
+// tests/io/test_camera.cpp
 #include <chrono>
 #include <thread>
 #include <gtest/gtest.h>
 #include <opencv2/videoio.hpp>
-#include "improc/io/camera_capture.hpp"
-#include "improc/exceptions.hpp"
+#include "improc/io/webcam_capture.hpp"
 
-using improc::io::CameraCapture;
+using improc::io::WebcamCapture;
 
-// Returns true if a physical camera is available on the system.
 static bool camera_available() {
     cv::VideoCapture cap(0);
     return cap.isOpened();
 }
 
-TEST(CameraCaptureTest, CanStartAndGrabFrame) {
-    if (!camera_available()) {
-        GTEST_SKIP() << "No camera available on this system — skipping.";
-    }
-
-    CameraCapture camera(0);
+TEST(WebcamCaptureTest, CanStartAndGrabFrame) {
+    if (!camera_available()) GTEST_SKIP() << "No camera available on this system.";
+    WebcamCapture camera(0);
+    camera.start();
     std::this_thread::sleep_for(std::chrono::milliseconds(2500));
-
     auto frame = camera.getFrame();
-    ASSERT_TRUE(frame.has_value()) << "getFrame() returned error";
-    EXPECT_FALSE(frame->empty()) << "Frame from camera is empty";
+    ASSERT_TRUE(frame.has_value()) << frame.error().message;
+    EXPECT_TRUE(frame->rgb.has_value());
+    EXPECT_FALSE(frame->rgb->mat().empty());
+    EXPECT_EQ(frame->source_id, "webcam:0");
+    EXPECT_FALSE(frame->depth.has_value());
 }
 
-TEST(CameraCaptureTest, CanStopCapture) {
-    if (!camera_available()) {
-        GTEST_SKIP() << "No camera available on this system — skipping.";
-    }
-
-    CameraCapture camera(0);
+TEST(WebcamCaptureTest, CanStopCapture) {
+    if (!camera_available()) GTEST_SKIP() << "No camera available.";
+    WebcamCapture camera(0);
+    camera.start();
     std::this_thread::sleep_for(std::chrono::milliseconds(1500));
     camera.stop();
+    SUCCEED();
+}
+
+TEST(WebcamCaptureTest, StopIsIdempotent) {
+    if (!camera_available()) GTEST_SKIP() << "No camera available.";
+    WebcamCapture camera(0);
+    camera.start();
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    auto frame = camera.getFrame();
-    SUCCEED() << "CameraCapture stopped successfully and getFrame() did not crash.";
-}
-
-TEST(CameraCaptureTest, StopIsIdempotent) {
-    if (!camera_available()) {
-        GTEST_SKIP() << "No camera available on this system — skipping.";
-    }
-
-    CameraCapture camera(0);
-    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
     camera.stop();
     camera.stop();
-    SUCCEED() << "Multiple calls to stop() work correctly.";
+    SUCCEED();
 }
 
-TEST(CameraCaptureTest, InvalidCameraIDReturnsError) {
-    CameraCapture camera(9999);
+TEST(WebcamCaptureTest, InvalidCameraIDReturnsError) {
+    WebcamCapture camera(9999);
+    camera.start();
     std::this_thread::sleep_for(std::chrono::milliseconds(1500));
     auto frame = camera.getFrame();
-    EXPECT_FALSE(frame.has_value()) << "Expected error for invalid camera ID";
+    EXPECT_FALSE(frame.has_value());
+    EXPECT_EQ(frame.error().code, improc::Error::Code::CameraUnavailable);
 }
