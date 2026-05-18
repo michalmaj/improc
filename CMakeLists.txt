@@ -25,6 +25,9 @@ endif()
 # === ONNX Runtime (optional, CPU + CoreML on Apple) ===
 option(IMPROC_WITH_ONNX "Build with ONNX Runtime inference support" ON)
 
+# === OAK-D depth camera support (optional) ===
+option(IMPROC_WITH_DEPTHAI "Build with OAK-D support via depthai-core v2" OFF)
+
 if(IMPROC_WITH_ONNX)
     set(ORT_VERSION "1.20.1")
 
@@ -96,6 +99,22 @@ target_compile_definitions(improc PUBLIC
         $<$<BOOL:${IMPROC_WITH_ONNX}>:IMPROC_WITH_ONNX>
 )
 
+# === depthai-core (optional) ===
+if(IMPROC_WITH_DEPTHAI)
+    set(DEPTHAI_VERSION "2.32.0")
+    include(FetchContent)
+    FetchContent_Declare(
+        depthai
+        GIT_REPOSITORY https://github.com/luxonis/depthai-core.git
+        GIT_TAG        v${DEPTHAI_VERSION}
+        GIT_SUBMODULES_RECURSE TRUE
+    )
+    FetchContent_MakeAvailable(depthai)
+    target_link_libraries(improc PUBLIC depthai::core)
+    target_compile_definitions(improc PUBLIC IMPROC_WITH_DEPTHAI)
+    message(STATUS "depthai-core ${DEPTHAI_VERSION}: depthai::core enabled")
+endif()
+
 enable_testing()
 
 file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS tests/*.cpp)
@@ -117,6 +136,10 @@ gtest_discover_tests(improc_tests)
 # Camera Capture
 add_executable(demo_camera_capture examples/io/demo_camera_capture.cpp)
 target_link_libraries(demo_camera_capture PRIVATE improc)
+
+# Unified Camera (AnyCameraSource — runtime selection between webcam and IP camera)
+add_executable(demo_unified_camera examples/io/demo_unified_camera.cpp)
+target_link_libraries(demo_unified_camera PRIVATE improc)
 
 # Image Loader
 add_executable(demo_image_loader examples/ml/demo_image_loader.cpp)
