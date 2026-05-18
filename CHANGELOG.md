@@ -190,3 +190,21 @@ description → matching → visualisation chain.
 ---
 
 ## [Unreleased]
+
+### Added
+- `improc::io::CameraFrame` — unified frame type carrying optional RGB (`Image<BGR>`), optional depth (`Image<Float32>`), timestamp, and source ID
+- `improc::io::CameraSourceType<T>` — C++20 concept; satisfied by all concrete camera sources
+- `improc::io::WebcamCapture` — threaded webcam capture (refactored from `CameraCapture`); `CameraCapture` remains as a backward-compatible alias
+- `improc::io::IPCameraCapture` — RTSP/HTTP stream capture via OpenCV, same interface as `WebcamCapture`
+- `improc::io::AnyCameraSource` — header-only type-erased camera wrapper for runtime camera selection
+- `improc::io::OakDCapture` — OAK-D depth camera support (RGB + metric depth); enabled via `-DIMPROC_WITH_DEPTHAI=ON`; uses depthai-core v2.32.0
+- `improc::threading::FramePipeline<Result>` updated: accepts any `CameraSourceType` source (not just `WebcamCapture`); processor function now receives `CameraFrame` instead of `cv::Mat`
+- `improc::Error::Timeout` error code + `Error::timeout()` factory for camera queue timeouts
+- CMake option `IMPROC_WITH_DEPTHAI` (default `OFF`) for optional OAK-D support via depthai-core v2
+
+### Changed
+- `FramePipeline::start()` processor signature changed: `CameraFrame` parameter instead of `cv::Mat` (breaking change, pre-v1.0)
+
+### Notes
+- OAK-D integration tests require hardware; run with `./build/improc_tests --gtest_filter="*OakD*"` with device connected via USB3 and `-DIMPROC_WITH_DEPTHAI=ON`
+
