@@ -1,65 +1,88 @@
 // tests/threading/test_frame_pipeline.cpp
 #include <gtest/gtest.h>
-#include "improc/exceptions.hpp"
+#include <atomic>
 #include <chrono>
 #include <thread>
-#include <opencv2/videoio.hpp>
+#include "improc/exceptions.hpp"
+#include "improc/io/camera_source.hpp"
+#include "improc/io/any_camera_source.hpp"
 #include "improc/threading/frame_pipeline.hpp"
 #include "improc/threading/thread_pool.hpp"
-#include "improc/io/camera_capture.hpp"
 
-using improc::threading::FramePipeline;
-using improc::threading::ThreadPool;
-using improc::io::CameraCapture;
+using namespace improc;
+using namespace improc::io;
+using namespace improc::threading;
+using namespace improc::core;
 
-static bool camera_available() {
-    cv::VideoCapture cap(0);
-    return cap.isOpened();
-}
+namespace {
+
+struct SpinSource {
+    std::atomic<int> count{0};
+    bool started = false;
+
+    void start() { started = true; }
+    void stop() {}
+    std::expected<CameraFrame, Error> getFrame() {
+        ++count;
+        CameraFrame f;
+        f.source_id = "spin";
+        f.timestamp = std::chrono::steady_clock::now();
+        cv::Mat mat(4, 4, CV_8UC3, cv::Scalar(count.load() % 255));
+        f.rgb = Image<BGR>(mat);
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        return f;
+    }
+};
+static_assert(CameraSourceType<SpinSource>);
+
+} // namespace
 
 TEST(FramePipelineTest, TryPopBeforeStartReturnsNullopt) {
-    if (!camera_available()) GTEST_SKIP() << "No camera available";
-    CameraCapture camera(0);
-    camera.start();
-    ThreadPool pool(2);
-    FramePipeline<cv::Mat> pipeline(camera, pool);
+    ThreadPool pool(1);
+    SpinSource source;
+    FramePipeline<int> pipeline(source, pool);
     EXPECT_FALSE(pipeline.tryPop().has_value());
 }
 
 TEST(FramePipelineTest, StartTwiceThrows) {
-    if (!camera_available()) GTEST_SKIP() << "No camera available";
-    CameraCapture camera(0);
-    camera.start();
-    ThreadPool pool(2);
-    FramePipeline<cv::Mat> pipeline(camera, pool);
-    pipeline.start([](cv::Mat frame){ return frame; });
+    ThreadPool pool(1);
+    SpinSource source;
+    FramePipeline<int> pipeline(source, pool);
+    pipeline.start([](CameraFrame) { return 0; });
     EXPECT_THROW(
-        pipeline.start([](cv::Mat frame){ return frame; }),
+        pipeline.start([](CameraFrame) { return 0; }),
         improc::Exception
     );
 }
 
 TEST(FramePipelineTest, StopIsIdempotent) {
-    if (!camera_available()) GTEST_SKIP() << "No camera available";
-    CameraCapture camera(0);
-    camera.start();
-    ThreadPool pool(2);
-    FramePipeline<cv::Mat> pipeline(camera, pool);
-    pipeline.start([](cv::Mat frame){ return frame; });
+    ThreadPool pool(1);
+    SpinSource source;
+    FramePipeline<int> pipeline(source, pool);
+    pipeline.start([](CameraFrame) { return 0; });
     pipeline.stop();
     EXPECT_NO_THROW(pipeline.stop());
 }
 
-TEST(FramePipelineTest, TryPopReturnsProcessedFrame) {
-    if (!camera_available()) GTEST_SKIP() << "No camera available";
-    CameraCapture camera(0);
-    camera.start();
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));  // camera warmup
-    ThreadPool pool(2);
-    FramePipeline<cv::Mat> pipeline(camera, pool);
-    pipeline.start([](cv::Mat frame){ return frame; });
+TEST(FramePipelineTest, StartCallsCameraStart) {
+    ThreadPool pool(1);
+    SpinSource source;
+    EXPECT_FALSE(source.started);
+    FramePipeline<int> pipeline(source, pool);
+    pipeline.start([](CameraFrame) { return 0; });
+    EXPECT_TRUE(source.started);
+    pipeline.stop();
+}
 
-    cv::Mat result;
+TEST(FramePipelineTest, TryPopReturnsProcessedFrame) {
+    ThreadPool pool(2);
+    SpinSource source;
+    FramePipeline<int> pipeline(source, pool);
+    pipeline.start([](CameraFrame f) {
+        return static_cast<int>(f.rgb->mat().at<cv::Vec3b>(0, 0)[0]);
+    });
+
+    int result = -1;
     const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(3);
     while (std::chrono::steady_clock::now() < deadline) {
         if (auto r = pipeline.tryPop()) {
@@ -68,26 +91,16 @@ TEST(FramePipelineTest, TryPopReturnsProcessedFrame) {
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    EXPECT_FALSE(result.empty()) << "No frame processed within timeout";
+    pipeline.stop();
+    EXPECT_GE(result, 0) << "No frame processed within timeout";
 }
 
-TEST(FramePipelineTest, ProcessorTransformsFrame) {
-    if (!camera_available()) GTEST_SKIP() << "No camera available";
-    CameraCapture camera(0);
-    camera.start();
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    ThreadPool pool(2);
-    FramePipeline<int> pipeline(camera, pool);
-    pipeline.start([](cv::Mat frame){ return frame.rows; });
-
-    int rows = 0;
-    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(3);
-    while (std::chrono::steady_clock::now() < deadline) {
-        if (auto r = pipeline.tryPop()) {
-            rows = *r;
-            break;
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
-    EXPECT_GT(rows, 0) << "Processor did not return frame height";
+TEST(FramePipelineTest, WorksWithAnyCameraSource) {
+    ThreadPool pool(1);
+    auto src = AnyCameraSource::make<SpinSource>();
+    FramePipeline<std::string> pipeline(src, pool);
+    pipeline.start([](CameraFrame f) { return f.source_id; });
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    pipeline.stop();
+    SUCCEED();
 }
