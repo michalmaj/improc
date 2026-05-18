@@ -44,9 +44,15 @@ public:
         return any;
     }
 
-    void start() { impl_->start(); }
-    void stop()  { impl_->stop(); }
-    std::expected<CameraFrame, improc::Error> getFrame() { return impl_->getFrame(); }
+    void start() { if (impl_) impl_->start(); }
+    void stop()  { if (impl_) impl_->stop(); }
+    std::expected<CameraFrame, improc::Error> getFrame() {
+        if (!impl_)
+            return std::unexpected(improc::Error{
+                improc::Error::Code::CameraUnavailable,
+                "AnyCameraSource is empty (no camera source wrapped)"});
+        return impl_->getFrame();
+    }
 
     explicit operator bool() const noexcept { return impl_ != nullptr; }
 

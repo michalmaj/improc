@@ -52,6 +52,13 @@ TEST(AnyCameraSourceTest, SatisfiesCameraSourceTypeConcept) {
                   "AnyCameraSource must satisfy CameraSourceType");
 }
 
+TEST(AnyCameraSourceTest, EmptySourceGetFrameReturnsError) {
+    AnyCameraSource src;
+    auto frame = src.getFrame();
+    EXPECT_FALSE(frame.has_value());
+    EXPECT_EQ(frame.error().code, improc::Error::Code::CameraUnavailable);
+}
+
 TEST(AnyCameraSourceTest, VectorOfSources) {
     std::vector<AnyCameraSource> cams;
     cams.push_back(AnyCameraSource::make<CountingSource>());
