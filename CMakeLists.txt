@@ -308,6 +308,10 @@ target_link_libraries(demo_image_io PRIVATE improc)
 add_executable(demo_video_reader examples/io/demo_video_reader.cpp)
 target_link_libraries(demo_video_reader PRIVATE improc)
 
+# Video File Capture demo (v0.7.0)
+add_executable(demo_video_file_capture examples/io/demo_video_file_capture.cpp)
+target_link_libraries(demo_video_file_capture PRIVATE improc)
+
 # Montage demo
 add_executable(demo_montage examples/visualization/demo_montage.cpp)
 target_link_libraries(demo_montage PRIVATE improc)
