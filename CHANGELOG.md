@@ -7,21 +7,67 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Table of Contents
 
-- [[0.1.0]](#010--2026-04-26) — 2026-04-26 · First versioned release; full namespace surface established
-- [[0.2.0]](#020--2026-05-02) — 2026-05-02 · `improc::core` extras + `improc::views` lazy pipeline
-- [[0.3.0]](#030--2026-05-07) — 2026-05-07 · Core completeness: morphology, colour spaces, feature detection pipeline
+- [[0.5.0]](#050--2026-05-18) — 2026-05-18 · ML Evaluation + Visualization + Multi-Object Tracking; Google Benchmark suite; performance fixes
 - [[0.4.0]](#040--2026-05-14) — 2026-05-14 · ML Pipeline: augmentation, dataset loaders (VOC/COCO), segmentation types + seg-aware augmentation + VOC seg loader
+- [[0.3.0]](#030--2026-05-07) — 2026-05-07 · Core completeness: morphology, colour spaces, feature detection pipeline
+- [[0.2.0]](#020--2026-05-02) — 2026-05-02 · `improc::core` extras + `improc::views` lazy pipeline
+- [[0.1.0]](#010--2026-04-26) — 2026-04-26 · First versioned release; full namespace surface established
 
 ---
 
-## [Unreleased]
+## [0.5.0] — 2026-05-18
+
+ML Evaluation + Visualization release. Adds detection, segmentation, and classification
+evaluation accumulators; multi-object tracking (IouTracker, SortTracker, ByteTracker) with
+TrackingEval; ML-specific visualizations (confusion matrix, PR/ROC curves, bar charts, IoU
+histogram); and a full Google Benchmark suite with public performance documentation.
 
 ### Added
 
-- **v0.5.0-A Detection Evaluation** — `iou()`, `average_precision()` free functions; `DetectionEval` accumulator with COCO-style `mAP@0.5` and `mAP@0.5:0.95`
-- **v0.5.0-B Segmentation Evaluation** — `pixel_iou()`, `dice()` free functions; `SegEval` accumulator with per-class IoU, mIoU, mean Dice; void-pixel (255) ignored
-- **v0.5.0-C Classification Evaluation** — `accuracy()`, `precision_score()`, `recall_score()`, `f1_score()` free functions; `ClassEval` accumulator with confusion matrix and per-class metrics
-- **v0.5.0-D Multi-Object Tracking** — `IouTracker` (greedy IoU), `SortTracker` (Kalman + Hungarian), `ByteTracker` (two-stage high/low-confidence matching); `TrackingEval` with MOTA, MOTP, IDF1; `TrackerType` C++20 concept
+#### `improc::ml` — Evaluation
+
+- **`iou()`**, **`average_precision()`** — detection IoU and per-class AP free functions; COCO-style `mAP@0.5` and `mAP@0.5:0.95`
+- **`DetectionEval`** — frame-by-frame accumulator; `update(predictions, ground_truth)`; `compute()` → `DetectionMetrics` with `mAP_50`, `mAP_50_95`, per-class `ap_50` map
+- **`DetectionEval::pr_curves()`** — per-class sorted `(recall, precision)` pairs for `PRCurvePlot`
+- **`pixel_iou()`**, **`dice()`** — per-class IoU and Dice free functions; void pixels (255) ignored
+- **`SegEval`** — segmentation accumulator; `compute()` → `SegMetrics` with `per_class_iou`, `per_class_dice`, `mean_iou`, `mean_dice`
+- **`accuracy()`**, **`precision_score()`**, **`recall_score()`**, **`f1_score()`** — classification metric free functions
+- **`ClassEval`** — classification accumulator with confusion matrix; `compute()` → `ClassMetrics` with per-class P/R/F1 and macro averages
+
+#### `improc::ml` — Multi-Object Tracking
+
+- **`Track`** / **`TrackGT`** — core result and ground-truth annotation types
+- **`TrackerType<T>`** — C++20 concept satisfied by all three tracker types; drop-in replaceable
+- **`IouTracker`** — greedy IoU matching with age-based culling; no motion model; setters: `min_iou` (default 0.3), `max_age` (default 1)
+- **`SortTracker`** — SORT algorithm: constant-velocity Kalman filter + Hungarian assignment on (1 − IoU) cost; setters: `max_age`, `min_hits`, `iou_threshold`
+- **`ByteTracker`** — BYTE algorithm: Stage 1 Hungarian on high-confidence detections, Stage 2 greedy IoU on low-confidence detections; setters: `max_age`, `min_hits`, `high_conf_threshold`, `low_conf_threshold`
+- **`TrackingEval`** / **`TrackingMetrics`** — MOTA, MOTP, IDF1, Precision, Recall accumulator; IDF1 via global bipartite matching (Hungarian)
+
+#### `improc::visualization` — ML Charts
+
+- **`ConfusionMatrixPlot`** — heatmap from `ClassEval` confusion matrix; normalized per row; colour gradient from white to violet; fluent `.width(int).height(int).title(string)`
+- **`PRCurvePlot`** — per-class precision-recall curves from `DetectionEval::pr_curves()`; mAP overlay via `.mAP_50(float)`
+- **`ROCCurvePlot`** — per-class ROC curves with AUC annotation; accepts external `fpr_map`/`tpr_map`
+- **`ClassBarChart`** — grouped P/R/F1 bars (from `ClassEval`) or single AP bars (from `DetectionEval`); overloaded constructor
+- **`IoUHistogram`** — IoU score distribution with configurable bin count and threshold overlay line; setters: `bins(int)`, `threshold(float)`
+- **`ml_charts.hpp`** umbrella include for all five ML chart functors
+- **`DrawTracks`** — pipeline-composable functor; draws track bboxes with "ID:N" labels on a clone; setters: `color`, `thickness`, `font_scale`, `show_id`
+
+#### Infrastructure
+
+- **Google Benchmark suite** — full per-namespace benchmarks: core pipeline overhead (raw vs improc++ wrapper cost), feature detection, image analysis, ML pipeline, augmentation, eval accumulators, tracking, lazy views (lazy vs eager), and ThreadPool; all ops at two resolutions; opt-in with `-DIMPROC_BENCHMARKS=ON`
+- **`BENCHMARKS.md`** — public performance document with quick-reference table, full per-namespace `<details>` tables, and engineering story section (three case studies with before/after data)
+- **10 tutorials** in `docs/tutorials/` — ONNX inference, augmentation, evaluation metrics, ML charts, and tracking; plus five gap-fill tutorials for v0.1.0–v0.4.0 features
+
+### Fixed / Performance
+
+- **`IouTracker::update()`** — O(D·T·min(D,T)) → O(D·T·log(D·T)): build IoU matrix once, sort pairs descending, assign greedily in one pass; inner-loop string allocations eliminated. **31× faster at 100 detections** (549 µs → 17.5 µs).
+- **`NormalizeTo`**, **`Normalize`**, **`Standardize`** — all six `operator()` overloads (Float32 and Float32C3) now use in-place `convertTo`, eliminating a 600 KB heap allocation per call; ~20% throughput improvement on the ML preprocessing pipeline.
+
+### Documentation
+
+- **`NLMeansDenoising`** — `@warning` Doxygen tag with single-thread times on Apple M4 Pro: 122 ms @ 480×640, up to ~250 ms @ 1080×1920; recommends `GaussianBlur` / `BilateralFilter` for real-time use.
+- **`DetectSIFT`**, **`DescribeSIFT`** — `@warning` Doxygen tags with measured times (SIFT detect: 13.6 ms @ 480×640; full pipeline: 311 ms @ 1080×1920); recommends `DetectORB` / `DescribeORB` for real-time use.
 
 ---
 
@@ -219,3 +265,18 @@ description → matching → visualisation chain.
 - **`SegCompose<F>`** — sequential composer for segmentation augmentation ops; mirrors `BBoxCompose<F>`
 - **`VocSegDataset`** — loads Pascal VOC segmentation datasets into `SegmentedImage<BGR>` train/val/test splits; `SegmentationClass/` required, `SegmentationObject/` optional via `load_instance_masks(true)`; VOC split or random 10/10% fallback; `classes()` provides int→string mapping
 - **`parse_voc_seg`** — free function; parses one VOC segmentation entry (image + class mask + optional instance mask); supports palette-expanded BGR masks via VOC reverse LUT
+- **`BBox`** — annotation type with `cv::Rect2f box`, `int class_id`, `std::string label`
+- **`AnnotatedImage<F>`** — paired image + `std::vector<BBox>` for bbox-aware augmentation; `operator|` pipeline support
+- **`BBoxCompose<F>`** — sequential composer for bbox-aware augmentation ops; `bind(rng)` returns `operator|`-compatible unary functor; after each transform boxes are clipped and boxes with `clipped_area / original_area < min_area_ratio` (default 0.1) are dropped
+- **Bbox-aware geometric overloads** — `RandomFlip`, `RandomRotate`, `RandomCrop`, `RandomResize`, `RandomZoom`, `RandomShear`, `RandomPerspective` gain `AnnotatedImage<F>` overloads; `min_area_ratio` tunable per-op
+- **`RandomZoom`** — crops a random sub-region and resizes back to original dimensions; setters: `range(min_scale, max_scale)` — both in (0, 1], min ≤ max (default 0.7, 1.0)
+- **`RandomShear`** — affine shear transform; setters: `range(min_deg, max_deg)`, `axis(Axis)` — Horizontal (default) or Vertical
+- **`RandomPerspective`** — random homography warp; setter: `distortion_scale(s)` — in [0, 1] (default 0.5)
+- **`RandomGrayscale`** — converts BGR to 3-channel grayscale with probability `p` (default 0.1); Gray input unchanged
+- **`RandomSolarize`** — inverts pixels at or above a threshold via LUT; setters: `threshold(t)` [0, 255], `p(prob)` [0, 1] (defaults: 128, 0.5)
+- **`RandomPosterize`** — reduces bits-per-channel via bitmasking; setters: `bits(b)` [1, 8], `p(prob)` [0, 1] (defaults: 4, 0.5)
+- **`RandomEqualize`** — histogram equalization with probability `p`; BGR: operates on Y channel in YCrCb; Gray: direct `cv::equalizeHist`
+- **`RandomErasing`** — erases a randomly sampled rectangular region (constant fill); setters: `p`, `scale(min, max)`, `ratio(min, max)`, `value(v)`
+- **`GridDropout`** — divides image into cells and independently zeros each with probability `ratio`; setters: `ratio(r)`, `unit_size(s)`, `value(v)`
+- **`RandomBlur`** — randomly applies one of Gaussian / Median / Bilateral blur with a random odd kernel size; setters: `types(vector<Type>)`, `kernel_size(min_k, max_k)`
+- **`RandomSharpness`** — unsharp-mask sharpening applied with probability `p`; setters: `range(min_s, max_s)`, `p(prob)`
