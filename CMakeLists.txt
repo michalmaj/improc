@@ -86,6 +86,22 @@ target_compile_definitions(improc PUBLIC
         $<$<BOOL:${IMPROC_WITH_ONNX}>:IMPROC_WITH_ONNX>
 )
 
+# ── Optional: OAK-D depth camera support ────────────────────────────────────
+option(IMPROC_WITH_DEPTHAI "Build with OAK-D support via depthai-core v2" OFF)
+if(IMPROC_WITH_DEPTHAI)
+    set(DEPTHAI_VERSION "2.32.0")
+    include(FetchContent)
+    FetchContent_Declare(
+        depthai
+        GIT_REPOSITORY https://github.com/luxonis/depthai-core.git
+        GIT_TAG        v${DEPTHAI_VERSION}
+        GIT_SUBMODULES_RECURSE TRUE
+    )
+    FetchContent_MakeAvailable(depthai)
+    target_link_libraries(improc PUBLIC depthai::core)
+    target_compile_definitions(improc PUBLIC IMPROC_WITH_DEPTHAI)
+endif()
+
 enable_testing()
 
 file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS tests/*.cpp)
