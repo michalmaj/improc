@@ -25,6 +25,9 @@ endif()
 # === ONNX Runtime (optional, CPU + CoreML on Apple) ===
 option(IMPROC_WITH_ONNX "Build with ONNX Runtime inference support" ON)
 
+# === OAK-D depth camera support (optional) ===
+option(IMPROC_WITH_DEPTHAI "Build with OAK-D support via depthai-core v2" OFF)
+
 if(IMPROC_WITH_ONNX)
     set(ORT_VERSION "1.20.1")
 
@@ -86,8 +89,7 @@ target_compile_definitions(improc PUBLIC
         $<$<BOOL:${IMPROC_WITH_ONNX}>:IMPROC_WITH_ONNX>
 )
 
-# ── Optional: OAK-D depth camera support ────────────────────────────────────
-option(IMPROC_WITH_DEPTHAI "Build with OAK-D support via depthai-core v2" OFF)
+# === depthai-core (optional) ===
 if(IMPROC_WITH_DEPTHAI)
     set(DEPTHAI_VERSION "2.32.0")
     include(FetchContent)
@@ -100,6 +102,7 @@ if(IMPROC_WITH_DEPTHAI)
     FetchContent_MakeAvailable(depthai)
     target_link_libraries(improc PUBLIC depthai::core)
     target_compile_definitions(improc PUBLIC IMPROC_WITH_DEPTHAI)
+    message(STATUS "depthai-core ${DEPTHAI_VERSION}: depthai::core enabled")
 endif()
 
 enable_testing()
