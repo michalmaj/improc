@@ -39,4 +39,5 @@ TEST(CameraFrameErrorTest, TimeoutCode) {
     auto err = Error::timeout("oak-d");
     EXPECT_EQ(err.code, Error::Code::Timeout);
     EXPECT_FALSE(err.message.empty());
+    EXPECT_TRUE(err.message.find("oak-d") != std::string::npos);
 }
