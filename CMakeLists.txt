@@ -365,6 +365,10 @@ target_link_libraries(demo_pyramid_drawing PRIVATE improc)
 add_executable(demo_contours examples/core/demo_contours.cpp)
 target_link_libraries(demo_contours PRIVATE improc)
 
+# Background subtraction demo (v0.7.0)
+add_executable(demo_background_subtract examples/core/demo_background_subtract.cpp)
+target_link_libraries(demo_background_subtract PRIVATE improc)
+
 # Connected Components + Distance Transform demo
 add_executable(demo_connected_components examples/core/demo_connected_components.cpp)
 target_link_libraries(demo_connected_components PRIVATE improc)

@@ -11,7 +11,8 @@
  * DetectORB, DetectSIFT, DetectAKAZE,
  * DescribeORB, DescribeSIFT, DescribeAKAZE,
  * MatchSet, MatchBF, MatchFlann,
- * DrawKeypoints, DrawMatches)
+ * DrawKeypoints, DrawMatches,
+ * BackgroundSubtractMOG2, BackgroundSubtractKNN)
  * and the generic `operator|` pipeline dispatch.
  *
  * @code
@@ -69,6 +70,7 @@
 #include "improc/core/ops/contrast.hpp"
 #include "improc/core/ops/weighted_blend.hpp"
 #include "improc/core/ops/alpha_blend.hpp"
+#include "improc/core/ops/background_subtract.hpp"
 
 namespace improc::core {
 
