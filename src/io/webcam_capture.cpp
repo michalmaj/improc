@@ -25,6 +25,8 @@ void WebcamCapture::stop() {
     keep_running_ = false;
     if (capture_thread_.joinable()) capture_thread_.join();
     if (cap_.isOpened()) cap_.release();
+    camera_available_ = false;
+    started_ = false;
 }
 
 std::expected<CameraFrame, improc::Error> WebcamCapture::getFrame() {
@@ -53,7 +55,10 @@ void WebcamCapture::captureLoop() {
     while (keep_running_) {
         cv::Mat tmp;
         cap_.read(tmp);
-        if (tmp.empty()) continue;
+        if (tmp.empty()) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            continue;
+        }
         std::unique_lock lock(frame_mutex_);
         last_frame_ = std::move(tmp);
     }
