@@ -11,3 +11,4 @@
 #include "improc/io/image_io.hpp"
 #include "improc/io/video_reader.hpp"
 #include "improc/io/video_writer.hpp"
+#include "improc/io/video_file_capture.hpp"

@@ -7,11 +7,28 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Table of Contents
 
+- [[Unreleased]](#unreleased) — Video Pipeline + Packaging: VideoFileCapture, CMake install rules, BackgroundSubtractMOG2/KNN
+- [[0.6.0]](#060--2026-05-18) — 2026-05-18 · Real-Time Pipeline: unified camera API (WebcamCapture, IPCameraCapture, OakDCapture), CameraFrame, AnyCameraSource, FramePipeline update
 - [[0.5.0]](#050--2026-05-18) — 2026-05-18 · ML Evaluation + Visualization + Multi-Object Tracking; Google Benchmark suite; performance fixes
 - [[0.4.0]](#040--2026-05-14) — 2026-05-14 · ML Pipeline: augmentation, dataset loaders (VOC/COCO), segmentation types + seg-aware augmentation + VOC seg loader
 - [[0.3.0]](#030--2026-05-07) — 2026-05-07 · Core completeness: morphology, colour spaces, feature detection pipeline
 - [[0.2.0]](#020--2026-05-02) — 2026-05-02 · `improc::core` extras + `improc::views` lazy pipeline
 - [[0.1.0]](#010--2026-04-26) — 2026-04-26 · First versioned release; full namespace surface established
+
+---
+
+## [Unreleased]
+
+### Added
+- `improc::io::VideoFileCapture` — reads video files as a `CameraSourceType`; wraps `VideoReader` so any `FramePipeline` works with files identically to live cameras; `Error::EndOfFile` returned at EOF
+- `improc::Error::EndOfFile` error code + `Error::end_of_file()` factory
+- `improc::core::BackgroundSubtractMOG2` — stateful foreground/background segmentation op using Gaussian Mixture Model; fluent setters: `history()`, `threshold()`, `detect_shadows()`; returns `Image<Gray>` foreground mask
+- `improc::core::BackgroundSubtractKNN` — stateful foreground/background segmentation using K-Nearest Neighbours; same interface as MOG2; faster for controlled environments
+- CMake install rules: `install(TARGETS improc)`, `improcConfig.cmake`, `improcConfigVersion.cmake` — enables `find_package(improc REQUIRED)` and `target_link_libraries(app PRIVATE improc::improc)` after installation
+
+### Notes
+- Background subtractors must be passed as **lvalues** to `operator|` to accumulate state across frames
+- CMake packaging is a foundation; Conan Center / vcpkg submission planned for v1.0.0
 
 ---
 
@@ -246,7 +263,12 @@ description → matching → visualisation chain.
 
 ---
 
-## [Unreleased]
+## [0.6.0] — 2026-05-18
+
+Real-Time Pipeline release. Unified camera API so client code doesn't know what type of camera
+it's using. A single `FramePipeline` now accepts webcam, IP camera, or OAK-D depth camera
+interchangeably via `AnyCameraSource`. The common currency is `CameraFrame` — a rich frame
+type carrying optional depth alongside RGB.
 
 ### Added
 - `improc::io::CameraFrame` — unified frame type carrying optional RGB (`Image<BGR>`), optional depth (`Image<Float32>`), timestamp, and source ID

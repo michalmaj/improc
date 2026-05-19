@@ -1,0 +1,12 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+find_dependency(OpenCV REQUIRED)
+
+# Note: ONNX Runtime is currently fetched at build time via FetchContent.
+# Downstream consumers using find_package(improc) need ONNX Runtime in their
+# path separately if they use improc::onnx features. Resolving this fully is
+# part of the v1.0.0 Conan Center / vcpkg milestone.
+
+include("${CMAKE_CURRENT_LIST_DIR}/improcTargets.cmake")
+check_required_components(improc)
