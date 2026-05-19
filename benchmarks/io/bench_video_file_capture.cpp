@@ -26,6 +26,7 @@ std::string make_temp_video(int frames = 60) {
         frame.setTo(cv::Scalar(i * 2, 100, 200));
         w.write(frame);
     }
+    w.release();
     return path;
 }
 
@@ -36,13 +37,15 @@ const std::string g_video_path = make_temp_video();
 
 static void BM_raw_video_file_capture(benchmark::State& state) {
     if (g_video_path.empty()) { state.SkipWithError("video file unavailable"); return; }
+    int64_t total_count = 0;
     for (auto _ : state) {
         cv::VideoCapture cap(g_video_path);
         cv::Mat frame;
         int count = 0;
         while (cap.read(frame)) { benchmark::DoNotOptimize(frame); ++count; }
-        state.SetItemsProcessed(count);
+        total_count += count;
     }
+    state.SetItemsProcessed(total_count);
 }
 BENCHMARK(BM_raw_video_file_capture);
 
@@ -50,6 +53,7 @@ BENCHMARK(BM_raw_video_file_capture);
 
 static void BM_improc_video_file_capture(benchmark::State& state) {
     if (g_video_path.empty()) { state.SkipWithError("video file unavailable"); return; }
+    int64_t total_count = 0;
     for (auto _ : state) {
         VideoFileCapture cap(g_video_path);
         cap.start();
@@ -57,11 +61,12 @@ static void BM_improc_video_file_capture(benchmark::State& state) {
         while (true) {
             auto f = cap.getFrame();
             if (!f) break;
-            benchmark::DoNotOptimize(f);
+            benchmark::DoNotOptimize(*f);
             ++count;
         }
         cap.stop();
-        state.SetItemsProcessed(count);
+        total_count += count;
     }
+    state.SetItemsProcessed(total_count);
 }
 BENCHMARK(BM_improc_video_file_capture);
