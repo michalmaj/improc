@@ -8,6 +8,7 @@
 #include "improc/io/camera_frame.hpp"
 #include "improc/io/camera_source.hpp"
 #include "improc/error.hpp"
+#include "improc/exceptions.hpp"
 
 namespace improc::io {
 
