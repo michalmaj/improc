@@ -56,13 +56,17 @@ struct Error {
     enum class Code {
         NoImages, EmptyDataset, DirectoryNotFound,
         InvalidModelFile, CameraUnavailable, CameraFrameEmpty,
-        EndOfFile,            // VideoFileCapture reached end of file
         InsufficientPoints, HomographyFailed,
         ImageReadFailed,      // cv::imread returned empty mat
         ImageWriteFailed,     // cv::imwrite returned false
         OnnxModelLoadFailed,  // ORT failed to parse / load the .onnx file
         OnnxInferenceFailed,  // ORT session Run() returned an error
-        OnnxSessionNotLoaded  // run() called before load()
+        OnnxSessionNotLoaded, // run() called before load()
+        VocXmlParseFailed,    // VOC XML annotation file missing, malformed, or unreadable
+        CocoJsonParseFailed,  // COCO JSON annotation file missing, malformed, or unreadable
+        VocSegParseFailed,    // VOC segmentation mask file missing, malformed, or unreadable
+        Timeout,              // Camera getFrame() timed out waiting for a frame
+        EndOfFile             // VideoFileCapture reached end of file
     };
     Code        code;
     std::string message;
@@ -73,7 +77,6 @@ struct Error {
     static Error invalid_model_file(const std::string& path, const std::string& reason);
     static Error camera_unavailable(int device_id);
     static Error camera_frame_empty(int device_id);
-    static Error end_of_file(const std::string& path);
     static Error insufficient_points(std::size_t got);
     static Error homography_failed();
     static Error image_read_failed(const std::string& path);
@@ -81,6 +84,11 @@ struct Error {
     static Error onnx_model_load_failed(const std::string& path, const std::string& reason);
     static Error onnx_inference_failed(const std::string& reason);
     static Error onnx_session_not_loaded();
+    static Error voc_xml_parse_failed(const std::string& path, const std::string& reason);
+    static Error coco_json_parse_failed(const std::string& path, const std::string& reason);
+    static Error voc_seg_parse_failed(const std::string& path, const std::string& reason);
+    static Error timeout(const std::string& source_id);
+    static Error end_of_file(const std::string& path);
 };
 ```
 
