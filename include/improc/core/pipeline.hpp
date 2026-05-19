@@ -12,7 +12,7 @@
  * DescribeORB, DescribeSIFT, DescribeAKAZE,
  * MatchSet, MatchBF, MatchFlann,
  * DrawKeypoints, DrawMatches,
- * BackgroundSubtractMOG2, BackgroundSubtractKNN)
+ * BackgroundSubtractMOG2, BackgroundSubtractKNN, LUT)
  * and the generic `operator|` pipeline dispatch.
  *
  * @code
@@ -71,6 +71,7 @@
 #include "improc/core/ops/weighted_blend.hpp"
 #include "improc/core/ops/alpha_blend.hpp"
 #include "improc/core/ops/background_subtract.hpp"
+#include "improc/core/ops/lut.hpp"
 
 namespace improc::core {
 
