@@ -7,7 +7,8 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Table of Contents
 
-- [[Unreleased]](#unreleased) — Video Pipeline + Packaging: VideoFileCapture, CMake install rules, BackgroundSubtractMOG2/KNN
+- [[Unreleased]](#unreleased) — Classic CV ops: LUT, CalcHist, Hough, MatchTemplate, Moments, Inpaint, Watershed, GrabCut
+- [[0.7.0]](#070--2026-05-19) — 2026-05-19 · Video Pipeline + Packaging: VideoFileCapture, CMake install rules, BackgroundSubtractMOG2/KNN
 - [[0.6.0]](#060--2026-05-18) — 2026-05-18 · Real-Time Pipeline: unified camera API (WebcamCapture, IPCameraCapture, OakDCapture), CameraFrame, AnyCameraSource, FramePipeline update
 - [[0.5.0]](#050--2026-05-18) — 2026-05-18 · ML Evaluation + Visualization + Multi-Object Tracking; Google Benchmark suite; performance fixes
 - [[0.4.0]](#040--2026-05-14) — 2026-05-14 · ML Pipeline: augmentation, dataset loaders (VOC/COCO), segmentation types + seg-aware augmentation + VOC seg loader
@@ -18,6 +19,13 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ---
 
 ## [Unreleased]
+
+### Added
+- Classic CV ops: LUT, CalcHist, CompareHist, HoughLinesP, HoughCircles, MatchTemplate, Moments, Inpaint, Watershed, GrabCut (v0.8.0, in progress)
+
+---
+
+## [0.7.0] — 2026-05-19
 
 ### Added
 - `improc::io::VideoFileCapture` — reads video files as a `CameraSourceType`; wraps `VideoReader` so any `FramePipeline` works with files identically to live cameras; `Error::EndOfFile` returned at EOF
