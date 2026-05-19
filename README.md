@@ -300,7 +300,7 @@ cap.start();
 while (true) {
     auto frame = cap.getFrame();
     if (!frame) break;  // EndOfFile
-    // frame->rgb is Image<BGR>
+    // (*frame).rgb is std::optional<Image<BGR>>; dereference before use
 }
 cap.stop();
 ```
@@ -308,7 +308,7 @@ cap.stop();
 Works with `AnyCameraSource` and `FramePipeline` — swap a live camera for a file with no code changes:
 
 ```cpp
-AnyCameraSource src = VideoFileCapture{"clip.mp4"};
+auto src = AnyCameraSource::make<VideoFileCapture>("clip.mp4");
 ```
 
 ## Background Subtraction
@@ -322,7 +322,8 @@ using namespace improc::core;
 BackgroundSubtractMOG2 sub;
 sub.history(300).threshold(16.0).detect_shadows(false);
 
-// In frame loop:
+// In frame loop (frame is Image<BGR> from camera/VideoFileCapture):
+Image<BGR> frame = /* your camera frame */;
 Image<Gray> fg_mask = frame | sub;  // sub is an lvalue — model accumulates
 ```
 
