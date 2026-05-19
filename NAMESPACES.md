@@ -56,6 +56,7 @@ struct Error {
     enum class Code {
         NoImages, EmptyDataset, DirectoryNotFound,
         InvalidModelFile, CameraUnavailable, CameraFrameEmpty,
+        EndOfFile,            // VideoFileCapture reached end of file
         InsufficientPoints, HomographyFailed,
         ImageReadFailed,      // cv::imread returned empty mat
         ImageWriteFailed,     // cv::imwrite returned false
@@ -72,6 +73,7 @@ struct Error {
     static Error invalid_model_file(const std::string& path, const std::string& reason);
     static Error camera_unavailable(int device_id);
     static Error camera_frame_empty(int device_id);
+    static Error end_of_file(const std::string& path);
     static Error insufficient_points(std::size_t got);
     static Error homography_failed();
     static Error image_read_failed(const std::string& path);
@@ -489,6 +491,25 @@ Image<BGR>  composited = bg | AlphaBlend{overlay_bgra};   // per-pixel alpha fro
 
 **`AlphaBlend`** — composites a BGRA overlay image onto a BGR background using per-pixel alpha from the overlay's A channel. Throws `ParameterError` if overlay and background sizes differ.
 
+### Background subtraction (`ops/background_subtract.hpp`)
+
+Stateful foreground/background segmentation. Both types update their internal model on every call — create once, reuse across frames. Pass as **lvalue** to `operator|` so the model accumulates across frames; a temporary loses state.
+
+**`BackgroundSubtractMOG2`** — Gaussian Mixture Model algorithm.
+- Fluent setters: `.history(int)` (default 500), `.threshold(double)` (default 16.0), `.detect_shadows(bool)` (default true)
+- `operator()(const Image<BGR>&)` → `Image<Gray>` foreground mask (255 = foreground, 127 = shadow, 0 = background)
+
+**`BackgroundSubtractKNN`** — K-Nearest Neighbours algorithm. Faster than MOG2 in stable-illumination environments.
+- Fluent setters: `.history(int)` (default 500), `.threshold(double)` (default 400.0), `.detect_shadows(bool)` (default true)
+- Same `operator()` signature as MOG2.
+
+```cpp
+BackgroundSubtractMOG2 sub;
+sub.history(300).detect_shadows(false);
+// In frame loop:
+Image<Gray> fg = frame | sub;  // lvalue — state accumulates
+```
+
 ---
 
 ## `improc::io` — Input/Output
@@ -574,6 +595,32 @@ Throws `ParameterError` on invalid setter arguments; throws `IoError` if the und
 ### `VideoReader` (`io/video_reader.hpp`)
 
 Sequential video file reader. `next()` returns `std::optional<Image<BGR>>` — reads frames one by one until EOF, then returns `std::nullopt`.
+
+### `VideoFileCapture` (`io/video_file_capture.hpp`)
+
+Reads a video file frame-by-frame as a `CameraSourceType`. Wraps `VideoReader` so any `FramePipeline` works identically with files and live cameras.
+
+- `start()` — opens the file; throws `FileNotFoundError` if the path does not exist, `IoError` if the codec cannot be opened
+- `stop()` — closes the file; idempotent
+- `getFrame()` → `std::expected<CameraFrame, Error>` — returns the next frame, or:
+  - `Error::EndOfFile` when the video has no more frames
+  - `Error::CameraUnavailable` if called before `start()`
+
+Satisfies `CameraSourceType<VideoFileCapture>` — compatible with `AnyCameraSource` and `FramePipeline`.
+
+```cpp
+improc::io::VideoFileCapture cap{"clip.mp4"};
+cap.start();
+while (true) {
+    auto frame = cap.getFrame();
+    if (!frame) {
+        if (frame.error().code == improc::Error::Code::EndOfFile) break;
+        throw std::runtime_error(frame.error().message);
+    }
+    // process frame->rgb ...
+}
+cap.stop();
+```
 
 ---
 
