@@ -18,7 +18,8 @@
  * GoodFeaturesToTrack, ConvexHull, ApproxPolyDP, MinAreaRect, BoundingRect,
  * FloodFill, Remap, AbsDiff, BitwiseAnd, BitwiseOr, BitwiseNot,
  * SparseLKFlow, DenseFarnebackFlow, DenseDISFlow,
- * CamShift, MeanShift, PhaseCorrelate)
+ * CamShift, MeanShift, PhaseCorrelate,
+ * SplitChannels, MergeChannels)
  * and the generic `operator|` pipeline dispatch.
  *
  * @code
@@ -80,6 +81,7 @@
 #include "improc/core/ops/lut.hpp"
 #include "improc/core/ops/remap.hpp"
 #include "improc/core/ops/arithmetic.hpp"
+#include "improc/core/ops/channels.hpp"
 
 // Analysis ops (multi-arg or non-image output — not composable via operator|)
 #include "improc/core/ops/optical_flow.hpp"
