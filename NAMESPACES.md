@@ -61,7 +61,12 @@ struct Error {
         ImageWriteFailed,     // cv::imwrite returned false
         OnnxModelLoadFailed,  // ORT failed to parse / load the .onnx file
         OnnxInferenceFailed,  // ORT session Run() returned an error
-        OnnxSessionNotLoaded  // run() called before load()
+        OnnxSessionNotLoaded, // run() called before load()
+        VocXmlParseFailed,    // VOC XML annotation file missing, malformed, or unreadable
+        CocoJsonParseFailed,  // COCO JSON annotation file missing, malformed, or unreadable
+        VocSegParseFailed,    // VOC segmentation mask file missing, malformed, or unreadable
+        Timeout,              // Camera getFrame() timed out waiting for a frame
+        EndOfFile             // VideoFileCapture reached end of file
     };
     Code        code;
     std::string message;
@@ -79,6 +84,11 @@ struct Error {
     static Error onnx_model_load_failed(const std::string& path, const std::string& reason);
     static Error onnx_inference_failed(const std::string& reason);
     static Error onnx_session_not_loaded();
+    static Error voc_xml_parse_failed(const std::string& path, const std::string& reason);
+    static Error coco_json_parse_failed(const std::string& path, const std::string& reason);
+    static Error voc_seg_parse_failed(const std::string& path, const std::string& reason);
+    static Error timeout(const std::string& source_id);
+    static Error end_of_file(const std::string& path);
 };
 ```
 
@@ -489,6 +499,75 @@ Image<BGR>  composited = bg | AlphaBlend{overlay_bgra};   // per-pixel alpha fro
 
 **`AlphaBlend`** — composites a BGRA overlay image onto a BGR background using per-pixel alpha from the overlay's A channel. Throws `ParameterError` if overlay and background sizes differ.
 
+### Background subtraction (`ops/background_subtract.hpp`)
+
+Stateful foreground/background segmentation. Both types update their internal model on every call — create once, reuse across frames. Pass as **lvalue** to `operator|` so the model accumulates across frames; a temporary loses state.
+
+**`BackgroundSubtractMOG2`** — Gaussian Mixture Model algorithm.
+- Fluent setters: `.history(int)` (default 500), `.threshold(double)` (default 16.0), `.detect_shadows(bool)` (default true)
+- `operator()(const Image<BGR>&)` → `Image<Gray>` foreground mask (255 = foreground, 127 = shadow, 0 = background)
+
+**`BackgroundSubtractKNN`** — K-Nearest Neighbours algorithm. Faster than MOG2 in stable-illumination environments.
+- Fluent setters: `.history(int)` (default 500), `.threshold(double)` (default 400.0), `.detect_shadows(bool)` (default true)
+- Same `operator()` signature as MOG2.
+
+```cpp
+BackgroundSubtractMOG2 sub;
+sub.history(300).detect_shadows(false);
+// In frame loop:
+Image<Gray> fg = frame | sub;  // lvalue — state accumulates
+```
+
+### Classic CV ops (v0.8.0)
+
+#### Pipeline ops
+
+**`LUT`** (`ops/lut.hpp`) — pipeline op.
+- `LUT(cv::Mat table)` — 256-entry lookup table (CV_8UC1 or CV_8UC3, 256 elements). Throws `std::invalid_argument` on wrong size or depth.
+- `operator()(Image<F>)` → `Image<F>` — applies `cv::LUT` to any format.
+- Composable via `operator|`.
+
+#### Analysis ops (non-image output or multi-arg — not composable via `operator|`)
+
+**`CalcHist`** (`ops/hist.hpp`) — histogram computation.
+- Fluent: `.bins(int)` (default 256), `.range(float lo, float hi)` (default [0, 256)).
+- `operator()(const Image<Gray>&)` → `cv::Mat` (CV_32FC1, `bins×1`).
+- `operator()(const Image<BGR>&)` → `cv::Mat` (CV_32FC1, `3*bins×1`, channels stacked B/G/R).
+
+**`CompareHist`** (`ops/hist.hpp`) — histogram comparison.
+- Fluent: `.method(int)` (cv::HISTCMP_* constants; default `cv::HISTCMP_CORREL`).
+- `operator()(const cv::Mat&, const cv::Mat&)` → `double`.
+
+**`HoughLinesP`** (`ops/hough.hpp`) — probabilistic Hough line detection.
+- Fluent: `.rho(double)` (default 1.0), `.theta(double)` (default CV_PI/180), `.threshold(int)` (default 80), `.min_line_length(double)` (default 0), `.max_line_gap(double)` (default 0).
+- `operator()(const Image<Gray>&)` → `std::vector<cv::Vec4i>`.
+
+**`HoughCircles`** (`ops/hough.hpp`) — Hough circle detection (HOUGH_GRADIENT).
+- Fluent: `.min_dist(double)` (default 20), `.param1(double)` (default 100), `.param2(double)` (default 30), `.min_radius(int)` (default 0), `.max_radius(int)` (default 0).
+- `operator()(const Image<Gray>&)` → `std::vector<cv::Vec3f>` — each entry: `{centre_x, centre_y, radius}`.
+
+**`MatchTemplate`** (`ops/match_template.hpp`) — template matching.
+- Fluent: `.method(int)` (cv::TM_* constants; default `cv::TM_CCOEFF_NORMED`).
+- `operator()(const Image<BGR>& img, const Image<BGR>& templ)` → `std::pair<cv::Point, double>` — `{best_match_top_left, score}`.
+- Throws `std::invalid_argument` if template is larger than image.
+
+**`Moments`** (`ops/moments.hpp`) — image moments.
+- `bool binary` member (default `false`): treat non-zero pixels as 1.
+- `operator()(const Image<Gray>&)` → `cv::Moments`.
+
+**`Inpaint`** (`ops/inpaint.hpp`) — image inpainting (multi-arg).
+- Fluent: `.radius(double)` (default 3.0), `.method(InpaintMethod)` (default `InpaintMethod::TELEA`).
+- `operator()(const Image<BGR>& img, const Image<Gray>& mask)` → `Image<BGR>`.
+
+**`Watershed`** (`ops/watershed.hpp`) — marker-based segmentation (multi-arg, in-place markers).
+- `operator()(const Image<BGR>& img, cv::Mat& markers)` — markers: CV_32SC1, same size as img; modified in place.
+- Throws `std::invalid_argument` if markers have wrong type or size.
+
+**`GrabCut`** (`ops/grabcut.hpp`) — foreground/background segmentation (multi-arg).
+- Fluent: `.iterations(int)` (default 5).
+- `operator()(const Image<BGR>& img, cv::Rect roi)` → `Image<Gray>` mask (GC_FGD=1, GC_PR_FGD=3 are foreground).
+- Throws `std::invalid_argument` if roi is empty or outside image bounds.
+
 ---
 
 ## `improc::io` — Input/Output
@@ -574,6 +653,32 @@ Throws `ParameterError` on invalid setter arguments; throws `IoError` if the und
 ### `VideoReader` (`io/video_reader.hpp`)
 
 Sequential video file reader. `next()` returns `std::optional<Image<BGR>>` — reads frames one by one until EOF, then returns `std::nullopt`.
+
+### `VideoFileCapture` (`io/video_file_capture.hpp`)
+
+Reads a video file frame-by-frame as a `CameraSourceType`. Wraps `VideoReader` so any `FramePipeline` works identically with files and live cameras.
+
+- `start()` — opens the file; throws `FileNotFoundError` if the path does not exist, `IoError` if the codec cannot be opened
+- `stop()` — closes the file; idempotent
+- `getFrame()` → `std::expected<CameraFrame, Error>` — returns the next frame, or:
+  - `Error::EndOfFile` when the video has no more frames
+  - `Error::CameraUnavailable` if called before `start()`
+
+Satisfies `CameraSourceType<VideoFileCapture>` — compatible with `AnyCameraSource` and `FramePipeline`.
+
+```cpp
+improc::io::VideoFileCapture cap{"clip.mp4"};
+cap.start();
+while (true) {
+    auto frame = cap.getFrame();
+    if (!frame) {
+        if (frame.error().code == improc::Error::Code::EndOfFile) break;
+        throw std::runtime_error(frame.error().message);
+    }
+    // process frame->rgb ...
+}
+cap.stop();
+```
 
 ---
 

@@ -7,7 +7,8 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Table of Contents
 
-- [[Unreleased]](#unreleased) — Video Pipeline + Packaging: VideoFileCapture, CMake install rules, BackgroundSubtractMOG2/KNN
+- [[Unreleased]](#unreleased) — Classic CV ops: LUT, CalcHist, Hough, MatchTemplate, Moments, Inpaint, Watershed, GrabCut
+- [[0.7.0]](#070--2026-05-19) — 2026-05-19 · Video Pipeline + Packaging: VideoFileCapture, CMake install rules, BackgroundSubtractMOG2/KNN
 - [[0.6.0]](#060--2026-05-18) — 2026-05-18 · Real-Time Pipeline: unified camera API (WebcamCapture, IPCameraCapture, OakDCapture), CameraFrame, AnyCameraSource, FramePipeline update
 - [[0.5.0]](#050--2026-05-18) — 2026-05-18 · ML Evaluation + Visualization + Multi-Object Tracking; Google Benchmark suite; performance fixes
 - [[0.4.0]](#040--2026-05-14) — 2026-05-14 · ML Pipeline: augmentation, dataset loaders (VOC/COCO), segmentation types + seg-aware augmentation + VOC seg loader
@@ -18,6 +19,20 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ---
 
 ## [Unreleased]
+
+### Added
+- `improc::core::LUT` — 256-entry lookup-table pipeline op; applies `cv::LUT` to any `Image<F>` via `operator|`; throws `std::invalid_argument` on wrong table size or depth
+- `improc::core::CalcHist` / `CompareHist` — histogram computation and comparison analysis ops; `CalcHist` supports Gray (bins×1) and BGR (3×bins×1 stacked); `CompareHist` wraps `cv::compareHist`
+- `improc::core::HoughLinesP` / `HoughCircles` — probabilistic Hough line detection and circle detection analysis ops
+- `improc::core::MatchTemplate` — template matching analysis op; returns `{best_match_location, score}`; handles TM_SQDIFF min/max inversion automatically
+- `improc::core::Moments` — image moments analysis op; wraps `cv::moments`; `binary` flag for binary images
+- `improc::core::Inpaint` — inpainting multi-arg op; TELEA and NS methods; `operator()(img, mask)`
+- `improc::core::Watershed` — marker-based segmentation multi-arg op; modifies `cv::Mat& markers` in place
+- `improc::core::GrabCut` — foreground/background segmentation multi-arg op; initialized with rect; returns `Image<Gray>` mask
+
+---
+
+## [0.7.0] — 2026-05-19
 
 ### Added
 - `improc::io::VideoFileCapture` — reads video files as a `CameraSourceType`; wraps `VideoReader` so any `FramePipeline` works with files identically to live cameras; `Error::EndOfFile` returned at EOF

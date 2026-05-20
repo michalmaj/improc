@@ -15,6 +15,8 @@
 - [Quick Start](#quick-start)
 - [Usage](#usage)
 - [Augmentation](#augmentation)
+- [Video File Capture](#video-file-capture)
+- [Background Subtraction](#background-subtraction)
 - [Video Recording](#video-recording)
 - [ONNX Runtime Inference](#onnx-runtime-inference)
 - [Edge Detection & Enhancement](#edge-detection--enhancement)
@@ -24,6 +26,7 @@
 - [Feature Detection Pipeline](#feature-detection-pipeline)
 - [Requirements](#requirements)
 - [Installation](#installation)
+- [CMake Integration](#cmake-integration)
 - [CMake Configuration (CLion)](#cmake-configuration-clion)
 - [Running Tests](#running-tests)
 - [Tested With](#tested-with)
@@ -34,8 +37,8 @@
 
 ## Status
 
-> **Latest release: v0.5.0** — Multi-Object Tracking. `improc::ml` now ships `IouTracker`, `SortTracker` (Kalman + Hungarian, SORT algorithm), and `ByteTracker` (two-stage BYTE algorithm) plus `TrackingEval` for MOTA / MOTP / IDF1 evaluation.  
-> **Previous highlights:** v0.4.0 — extended augmentation, bbox-aware ops, VOC/COCO dataset loaders, segmentation support, lazy views, ONNX Runtime 1.20.1. v0.3.0 — complete classical 2D CV pipeline.  
+> **Latest release: v0.7.0** — Video Pipeline + Packaging. `improc::io` adds `VideoFileCapture` for reading video files as a `CameraSourceType`; `improc::core` adds `BackgroundSubtractMOG2` and `BackgroundSubtractKNN`; CMake install rules enable `find_package(improc REQUIRED)`.  
+> **Previous highlights:** v0.6.0 — unified real-time camera API. v0.5.0 — ML evaluation, multi-object tracking, Google Benchmark suite. v0.4.0 — extended augmentation, VOC/COCO loaders.  
 > APIs are stabilising but may still change between minor versions.
 
 | Namespace | Status | Notes |
@@ -147,6 +150,8 @@ OpenCV is powerful but its raw API is stringly-typed, mutation-heavy, and easy t
 - **DNN inference** — `DnnClassifier`, `DnnDetector` (YOLO & SSD), `DnnForward` backed by OpenCV DNN; pipeline-composable
 - **ONNX Runtime inference** — `OnnxClassifier`, `OnnxDetector` (YOLOv5 & YOLOv8 & SSD), `OnnxSession` (raw tensor I/O); CPU + CoreML EP on Apple Silicon; train in Python, export to ONNX, run here
 - **Camera capture** — asynchronous threaded frame capture via `CameraCapture`; `getFrame()` returns `std::expected<cv::Mat, Error>` for safe error handling
+- **Video file capture** — `VideoFileCapture` reads video files frame-by-frame as a `CameraSourceType`; satisfies `CameraSourceType<VideoFileCapture>`; `getFrame()` returns `Error::EndOfFile` at EOF; fully compatible with `AnyCameraSource` and `FramePipeline`
+- **Background subtraction** — `BackgroundSubtractMOG2` (Gaussian Mixture Model) and `BackgroundSubtractKNN` (K-Nearest Neighbours); stateful — pass as lvalue to `operator|` to accumulate model across frames; returns `Image<Gray>` foreground mask
 - **Video recording** — synchronous RAII `VideoWriter` with auto codec detection and pipeline support (`img | Show{"preview"} | writer`)
 - **Haar Cascade loader** — CRTP-based model loader for OpenCV cascade classifiers
 - **Threading** — `ThreadPool` and `FramePipeline<Result>` for real-time frame processing
@@ -280,6 +285,46 @@ std::cout << out.boxes.size() << " boxes after augmentation\n";
 
 // Tune the drop threshold per-op (default 0.1 — drop if < 10% visible)
 RandomCrop{}.min_area_ratio(0.3f).width(200).height(200)(ann, rng);
+```
+
+## Video File Capture
+
+Read video files with the same API as live cameras:
+
+```cpp
+#include "improc/io/io.hpp"
+using namespace improc::io;
+
+VideoFileCapture cap{"clip.mp4"};
+cap.start();
+while (true) {
+    auto frame = cap.getFrame();
+    if (!frame) break;  // EndOfFile
+    // (*frame).rgb is std::optional<Image<BGR>>; dereference before use
+}
+cap.stop();
+```
+
+Works with `AnyCameraSource` and `FramePipeline` — swap a live camera for a file with no code changes:
+
+```cpp
+auto src = AnyCameraSource::make<VideoFileCapture>("clip.mp4");
+```
+
+## Background Subtraction
+
+Stateful foreground extraction. Pass as **lvalue** to preserve the learned model across frames:
+
+```cpp
+#include "improc/core/pipeline.hpp"
+using namespace improc::core;
+
+BackgroundSubtractMOG2 sub;
+sub.history(300).threshold(16.0).detect_shadows(false);
+
+// In frame loop (frame is Image<BGR> from camera/VideoFileCapture):
+Image<BGR> frame = /* your camera frame */;
+Image<Gray> fg_mask = frame | sub;  // sub is an lvalue — model accumulates
 ```
 
 ## Video Recording
@@ -521,6 +566,17 @@ MatchSet      sift_ms   = MatchFlann{sift_desc, sift_desc}.ratio_threshold(0.7f)
          -B build .
    cmake --build build
    ```
+
+## CMake Integration
+
+After installing with `cmake --install build`, downstream projects can use:
+
+```cmake
+find_package(improc REQUIRED)
+target_link_libraries(my_app PRIVATE improc::improc)
+```
+
+This pulls in OpenCV as a transitive dependency. ONNX Runtime must be supplied separately until v1.0.0.
 
 ## CMake Configuration (CLion)
 
