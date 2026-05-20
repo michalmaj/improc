@@ -18,7 +18,8 @@ cv::Mat CalcHist::operator()(const Image<Gray>& img) const {
     cv::Mat hist;
     const float range[] = {range_lo_, range_hi_};
     const float* ranges[] = {range};
-    cv::calcHist(&img.mat(), 1, std::array<int,1>{0}.data(), cv::noArray(),
+    int ch = 0;
+    cv::calcHist(&img.mat(), 1, &ch, cv::noArray(),
                  hist, 1, &bins_, ranges);
     return hist;
 }
@@ -33,7 +34,7 @@ cv::Mat CalcHist::operator()(const Image<BGR>& img) const {
                      hists[ch], 1, &bins_, ranges);
     }
     cv::Mat stacked;
-    cv::vconcat(std::vector<cv::Mat>{hists[0], hists[1], hists[2]}, stacked);
+    cv::vconcat(hists, 3, stacked);
     return stacked;
 }
 

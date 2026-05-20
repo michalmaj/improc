@@ -43,7 +43,7 @@ TEST(CalcHistTest, GraySumEqualsPixelCount) {
     auto img = make_gray_rand(16, 16);
     cv::Mat h = CalcHist{}(img);
     double total = cv::sum(h)[0];
-    EXPECT_NEAR(total, static_cast<double>(16 * 16), 1.0);
+    EXPECT_NEAR(total, static_cast<double>(16 * 16), 0.5);
 }
 
 TEST(CalcHistTest, GrayAllBinsNonNegative) {
@@ -64,7 +64,7 @@ TEST(CalcHistTest, BGRSumEqualsThreeTimesPixelCount) {
     auto img = make_bgr_rand(16, 16);
     cv::Mat h = CalcHist{}(img);
     double total = cv::sum(h)[0];
-    EXPECT_NEAR(total, static_cast<double>(3 * 16 * 16), 1.0);
+    EXPECT_NEAR(total, static_cast<double>(3 * 16 * 16), 0.5);
 }
 
 TEST(CalcHistTest, CustomBinsChangesOutputRows) {
