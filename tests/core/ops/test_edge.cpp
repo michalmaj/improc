@@ -261,3 +261,65 @@ TEST(HarrisCornerTest, DetectsCornerOnWhiteSquare) {
     int interior_val = result.mat().at<uchar>(16, 16);
     EXPECT_GT(corner_val, interior_val);
 }
+
+// ── SobelGradient ─────────────────────────────────────────────────────────────
+
+TEST(SobelGradientTest, DefaultConstruction) {
+    EXPECT_NO_THROW(SobelGradient{});
+}
+
+TEST(SobelGradientTest, FluentSettersReturnThis) {
+    SobelGradient op;
+    EXPECT_EQ(&op.ksize(5).scale(2.0).delta(1.0), &op);
+}
+
+TEST(SobelGradientTest, UniformImageGivesZeroGradient) {
+    Image<Gray> img(cv::Mat(100, 100, CV_8UC1, cv::Scalar(128)));
+    auto r = SobelGradient{}(img);
+    // Interior pixels of uniform image: gradient = 0
+    cv::Mat roi_dx = r.dx(cv::Rect(2, 2, 96, 96));
+    EXPECT_EQ(cv::countNonZero(roi_dx), 0);
+}
+
+TEST(SobelGradientTest, StepEdgeGivesNonZeroDx) {
+    cv::Mat m(100, 100, CV_8UC1, cv::Scalar(0));
+    m.colRange(50, 100).setTo(cv::Scalar(255));
+    Image<Gray> img(m);
+    auto r = SobelGradient{}(img);
+    EXPECT_GT(r.dx.at<int16_t>(50, 50), 0);
+}
+
+TEST(SobelGradientTest, ReturnedMatsAreSameSize) {
+    Image<Gray> img(cv::Mat(80, 120, CV_8UC1, cv::Scalar(0)));
+    auto r = SobelGradient{}(img);
+    EXPECT_EQ(r.dx.rows, 80);
+    EXPECT_EQ(r.dx.cols, 120);
+    EXPECT_EQ(r.dy.rows, 80);
+    EXPECT_EQ(r.dy.cols, 120);
+}
+
+// ── ScharrGradient ────────────────────────────────────────────────────────────
+
+TEST(ScharrGradientTest, DefaultConstruction) {
+    EXPECT_NO_THROW(ScharrGradient{});
+}
+
+TEST(ScharrGradientTest, FluentSettersReturnThis) {
+    ScharrGradient op;
+    EXPECT_EQ(&op.scale(2.0).delta(0.5), &op);
+}
+
+TEST(ScharrGradientTest, UniformImageGivesZeroGradient) {
+    Image<Gray> img(cv::Mat(100, 100, CV_8UC1, cv::Scalar(128)));
+    auto r = ScharrGradient{}(img);
+    cv::Mat roi_dx = r.dx(cv::Rect(2, 2, 96, 96));
+    EXPECT_EQ(cv::countNonZero(roi_dx), 0);
+}
+
+TEST(ScharrGradientTest, StepEdgeGivesNonZeroDx) {
+    cv::Mat m(100, 100, CV_8UC1, cv::Scalar(0));
+    m.colRange(50, 100).setTo(cv::Scalar(255));
+    Image<Gray> img(m);
+    auto r = ScharrGradient{}(img);
+    EXPECT_GT(r.dx.at<int16_t>(50, 50), 0);
+}
