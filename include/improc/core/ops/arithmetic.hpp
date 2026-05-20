@@ -98,4 +98,36 @@ private:
     double beta_  = 0.0;
 };
 
+struct Add {
+    explicit Add(cv::Mat other) : other_(std::move(other)) {}
+
+    template<AnyFormat F>
+    Image<F> operator()(Image<F> img) const {
+        if (img.mat().size() != other_.size() || img.mat().type() != other_.type())
+            throw std::invalid_argument("Add: images must have the same size and type");
+        cv::Mat result;
+        cv::add(img.mat(), other_, result);
+        return Image<F>(std::move(result));
+    }
+
+private:
+    cv::Mat other_;
+};
+
+struct Subtract {
+    explicit Subtract(cv::Mat other) : other_(std::move(other)) {}
+
+    template<AnyFormat F>
+    Image<F> operator()(Image<F> img) const {
+        if (img.mat().size() != other_.size() || img.mat().type() != other_.type())
+            throw std::invalid_argument("Subtract: images must have the same size and type");
+        cv::Mat result;
+        cv::subtract(img.mat(), other_, result);
+        return Image<F>(std::move(result));
+    }
+
+private:
+    cv::Mat other_;
+};
+
 } // namespace improc::core

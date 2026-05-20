@@ -166,6 +166,52 @@ TEST(ConvertScaleAbsTest, ScaleAlphaApplied) {
     EXPECT_EQ(result.mat().at<uchar>(0, 0), 100u);
 }
 
+// ── Add ───────────────────────────────────────────────────────────────────────
+
+TEST(AddTest, KnownScalarAddition) {
+    cv::Mat m(1, 1, CV_8UC1, cv::Scalar(100));
+    cv::Mat other(1, 1, CV_8UC1, cv::Scalar(50));
+    Image<Gray> img(m);
+    auto result = img | Add(other);
+    EXPECT_EQ(result.mat().at<uchar>(0, 0), 150u);
+}
+
+TEST(AddTest, SaturationAtMax) {
+    cv::Mat m(1, 1, CV_8UC1, cv::Scalar(200));
+    cv::Mat other(1, 1, CV_8UC1, cv::Scalar(100));
+    Image<Gray> img(m);
+    auto result = img | Add(other);
+    EXPECT_EQ(result.mat().at<uchar>(0, 0), 255u);  // saturates at 255
+}
+
+TEST(AddTest, SizeMismatchThrows) {
+    Image<Gray> img(cv::Mat(50, 50, CV_8UC1, cv::Scalar(0)));
+    EXPECT_THROW(img | Add(cv::Mat(60, 60, CV_8UC1)), std::invalid_argument);
+}
+
+// ── Subtract ──────────────────────────────────────────────────────────────────
+
+TEST(SubtractTest, KnownScalarSubtraction) {
+    cv::Mat m(1, 1, CV_8UC1, cv::Scalar(100));
+    cv::Mat other(1, 1, CV_8UC1, cv::Scalar(40));
+    Image<Gray> img(m);
+    auto result = img | Subtract(other);
+    EXPECT_EQ(result.mat().at<uchar>(0, 0), 60u);
+}
+
+TEST(SubtractTest, SaturationAtZero) {
+    cv::Mat m(1, 1, CV_8UC1, cv::Scalar(50));
+    cv::Mat other(1, 1, CV_8UC1, cv::Scalar(100));
+    Image<Gray> img(m);
+    auto result = img | Subtract(other);
+    EXPECT_EQ(result.mat().at<uchar>(0, 0), 0u);  // saturates at 0
+}
+
+TEST(SubtractTest, SizeMismatchThrows) {
+    Image<Gray> img(cv::Mat(50, 50, CV_8UC1, cv::Scalar(0)));
+    EXPECT_THROW(img | Subtract(cv::Mat(60, 60, CV_8UC1)), std::invalid_argument);
+}
+
 // ── Pipeline syntax ───────────────────────────────────────────────────────────
 
 TEST(ArithmeticTest, AllOpsPipelineSyntax) {
