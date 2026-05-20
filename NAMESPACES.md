@@ -518,7 +518,7 @@ sub.history(300).detect_shadows(false);
 Image<Gray> fg = frame | sub;  // lvalue — state accumulates
 ```
 
-### Classic CV ops (v0.8.0)
+### Classic CV ops
 
 #### Pipeline ops
 
