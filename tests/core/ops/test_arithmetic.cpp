@@ -260,12 +260,12 @@ TEST(DivideTest, KnownScalarDivision) {
     EXPECT_NEAR(result.mat().at<float>(0, 0), 3.0f, 0.001f);
 }
 
-TEST(DivideTest, DivideByZeroGivesInf) {
-    cv::Mat m(1, 1, CV_32FC1, cv::Scalar(10.0f));
-    cv::Mat zeros(1, 1, CV_32FC1, cv::Scalar(0.0f));
-    Image<Float32> img(m);
+TEST(DivideTest, DivideByZeroGivesZero) {
+    cv::Mat m(1, 1, CV_8UC1, cv::Scalar(10));
+    cv::Mat zeros(1, 1, CV_8UC1, cv::Scalar(0));
+    Image<Gray> img(m);
     auto result = img | Divide(zeros);
-    EXPECT_TRUE(std::isinf(result.mat().at<float>(0, 0)));  // cv::divide semantics
+    EXPECT_EQ(result.mat().at<uchar>(0, 0), 0u);  // cv::divide semantics: 0 for integer types
 }
 
 TEST(DivideTest, SizeMismatchThrows) {
