@@ -5,6 +5,7 @@
 #include <utility>
 #include <opencv2/features2d.hpp>
 #include "improc/core/image.hpp"
+#include "improc/exceptions.hpp"
 
 namespace improc::core {
 
@@ -155,6 +156,31 @@ struct DescribeAKAZE {
     DescriptorSet operator()(Image<BGR>  img) const;
 private:
     KeypointSet kps_;
+};
+
+struct GoodFeaturesToTrack {
+    GoodFeaturesToTrack& max_corners(int n) { max_corners_ = n; return *this; }
+    /// @brief Quality threshold relative to the best corner. Must be > 0.
+    GoodFeaturesToTrack& quality_level(double q) {
+        if (q <= 0.0)
+            throw ParameterError{"quality_level", "must be > 0", "GoodFeaturesToTrack"};
+        quality_level_ = q; return *this;
+    }
+    /// @brief Minimum Euclidean distance between returned corners. Must be >= 0.
+    GoodFeaturesToTrack& min_distance(double d) {
+        if (d < 0.0)
+            throw ParameterError{"min_distance", "must be >= 0", "GoodFeaturesToTrack"};
+        min_distance_ = d; return *this;
+    }
+    GoodFeaturesToTrack& use_harris(bool b) { use_harris_ = b; return *this; }
+
+    std::vector<cv::Point2f> operator()(const Image<Gray>& img) const;
+
+private:
+    int    max_corners_   = 100;
+    double quality_level_ = 0.01;
+    double min_distance_  = 10.0;
+    bool   use_harris_    = false;
 };
 
 } // namespace improc::core

@@ -568,6 +568,138 @@ Image<Gray> fg = frame | sub;  // lvalue — state accumulates
 - `operator()(const Image<BGR>& img, cv::Rect roi)` → `Image<Gray>` mask (GC_FGD=1, GC_PR_FGD=3 are foreground).
 - Throws `std::invalid_argument` if roi is empty or outside image bounds.
 
+#### Phase 2 additions
+
+**`GoodFeaturesToTrack`** (`ops/feature_detection.hpp`) — analysis struct.
+- Fluent: `.max_corners(int)` (default 100), `.quality_level(double)` (default 0.01), `.min_distance(double)` (default 10.0), `.use_harris(bool)` (default false).
+- `operator()(const Image<Gray>&)` → `std::vector<cv::Point2f>`.
+- Throws `ParameterError` if `quality_level <= 0` or `min_distance < 0`.
+
+**`ConvexHull`** (`ops/contours.hpp`) — analysis struct.
+- `operator()(const std::vector<cv::Point>&)` → `std::vector<cv::Point>`.
+
+**`ApproxPolyDP`** (`ops/contours.hpp`) — analysis struct.
+- Fluent: `.epsilon(double)` (default 3.0), `.closed(bool)` (default true).
+- `operator()(const std::vector<cv::Point>&)` → `std::vector<cv::Point>`.
+
+**`MinAreaRect`** (`ops/contours.hpp`) — analysis struct.
+- `operator()(const std::vector<cv::Point>&)` → `cv::RotatedRect`.
+
+**`BoundingRect`** (`ops/contours.hpp`) — analysis struct.
+- `operator()(const std::vector<cv::Point>&)` → `cv::Rect`.
+
+**`FloodFill`** (`ops/flood_fill.hpp`) — multi-arg op.
+- Fluent: `.lo_diff(cv::Scalar)` (default 0,0,0), `.up_diff(cv::Scalar)` (default 0,0,0).
+- `operator()(const Image<BGR>&, cv::Point seed, cv::Scalar new_color)` → `Image<BGR>`.
+- `operator()(const Image<Gray>&, cv::Point seed, uchar new_val)` → `Image<Gray>`.
+- Throws `std::invalid_argument` if seed is outside image bounds.
+
+**`Remap`** (`ops/remap.hpp`) — pipeline op.
+- `Remap(cv::Mat map1, cv::Mat map2)` — throws `std::invalid_argument` if maps are empty or sizes differ.
+- Fluent: `.interpolation(int)` (default `cv::INTER_LINEAR`).
+- `operator()(Image<F>)` → `Image<F>`; composable via `operator|`.
+
+**`AbsDiff`** (`ops/arithmetic.hpp`) — pipeline op.
+- `AbsDiff(cv::Mat other)` — second image in constructor.
+- `operator()(Image<F>)` → `Image<F>`; throws `std::invalid_argument` on size or type mismatch.
+
+**`BitwiseAnd`** / **`BitwiseOr`** (`ops/arithmetic.hpp`) — pipeline ops.
+- Constructor takes second image as `cv::Mat`. Throw on size or type mismatch. Integer formats only (`IntegerFormat`).
+
+**`BitwiseNot`** (`ops/arithmetic.hpp`) — pipeline op alias for `Invert`. Integer formats only.
+
+### Motion Analysis ops (`pipeline.hpp`)
+
+All motion ops are **multi-arg** — they take two images or extra arguments and are NOT composable via `operator|`.
+
+**`Flow`** (`format_traits.hpp`) — format tag for dense optical flow. CV_32FC2 (2-channel float: dx, dy per pixel).
+
+**`SparseLKFlow`** (`ops/optical_flow.hpp`) — sparse Lucas-Kanade optical flow.
+- Fluent: `.win_size(cv::Size)` (default {21,21}), `.max_level(int)` (default 3), `.max_iter(int)` (default 30), `.epsilon(double)` (default 0.01).
+- `operator()(const Image<Gray>& prev, const Image<Gray>& next, const std::vector<cv::Point2f>& prev_pts)` → `SparseLKFlowResult`.
+- `SparseLKFlowResult`: `.points` (tracked positions), `.status` (1=tracked, 0=lost), `.error` (per-point error).
+- Throws `std::invalid_argument` if `prev_pts` is empty or sizes differ.
+
+**`DenseFarnebackFlow`** (`ops/optical_flow.hpp`) — dense Farneback optical flow.
+- Fluent: `.pyr_scale(double)`, `.levels(int)`, `.win_size(int)`, `.iterations(int)`, `.poly_n(int)`, `.poly_sigma(double)`.
+- `operator()(const Image<Gray>& prev, const Image<Gray>& next)` → `Image<Flow>`.
+- Throws `std::invalid_argument` if sizes differ.
+
+**`DenseDISFlow`** (`ops/optical_flow.hpp`) — dense DIS optical flow (faster alternative).
+- Fluent: `.preset(DenseDISFlow::Preset::{UltraFast, Fast, Medium})` (default Medium).
+- `operator()(const Image<Gray>& prev, const Image<Gray>& next)` → `Image<Flow>`.
+
+**`CamShift`** (`ops/tracking.hpp`) — continuously adaptive MeanShift tracker.
+- Fluent: `.epsilon(double)` (default 1.0), `.max_iter(int)` (default 10).
+- `operator()(const Image<Gray>& back_proj, cv::Rect& window)` → `CamShiftResult{object, iterations}`. Updates `window` in-place.
+- Throws `std::invalid_argument` if `window` is outside image bounds.
+
+**`MeanShift`** (`ops/tracking.hpp`) — kernel-based MeanShift.
+- Fluent: `.epsilon(double)`, `.max_iter(int)`.
+- `operator()(const Image<Gray>& back_proj, cv::Rect& window)` → `int` (iteration count). Updates `window` in-place.
+
+**`PhaseCorrelate`** (`ops/phase_correlate.hpp`) — frequency-domain sub-pixel shift estimation.
+- `operator()(const Image<Float32>& prev, const Image<Float32>& next)` → `PhaseCorrelateResult{shift, response}`.
+- Uses Hanning window internally. Throws `std::invalid_argument` if sizes differ.
+
+### Math / imgproc foundation ops (`pipeline.hpp`)
+
+**Pipeline ops** (composable via `operator|`):
+
+**`Convolve`** (`ops/arithmetic.hpp`) — custom 2D convolution.
+- `Convolve(cv::Mat kernel)` — throws if kernel is empty.
+- Fluent: `.anchor(cv::Point)`, `.delta(double)`, `.border(int)`.
+- `operator()(Image<F>)` → `Image<F>`.
+
+**`BoxFilter`** (`ops/blur.hpp`) — simple averaging blur.
+- Fluent: `.kernel_size(int)` (default 3), `.normalize(bool)` (default true), `.border(int)`.
+- `operator()(Image<F>)` → `Image<F>`.
+
+**`Add`** / **`Subtract`** (`ops/arithmetic.hpp`) — element-wise arithmetic.
+- Constructor takes second image as `cv::Mat`. Throw on size/type mismatch.
+
+**`Multiply`** / **`Divide`** (`ops/arithmetic.hpp`) — element-wise arithmetic with optional `scale`.
+- Divide by zero → 0 for integer types (OpenCV semantics).
+
+**`SplitChannels`** (`ops/channels.hpp`) — channel decomposition.
+- `operator()(const Image<BGR>&)` → `std::array<Image<Gray>, 3>`.
+- `operator()(const Image<BGRA>&)` → `std::array<Image<Gray>, 4>`.
+
+**`MergeChannels`** (`ops/channels.hpp`) — channel composition.
+- `operator()(b, g, r)` → `Image<BGR>`. `operator()(b, g, r, a)` → `Image<BGRA>`.
+- Throws `std::invalid_argument` if channel sizes differ.
+
+**Analysis structs** (not composable via `operator|`):
+
+**`SobelGradient`** (`ops/edge.hpp`) — raw Sobel derivatives.
+- Fluent: `.ksize(int)` (1/3/5/7, default 3), `.scale(double)`, `.delta(double)`.
+- `operator()(const Image<Gray>&)` → `SobelResult{dx, dy}` (CV_16S).
+
+**`ScharrGradient`** (`ops/edge.hpp`) — Scharr derivatives (more accurate than 3×3 Sobel).
+- Fluent: `.scale(double)`, `.delta(double)`.
+- `operator()(const Image<Gray>&)` → `ScharrResult{dx, dy}` (CV_16S).
+
+**`ConvertScaleAbs`** (`ops/arithmetic.hpp`) — scale + absolute value → `Image<Gray>`.
+- Takes `cv::Mat` (not `Image<F>`) — for use after Sobel/Scharr/Laplacian outputs.
+- Fluent: `.alpha(double)`, `.beta(double)`.
+
+**`IntegralImage`** (`ops/analysis.hpp`) — summed-area table.
+- Fluent: `.with_sq_sum(bool)` (default false).
+- `operator()(const Image<Gray>&)` → `IntegralResult{sum, sq_sum}`. Output is (rows+1)×(cols+1).
+
+**`MinMaxLoc`** (`ops/analysis.hpp`) — min/max pixel value and location.
+- `operator()(const Image<Gray>&)` or `operator()(const cv::Mat&)` → `MinMaxLocResult{min_val, max_val, min_loc, max_loc}`.
+
+**`MeanStdDev`** (`ops/analysis.hpp`) — per-channel statistics.
+- `operator()(const Image<F>&)` → `MeanStdDevResult{mean, stddev}`.
+
+**`CountNonZero`** (`ops/analysis.hpp`) — count non-zero pixels.
+- `operator()(const Image<Gray>&)` → `int`.
+
+**`Reduce`** (`ops/analysis.hpp`) — collapse image to 1D.
+- Fluent: `.op(ReduceOp::{Sum, Avg, Max, Min})`, `.dim(int)` (0=row-wise, 1=col-wise).
+- `operator()(const Image<Gray>&)` → `cv::Mat` (CV_32SC1).
+
 ---
 
 ## `improc::io` — Input/Output

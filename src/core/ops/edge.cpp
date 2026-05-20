@@ -68,4 +68,22 @@ Image<Gray> HarrisCorner::operator()(Image<BGR> img) const {
     return (*this)(Image<Gray>(std::move(gray)));
 }
 
+// ── SobelGradient ─────────────────────────────────────────────────────────────
+
+SobelResult SobelGradient::operator()(const Image<Gray>& img) const {
+    SobelResult r;
+    cv::Sobel(img.mat(), r.dx, CV_16S, 1, 0, ksize_, scale_, delta_);
+    cv::Sobel(img.mat(), r.dy, CV_16S, 0, 1, ksize_, scale_, delta_);
+    return r;
+}
+
+// ── ScharrGradient ────────────────────────────────────────────────────────────
+
+ScharrResult ScharrGradient::operator()(const Image<Gray>& img) const {
+    ScharrResult r;
+    cv::Scharr(img.mat(), r.dx, CV_16S, 1, 0, scale_, delta_);
+    cv::Scharr(img.mat(), r.dy, CV_16S, 0, 1, scale_, delta_);
+    return r;
+}
+
 } // namespace improc::core

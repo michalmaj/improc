@@ -95,4 +95,27 @@ private:
     int        thickness_{1};
 };
 
+struct ConvexHull {
+    std::vector<cv::Point> operator()(const std::vector<cv::Point>& contour) const;
+};
+
+struct ApproxPolyDP {
+    ApproxPolyDP& epsilon(double e) { epsilon_ = e; return *this; }
+    ApproxPolyDP& closed(bool c)    { closed_  = c; return *this; }
+
+    std::vector<cv::Point> operator()(const std::vector<cv::Point>& contour) const;
+
+private:
+    double epsilon_ = 3.0;
+    bool   closed_  = true;
+};
+
+struct MinAreaRect {
+    cv::RotatedRect operator()(const std::vector<cv::Point>& contour) const;
+};
+
+struct BoundingRect {
+    cv::Rect operator()(const std::vector<cv::Point>& contour) const;
+};
+
 } // namespace improc::core

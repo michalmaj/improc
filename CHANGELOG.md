@@ -29,6 +29,37 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `improc::core::Inpaint` — inpainting multi-arg op; TELEA and NS methods; `operator()(img, mask)`
 - `improc::core::Watershed` — marker-based segmentation multi-arg op; modifies `cv::Mat& markers` in place
 - `improc::core::GrabCut` — foreground/background segmentation multi-arg op; initialized with rect; returns `Image<Gray>` mask
+- `improc::core::GoodFeaturesToTrack` — Shi-Tomasi (or Harris) corner detection; returns `std::vector<cv::Point2f>`; fluent: `max_corners()`, `quality_level()`, `min_distance()`, `use_harris()`; throws `ParameterError` on invalid quality/distance
+- `improc::core::ConvexHull` — convex hull of a contour (`std::vector<cv::Point>` → `std::vector<cv::Point>`)
+- `improc::core::ApproxPolyDP` — Douglas-Peucker polygon approximation; fluent: `epsilon()`, `closed()`
+- `improc::core::MinAreaRect` — minimum area bounding rectangle (`std::vector<cv::Point>` → `cv::RotatedRect`)
+- `improc::core::BoundingRect` — axis-aligned bounding rectangle (`std::vector<cv::Point>` → `cv::Rect`)
+- `improc::core::FloodFill` — flood-fill multi-arg op; BGR and Gray overloads; fluent: `lo_diff()`, `up_diff()`; throws on out-of-bounds seed
+- `improc::core::Remap` — general pixel remapping pipeline op; `map1`/`map2` in constructor; fluent: `interpolation()`; composable via `operator|`
+- `improc::core::AbsDiff` — per-pixel absolute difference pipeline op; second image in constructor; throws on size/type mismatch
+- `improc::core::BitwiseAnd` / `BitwiseOr` — bitwise pipeline ops; second image in constructor; integer formats only; throw on size/type mismatch
+- `improc::core::BitwiseNot` — bitwise invert pipeline op (alias for `Invert`); integer formats only
+- `improc::core::Flow` — new format tag (CV_32FC2) for dense optical flow fields; follows `FormatTraits` pattern
+- `improc::core::SparseLKFlow` — sparse Lucas-Kanade optical flow; tracks `std::vector<cv::Point2f>` across frames; returns `SparseLKFlowResult{points, status, error}`; fluent: `win_size()`, `max_level()`, `max_iter()`, `epsilon()`
+- `improc::core::DenseFarnebackFlow` — dense Farneback optical flow; returns `Image<Flow>`; fluent: `pyr_scale()`, `levels()`, `win_size()`, `iterations()`, `poly_n()`, `poly_sigma()`
+- `improc::core::DenseDISFlow` — dense DIS optical flow (faster than Farneback); returns `Image<Flow>`; fluent: `preset(UltraFast|Fast|Medium)`
+- `improc::core::CamShift` — continuously adaptive MeanShift; takes back-projection + mutable window; returns `CamShiftResult{object, iterations}`; fluent: `epsilon()`, `max_iter()`
+- `improc::core::MeanShift` — kernel-based shift; takes back-projection + mutable window; returns iteration count; fluent: `epsilon()`, `max_iter()`
+- `improc::core::PhaseCorrelate` — frequency-domain sub-pixel shift estimation; takes two `Image<Float32>`; returns `PhaseCorrelateResult{shift, response}`
+- `improc::core::Convolve` — custom 2D convolution pipeline op; kernel in constructor; fluent: `anchor()`, `delta()`, `border()`; throws on empty kernel
+- `improc::core::BoxFilter` — averaging (box) blur pipeline op; fluent: `kernel_size()` (default 3), `normalize()` (default true), `border()`
+- `improc::core::SobelGradient` — raw Sobel gradients; returns `SobelResult{dx, dy}` (CV_16S); fluent: `ksize()`, `scale()`, `delta()`
+- `improc::core::ScharrGradient` — Scharr gradients (more accurate than 3×3 Sobel); returns `ScharrResult{dx, dy}` (CV_16S); fluent: `scale()`, `delta()`
+- `improc::core::ConvertScaleAbs` — scale + absolute value → `Image<Gray>` (CV_8U); takes `cv::Mat` directly (for use after Sobel/Laplacian); fluent: `alpha()`, `beta()`
+- `improc::core::SplitChannels` — splits `Image<BGR>` → 3×`Image<Gray>`; `Image<BGRA>` → 4×`Image<Gray>`
+- `improc::core::MergeChannels` — merges 3 or 4 `Image<Gray>` → `Image<BGR>` or `Image<BGRA>`; throws on size mismatch
+- `improc::core::Add` / `Subtract` — element-wise arithmetic pipeline ops; second image in constructor; throw on size/type mismatch
+- `improc::core::Multiply` / `Divide` — element-wise arithmetic pipeline ops; second image + optional `scale()`; throw on size/type mismatch; `Divide` by zero follows `cv::divide` semantics (result = 0 for integer types)
+- `improc::core::IntegralImage` — summed-area table; returns `IntegralResult{sum, sq_sum}`; fluent: `with_sq_sum(bool)` (default false); output is (rows+1)×(cols+1)
+- `improc::core::MinMaxLoc` — finds min/max values and locations; returns `MinMaxLocResult{min_val, max_val, min_loc, max_loc}`; accepts `Image<Gray>` or raw `cv::Mat`
+- `improc::core::MeanStdDev` — per-channel mean and standard deviation; returns `MeanStdDevResult{mean, stddev}`; works on any format
+- `improc::core::CountNonZero` — count of non-zero pixels; accepts `Image<Gray>`
+- `improc::core::Reduce` — reduce image to single row or column; `ReduceOp::{Sum, Avg, Max, Min}`; fluent: `op()`, `dim()` (0=reduce rows, 1=reduce cols)
 
 ---
 

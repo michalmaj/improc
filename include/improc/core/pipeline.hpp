@@ -14,7 +14,15 @@
  * DrawKeypoints, DrawMatches,
  * BackgroundSubtractMOG2, BackgroundSubtractKNN, LUT,
  * CalcHist, CompareHist, HoughLinesP, HoughCircles, MatchTemplate,
- * Moments, Inpaint, Watershed, GrabCut)
+ * Moments, Inpaint, Watershed, GrabCut,
+ * GoodFeaturesToTrack, ConvexHull, ApproxPolyDP, MinAreaRect, BoundingRect,
+ * FloodFill, Remap, AbsDiff, BitwiseAnd, BitwiseOr, BitwiseNot,
+ * SparseLKFlow, DenseFarnebackFlow, DenseDISFlow,
+ * CamShift, MeanShift, PhaseCorrelate,
+ * SplitChannels, MergeChannels,
+ * Convolve, BoxFilter, SobelGradient, ScharrGradient, ConvertScaleAbs,
+ * Add, Subtract, Multiply, Divide,
+ * IntegralImage, MinMaxLoc, MeanStdDev, CountNonZero, Reduce)
  * and the generic `operator|` pipeline dispatch.
  *
  * @code
@@ -74,8 +82,15 @@
 #include "improc/core/ops/alpha_blend.hpp"
 #include "improc/core/ops/background_subtract.hpp"
 #include "improc/core/ops/lut.hpp"
+#include "improc/core/ops/remap.hpp"
+#include "improc/core/ops/arithmetic.hpp"
+#include "improc/core/ops/channels.hpp"
 
 // Analysis ops (multi-arg or non-image output — not composable via operator|)
+#include "improc/core/ops/analysis.hpp"
+#include "improc/core/ops/optical_flow.hpp"
+#include "improc/core/ops/tracking.hpp"
+#include "improc/core/ops/phase_correlate.hpp"
 #include "improc/core/ops/hist.hpp"
 #include "improc/core/ops/hough.hpp"
 #include "improc/core/ops/match_template.hpp"
@@ -83,6 +98,7 @@
 #include "improc/core/ops/inpaint.hpp"
 #include "improc/core/ops/watershed.hpp"
 #include "improc/core/ops/grabcut.hpp"
+#include "improc/core/ops/flood_fill.hpp"
 
 namespace improc::core {
 

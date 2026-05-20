@@ -2,6 +2,7 @@
 #pragma once
 
 #include <format>
+#include <stdexcept>
 #include <opencv2/imgproc.hpp>
 #include "improc/core/image.hpp"
 #include "improc/exceptions.hpp"
@@ -183,6 +184,45 @@ private:
     int    block_size_ = 2;
     int    ksize_      = 3;
     double k_          = 0.04;
+};
+
+struct SobelResult {
+    cv::Mat dx;  // CV_16S
+    cv::Mat dy;  // CV_16S
+};
+
+struct SobelGradient {
+    SobelGradient& ksize(int k) {
+        if (k != 1 && k != 3 && k != 5 && k != 7)
+            throw std::invalid_argument("SobelGradient: ksize must be 1, 3, 5, or 7");
+        ksize_ = k;
+        return *this;
+    }
+    SobelGradient& scale(double s) { scale_ = s; return *this; }
+    SobelGradient& delta(double d) { delta_ = d; return *this; }
+
+    SobelResult operator()(const Image<Gray>& img) const;
+
+private:
+    int    ksize_ = 3;
+    double scale_ = 1.0;
+    double delta_ = 0.0;
+};
+
+struct ScharrResult {
+    cv::Mat dx;  // CV_16S
+    cv::Mat dy;  // CV_16S
+};
+
+struct ScharrGradient {
+    ScharrGradient& scale(double s) { scale_ = s; return *this; }
+    ScharrGradient& delta(double d) { delta_ = d; return *this; }
+
+    ScharrResult operator()(const Image<Gray>& img) const;
+
+private:
+    double scale_ = 1.0;
+    double delta_ = 0.0;
 };
 
 } // namespace improc::core

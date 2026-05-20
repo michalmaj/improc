@@ -85,4 +85,49 @@ private:
     int kernel_size_ = 3;
 };
 
+/**
+ * @brief Box filter — simple uniform averaging.
+ *
+ * Each pixel is replaced by the average (or sum if not normalized) of its
+ * `kernel_size × kernel_size` neighbourhood.
+ *
+ * @code
+ * Image<BGR> smoothed = img | BoxFilter{}.kernel_size(5).normalize(true);
+ * @endcode
+ */
+struct BoxFilter {
+    /// @brief Sets kernel size (width and height). Default is 3.
+    BoxFilter& kernel_size(int k) {
+        ksize_ = k;
+        return *this;
+    }
+
+    /// @brief If true (default), result is divided by kernel_size². If false, result is summed.
+    BoxFilter& normalize(bool n) {
+        normalize_ = n;
+        return *this;
+    }
+
+    /// @brief Sets border type. Default is cv::BORDER_REFLECT_101.
+    BoxFilter& border(int t) {
+        border_ = t;
+        return *this;
+    }
+
+    /// @brief Applies box filter to img.
+    template<AnyFormat Format>
+    Image<Format> operator()(Image<Format> img) const {
+        cv::Mat result;
+        cv::boxFilter(img.mat(), result, -1,
+                      cv::Size(ksize_, ksize_), cv::Point(-1, -1),
+                      normalize_, border_);
+        return Image<Format>(std::move(result));
+    }
+
+private:
+    int  ksize_     = 3;
+    bool normalize_ = true;
+    int  border_    = cv::BORDER_REFLECT_101;
+};
+
 } // namespace improc::core
