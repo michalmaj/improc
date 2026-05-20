@@ -135,6 +135,37 @@ TEST(ConvolveTest, AveragingKernelBlursUniformImage) {
     EXPECT_EQ(cv::countNonZero(diff), 0);
 }
 
+// ── ConvertScaleAbs ───────────────────────────────────────────────────────────
+
+TEST(ConvertScaleAbsTest, DefaultConstruction) {
+    EXPECT_NO_THROW(ConvertScaleAbs{});
+}
+
+TEST(ConvertScaleAbsTest, FluentSettersReturnThis) {
+    ConvertScaleAbs op;
+    EXPECT_EQ(&op.alpha(2.0).beta(10.0), &op);
+}
+
+TEST(ConvertScaleAbsTest, CV16SPositiveValuesToCV8U) {
+    // Simulate dx from Sobel: CV_16S with value 100 → scaled abs → 100 in CV_8U
+    cv::Mat src(1, 1, CV_16S, cv::Scalar(100));
+    auto result = ConvertScaleAbs{}(src);
+    EXPECT_EQ(result.mat().type(), CV_8UC1);
+    EXPECT_EQ(result.mat().at<uchar>(0, 0), 100u);
+}
+
+TEST(ConvertScaleAbsTest, NegativeValuesToAbsValue) {
+    cv::Mat src(1, 1, CV_16S, cv::Scalar(-80));
+    auto result = ConvertScaleAbs{}(src);
+    EXPECT_EQ(result.mat().at<uchar>(0, 0), 80u);
+}
+
+TEST(ConvertScaleAbsTest, ScaleAlphaApplied) {
+    cv::Mat src(1, 1, CV_16S, cv::Scalar(50));
+    auto result = ConvertScaleAbs{}.alpha(2.0)(src);
+    EXPECT_EQ(result.mat().at<uchar>(0, 0), 100u);
+}
+
 // ── Pipeline syntax ───────────────────────────────────────────────────────────
 
 TEST(ArithmeticTest, AllOpsPipelineSyntax) {

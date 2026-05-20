@@ -83,4 +83,19 @@ private:
     int      border_  = cv::BORDER_REFLECT_101;
 };
 
+struct ConvertScaleAbs {
+    ConvertScaleAbs& alpha(double a) { alpha_ = a; return *this; }
+    ConvertScaleAbs& beta(double b)  { beta_  = b; return *this; }
+
+    Image<Gray> operator()(const cv::Mat& src) const {
+        cv::Mat result;
+        cv::convertScaleAbs(src, result, alpha_, beta_);
+        return Image<Gray>(std::move(result));
+    }
+
+private:
+    double alpha_ = 1.0;
+    double beta_  = 0.0;
+};
+
 } // namespace improc::core
