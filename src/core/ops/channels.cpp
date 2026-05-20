@@ -33,6 +33,8 @@ Image<BGR> MergeChannels::operator()(const Image<Gray>& b, const Image<Gray>& g,
 Image<BGRA> MergeChannels::operator()(const Image<Gray>& b, const Image<Gray>& g,
                                        const Image<Gray>& r, const Image<Gray>& a) const {
     check_sizes(b, g, r);
+    if (a.rows() != b.rows() || a.cols() != b.cols())
+        throw std::invalid_argument("MergeChannels: all channels must have the same size");
     cv::Mat result;
     cv::merge(std::vector<cv::Mat>{b.mat(), g.mat(), r.mat(), a.mat()}, result);
     return Image<BGRA>(std::move(result));

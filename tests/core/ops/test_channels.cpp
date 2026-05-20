@@ -40,6 +40,8 @@ TEST(MergeChannelsTest, FourGraysToBGRA) {
     Image<Gray> a(cv::Mat(50, 50, CV_8UC1, cv::Scalar(255)));
     auto bgra = MergeChannels{}(b, g, r, a);
     EXPECT_EQ(bgra.mat().channels(), 4);
+    EXPECT_EQ(bgra.mat().at<cv::Vec4b>(0, 0)[0], 10u);
+    EXPECT_EQ(bgra.mat().at<cv::Vec4b>(0, 0)[3], 255u);
 }
 
 TEST(MergeChannelsTest, SplitRoundtrip) {
@@ -59,4 +61,12 @@ TEST(MergeChannelsTest, MismatchedSizesThrow) {
     Image<Gray> g(cv::Mat(60, 60, CV_8UC1, cv::Scalar(0)));
     Image<Gray> r(cv::Mat(50, 50, CV_8UC1, cv::Scalar(0)));
     EXPECT_THROW(MergeChannels{}(b, g, r), std::invalid_argument);
+}
+
+TEST(MergeChannelsTest, MismatchedAlphaThrows) {
+    Image<Gray> b(cv::Mat(50, 50, CV_8UC1, cv::Scalar(0)));
+    Image<Gray> g(cv::Mat(50, 50, CV_8UC1, cv::Scalar(0)));
+    Image<Gray> r(cv::Mat(50, 50, CV_8UC1, cv::Scalar(0)));
+    Image<Gray> a(cv::Mat(60, 60, CV_8UC1, cv::Scalar(255)));
+    EXPECT_THROW(MergeChannels{}(b, g, r, a), std::invalid_argument);
 }
