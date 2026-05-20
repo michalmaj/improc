@@ -16,9 +16,11 @@ CamShiftResult CamShift::operator()(const Image<Gray>& back_proj, cv::Rect& wind
     check_window(window, back_proj.rows(), back_proj.cols());
     auto criteria = cv::TermCriteria(cv::TermCriteria::COUNT | cv::TermCriteria::EPS,
                                       max_iter_, epsilon_);
+    cv::Rect w_copy = window;
+    int iters = cv::meanShift(back_proj.mat(), w_copy, criteria);
     CamShiftResult result;
     result.object     = cv::CamShift(back_proj.mat(), window, criteria);
-    result.iterations = max_iter_;  // CamShift doesn't expose iteration count directly
+    result.iterations = iters;
     return result;
 }
 
