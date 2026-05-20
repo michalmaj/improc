@@ -16,7 +16,8 @@
  * CalcHist, CompareHist, HoughLinesP, HoughCircles, MatchTemplate,
  * Moments, Inpaint, Watershed, GrabCut,
  * GoodFeaturesToTrack, ConvexHull, ApproxPolyDP, MinAreaRect, BoundingRect,
- * FloodFill, Remap, AbsDiff, BitwiseAnd, BitwiseOr, BitwiseNot)
+ * FloodFill, Remap, AbsDiff, BitwiseAnd, BitwiseOr, BitwiseNot,
+ * SparseLKFlow)
  * and the generic `operator|` pipeline dispatch.
  *
  * @code
@@ -80,6 +81,7 @@
 #include "improc/core/ops/arithmetic.hpp"
 
 // Analysis ops (multi-arg or non-image output — not composable via operator|)
+#include "improc/core/ops/optical_flow.hpp"
 #include "improc/core/ops/hist.hpp"
 #include "improc/core/ops/hough.hpp"
 #include "improc/core/ops/match_template.hpp"
