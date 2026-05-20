@@ -7,7 +7,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Table of Contents
 
-- [[Unreleased]](#unreleased) — Classic CV ops: LUT, CalcHist, Hough, MatchTemplate, Moments, Inpaint, Watershed, GrabCut
+- [[Unreleased]](#unreleased) — v0.8.0 in progress (Classic CV ops + pending additions)
 - [[0.7.0]](#070--2026-05-19) — 2026-05-19 · Video Pipeline + Packaging: VideoFileCapture, CMake install rules, BackgroundSubtractMOG2/KNN
 - [[0.6.0]](#060--2026-05-18) — 2026-05-18 · Real-Time Pipeline: unified camera API (WebcamCapture, IPCameraCapture, OakDCapture), CameraFrame, AnyCameraSource, FramePipeline update
 - [[0.5.0]](#050--2026-05-18) — 2026-05-18 · ML Evaluation + Visualization + Multi-Object Tracking; Google Benchmark suite; performance fixes
