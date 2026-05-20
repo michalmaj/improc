@@ -1,7 +1,6 @@
-// tests/core/test_lut.cpp
+// tests/core/ops/test_lut.cpp
 #include <gtest/gtest.h>
 #include <opencv2/core.hpp>
-#include "improc/core/ops/lut.hpp"
 #include "improc/core/pipeline.hpp"
 
 using namespace improc::core;
@@ -43,16 +42,24 @@ TEST(LUTTest, InvertsGrayImageValues) {
 
 TEST(LUTTest, ReturnsSameSizeAsInput) {
     Image<Gray> result = make_gray(16, 32) | LUT{make_invert_table()};
-    EXPECT_EQ(result.mat().rows, 16);
-    EXPECT_EQ(result.mat().cols, 32);
+    EXPECT_EQ(result.rows(), 16);
+    EXPECT_EQ(result.cols(), 32);
 }
 
 TEST(LUTTest, WorksOnBGRImage) {
-    Image<BGR> img = make_bgr(8, 8);
-    cv::Mat table(1, 256, CV_8UC1);
+    // Build halving table: output[i] = i / 2
+    cv::Mat half_table(1, 256, CV_8UC1);
     for (int i = 0; i < 256; ++i)
-        table.at<uint8_t>(i) = static_cast<uint8_t>(i / 2);
-    Image<BGR> result = img | LUT{table};
-    EXPECT_EQ(result.mat().rows, 8);
-    EXPECT_EQ(result.mat().cols, 8);
+        half_table.at<uchar>(i) = static_cast<uchar>(i / 2);
+
+    LUT op(half_table);
+    cv::Mat mat(4, 4, CV_8UC3, cv::Scalar(100, 150, 200));
+    Image<BGR> img(mat);
+    auto result = op(img);
+
+    ASSERT_EQ(result.mat().size(), img.mat().size());
+    auto px = result.mat().at<cv::Vec3b>(0, 0);
+    EXPECT_EQ(px[0], 50);   // 100 / 2
+    EXPECT_EQ(px[1], 75);   // 150 / 2
+    EXPECT_EQ(px[2], 100);  // 200 / 2
 }
