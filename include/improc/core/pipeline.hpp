@@ -17,8 +17,8 @@
  * Moments, Inpaint, Watershed, GrabCut,
  * GoodFeaturesToTrack, ConvexHull, ApproxPolyDP, MinAreaRect, BoundingRect,
  * FloodFill, Remap, AbsDiff, BitwiseAnd, BitwiseOr, BitwiseNot,
- * SparseLKFlow,
- * CamShift, MeanShift)
+ * SparseLKFlow, DenseFarnebackFlow, DenseDISFlow,
+ * CamShift, MeanShift, PhaseCorrelate)
  * and the generic `operator|` pipeline dispatch.
  *
  * @code

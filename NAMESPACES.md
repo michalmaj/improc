@@ -608,6 +608,40 @@ Image<Gray> fg = frame | sub;  // lvalue — state accumulates
 
 **`BitwiseNot`** (`ops/arithmetic.hpp`) — pipeline op alias for `Invert`. Integer formats only.
 
+### Motion Analysis ops (`pipeline.hpp`)
+
+All motion ops are **multi-arg** — they take two images or extra arguments and are NOT composable via `operator|`.
+
+**`Flow`** (`format_traits.hpp`) — format tag for dense optical flow. CV_32FC2 (2-channel float: dx, dy per pixel).
+
+**`SparseLKFlow`** (`ops/optical_flow.hpp`) — sparse Lucas-Kanade optical flow.
+- Fluent: `.win_size(cv::Size)` (default {21,21}), `.max_level(int)` (default 3), `.max_iter(int)` (default 30), `.epsilon(double)` (default 0.01).
+- `operator()(const Image<Gray>& prev, const Image<Gray>& next, const std::vector<cv::Point2f>& prev_pts)` → `SparseLKFlowResult`.
+- `SparseLKFlowResult`: `.points` (tracked positions), `.status` (1=tracked, 0=lost), `.error` (per-point error).
+- Throws `std::invalid_argument` if `prev_pts` is empty or sizes differ.
+
+**`DenseFarnebackFlow`** (`ops/optical_flow.hpp`) — dense Farneback optical flow.
+- Fluent: `.pyr_scale(double)`, `.levels(int)`, `.win_size(int)`, `.iterations(int)`, `.poly_n(int)`, `.poly_sigma(double)`.
+- `operator()(const Image<Gray>& prev, const Image<Gray>& next)` → `Image<Flow>`.
+- Throws `std::invalid_argument` if sizes differ.
+
+**`DenseDISFlow`** (`ops/optical_flow.hpp`) — dense DIS optical flow (faster alternative).
+- Fluent: `.preset(DenseDISFlow::Preset::{UltraFast, Fast, Medium})` (default Medium).
+- `operator()(const Image<Gray>& prev, const Image<Gray>& next)` → `Image<Flow>`.
+
+**`CamShift`** (`ops/tracking.hpp`) — continuously adaptive MeanShift tracker.
+- Fluent: `.epsilon(double)` (default 1.0), `.max_iter(int)` (default 10).
+- `operator()(const Image<Gray>& back_proj, cv::Rect& window)` → `CamShiftResult{object, iterations}`. Updates `window` in-place.
+- Throws `std::invalid_argument` if `window` is outside image bounds.
+
+**`MeanShift`** (`ops/tracking.hpp`) — kernel-based MeanShift.
+- Fluent: `.epsilon(double)`, `.max_iter(int)`.
+- `operator()(const Image<Gray>& back_proj, cv::Rect& window)` → `int` (iteration count). Updates `window` in-place.
+
+**`PhaseCorrelate`** (`ops/phase_correlate.hpp`) — frequency-domain sub-pixel shift estimation.
+- `operator()(const Image<Float32>& prev, const Image<Float32>& next)` → `PhaseCorrelateResult{shift, response}`.
+- Uses Hanning window internally. Throws `std::invalid_argument` if sizes differ.
+
 ---
 
 ## `improc::io` — Input/Output

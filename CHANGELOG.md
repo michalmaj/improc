@@ -39,6 +39,13 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `improc::core::AbsDiff` — per-pixel absolute difference pipeline op; second image in constructor; throws on size/type mismatch
 - `improc::core::BitwiseAnd` / `BitwiseOr` — bitwise pipeline ops; second image in constructor; integer formats only; throw on size/type mismatch
 - `improc::core::BitwiseNot` — bitwise invert pipeline op (alias for `Invert`); integer formats only
+- `improc::core::Flow` — new format tag (CV_32FC2) for dense optical flow fields; follows `FormatTraits` pattern
+- `improc::core::SparseLKFlow` — sparse Lucas-Kanade optical flow; tracks `std::vector<cv::Point2f>` across frames; returns `SparseLKFlowResult{points, status, error}`; fluent: `win_size()`, `max_level()`, `max_iter()`, `epsilon()`
+- `improc::core::DenseFarnebackFlow` — dense Farneback optical flow; returns `Image<Flow>`; fluent: `pyr_scale()`, `levels()`, `win_size()`, `iterations()`, `poly_n()`, `poly_sigma()`
+- `improc::core::DenseDISFlow` — dense DIS optical flow (faster than Farneback); returns `Image<Flow>`; fluent: `preset(UltraFast|Fast|Medium)`
+- `improc::core::CamShift` — continuously adaptive MeanShift; takes back-projection + mutable window; returns `CamShiftResult{object, iterations}`; fluent: `epsilon()`, `max_iter()`
+- `improc::core::MeanShift` — kernel-based shift; takes back-projection + mutable window; returns iteration count; fluent: `epsilon()`, `max_iter()`
+- `improc::core::PhaseCorrelate` — frequency-domain sub-pixel shift estimation; takes two `Image<Float32>`; returns `PhaseCorrelateResult{shift, response}`
 
 ---
 
