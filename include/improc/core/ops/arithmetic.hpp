@@ -2,6 +2,7 @@
 #pragma once
 #include <stdexcept>
 #include <opencv2/core.hpp>
+#include <opencv2/imgproc.hpp>
 #include "improc/core/image.hpp"
 #include "improc/core/concepts.hpp"
 #include "improc/core/ops/invert.hpp"
@@ -57,5 +58,29 @@ private:
 };
 
 using BitwiseNot = Invert;
+
+struct Convolve {
+    explicit Convolve(cv::Mat kernel) : kernel_(std::move(kernel)) {
+        if (kernel_.empty())
+            throw std::invalid_argument("Convolve: kernel must not be empty");
+    }
+
+    Convolve& anchor(cv::Point a) { anchor_ = a; return *this; }
+    Convolve& delta(double d)     { delta_  = d; return *this; }
+    Convolve& border(int t)       { border_ = t; return *this; }
+
+    template<AnyFormat F>
+    Image<F> operator()(Image<F> img) const {
+        cv::Mat result;
+        cv::filter2D(img.mat(), result, -1, kernel_, anchor_, delta_, border_);
+        return Image<F>(std::move(result));
+    }
+
+private:
+    cv::Mat  kernel_;
+    cv::Point anchor_ = {-1, -1};
+    double   delta_   = 0.0;
+    int      border_  = cv::BORDER_REFLECT_101;
+};
 
 } // namespace improc::core

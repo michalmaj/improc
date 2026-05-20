@@ -101,6 +101,40 @@ TEST(BitwiseNotTest, DoubleInvertIsIdentity) {
     EXPECT_EQ(cv::countNonZero(diff), 0);
 }
 
+// ── Convolve ──────────────────────────────────────────────────────────────────
+
+TEST(ConvolveTest, IdentityKernelPreservesImage) {
+    cv::Mat m(50, 50, CV_8UC1, cv::Scalar(128));
+    Image<Gray> img(m);
+    cv::Mat kernel = (cv::Mat_<float>(1, 1) << 1.0f);
+    auto result = img | Convolve(kernel);
+    cv::Mat diff;
+    cv::absdiff(result.mat(), m, diff);
+    EXPECT_EQ(cv::countNonZero(diff), 0);
+}
+
+TEST(ConvolveTest, EmptyKernelThrows) {
+    Image<Gray> img(cv::Mat(50, 50, CV_8UC1, cv::Scalar(0)));
+    EXPECT_THROW(img | Convolve(cv::Mat{}), std::invalid_argument);
+}
+
+TEST(ConvolveTest, FluentSettersReturnThis) {
+    cv::Mat k = cv::Mat::eye(3, 3, CV_32F);
+    Convolve op(k);
+    EXPECT_EQ(&op.anchor({-1,-1}).delta(0.0).border(cv::BORDER_REFLECT_101), &op);
+}
+
+TEST(ConvolveTest, AveragingKernelBlursUniformImage) {
+    cv::Mat m(50, 50, CV_8UC1, cv::Scalar(100));
+    Image<Gray> img(m);
+    cv::Mat k = cv::Mat::ones(3, 3, CV_32F) / 9.0f;
+    auto result = img | Convolve(k);
+    // Uniform image convolved with averaging kernel stays uniform
+    cv::Mat diff;
+    cv::absdiff(result.mat(), m, diff);
+    EXPECT_EQ(cv::countNonZero(diff), 0);
+}
+
 // ── Pipeline syntax ───────────────────────────────────────────────────────────
 
 TEST(ArithmeticTest, AllOpsPipelineSyntax) {
