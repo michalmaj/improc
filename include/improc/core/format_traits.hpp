@@ -108,9 +108,9 @@ template<> struct FormatTraits<YCrCb> {
 struct Flow {};
 /// @brief Traits for Flow: CV_32FC2, 2 channels, float.
 template<> struct FormatTraits<Flow> {
-    static constexpr int         cv_type  = CV_32FC2;
-    static constexpr int         channels = 2;
-    static constexpr bool        is_float = true;
+    static constexpr int  cv_type  = CV_32FC2;
+    static constexpr int  channels = 2;
+    static constexpr bool is_float = true;
     static constexpr std::string_view name = "Flow (CV_32FC2)";
 };
 
