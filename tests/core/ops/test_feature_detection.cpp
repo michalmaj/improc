@@ -3,6 +3,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include "improc/core/pipeline.hpp"
+#include "improc/exceptions.hpp"
 
 using namespace improc::core;
 
@@ -93,4 +94,44 @@ TEST(DetectAKAZETest, HigherThresholdFewerKeypoints) {
     KeypointSet loose  = src | DetectAKAZE{}.threshold(0.0001f);
     KeypointSet strict = src | DetectAKAZE{}.threshold(0.01f);
     EXPECT_GE(loose.size(), strict.size());
+}
+
+// ── GoodFeaturesToTrack ───────────────────────────────────────────────────────
+
+static Image<Gray> make_chessboard() {
+    cv::Mat m(200, 200, CV_8UC1, cv::Scalar(255));
+    for (int r = 0; r < 200; r += 20)
+        for (int c = 0; c < 200; c += 20)
+            if (((r / 20) + (c / 20)) % 2 == 0)
+                cv::rectangle(m, {c, r}, {c + 19, r + 19}, cv::Scalar(0), -1);
+    return Image<Gray>(m);
+}
+
+TEST(GoodFeaturesToTrackTest, DefaultConstruction) {
+    EXPECT_NO_THROW(GoodFeaturesToTrack{});
+}
+
+TEST(GoodFeaturesToTrackTest, FluentSetterReturnsThis) {
+    GoodFeaturesToTrack op;
+    EXPECT_EQ(&op.max_corners(50).quality_level(0.05).min_distance(5.0).use_harris(true), &op);
+}
+
+TEST(GoodFeaturesToTrackTest, DetectsCornersInChessboard) {
+    auto corners = GoodFeaturesToTrack{}.quality_level(0.01).min_distance(5.0)(make_chessboard());
+    EXPECT_GE(corners.size(), 1u);
+}
+
+TEST(GoodFeaturesToTrackTest, BlankImageReturnsEmpty) {
+    Image<Gray> img(cv::Mat(200, 200, CV_8UC1, cv::Scalar(128)));
+    EXPECT_TRUE(GoodFeaturesToTrack{}(img).empty());
+}
+
+TEST(GoodFeaturesToTrackTest, QualityLevelZeroThrows) {
+    EXPECT_THROW(GoodFeaturesToTrack{}.quality_level(0.0), improc::ParameterError);
+}
+TEST(GoodFeaturesToTrackTest, QualityLevelNegativeThrows) {
+    EXPECT_THROW(GoodFeaturesToTrack{}.quality_level(-0.1), improc::ParameterError);
+}
+TEST(GoodFeaturesToTrackTest, MinDistanceNegativeThrows) {
+    EXPECT_THROW(GoodFeaturesToTrack{}.min_distance(-1.0), improc::ParameterError);
 }

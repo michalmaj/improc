@@ -77,4 +77,12 @@ DescriptorSet DescribeAKAZE::operator()(Image<BGR> img) const {
     return result;
 }
 
+std::vector<cv::Point2f> GoodFeaturesToTrack::operator()(const Image<Gray>& img) const {
+    std::vector<cv::Point2f> corners;
+    cv::goodFeaturesToTrack(img.mat(), corners, max_corners_,
+                            quality_level_, min_distance_,
+                            cv::noArray(), 3, use_harris_);
+    return corners;
+}
+
 } // namespace improc::core
