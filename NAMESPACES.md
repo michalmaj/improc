@@ -518,6 +518,56 @@ sub.history(300).detect_shadows(false);
 Image<Gray> fg = frame | sub;  // lvalue — state accumulates
 ```
 
+### Classic CV ops (v0.8.0)
+
+#### Pipeline ops
+
+**`LUT`** (`ops/lut.hpp`) — pipeline op.
+- `LUT(cv::Mat table)` — 256-entry lookup table (CV_8UC1 or CV_8UC3, 256 elements). Throws `std::invalid_argument` on wrong size or depth.
+- `operator()(Image<F>)` → `Image<F>` — applies `cv::LUT` to any format.
+- Composable via `operator|`.
+
+#### Analysis ops (non-image output or multi-arg — not composable via `operator|`)
+
+**`CalcHist`** (`ops/hist.hpp`) — histogram computation.
+- Fluent: `.bins(int)` (default 256), `.range(float lo, float hi)` (default [0, 256)).
+- `operator()(const Image<Gray>&)` → `cv::Mat` (CV_32FC1, `bins×1`).
+- `operator()(const Image<BGR>&)` → `cv::Mat` (CV_32FC1, `3*bins×1`, channels stacked B/G/R).
+
+**`CompareHist`** (`ops/hist.hpp`) — histogram comparison.
+- Fluent: `.method(int)` (cv::HISTCMP_* constants; default `cv::HISTCMP_CORREL`).
+- `operator()(const cv::Mat&, const cv::Mat&)` → `double`.
+
+**`HoughLinesP`** (`ops/hough.hpp`) — probabilistic Hough line detection.
+- Fluent: `.rho(double)` (default 1.0), `.theta(double)` (default CV_PI/180), `.threshold(int)` (default 80), `.min_line_length(double)` (default 0), `.max_line_gap(double)` (default 0).
+- `operator()(const Image<Gray>&)` → `std::vector<cv::Vec4i>`.
+
+**`HoughCircles`** (`ops/hough.hpp`) — Hough circle detection (HOUGH_GRADIENT).
+- Fluent: `.min_dist(double)` (default 20), `.param1(double)` (default 100), `.param2(double)` (default 30), `.min_radius(int)` (default 0), `.max_radius(int)` (default 0).
+- `operator()(const Image<Gray>&)` → `std::vector<cv::Vec3f>` — each entry: `{centre_x, centre_y, radius}`.
+
+**`MatchTemplate`** (`ops/match_template.hpp`) — template matching.
+- Fluent: `.method(int)` (cv::TM_* constants; default `cv::TM_CCOEFF_NORMED`).
+- `operator()(const Image<BGR>& img, const Image<BGR>& templ)` → `std::pair<cv::Point, double>` — `{best_match_top_left, score}`.
+- Throws `std::invalid_argument` if template is larger than image.
+
+**`Moments`** (`ops/moments.hpp`) — image moments.
+- `bool binary` member (default `false`): treat non-zero pixels as 1.
+- `operator()(const Image<Gray>&)` → `cv::Moments`.
+
+**`Inpaint`** (`ops/inpaint.hpp`) — image inpainting (multi-arg).
+- Fluent: `.radius(double)` (default 3.0), `.method(InpaintMethod)` (default `InpaintMethod::TELEA`).
+- `operator()(const Image<BGR>& img, const Image<Gray>& mask)` → `Image<BGR>`.
+
+**`Watershed`** (`ops/watershed.hpp`) — marker-based segmentation (multi-arg, in-place markers).
+- `operator()(const Image<BGR>& img, cv::Mat& markers)` — markers: CV_32SC1, same size as img; modified in place.
+- Throws `std::invalid_argument` if markers have wrong type or size.
+
+**`GrabCut`** (`ops/grabcut.hpp`) — foreground/background segmentation (multi-arg).
+- Fluent: `.iterations(int)` (default 5).
+- `operator()(const Image<BGR>& img, cv::Rect roi)` → `Image<Gray>` mask (GC_FGD=1, GC_PR_FGD=3 are foreground).
+- Throws `std::invalid_argument` if roi is empty or outside image bounds.
+
 ---
 
 ## `improc::io` — Input/Output

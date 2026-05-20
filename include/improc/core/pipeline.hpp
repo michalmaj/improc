@@ -12,7 +12,9 @@
  * DescribeORB, DescribeSIFT, DescribeAKAZE,
  * MatchSet, MatchBF, MatchFlann,
  * DrawKeypoints, DrawMatches,
- * BackgroundSubtractMOG2, BackgroundSubtractKNN, LUT)
+ * BackgroundSubtractMOG2, BackgroundSubtractKNN, LUT,
+ * CalcHist, CompareHist, HoughLinesP, HoughCircles, MatchTemplate,
+ * Moments, Inpaint, Watershed, GrabCut)
  * and the generic `operator|` pipeline dispatch.
  *
  * @code
@@ -72,6 +74,15 @@
 #include "improc/core/ops/alpha_blend.hpp"
 #include "improc/core/ops/background_subtract.hpp"
 #include "improc/core/ops/lut.hpp"
+
+// Analysis ops (multi-arg or non-image output — not composable via operator|)
+#include "improc/core/ops/hist.hpp"
+#include "improc/core/ops/hough.hpp"
+#include "improc/core/ops/match_template.hpp"
+#include "improc/core/ops/moments.hpp"
+#include "improc/core/ops/inpaint.hpp"
+#include "improc/core/ops/watershed.hpp"
+#include "improc/core/ops/grabcut.hpp"
 
 namespace improc::core {
 

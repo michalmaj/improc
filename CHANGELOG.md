@@ -21,7 +21,14 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
-- Classic CV ops: LUT, CalcHist, CompareHist, HoughLinesP, HoughCircles, MatchTemplate, Moments, Inpaint, Watershed, GrabCut (v0.8.0, in progress)
+- `improc::core::LUT` — 256-entry lookup-table pipeline op; applies `cv::LUT` to any `Image<F>` via `operator|`; throws `std::invalid_argument` on wrong table size or depth
+- `improc::core::CalcHist` / `CompareHist` — histogram computation and comparison analysis ops; `CalcHist` supports Gray (bins×1) and BGR (3×bins×1 stacked); `CompareHist` wraps `cv::compareHist`
+- `improc::core::HoughLinesP` / `HoughCircles` — probabilistic Hough line detection and circle detection analysis ops
+- `improc::core::MatchTemplate` — template matching analysis op; returns `{best_match_location, score}`; handles TM_SQDIFF min/max inversion automatically
+- `improc::core::Moments` — image moments analysis op; wraps `cv::moments`; `binary` flag for binary images
+- `improc::core::Inpaint` — inpainting multi-arg op; TELEA and NS methods; `operator()(img, mask)`
+- `improc::core::Watershed` — marker-based segmentation multi-arg op; modifies `cv::Mat& markers` in place
+- `improc::core::GrabCut` — foreground/background segmentation multi-arg op; initialized with rect; returns `Image<Gray>` mask
 
 ---
 
