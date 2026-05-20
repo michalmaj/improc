@@ -14,7 +14,9 @@
  * DrawKeypoints, DrawMatches,
  * BackgroundSubtractMOG2, BackgroundSubtractKNN, LUT,
  * CalcHist, CompareHist, HoughLinesP, HoughCircles, MatchTemplate,
- * Moments, Inpaint, Watershed, GrabCut)
+ * Moments, Inpaint, Watershed, GrabCut,
+ * GoodFeaturesToTrack, ConvexHull, ApproxPolyDP, MinAreaRect, BoundingRect,
+ * FloodFill, Remap, AbsDiff, BitwiseAnd, BitwiseOr, BitwiseNot)
  * and the generic `operator|` pipeline dispatch.
  *
  * @code
@@ -74,6 +76,8 @@
 #include "improc/core/ops/alpha_blend.hpp"
 #include "improc/core/ops/background_subtract.hpp"
 #include "improc/core/ops/lut.hpp"
+#include "improc/core/ops/remap.hpp"
+#include "improc/core/ops/arithmetic.hpp"
 
 // Analysis ops (multi-arg or non-image output — not composable via operator|)
 #include "improc/core/ops/hist.hpp"
@@ -83,6 +87,7 @@
 #include "improc/core/ops/inpaint.hpp"
 #include "improc/core/ops/watershed.hpp"
 #include "improc/core/ops/grabcut.hpp"
+#include "improc/core/ops/flood_fill.hpp"
 
 namespace improc::core {
 

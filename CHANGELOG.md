@@ -29,6 +29,16 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `improc::core::Inpaint` — inpainting multi-arg op; TELEA and NS methods; `operator()(img, mask)`
 - `improc::core::Watershed` — marker-based segmentation multi-arg op; modifies `cv::Mat& markers` in place
 - `improc::core::GrabCut` — foreground/background segmentation multi-arg op; initialized with rect; returns `Image<Gray>` mask
+- `improc::core::GoodFeaturesToTrack` — Shi-Tomasi (or Harris) corner detection; returns `std::vector<cv::Point2f>`; fluent: `max_corners()`, `quality_level()`, `min_distance()`, `use_harris()`; throws `ParameterError` on invalid quality/distance
+- `improc::core::ConvexHull` — convex hull of a contour (`std::vector<cv::Point>` → `std::vector<cv::Point>`)
+- `improc::core::ApproxPolyDP` — Douglas-Peucker polygon approximation; fluent: `epsilon()`, `closed()`
+- `improc::core::MinAreaRect` — minimum area bounding rectangle (`std::vector<cv::Point>` → `cv::RotatedRect`)
+- `improc::core::BoundingRect` — axis-aligned bounding rectangle (`std::vector<cv::Point>` → `cv::Rect`)
+- `improc::core::FloodFill` — flood-fill multi-arg op; BGR and Gray overloads; fluent: `lo_diff()`, `up_diff()`; throws on out-of-bounds seed
+- `improc::core::Remap` — general pixel remapping pipeline op; `map1`/`map2` in constructor; fluent: `interpolation()`; composable via `operator|`
+- `improc::core::AbsDiff` — per-pixel absolute difference pipeline op; second image in constructor; throws on size/type mismatch
+- `improc::core::BitwiseAnd` / `BitwiseOr` — bitwise pipeline ops; second image in constructor; integer formats only; throw on size/type mismatch
+- `improc::core::BitwiseNot` — bitwise invert pipeline op (alias for `Invert`); integer formats only
 
 ---
 

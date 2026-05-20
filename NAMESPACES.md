@@ -568,6 +568,46 @@ Image<Gray> fg = frame | sub;  // lvalue — state accumulates
 - `operator()(const Image<BGR>& img, cv::Rect roi)` → `Image<Gray>` mask (GC_FGD=1, GC_PR_FGD=3 are foreground).
 - Throws `std::invalid_argument` if roi is empty or outside image bounds.
 
+#### Phase 2 additions
+
+**`GoodFeaturesToTrack`** (`ops/feature_detection.hpp`) — analysis struct.
+- Fluent: `.max_corners(int)` (default 100), `.quality_level(double)` (default 0.01), `.min_distance(double)` (default 10.0), `.use_harris(bool)` (default false).
+- `operator()(const Image<Gray>&)` → `std::vector<cv::Point2f>`.
+- Throws `ParameterError` if `quality_level <= 0` or `min_distance < 0`.
+
+**`ConvexHull`** (`ops/contours.hpp`) — analysis struct.
+- `operator()(const std::vector<cv::Point>&)` → `std::vector<cv::Point>`.
+
+**`ApproxPolyDP`** (`ops/contours.hpp`) — analysis struct.
+- Fluent: `.epsilon(double)` (default 3.0), `.closed(bool)` (default true).
+- `operator()(const std::vector<cv::Point>&)` → `std::vector<cv::Point>`.
+
+**`MinAreaRect`** (`ops/contours.hpp`) — analysis struct.
+- `operator()(const std::vector<cv::Point>&)` → `cv::RotatedRect`.
+
+**`BoundingRect`** (`ops/contours.hpp`) — analysis struct.
+- `operator()(const std::vector<cv::Point>&)` → `cv::Rect`.
+
+**`FloodFill`** (`ops/flood_fill.hpp`) — multi-arg op.
+- Fluent: `.lo_diff(cv::Scalar)` (default 0,0,0), `.up_diff(cv::Scalar)` (default 0,0,0).
+- `operator()(const Image<BGR>&, cv::Point seed, cv::Scalar new_color)` → `Image<BGR>`.
+- `operator()(const Image<Gray>&, cv::Point seed, uchar new_val)` → `Image<Gray>`.
+- Throws `std::invalid_argument` if seed is outside image bounds.
+
+**`Remap`** (`ops/remap.hpp`) — pipeline op.
+- `Remap(cv::Mat map1, cv::Mat map2)` — throws `std::invalid_argument` if maps are empty or sizes differ.
+- Fluent: `.interpolation(int)` (default `cv::INTER_LINEAR`).
+- `operator()(Image<F>)` → `Image<F>`; composable via `operator|`.
+
+**`AbsDiff`** (`ops/arithmetic.hpp`) — pipeline op.
+- `AbsDiff(cv::Mat other)` — second image in constructor.
+- `operator()(Image<F>)` → `Image<F>`; throws `std::invalid_argument` on size or type mismatch.
+
+**`BitwiseAnd`** / **`BitwiseOr`** (`ops/arithmetic.hpp`) — pipeline ops.
+- Constructor takes second image as `cv::Mat`. Throw on size or type mismatch. Integer formats only (`IntegerFormat`).
+
+**`BitwiseNot`** (`ops/arithmetic.hpp`) — pipeline op alias for `Invert`. Integer formats only.
+
 ---
 
 ## `improc::io` — Input/Output
