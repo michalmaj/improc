@@ -84,6 +84,7 @@
 #include "improc/core/ops/channels.hpp"
 
 // Analysis ops (multi-arg or non-image output — not composable via operator|)
+#include "improc/core/ops/analysis.hpp"
 #include "improc/core/ops/optical_flow.hpp"
 #include "improc/core/ops/tracking.hpp"
 #include "improc/core/ops/phase_correlate.hpp"
