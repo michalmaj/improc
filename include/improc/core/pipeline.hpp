@@ -17,7 +17,8 @@
  * Moments, Inpaint, Watershed, GrabCut,
  * GoodFeaturesToTrack, ConvexHull, ApproxPolyDP, MinAreaRect, BoundingRect,
  * FloodFill, Remap, AbsDiff, BitwiseAnd, BitwiseOr, BitwiseNot,
- * SparseLKFlow)
+ * SparseLKFlow,
+ * CamShift, MeanShift)
  * and the generic `operator|` pipeline dispatch.
  *
  * @code
@@ -82,6 +83,7 @@
 
 // Analysis ops (multi-arg or non-image output — not composable via operator|)
 #include "improc/core/ops/optical_flow.hpp"
+#include "improc/core/ops/tracking.hpp"
 #include "improc/core/ops/hist.hpp"
 #include "improc/core/ops/hough.hpp"
 #include "improc/core/ops/match_template.hpp"
