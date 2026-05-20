@@ -1,4 +1,5 @@
 #include "improc/core/ops/optical_flow.hpp"
+#include <stdexcept>
 
 namespace improc::core {
 

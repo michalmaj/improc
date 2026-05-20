@@ -1,4 +1,6 @@
+// tests/core/ops/test_optical_flow.cpp
 #include <gtest/gtest.h>
+#include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include "improc/core/pipeline.hpp"
 
@@ -27,6 +29,7 @@ TEST(SparseLKFlowTest, TracksKnownTranslation) {
     std::vector<cv::Point2f> pts = {{80.f, 100.f}};
     auto r = SparseLKFlow{}.win_size({31, 31})(prev, next, pts);
     ASSERT_EQ(r.status.size(), 1u);
+    ASSERT_EQ(r.points.size(), 1u);
     EXPECT_EQ(r.status[0], 1);
     EXPECT_NEAR(r.points[0].x, 90.f, 3.f);
     EXPECT_NEAR(r.points[0].y, 100.f, 3.f);

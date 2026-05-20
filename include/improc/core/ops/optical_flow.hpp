@@ -1,9 +1,8 @@
+// include/improc/core/ops/optical_flow.hpp
 #pragma once
-#include <stdexcept>
 #include <vector>
 #include <opencv2/video/tracking.hpp>
 #include "improc/core/image.hpp"
-#include "improc/core/format_traits.hpp"
 
 namespace improc::core {
 
