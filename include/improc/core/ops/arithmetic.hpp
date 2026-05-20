@@ -83,6 +83,8 @@ private:
     int      border_  = cv::BORDER_REFLECT_101;
 };
 
+// Takes a raw cv::Mat (e.g. Sobel gradient output CV_16S) rather than Image<F> —
+// its primary purpose is converting signed/float gradient data to displayable uint8.
 struct ConvertScaleAbs {
     ConvertScaleAbs& alpha(double a) { alpha_ = a; return *this; }
     ConvertScaleAbs& beta(double b)  { beta_  = b; return *this; }

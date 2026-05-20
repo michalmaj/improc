@@ -3,8 +3,13 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include "improc/core/pipeline.hpp"
+#include "improc/core/format_traits.hpp"
 
 using namespace improc::core;
+
+static_assert(FormatTraits<Flow>::cv_type  == CV_32FC2);
+static_assert(FormatTraits<Flow>::channels == 2);
+static_assert(FormatTraits<Flow>::is_float == true);
 
 static Image<Gray> make_circle_gray(cv::Point center) {
     cv::Mat m(200, 200, CV_8UC1, cv::Scalar(0));

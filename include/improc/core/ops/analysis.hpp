@@ -1,5 +1,6 @@
 // include/improc/core/ops/analysis.hpp
 #pragma once
+#include <stdexcept>
 #include <opencv2/core.hpp>
 #include "improc/core/image.hpp"
 #include "improc/core/concepts.hpp"
@@ -52,7 +53,12 @@ enum class ReduceOp { Sum, Avg, Max, Min };
 
 struct Reduce {
     Reduce& op(ReduceOp o) { op_  = o; return *this; }
-    Reduce& dim(int d)     { dim_ = d; return *this; }
+    Reduce& dim(int d) {
+        if (d != 0 && d != 1)
+            throw std::invalid_argument("Reduce: dim must be 0 (reduce rows) or 1 (reduce cols)");
+        dim_ = d;
+        return *this;
+    }
 
     cv::Mat operator()(const Image<Gray>& img) const;
 

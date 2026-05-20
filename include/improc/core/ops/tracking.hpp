@@ -1,14 +1,13 @@
 // include/improc/core/ops/tracking.hpp
 #pragma once
-#include <stdexcept>
 #include <opencv2/video/tracking.hpp>
 #include "improc/core/image.hpp"
 
 namespace improc::core {
 
+// cv::CamShift does not expose the iteration count — only the rotated bounding box.
 struct CamShiftResult {
     cv::RotatedRect object;
-    int             iterations;
 };
 
 struct CamShift {

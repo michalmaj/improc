@@ -28,7 +28,6 @@ TEST(CamShiftTest, ConvergesOnBrightRegion) {
     auto back_proj = make_prob_map(hot);
     cv::Rect window(60, 60, 50, 50);
     auto result = CamShift{}(back_proj, window);
-    EXPECT_GT(result.iterations, 0);
     // Tracked object center should be near center of hot_rect (100, 100)
     EXPECT_NEAR(result.object.center.x, 100.f, 10.f);
     EXPECT_NEAR(result.object.center.y, 100.f, 10.f);

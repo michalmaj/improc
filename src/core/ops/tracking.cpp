@@ -1,5 +1,6 @@
 // src/core/ops/tracking.cpp
 #include "improc/core/ops/tracking.hpp"
+#include <stdexcept>
 
 namespace improc::core {
 
@@ -16,12 +17,7 @@ CamShiftResult CamShift::operator()(const Image<Gray>& back_proj, cv::Rect& wind
     check_window(window, back_proj.rows(), back_proj.cols());
     auto criteria = cv::TermCriteria(cv::TermCriteria::COUNT | cv::TermCriteria::EPS,
                                       max_iter_, epsilon_);
-    cv::Rect w_copy = window;
-    int iters = cv::meanShift(back_proj.mat(), w_copy, criteria);
-    CamShiftResult result;
-    result.object     = cv::CamShift(back_proj.mat(), window, criteria);
-    result.iterations = iters;
-    return result;
+    return CamShiftResult{ cv::CamShift(back_proj.mat(), window, criteria) };
 }
 
 int MeanShift::operator()(const Image<Gray>& back_proj, cv::Rect& window) const {

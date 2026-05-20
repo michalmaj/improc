@@ -32,15 +32,16 @@ int CountNonZero::operator()(const Image<Gray>& img) const {
 }
 
 cv::Mat Reduce::operator()(const Image<Gray>& img) const {
-    int cv_op;
+    int cv_op, dtype;
     switch (op_) {
-        case ReduceOp::Sum: cv_op = cv::REDUCE_SUM; break;
-        case ReduceOp::Avg: cv_op = cv::REDUCE_AVG; break;
-        case ReduceOp::Max: cv_op = cv::REDUCE_MAX; break;
-        case ReduceOp::Min: cv_op = cv::REDUCE_MIN; break;
+        case ReduceOp::Sum: cv_op = cv::REDUCE_SUM; dtype = CV_32SC1; break;
+        case ReduceOp::Avg: cv_op = cv::REDUCE_AVG; dtype = CV_32FC1; break;  // fractional result
+        case ReduceOp::Max: cv_op = cv::REDUCE_MAX; dtype = -1;       break;  // same type as src
+        case ReduceOp::Min: cv_op = cv::REDUCE_MIN; dtype = -1;       break;  // same type as src
+        default:            std::unreachable();
     }
     cv::Mat result;
-    cv::reduce(img.mat(), result, dim_, cv_op, CV_32SC1);
+    cv::reduce(img.mat(), result, dim_, cv_op, dtype);
     return result;
 }
 

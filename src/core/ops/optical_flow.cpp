@@ -1,3 +1,4 @@
+// src/core/ops/optical_flow.cpp
 #include "improc/core/ops/optical_flow.hpp"
 #include <stdexcept>
 
@@ -41,6 +42,7 @@ Image<Flow> DenseDISFlow::operator()(const Image<Gray>& prev,
         case Preset::UltraFast: preset_flag = cv::DISOpticalFlow::PRESET_ULTRAFAST; break;
         case Preset::Fast:      preset_flag = cv::DISOpticalFlow::PRESET_FAST;      break;
         case Preset::Medium:    preset_flag = cv::DISOpticalFlow::PRESET_MEDIUM;    break;
+        default:                std::unreachable();
     }
     auto dis = cv::DISOpticalFlow::create(preset_flag);
     cv::Mat flow;

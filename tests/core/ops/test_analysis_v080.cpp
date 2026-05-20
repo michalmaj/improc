@@ -107,3 +107,36 @@ TEST(ReduceTest, SumAlongColsGivesRowSums) {
     EXPECT_EQ(result.at<int>(0, 0), 500);  // row 0: 100 cols × 5 = 500
     EXPECT_EQ(result.at<int>(1, 0), 0);
 }
+
+TEST(ReduceTest, AvgOutputsFloat) {
+    // All pixels = 10 → avg = 10.0f
+    Image<Gray> img(cv::Mat(4, 4, CV_8UC1, cv::Scalar(10)));
+    auto result = Reduce{}.op(ReduceOp::Avg).dim(0)(img);
+    EXPECT_EQ(result.type(), CV_32FC1);
+    EXPECT_NEAR(result.at<float>(0, 0), 10.0f, 0.1f);
+}
+
+TEST(ReduceTest, MaxAlongRows) {
+    cv::Mat m(3, 3, CV_8UC1, cv::Scalar(5));
+    m.at<uchar>(1, 2) = 200;
+    Image<Gray> img(m);
+    // Max/Min output has same dtype as input (CV_8UC1)
+    auto result = Reduce{}.op(ReduceOp::Max).dim(0)(img);
+    EXPECT_EQ(result.at<uchar>(0, 2), 200u);
+    EXPECT_EQ(result.at<uchar>(0, 0), 5u);
+}
+
+TEST(ReduceTest, MinAlongCols) {
+    cv::Mat m(3, 3, CV_8UC1, cv::Scalar(100));
+    m.at<uchar>(2, 0) = 1;
+    Image<Gray> img(m);
+    auto result = Reduce{}.op(ReduceOp::Min).dim(1)(img);
+    EXPECT_EQ(result.at<uchar>(2, 0), 1u);
+    EXPECT_EQ(result.at<uchar>(0, 0), 100u);
+}
+
+TEST(ReduceTest, InvalidDimThrows) {
+    Image<Gray> img(cv::Mat(4, 4, CV_8UC1, cv::Scalar(0)));
+    EXPECT_THROW(Reduce{}.dim(2), std::invalid_argument);
+    EXPECT_THROW(Reduce{}.dim(-1), std::invalid_argument);
+}
