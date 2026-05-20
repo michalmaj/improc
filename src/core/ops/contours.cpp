@@ -41,4 +41,24 @@ Image<BGR> DrawContours::operator()(Image<BGR> img) const {
     return Image<BGR>(std::move(dst));
 }
 
+std::vector<cv::Point> ConvexHull::operator()(const std::vector<cv::Point>& contour) const {
+    std::vector<cv::Point> hull;
+    cv::convexHull(contour, hull);
+    return hull;
+}
+
+std::vector<cv::Point> ApproxPolyDP::operator()(const std::vector<cv::Point>& contour) const {
+    std::vector<cv::Point> approx;
+    cv::approxPolyDP(contour, approx, epsilon_, closed_);
+    return approx;
+}
+
+cv::RotatedRect MinAreaRect::operator()(const std::vector<cv::Point>& contour) const {
+    return cv::minAreaRect(contour);
+}
+
+cv::Rect BoundingRect::operator()(const std::vector<cv::Point>& contour) const {
+    return cv::boundingRect(contour);
+}
+
 } // namespace improc::core

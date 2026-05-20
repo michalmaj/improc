@@ -155,3 +155,57 @@ TEST(DrawContoursTest, DrawSingleContourByIndex) {
     Image<BGR> bgr(cv::Mat(100, 100, CV_8UC3, cv::Scalar(0, 0, 0)));
     EXPECT_NO_THROW((bgr | DrawContours{cs}.index(0)));
 }
+
+// ── Contour analysis helpers ──────────────────────────────────────────────────
+
+static std::vector<cv::Point> make_rect_contour_pts() {
+    // A simple closed rectangle contour: 4 corners of a 40×40 box
+    return {{20, 20}, {60, 20}, {60, 60}, {20, 60}};
+}
+
+TEST(ConvexHullTest, RectangleHullHasFourPoints) {
+    auto hull = ConvexHull{}(make_rect_contour_pts());
+    EXPECT_EQ(hull.size(), 4u);
+}
+
+TEST(ConvexHullTest, ConvexTriangleIsUnchanged) {
+    std::vector<cv::Point> tri{{0, 0}, {100, 0}, {50, 80}};
+    EXPECT_EQ(ConvexHull{}(tri).size(), 3u);
+}
+
+TEST(ApproxPolyDPTest, DefaultConstruction) {
+    EXPECT_NO_THROW(ApproxPolyDP{});
+}
+
+TEST(ApproxPolyDPTest, FluentSetterReturnsThis) {
+    ApproxPolyDP op;
+    EXPECT_EQ(&op.epsilon(5.0).closed(false), &op);
+}
+
+TEST(ApproxPolyDPTest, SquareApproxesToFourPoints) {
+    ContourSet cs = make_rect_binary() | FindContours{};
+    ASSERT_GE(cs.size(), 1u);
+    auto approx = ApproxPolyDP{}.epsilon(3.0)(cs.contours[0]);
+    EXPECT_EQ(approx.size(), 4u);
+}
+
+TEST(MinAreaRectTest, AxisAlignedSquareDimensions) {
+    ContourSet cs = make_rect_binary() | FindContours{};
+    ASSERT_GE(cs.size(), 1u);
+    cv::RotatedRect r = MinAreaRect{}(cs.contours[0]);
+    // cv::minAreaRect may swap width/height; check both
+    float big = std::max(r.size.width, r.size.height);
+    float sml = std::min(r.size.width, r.size.height);
+    EXPECT_NEAR(big, 60.f, 2.f);
+    EXPECT_NEAR(sml, 60.f, 2.f);
+}
+
+TEST(BoundingRectTest, MatchesKnownBounds) {
+    ContourSet cs = make_rect_binary() | FindContours{};
+    ASSERT_GE(cs.size(), 1u);
+    cv::Rect br = BoundingRect{}(cs.contours[0]);
+    EXPECT_EQ(br.x,      20);   // rect starts at col 20
+    EXPECT_EQ(br.y,      20);   // rect starts at row 20
+    EXPECT_EQ(br.width,  60);   // cols 20..79 = 60 pixels
+    EXPECT_EQ(br.height, 60);   // rows 20..79 = 60 pixels
+}
