@@ -91,3 +91,30 @@ TEST(BlurTest, GaussianBlurNegativeKernelThrows) {
 TEST(BlurTest, MedianBlurNegativeKernelThrows) {
     EXPECT_THROW(MedianBlur{}.kernel_size(-3), improc::ParameterError);
 }
+
+// ── BoxFilter ─────────────────────────────────────────────────────────────────
+
+TEST(BoxFilterTest, DefaultConstruction) {
+    EXPECT_NO_THROW(BoxFilter{});
+}
+
+TEST(BoxFilterTest, FluentSettersReturnThis) {
+    BoxFilter op;
+    EXPECT_EQ(&op.kernel_size(5).normalize(false).border(cv::BORDER_REFLECT), &op);
+}
+
+TEST(BoxFilterTest, UniformImageUnchanged) {
+    cv::Mat m(50, 50, CV_8UC1, cv::Scalar(100));
+    Image<Gray> img(m);
+    auto result = img | BoxFilter{};
+    cv::Mat diff;
+    cv::absdiff(result.mat(), m, diff);
+    EXPECT_EQ(cv::countNonZero(diff), 0);
+}
+
+TEST(BoxFilterTest, PreservesImageSize) {
+    Image<BGR> img(cv::Mat(100, 120, CV_8UC3, cv::Scalar(50, 100, 150)));
+    auto result = img | BoxFilter{}.kernel_size(5);
+    EXPECT_EQ(result.rows(), 100);
+    EXPECT_EQ(result.cols(), 120);
+}
