@@ -26,7 +26,8 @@ TEST(NLMeansDenoisingTest, GrayReducesNoise) {
     // Generate noisy gray image via float arithmetic to avoid uchar clamping
     cv::Mat base(64, 64, CV_32FC1, cv::Scalar(128.0f));
     cv::Mat noise(64, 64, CV_32FC1);
-    cv::randn(noise, 0.0f, 30.0f);
+    cv::RNG rng(42);
+    rng.fill(noise, cv::RNG::NORMAL, 0.0f, 30.0f);
     cv::Mat noisy_f;
     cv::add(base, noise, noisy_f);
     cv::Mat noisy;
@@ -47,7 +48,8 @@ TEST(NLMeansDenoisingTest, GrayReducesNoise) {
 TEST(NLMeansDenoisingTest, BGRReducesNoise) {
     cv::Mat base(64, 64, CV_32FC3, cv::Scalar(100.0f, 120.0f, 80.0f));
     cv::Mat noise(64, 64, CV_32FC3);
-    cv::randn(noise, 0.0f, 30.0f);
+    cv::RNG rng(42);
+    rng.fill(noise, cv::RNG::NORMAL, 0.0f, 30.0f);
     cv::Mat noisy_f;
     cv::add(base, noise, noisy_f);
     cv::Mat noisy;
