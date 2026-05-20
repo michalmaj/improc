@@ -226,3 +226,49 @@ TEST(ArithmeticTest, AllOpsPipelineSyntax) {
     EXPECT_EQ(r3.rows(), 10);
     EXPECT_EQ(r4.rows(), 10);
 }
+
+// ── Multiply ──────────────────────────────────────────────────────────────────
+
+TEST(MultiplyTest, KnownScalarMultiplication) {
+    cv::Mat m(1, 1, CV_32FC1, cv::Scalar(3.0f));
+    cv::Mat other(1, 1, CV_32FC1, cv::Scalar(4.0f));
+    Image<Float32> img(m);
+    auto result = img | Multiply(other);
+    EXPECT_NEAR(result.mat().at<float>(0, 0), 12.0f, 0.001f);
+}
+
+TEST(MultiplyTest, ScaleParameterApplied) {
+    cv::Mat m(1, 1, CV_32FC1, cv::Scalar(3.0f));
+    cv::Mat other(1, 1, CV_32FC1, cv::Scalar(4.0f));
+    Image<Float32> img(m);
+    auto result = img | Multiply(other).scale(0.5);
+    EXPECT_NEAR(result.mat().at<float>(0, 0), 6.0f, 0.001f);
+}
+
+TEST(MultiplyTest, SizeMismatchThrows) {
+    Image<Gray> img(cv::Mat(50, 50, CV_8UC1, cv::Scalar(0)));
+    EXPECT_THROW(img | Multiply(cv::Mat(60, 60, CV_8UC1)), std::invalid_argument);
+}
+
+// ── Divide ────────────────────────────────────────────────────────────────────
+
+TEST(DivideTest, KnownScalarDivision) {
+    cv::Mat m(1, 1, CV_32FC1, cv::Scalar(12.0f));
+    cv::Mat other(1, 1, CV_32FC1, cv::Scalar(4.0f));
+    Image<Float32> img(m);
+    auto result = img | Divide(other);
+    EXPECT_NEAR(result.mat().at<float>(0, 0), 3.0f, 0.001f);
+}
+
+TEST(DivideTest, DivideByZeroGivesInf) {
+    cv::Mat m(1, 1, CV_32FC1, cv::Scalar(10.0f));
+    cv::Mat zeros(1, 1, CV_32FC1, cv::Scalar(0.0f));
+    Image<Float32> img(m);
+    auto result = img | Divide(zeros);
+    EXPECT_TRUE(std::isinf(result.mat().at<float>(0, 0)));  // cv::divide semantics
+}
+
+TEST(DivideTest, SizeMismatchThrows) {
+    Image<Gray> img(cv::Mat(50, 50, CV_8UC1, cv::Scalar(0)));
+    EXPECT_THROW(img | Divide(cv::Mat(60, 60, CV_8UC1)), std::invalid_argument);
+}

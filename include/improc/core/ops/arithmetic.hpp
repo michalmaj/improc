@@ -130,4 +130,40 @@ private:
     cv::Mat other_;
 };
 
+struct Multiply {
+    explicit Multiply(cv::Mat other) : other_(std::move(other)) {}
+    Multiply& scale(double s) { scale_ = s; return *this; }
+
+    template<AnyFormat F>
+    Image<F> operator()(Image<F> img) const {
+        if (img.mat().size() != other_.size() || img.mat().type() != other_.type())
+            throw std::invalid_argument("Multiply: images must have the same size and type");
+        cv::Mat result;
+        cv::multiply(img.mat(), other_, result, scale_);
+        return Image<F>(std::move(result));
+    }
+
+private:
+    cv::Mat other_;
+    double  scale_ = 1.0;
+};
+
+struct Divide {
+    explicit Divide(cv::Mat other) : other_(std::move(other)) {}
+    Divide& scale(double s) { scale_ = s; return *this; }
+
+    template<AnyFormat F>
+    Image<F> operator()(Image<F> img) const {
+        if (img.mat().size() != other_.size() || img.mat().type() != other_.type())
+            throw std::invalid_argument("Divide: images must have the same size and type");
+        cv::Mat result;
+        cv::divide(img.mat(), other_, result, scale_);
+        return Image<F>(std::move(result));
+    }
+
+private:
+    cv::Mat other_;
+    double  scale_ = 1.0;
+};
+
 } // namespace improc::core
