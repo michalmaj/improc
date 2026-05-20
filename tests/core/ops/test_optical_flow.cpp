@@ -93,3 +93,31 @@ TEST(DenseFarnebackFlowTest, MismatchedSizesThrow) {
     Image<Gray> next(cv::Mat(200, 200, CV_8UC1, cv::Scalar(0)));
     EXPECT_THROW(DenseFarnebackFlow{}(prev, next), std::invalid_argument);
 }
+
+// ── DenseDISFlow ──────────────────────────────────────────────────────────────
+
+TEST(DenseDISFlowTest, DefaultConstruction) {
+    EXPECT_NO_THROW(DenseDISFlow{});
+}
+
+TEST(DenseDISFlowTest, AllPresetsNoThrow) {
+    auto prev = make_shifted_rect(0);
+    auto next = make_shifted_rect(5);
+    EXPECT_NO_THROW(DenseDISFlow{}.preset(DenseDISFlow::Preset::UltraFast)(prev, next));
+    EXPECT_NO_THROW(DenseDISFlow{}.preset(DenseDISFlow::Preset::Fast)(prev, next));
+    EXPECT_NO_THROW(DenseDISFlow{}.preset(DenseDISFlow::Preset::Medium)(prev, next));
+}
+
+TEST(DenseDISFlowTest, ReturnsFlowSameSize) {
+    auto prev = make_shifted_rect(0);
+    auto next = make_shifted_rect(5);
+    auto flow = DenseDISFlow{}(prev, next);
+    EXPECT_EQ(flow.rows(), prev.rows());
+    EXPECT_EQ(flow.cols(), prev.cols());
+}
+
+TEST(DenseDISFlowTest, MismatchedSizesThrow) {
+    Image<Gray> prev(cv::Mat(100, 100, CV_8UC1, cv::Scalar(0)));
+    Image<Gray> next(cv::Mat(200, 200, CV_8UC1, cv::Scalar(0)));
+    EXPECT_THROW(DenseDISFlow{}(prev, next), std::invalid_argument);
+}

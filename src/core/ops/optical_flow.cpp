@@ -32,4 +32,20 @@ Image<Flow> DenseFarnebackFlow::operator()(const Image<Gray>& prev,
     return Image<Flow>(std::move(flow));
 }
 
+Image<Flow> DenseDISFlow::operator()(const Image<Gray>& prev,
+                                      const Image<Gray>& next) const {
+    if (prev.rows() != next.rows() || prev.cols() != next.cols())
+        throw std::invalid_argument("DenseDISFlow: prev and next must have the same size");
+    int preset_flag;
+    switch (preset_) {
+        case Preset::UltraFast: preset_flag = cv::DISOpticalFlow::PRESET_ULTRAFAST; break;
+        case Preset::Fast:      preset_flag = cv::DISOpticalFlow::PRESET_FAST;      break;
+        case Preset::Medium:    preset_flag = cv::DISOpticalFlow::PRESET_MEDIUM;    break;
+    }
+    auto dis = cv::DISOpticalFlow::create(preset_flag);
+    cv::Mat flow;
+    dis->calc(prev.mat(), next.mat(), flow);
+    return Image<Flow>(std::move(flow));
+}
+
 } // namespace improc::core

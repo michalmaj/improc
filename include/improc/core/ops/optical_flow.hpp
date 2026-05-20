@@ -48,4 +48,15 @@ private:
     double poly_sigma_ = 1.2;
 };
 
+struct DenseDISFlow {
+    enum class Preset { UltraFast, Fast, Medium };
+
+    DenseDISFlow& preset(Preset p) { preset_ = p; return *this; }
+
+    Image<Flow> operator()(const Image<Gray>& prev, const Image<Gray>& next) const;
+
+private:
+    Preset preset_ = Preset::Medium;
+};
+
 } // namespace improc::core
