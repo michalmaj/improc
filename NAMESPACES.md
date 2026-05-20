@@ -642,6 +642,64 @@ All motion ops are **multi-arg** — they take two images or extra arguments and
 - `operator()(const Image<Float32>& prev, const Image<Float32>& next)` → `PhaseCorrelateResult{shift, response}`.
 - Uses Hanning window internally. Throws `std::invalid_argument` if sizes differ.
 
+### Math / imgproc foundation ops (`pipeline.hpp`)
+
+**Pipeline ops** (composable via `operator|`):
+
+**`Convolve`** (`ops/arithmetic.hpp`) — custom 2D convolution.
+- `Convolve(cv::Mat kernel)` — throws if kernel is empty.
+- Fluent: `.anchor(cv::Point)`, `.delta(double)`, `.border(int)`.
+- `operator()(Image<F>)` → `Image<F>`.
+
+**`BoxFilter`** (`ops/blur.hpp`) — simple averaging blur.
+- Fluent: `.kernel_size(int)` (default 3), `.normalize(bool)` (default true), `.border(int)`.
+- `operator()(Image<F>)` → `Image<F>`.
+
+**`Add`** / **`Subtract`** (`ops/arithmetic.hpp`) — element-wise arithmetic.
+- Constructor takes second image as `cv::Mat`. Throw on size/type mismatch.
+
+**`Multiply`** / **`Divide`** (`ops/arithmetic.hpp`) — element-wise arithmetic with optional `scale`.
+- Divide by zero → 0 for integer types (OpenCV semantics).
+
+**`SplitChannels`** (`ops/channels.hpp`) — channel decomposition.
+- `operator()(const Image<BGR>&)` → `std::array<Image<Gray>, 3>`.
+- `operator()(const Image<BGRA>&)` → `std::array<Image<Gray>, 4>`.
+
+**`MergeChannels`** (`ops/channels.hpp`) — channel composition.
+- `operator()(b, g, r)` → `Image<BGR>`. `operator()(b, g, r, a)` → `Image<BGRA>`.
+- Throws `std::invalid_argument` if channel sizes differ.
+
+**Analysis structs** (not composable via `operator|`):
+
+**`SobelGradient`** (`ops/edge.hpp`) — raw Sobel derivatives.
+- Fluent: `.ksize(int)` (1/3/5/7, default 3), `.scale(double)`, `.delta(double)`.
+- `operator()(const Image<Gray>&)` → `SobelResult{dx, dy}` (CV_16S).
+
+**`ScharrGradient`** (`ops/edge.hpp`) — Scharr derivatives (more accurate than 3×3 Sobel).
+- Fluent: `.scale(double)`, `.delta(double)`.
+- `operator()(const Image<Gray>&)` → `ScharrResult{dx, dy}` (CV_16S).
+
+**`ConvertScaleAbs`** (`ops/arithmetic.hpp`) — scale + absolute value → `Image<Gray>`.
+- Takes `cv::Mat` (not `Image<F>`) — for use after Sobel/Scharr/Laplacian outputs.
+- Fluent: `.alpha(double)`, `.beta(double)`.
+
+**`IntegralImage`** (`ops/analysis.hpp`) — summed-area table.
+- Fluent: `.with_sq_sum(bool)` (default false).
+- `operator()(const Image<Gray>&)` → `IntegralResult{sum, sq_sum}`. Output is (rows+1)×(cols+1).
+
+**`MinMaxLoc`** (`ops/analysis.hpp`) — min/max pixel value and location.
+- `operator()(const Image<Gray>&)` or `operator()(const cv::Mat&)` → `MinMaxLocResult{min_val, max_val, min_loc, max_loc}`.
+
+**`MeanStdDev`** (`ops/analysis.hpp`) — per-channel statistics.
+- `operator()(const Image<F>&)` → `MeanStdDevResult{mean, stddev}`.
+
+**`CountNonZero`** (`ops/analysis.hpp`) — count non-zero pixels.
+- `operator()(const Image<Gray>&)` → `int`.
+
+**`Reduce`** (`ops/analysis.hpp`) — collapse image to 1D.
+- Fluent: `.op(ReduceOp::{Sum, Avg, Max, Min})`, `.dim(int)` (0=row-wise, 1=col-wise).
+- `operator()(const Image<Gray>&)` → `cv::Mat` (CV_32SC1).
+
 ---
 
 ## `improc::io` — Input/Output

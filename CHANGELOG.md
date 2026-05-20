@@ -46,6 +46,20 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `improc::core::CamShift` — continuously adaptive MeanShift; takes back-projection + mutable window; returns `CamShiftResult{object, iterations}`; fluent: `epsilon()`, `max_iter()`
 - `improc::core::MeanShift` — kernel-based shift; takes back-projection + mutable window; returns iteration count; fluent: `epsilon()`, `max_iter()`
 - `improc::core::PhaseCorrelate` — frequency-domain sub-pixel shift estimation; takes two `Image<Float32>`; returns `PhaseCorrelateResult{shift, response}`
+- `improc::core::Convolve` — custom 2D convolution pipeline op; kernel in constructor; fluent: `anchor()`, `delta()`, `border()`; throws on empty kernel
+- `improc::core::BoxFilter` — averaging (box) blur pipeline op; fluent: `kernel_size()` (default 3), `normalize()` (default true), `border()`
+- `improc::core::SobelGradient` — raw Sobel gradients; returns `SobelResult{dx, dy}` (CV_16S); fluent: `ksize()`, `scale()`, `delta()`
+- `improc::core::ScharrGradient` — Scharr gradients (more accurate than 3×3 Sobel); returns `ScharrResult{dx, dy}` (CV_16S); fluent: `scale()`, `delta()`
+- `improc::core::ConvertScaleAbs` — scale + absolute value → `Image<Gray>` (CV_8U); takes `cv::Mat` directly (for use after Sobel/Laplacian); fluent: `alpha()`, `beta()`
+- `improc::core::SplitChannels` — splits `Image<BGR>` → 3×`Image<Gray>`; `Image<BGRA>` → 4×`Image<Gray>`
+- `improc::core::MergeChannels` — merges 3 or 4 `Image<Gray>` → `Image<BGR>` or `Image<BGRA>`; throws on size mismatch
+- `improc::core::Add` / `Subtract` — element-wise arithmetic pipeline ops; second image in constructor; throw on size/type mismatch
+- `improc::core::Multiply` / `Divide` — element-wise arithmetic pipeline ops; second image + optional `scale()`; throw on size/type mismatch; `Divide` by zero follows `cv::divide` semantics (result = 0 for integer types)
+- `improc::core::IntegralImage` — summed-area table; returns `IntegralResult{sum, sq_sum}`; fluent: `with_sq_sum(bool)` (default false); output is (rows+1)×(cols+1)
+- `improc::core::MinMaxLoc` — finds min/max values and locations; returns `MinMaxLocResult{min_val, max_val, min_loc, max_loc}`; accepts `Image<Gray>` or raw `cv::Mat`
+- `improc::core::MeanStdDev` — per-channel mean and standard deviation; returns `MeanStdDevResult{mean, stddev}`; works on any format
+- `improc::core::CountNonZero` — count of non-zero pixels; accepts `Image<Gray>`
+- `improc::core::Reduce` — reduce image to single row or column; `ReduceOp::{Sum, Avg, Max, Min}`; fluent: `op()`, `dim()` (0=reduce rows, 1=reduce cols)
 
 ---
 

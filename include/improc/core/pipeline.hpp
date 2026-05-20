@@ -19,7 +19,10 @@
  * FloodFill, Remap, AbsDiff, BitwiseAnd, BitwiseOr, BitwiseNot,
  * SparseLKFlow, DenseFarnebackFlow, DenseDISFlow,
  * CamShift, MeanShift, PhaseCorrelate,
- * SplitChannels, MergeChannels)
+ * SplitChannels, MergeChannels,
+ * Convolve, BoxFilter, SobelGradient, ScharrGradient, ConvertScaleAbs,
+ * Add, Subtract, Multiply, Divide,
+ * IntegralImage, MinMaxLoc, MeanStdDev, CountNonZero, Reduce)
  * and the generic `operator|` pipeline dispatch.
  *
  * @code
