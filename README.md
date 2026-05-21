@@ -17,6 +17,7 @@
 - [Augmentation](#augmentation)
 - [Video File Capture](#video-file-capture)
 - [Background Subtraction](#background-subtraction)
+- [Motion Analysis](#motion-analysis)
 - [Video Recording](#video-recording)
 - [ONNX Runtime Inference](#onnx-runtime-inference)
 - [Edge Detection & Enhancement](#edge-detection--enhancement)
@@ -37,8 +38,8 @@
 
 ## Status
 
-> **Latest release: v0.7.0** — Video Pipeline + Packaging. `improc::io` adds `VideoFileCapture` for reading video files as a `CameraSourceType`; `improc::core` adds `BackgroundSubtractMOG2` and `BackgroundSubtractKNN`; CMake install rules enable `find_package(improc REQUIRED)`.  
-> **Previous highlights:** v0.6.0 — unified real-time camera API. v0.5.0 — ML evaluation, multi-object tracking, Google Benchmark suite. v0.4.0 — extended augmentation, VOC/COCO loaders.  
+> **Latest release: v0.8.0** — Classic CV Ops. `improc::core` adds 22 new ops: 6 motion analysis ops (`SparseLKFlow`, `DenseFarnebackFlow`, `DenseDISFlow`, `CamShift`, `MeanShift`, `PhaseCorrelate`) with a new `Flow` format tag; 16 math/foundation ops (arithmetic, filters, gradients, channel split/merge, analysis); Google Benchmark suite updated with motion and math results.  
+> **Previous highlights:** v0.7.0 — Video Pipeline + Packaging. v0.6.0 — unified real-time camera API. v0.5.0 — ML evaluation, multi-object tracking, Google Benchmark suite.  
 > APIs are stabilising but may still change between minor versions.
 
 | Namespace | Status | Notes |
@@ -132,18 +133,22 @@ OpenCV is powerful but its raw API is stringly-typed, mutation-heavy, and easy t
 
 - **Type-safe image wrapper** — `Image<BGR>`, `Image<Gray>`, `Image<Float32>` etc. catch format mismatches at compile time
 - **Composable pipeline** — `image | Resize{}.width(224) | ToFloat32C3{}` syntax for readable processing chains
-- **Geometric operations** — `Resize` (aspect-ratio aware), `Crop`, `CenterCrop`, `LetterBox`, `Flip`, `Rotate`, `Pad`, `PadToSquare`, `WarpAffine`, `WarpPerspective`, `find_homography`
-- **Filter & morphology** — `GaussianBlur`, `MedianBlur`, `Dilate`, `Erode`, `MorphOpen`, `MorphClose`, `MorphGradient`, `TopHat`, `BlackHat`; `Threshold` (incl. Otsu & adaptive), `CLAHE`, `GammaCorrection`, `BilateralFilter`, `HistogramEqualization`, `NLMeansDenoising`, `UnsharpMask`
-- **Edge & corner detection** — `SobelEdge`, `CannyEdge`, `LaplacianEdge`, `HarrisCorner`; all accept `Image<Gray>` or `Image<BGR>` (auto-converted)
+- **Geometric operations** — `Resize` (aspect-ratio aware), `Crop`, `CenterCrop`, `LetterBox`, `Flip`, `Rotate`, `Pad`, `PadToSquare`, `WarpAffine`, `WarpPerspective`, `find_homography`, `Remap` (general pixel remapping)
+- **Filter & morphology** — `GaussianBlur`, `MedianBlur`, `BoxFilter`, `Convolve` (custom kernel), `Dilate`, `Erode`, `MorphOpen`, `MorphClose`, `MorphGradient`, `TopHat`, `BlackHat`; `Threshold` (incl. Otsu & adaptive), `CLAHE`, `GammaCorrection`, `BilateralFilter`, `HistogramEqualization`, `NLMeansDenoising`, `UnsharpMask`
+- **Edge & corner detection** — `SobelEdge`, `CannyEdge`, `LaplacianEdge`, `HarrisCorner`; `SobelGradient` / `ScharrGradient` (raw CV_16S derivative pairs) + `ConvertScaleAbs`; `GoodFeaturesToTrack` (Shi-Tomasi / Harris); `HoughLinesP`, `HoughCircles`; all accept `Image<Gray>` or `Image<BGR>` (auto-converted)
 - **Colour spaces** — `ToHSV`, `ToLAB`, `ToYCrCb`, `ToGray`, `ToBGR` (from any of the above); format tags `HSV`, `LAB`, `YCrCb` enforce colour-space safety at compile time
 - **Pyramid ops** — `PyrDown` (halves), `PyrUp` (doubles); work on any `Image<Format>`
 - **Drawing / annotation** — `DrawText`, `DrawLine`, `DrawCircle`, `DrawRectangle`; all operate on a clone (non-mutating)
-- **Contour analysis** — `FindContours` → `ContourSet` (with `area()`, `perimeter()`, `bounding_rect()`); `DrawContours` (fill or stroke, single or all)
+- **Contour analysis** — `FindContours` → `ContourSet` (with `area()`, `perimeter()`, `bounding_rect()`); `DrawContours` (fill or stroke, single or all); `ConvexHull`, `ApproxPolyDP` (Douglas-Peucker), `MinAreaRect` (`cv::RotatedRect`), `BoundingRect`
 - **Connected components** — `ConnectedComponents` → `ComponentMap` (labels, stats, centroids, per-component masks); `DistanceTransform` → `Image<Float32>`
 - **Feature detection pipeline** — `DetectORB` / `DetectSIFT` / `DetectAKAZE` → `KeypointSet`; `DescribeORB` / `DescribeSIFT` / `DescribeAKAZE` → `DescriptorSet`; `MatchBF` / `MatchFlann` → `MatchSet`; `DrawKeypoints` / `DrawMatches` for visualisation
-- **Pixel ops** — `InRange` (binary mask from channel bounds), `Invert`, `Brightness`, `Contrast`, `WeightedBlend`, `AlphaBlend`, `ApplyMask`
+- **Pixel ops** — `InRange` (binary mask), `Invert`, `Brightness`, `Contrast`, `WeightedBlend`, `AlphaBlend`, `ApplyMask`; element-wise `Add`, `Subtract`, `Multiply`, `Divide`, `AbsDiff`; bitwise `BitwiseAnd`, `BitwiseOr`, `BitwiseNot`; `LUT` (256-entry lookup table)
+- **Channel ops** — `SplitChannels` (BGR/BGRA → vector of Gray), `MergeChannels` (vector of Gray → BGR/BGRA)
 - **Normalization** — `Normalize`, `NormalizeTo`, `Standardize` for ML preprocessing
-- **Format conversions** — explicit, compiler-enforced free functions (`convert<Gray>(bgr_image)`)
+- **Format conversions** — explicit, compiler-enforced free functions (`convert<Gray>(bgr_image)`); `Flow` format tag (CV_32FC2) for dense optical flow fields
+- **Motion analysis** — `SparseLKFlow` (Lucas-Kanade, tracks `std::vector<cv::Point2f>`), `DenseFarnebackFlow` (Farneback dense flow → `Image<Flow>`), `DenseDISFlow` (DIS fast/medium/ultrafast → `Image<Flow>`), `CamShift` (adaptive MeanShift tracker), `MeanShift` (kernel-based shift), `PhaseCorrelate` (sub-pixel frequency-domain shift estimation)
+- **Image analysis** — `IntegralImage` (summed-area table), `MinMaxLoc`, `MeanStdDev` (per-channel), `CountNonZero`, `Reduce` (Sum/Avg/Max/Min to row or column); `CalcHist` / `CompareHist`; `Moments`; `MatchTemplate`
+- **Segmentation & region ops** — `Inpaint` (TELEA/NS), `Watershed` (marker-based), `GrabCut` (foreground/background), `FloodFill` (BGR and Gray)
 - **Augmentation** — stochastic training augmentations constrained by C++20 concepts: `RandomFlip`, `RandomRotate`, `RandomCrop`, `RandomResize`, `RandomZoom`, `RandomShear`, `RandomPerspective`, `RandomBrightness`, `RandomContrast`, `ColorJitter`, `RandomGrayscale`, `RandomSolarize`, `RandomPosterize`, `RandomEqualize`, `RandomBlur`, `RandomSharpness`, `RandomGaussianNoise`, `RandomSaltAndPepper`, `RandomErasing`, `GridDropout`, `Compose`, `RandomApply`, `OneOf`; bbox-aware overloads via `BBox`, `AnnotatedImage<F>`, `BBoxCompose<F>` (all 7 geometric ops accept annotated images with automatic clip-and-drop filtering)
 - **Multi-object tracking** — `IouTracker` (greedy IoU), `SortTracker` (constant-velocity Kalman + Hungarian, SORT algorithm), `ByteTracker` (two-stage BYTE algorithm: Stage 1 Hungarian on high-confidence dets, Stage 2 greedy IoU on low-confidence dets); all satisfy `TrackerType<T>` and are drop-in replaceable; `TrackingEval` accumulates MOTA, MOTP, IDF1, Precision, Recall, FP, FN, IDSW across frames
 - **Dataset loading** — load image datasets from class-labeled directories with train/val/test splitting
@@ -325,6 +330,44 @@ sub.history(300).threshold(16.0).detect_shadows(false);
 // In frame loop (frame is Image<BGR> from camera/VideoFileCapture):
 Image<BGR> frame = /* your camera frame */;
 Image<Gray> fg_mask = frame | sub;  // sub is an lvalue — model accumulates
+```
+
+## Motion Analysis
+
+Optical flow, shift tracking, and frequency-domain motion estimation:
+
+```cpp
+#include "improc/core/pipeline.hpp"
+using namespace improc::core;
+
+Image<Gray> prev = ..., next = ...;
+std::vector<cv::Point2f> pts = { {100, 100}, {200, 150} };
+
+// Sparse Lucas-Kanade — track specific points
+SparseLKFlowResult lk = SparseLKFlow{}.win_size(21).max_level(3)(prev, next, pts);
+for (size_t i = 0; i < pts.size(); ++i)
+    if (lk.status[i])
+        // lk.points[i] is the new position
+
+// Dense DIS flow — fast, returns Image<Flow> (CV_32FC2)
+Image<Flow> flow = prev | DenseDISFlow{}.preset(DenseDISFlow::Preset::UltraFast);
+
+// Dense Farneback flow — higher quality
+Image<Flow> flow2 = prev | DenseFarnebackFlow{}.iterations(3);
+
+// Phase correlate — sub-pixel global shift estimation
+Image<Float32> pf = prev | ToFloat32{};
+Image<Float32> nf = next | ToFloat32{};
+PhaseCorrelateResult shift = PhaseCorrelate{}(pf, nf);
+// shift.shift is cv::Point2d; shift.response is confidence [0,1]
+```
+
+CamShift / MeanShift for region tracking (takes back-projection from `CalcHist`):
+
+```cpp
+cv::Rect window{x, y, w, h};
+CamShiftResult r = CamShift{}(back_proj, window);  // window updated in-place
+// r.object is cv::RotatedRect; r.iterations is convergence count
 ```
 
 ## Video Recording
@@ -621,11 +664,16 @@ cmake --build cmake-build-debug --target improc_tests
 
 Single-thread performance on Apple M4 Pro. Highlights:
 
-| Operation | Time |
-|---|---|
-| GaussianBlur 480×640 | 82 µs |
-| IouTracker @ 100 dets | 17.5 µs |
-| Lazy `take(16/256)` | 16× faster than eager |
+| Operation | Time | Notes |
+|---|---|---|
+| GaussianBlur 480×640 | 82 µs | |
+| DenseDISFlow UltraFast 480×640 | 0.9 ms | 3× faster than Farneback at lower quality |
+| DenseFarnebackFlow 480×640 | 17.1 ms | Full dense flow field |
+| SparseLKFlow 480×640 | 0.5 ms | per tracked point batch |
+| Add / Subtract 480×640 | ~18 µs | wrapper overhead ≈0 vs raw `cv::add` |
+| SobelGradient 480×640 | 99.6 µs | returns CV_16S dx+dy pair |
+| IouTracker @ 100 dets | 17.5 µs | |
+| Lazy `take(16/256)` | 16× faster than eager | |
 
 → **[Full benchmark tables and engineering notes](BENCHMARKS.md)**
 
