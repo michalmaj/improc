@@ -26,6 +26,10 @@ One representative number per namespace. Full tables with all variants are in th
 | `core` | `NLMeansDenoising` | 480×640 | **123 ms** | ⚠️ algorithmically slow — see API `@warning` |
 | `core` | `DetectORB` | 480×640 | 6.1 ms | real-time capable |
 | `core` | `DetectSIFT` | 480×640 | 13.6 ms | ⚠️ 2× slower than ORB; full pipeline 311 ms @ 1080p |
+| `core` | `DenseFarnebackFlow` | 480×640 | 17.1 ms | two-frame optical flow |
+| `core` | `DenseDISFlow` (UltraFast) | 480×640 | 0.9 ms | 3 presets: UltraFast/Fast/Medium |
+| `core` | `Add` | 480×640 | 18.5 µs | wrapper overhead ≈0 ns vs raw |
+| `core` | `SobelGradient` | 480×640 | 99.6 µs | returns CV_16S dx+dy pair |
 | `ml` | `Compose` (3 ops) | 224×224 | 730 µs | ~1,370 img/s |
 | `ml` | `IouTracker` | 100 dets | 17.5 µs | SortTracker: 254 µs — IouTracker is fastest when Kalman not needed |
 | `views` | `transform \| take(16/256)` | 224×224 | 561 µs lazy · 9,061 µs eager | **16× lazy speedup** |
@@ -107,7 +111,7 @@ All times in µs. `e2e` = detect + describe + match (brute-force).
 
 ### Matching (µs)
 
-| Algorithm | raw | improc |
+| Algorithm | raw | improc++ |
 |---|---|---|
 | BruteForce | 630 | 620 |
 | FLANN | 2,922 | 2,924 |
@@ -131,6 +135,113 @@ Input: binary `Image<Gray>` (random noise → threshold). Times in µs.
 | `FindContours` | 993 | 906 | 6,334 | 6,289 |
 | `ConnectedComponents` | 544 | 571 | 2,449 | 2,495 |
 | `DistanceTransform` | 1,010 | 1,053 | 7,263 | 7,289 |
+
+</details>
+
+<details>
+<summary><strong>Motion ops</strong> — optical flow · tracking · phase correlation</summary>
+
+### Overhead (480×640)
+
+Wrapper overhead is within measurement noise for all ops — the algorithms dominate.
+
+**Flow ops (ms)**
+
+| Op | raw | improc++ |
+|---|---|---|
+| DenseFarnebackFlow | 17.0 | 17.2 |
+| DenseDISFlow (UltraFast) | 0.832 | 0.837 |
+| SparseLKFlow | 0.533 | 0.533 |
+| PhaseCorrelate | 3.200 | 3.263 |
+
+**Tracking ops (µs)**
+
+| Op | raw | improc++ |
+|---|---|---|
+| CamShift | 12.5 | 12.5 |
+| MeanShift | 5.8 | 5.7 |
+
+### Throughput — optical flow (ms/frame)
+
+| Op | 480×640 | 1080×1920 |
+|---|---|---|
+| DenseFarnebackFlow | 17.1 | 117.5 |
+| DenseDISFlow UltraFast | 0.9 | 2.9 |
+| DenseDISFlow Fast | 3.2 | 12.5 |
+| DenseDISFlow Medium | 9.2 | 35.9 |
+| SparseLKFlow | 0.5 | 1.3 |
+| PhaseCorrelate | 3.3 | 26.3 |
+
+### Throughput — tracking (µs/call)
+
+| Op | 480×640 | 1080×1920 |
+|---|---|---|
+| CamShift | 31 | 246 |
+| MeanShift | 25 | 215 |
+
+</details>
+
+<details>
+<summary><strong>Math &amp; foundation ops</strong> — arithmetic · filters · channels · analysis</summary>
+
+### Arithmetic overhead (µs, 480×640 CV_8UC3)
+
+Wrapper overhead is within measurement noise for all ops.
+
+| Op | raw | improc++ |
+|---|---|---|
+| Add | 18.7 | 18.5 |
+| Subtract | 19.3 | 19.6 |
+| Multiply | 19.1 | 19.2 |
+| Divide | 182.5 | 181.6 |
+
+### Arithmetic throughput (µs)
+
+| Op | 480×640 | 1080×1920 |
+|---|---|---|
+| Add | 18.5 | 121.7 |
+| Subtract | 19.6 | 121.0 |
+| Multiply | 19.2 | 123.6 |
+| Divide | 181.6 | 1,232.6 |
+
+### Filter overhead (µs, 480×640 CV_8UC3)
+
+| Op | raw | improc++ |
+|---|---|---|
+| BoxFilter 5×5 | 136.3 | 136.0 |
+| Convolve 3×3 | 540.8 | 543.5 |
+
+### Filter throughput (µs)
+
+| Op | 480×640 | 1080×1920 |
+|---|---|---|
+| BoxFilter 5×5 | 136.0 | 929.4 |
+| Convolve 3×3 | 543.5 | 3,646.1 |
+
+### Gradient & conversion (µs, 480×640 CV_8UC1)
+
+| Op | raw | improc++ |
+|---|---|---|
+| SobelGradient | 99.4 | 99.6 |
+| ScharrGradient | 128.8 | 128.7 |
+| ConvertScaleAbs | 31.7 | 32.0 |
+
+### Channel ops overhead (µs)
+
+| Op | 480×640 raw | 480×640 improc | 1080×1920 raw | 1080×1920 improc |
+|---|---|---|---|---|
+| SplitChannels | 25.4 | 25.4 | 175.9 | 175.5 |
+| MergeChannels | 19.9 | 19.9 | 133.2 | 134.2 |
+
+### Analysis ops (µs, 480×640 CV_8UC1)
+
+| Op | raw | improc++ |
+|---|---|---|
+| IntegralImage | 45.0 | 44.9 |
+| MinMaxLoc | 10.0 | 10.0 |
+| MeanStdDev | 56.8 | 57.1 |
+| CountNonZero | 9.5 | 9.5 |
+| Reduce (Sum) | 52.5 | 52.2 |
 
 </details>
 
