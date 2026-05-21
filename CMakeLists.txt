@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.30)
-project(improc__ VERSION 0.7.0)
+project(improc__ VERSION 0.8.0)
 
 if(APPLE)
     string(REPLACE "--as-needed" "" CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
