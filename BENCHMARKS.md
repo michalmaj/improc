@@ -111,7 +111,7 @@ All times in µs. `e2e` = detect + describe + match (brute-force).
 
 ### Matching (µs)
 
-| Algorithm | raw | improc |
+| Algorithm | raw | improc++ |
 |---|---|---|
 | BruteForce | 630 | 620 |
 | FLANN | 2,922 | 2,924 |
@@ -141,20 +141,27 @@ Input: binary `Image<Gray>` (random noise → threshold). Times in µs.
 <details>
 <summary><strong>Motion ops</strong> — optical flow · tracking · phase correlation</summary>
 
-### Overhead (480×640, ns)
+### Overhead (480×640)
 
-All ops measured at 480×640. `delta = improc − raw`. These algorithms run in the ms range; deltas within measurement noise are marked ≈0.
+Wrapper overhead is within measurement noise for all ops — the algorithms dominate.
 
-| Op | raw | improc++ | delta |
-|---|---|---|---|
-| DenseFarnebackFlow | 17,034,049 | 17,200,395 | ≈0 |
-| DenseDISFlow (UltraFast) | 832,015 | 837,256 | ≈0 |
-| SparseLKFlow | 533,205 | 532,865 | ≈0 |
-| PhaseCorrelate | 3,199,945 | 3,262,721 | ≈0 |
-| CamShift | 12,545 | 12,509 | ≈0 |
-| MeanShift | 5,751 | 5,743 | ≈0 |
+**Flow ops (ms)**
 
-### Throughput (ms/frame)
+| Op | raw | improc++ |
+|---|---|---|
+| DenseFarnebackFlow | 17.0 | 17.2 |
+| DenseDISFlow (UltraFast) | 0.832 | 0.837 |
+| SparseLKFlow | 0.533 | 0.533 |
+| PhaseCorrelate | 3.200 | 3.263 |
+
+**Tracking ops (µs)**
+
+| Op | raw | improc++ |
+|---|---|---|
+| CamShift | 12.5 | 12.5 |
+| MeanShift | 5.8 | 5.7 |
+
+### Throughput — optical flow (ms/frame)
 
 | Op | 480×640 | 1080×1920 |
 |---|---|---|
@@ -164,24 +171,29 @@ All ops measured at 480×640. `delta = improc − raw`. These algorithms run in 
 | DenseDISFlow Medium | 9.2 | 35.9 |
 | SparseLKFlow | 0.5 | 1.3 |
 | PhaseCorrelate | 3.3 | 26.3 |
-| CamShift | 0.031 | 0.246 |
-| MeanShift | 0.025 | 0.215 |
+
+### Throughput — tracking (µs/call)
+
+| Op | 480×640 | 1080×1920 |
+|---|---|---|
+| CamShift | 31 | 246 |
+| MeanShift | 25 | 215 |
 
 </details>
 
 <details>
 <summary><strong>Math &amp; foundation ops</strong> — arithmetic · filters · channels · analysis</summary>
 
-### Arithmetic overhead (ns, 480×640 CV_8UC3)
+### Arithmetic overhead (µs, 480×640 CV_8UC3)
 
-`delta = improc − raw`. All deltas are within measurement noise.
+Wrapper overhead is within measurement noise for all ops.
 
-| Op | raw | improc++ | delta |
-|---|---|---|---|
-| Add | 18,652 | 18,546 | ≈0 |
-| Subtract | 19,299 | 19,575 | ≈0 |
-| Multiply | 19,059 | 19,216 | ≈0 |
-| Divide | 182,479 | 181,589 | ≈0 |
+| Op | raw | improc++ |
+|---|---|---|
+| Add | 18.7 | 18.5 |
+| Subtract | 19.3 | 19.6 |
+| Multiply | 19.1 | 19.2 |
+| Divide | 182.5 | 181.6 |
 
 ### Arithmetic throughput (µs)
 
@@ -192,12 +204,12 @@ All ops measured at 480×640. `delta = improc − raw`. These algorithms run in 
 | Multiply | 19.2 | 123.6 |
 | Divide | 181.6 | 1,232.6 |
 
-### Filter overhead (ns, 480×640 CV_8UC3)
+### Filter overhead (µs, 480×640 CV_8UC3)
 
-| Op | raw | improc++ | delta |
-|---|---|---|---|
-| BoxFilter 5×5 | 136,308 | 135,986 | ≈0 |
-| Convolve 3×3 | 540,794 | 543,503 | ≈0 |
+| Op | raw | improc++ |
+|---|---|---|
+| BoxFilter 5×5 | 136.3 | 136.0 |
+| Convolve 3×3 | 540.8 | 543.5 |
 
 ### Filter throughput (µs)
 
@@ -206,30 +218,30 @@ All ops measured at 480×640. `delta = improc − raw`. These algorithms run in 
 | BoxFilter 5×5 | 136.0 | 929.4 |
 | Convolve 3×3 | 543.5 | 3,646.1 |
 
-### Gradient & conversion (ns, 480×640 CV_8UC1)
+### Gradient & conversion (µs, 480×640 CV_8UC1)
 
-| Op | raw | improc++ | delta |
-|---|---|---|---|
-| SobelGradient | 99,392 | 99,580 | ≈0 |
-| ScharrGradient | 128,848 | 128,685 | ≈0 |
-| ConvertScaleAbs | 31,682 | 31,972 | ≈0 |
+| Op | raw | improc++ |
+|---|---|---|
+| SobelGradient | 99.4 | 99.6 |
+| ScharrGradient | 128.8 | 128.7 |
+| ConvertScaleAbs | 31.7 | 32.0 |
 
-### Channel ops overhead (ns)
+### Channel ops overhead (µs)
 
-| Op | 480×640 raw | 480×640 improc++ | delta | 1080×1920 raw | 1080×1920 improc++ | delta |
-|---|---|---|---|---|---|---|
-| SplitChannels | 25,428 | 25,404 | ≈0 | 175,936 | 175,509 | ≈0 |
-| MergeChannels | 19,878 | 19,941 | ≈0 | 133,212 | 134,153 | ≈0 |
+| Op | 480×640 raw | 480×640 improc | 1080×1920 raw | 1080×1920 improc |
+|---|---|---|---|---|
+| SplitChannels | 25.4 | 25.4 | 175.9 | 175.5 |
+| MergeChannels | 19.9 | 19.9 | 133.2 | 134.2 |
 
-### Analysis ops (ns, 480×640 CV_8UC1)
+### Analysis ops (µs, 480×640 CV_8UC1)
 
-| Op | raw | improc++ | delta |
-|---|---|---|---|
-| IntegralImage | 45,026 | 44,897 | ≈0 |
-| MinMaxLoc | 10,043 | 9,993 | ≈0 |
-| MeanStdDev | 56,819 | 57,116 | ≈0 |
-| CountNonZero | 9,467 | 9,450 | ≈0 |
-| Reduce (Sum) | 52,521 | 52,215 | ≈0 |
+| Op | raw | improc++ |
+|---|---|---|
+| IntegralImage | 45.0 | 44.9 |
+| MinMaxLoc | 10.0 | 10.0 |
+| MeanStdDev | 56.8 | 57.1 |
+| CountNonZero | 9.5 | 9.5 |
+| Reduce (Sum) | 52.5 | 52.2 |
 
 </details>
 
