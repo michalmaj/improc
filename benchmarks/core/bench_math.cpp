@@ -286,7 +286,10 @@ static void BM_raw_minmax_loc(benchmark::State& state) {
     cv::Point mn_loc, mx_loc;
     for (auto _ : state) {
         cv::minMaxLoc(src, &mn, &mx, &mn_loc, &mx_loc);
+        benchmark::DoNotOptimize(mn);
         benchmark::DoNotOptimize(mx);
+        benchmark::DoNotOptimize(mn_loc);
+        benchmark::DoNotOptimize(mx_loc);
     }
 }
 BENCHMARK(BM_raw_minmax_loc);
@@ -307,6 +310,7 @@ static void BM_raw_mean_stddev(benchmark::State& state) {
     for (auto _ : state) {
         cv::meanStdDev(src, mean, stddev);
         benchmark::DoNotOptimize(mean);
+        benchmark::DoNotOptimize(stddev);
     }
 }
 BENCHMARK(BM_raw_mean_stddev);
