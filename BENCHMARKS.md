@@ -26,6 +26,10 @@ One representative number per namespace. Full tables with all variants are in th
 | `core` | `NLMeansDenoising` | 480×640 | **123 ms** | ⚠️ algorithmically slow — see API `@warning` |
 | `core` | `DetectORB` | 480×640 | 6.1 ms | real-time capable |
 | `core` | `DetectSIFT` | 480×640 | 13.6 ms | ⚠️ 2× slower than ORB; full pipeline 311 ms @ 1080p |
+| `core` | `DenseFarnebackFlow` | 480×640 | 17.1 ms | two-frame optical flow |
+| `core` | `DenseDISFlow` (UltraFast) | 480×640 | 0.9 ms | 3 presets: UltraFast/Fast/Medium |
+| `core` | `Add` | 480×640 | 18.5 µs | wrapper overhead ≈0 ns vs raw |
+| `core` | `SobelGradient` | 480×640 | 99.6 µs | returns CV_16S dx+dy pair |
 | `ml` | `Compose` (3 ops) | 224×224 | 730 µs | ~1,370 img/s |
 | `ml` | `IouTracker` | 100 dets | 17.5 µs | SortTracker: 254 µs — IouTracker is fastest when Kalman not needed |
 | `views` | `transform \| take(16/256)` | 224×224 | 561 µs lazy · 9,061 µs eager | **16× lazy speedup** |
@@ -131,6 +135,101 @@ Input: binary `Image<Gray>` (random noise → threshold). Times in µs.
 | `FindContours` | 993 | 906 | 6,334 | 6,289 |
 | `ConnectedComponents` | 544 | 571 | 2,449 | 2,495 |
 | `DistanceTransform` | 1,010 | 1,053 | 7,263 | 7,289 |
+
+</details>
+
+<details>
+<summary><strong>Motion ops</strong> — optical flow · tracking · phase correlation</summary>
+
+### Overhead (480×640, ns)
+
+All ops measured at 480×640. `delta = improc − raw`. These algorithms run in the ms range; deltas within measurement noise are marked ≈0.
+
+| Op | raw | improc++ | delta |
+|---|---|---|---|
+| DenseFarnebackFlow | 17,034,049 | 17,200,395 | ≈0 |
+| DenseDISFlow (UltraFast) | 832,015 | 837,256 | ≈0 |
+| SparseLKFlow | 533,205 | 532,865 | ≈0 |
+| PhaseCorrelate | 3,199,945 | 3,262,721 | ≈0 |
+| CamShift | 12,545 | 12,509 | ≈0 |
+| MeanShift | 5,751 | 5,743 | ≈0 |
+
+### Throughput (ms/frame)
+
+| Op | 480×640 | 1080×1920 |
+|---|---|---|
+| DenseFarnebackFlow | 17.1 | 117.5 |
+| DenseDISFlow UltraFast | 0.9 | 2.9 |
+| DenseDISFlow Fast | 3.2 | 12.5 |
+| DenseDISFlow Medium | 9.2 | 35.9 |
+| SparseLKFlow | 0.5 | 1.3 |
+| PhaseCorrelate | 3.3 | 26.3 |
+| CamShift | 0.031 | 0.246 |
+| MeanShift | 0.025 | 0.215 |
+
+</details>
+
+<details>
+<summary><strong>Math &amp; foundation ops</strong> — arithmetic · filters · channels · analysis</summary>
+
+### Arithmetic overhead (ns, 480×640 CV_8UC3)
+
+`delta = improc − raw`. All deltas are within measurement noise.
+
+| Op | raw | improc++ | delta |
+|---|---|---|---|
+| Add | 18,652 | 18,546 | ≈0 |
+| Subtract | 19,299 | 19,575 | ≈0 |
+| Multiply | 19,059 | 19,216 | ≈0 |
+| Divide | 182,479 | 181,589 | ≈0 |
+
+### Arithmetic throughput (µs)
+
+| Op | 480×640 | 1080×1920 |
+|---|---|---|
+| Add | 18.5 | 121.7 |
+| Subtract | 19.6 | 121.0 |
+| Multiply | 19.2 | 123.6 |
+| Divide | 181.6 | 1,232.6 |
+
+### Filter overhead (ns, 480×640 CV_8UC3)
+
+| Op | raw | improc++ | delta |
+|---|---|---|---|
+| BoxFilter 5×5 | 136,308 | 135,986 | ≈0 |
+| Convolve 3×3 | 540,794 | 543,503 | ≈0 |
+
+### Filter throughput (µs)
+
+| Op | 480×640 | 1080×1920 |
+|---|---|---|
+| BoxFilter 5×5 | 136.0 | 929.4 |
+| Convolve 3×3 | 543.5 | 3,646.1 |
+
+### Gradient & conversion (ns, 480×640 CV_8UC1)
+
+| Op | raw | improc++ | delta |
+|---|---|---|---|
+| SobelGradient | 99,392 | 99,580 | ≈0 |
+| ScharrGradient | 128,848 | 128,685 | ≈0 |
+| ConvertScaleAbs | 31,682 | 31,972 | ≈0 |
+
+### Channel ops overhead (ns)
+
+| Op | 480×640 raw | 480×640 improc++ | delta | 1080×1920 raw | 1080×1920 improc++ | delta |
+|---|---|---|---|---|---|---|
+| SplitChannels | 25,428 | 25,404 | ≈0 | 175,936 | 175,509 | ≈0 |
+| MergeChannels | 19,878 | 19,941 | ≈0 | 133,212 | 134,153 | ≈0 |
+
+### Analysis ops (ns, 480×640 CV_8UC1)
+
+| Op | raw | improc++ | delta |
+|---|---|---|---|
+| IntegralImage | 45,026 | 44,897 | ≈0 |
+| MinMaxLoc | 10,043 | 9,993 | ≈0 |
+| MeanStdDev | 56,819 | 57,116 | ≈0 |
+| CountNonZero | 9,467 | 9,450 | ≈0 |
+| Reduce (Sum) | 52,521 | 52,215 | ≈0 |
 
 </details>
 
