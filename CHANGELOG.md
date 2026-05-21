@@ -7,7 +7,8 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Table of Contents
 
-- [[Unreleased]](#unreleased) — v0.8.0 in progress (Classic CV ops + pending additions)
+- [[Unreleased]](#unreleased)
+- [[0.8.0]](#080--2026-05-21) — 2026-05-21 · Classic CV ops: 22 new ops (motion analysis, math/foundation), benchmarks for all new ops
 - [[0.7.0]](#070--2026-05-19) — 2026-05-19 · Video Pipeline + Packaging: VideoFileCapture, CMake install rules, BackgroundSubtractMOG2/KNN
 - [[0.6.0]](#060--2026-05-18) — 2026-05-18 · Real-Time Pipeline: unified camera API (WebcamCapture, IPCameraCapture, OakDCapture), CameraFrame, AnyCameraSource, FramePipeline update
 - [[0.5.0]](#050--2026-05-18) — 2026-05-18 · ML Evaluation + Visualization + Multi-Object Tracking; Google Benchmark suite; performance fixes
@@ -19,6 +20,10 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ---
 
 ## [Unreleased]
+
+---
+
+## [0.8.0] — 2026-05-21
 
 ### Added
 - `improc::core::LUT` — 256-entry lookup-table pipeline op; applies `cv::LUT` to any `Image<F>` via `operator|`; throws `std::invalid_argument` on wrong table size or depth
@@ -60,6 +65,12 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `improc::core::MeanStdDev` — per-channel mean and standard deviation; returns `MeanStdDevResult{mean, stddev}`; works on any format
 - `improc::core::CountNonZero` — count of non-zero pixels; accepts `Image<Gray>`
 - `improc::core::Reduce` — reduce image to single row or column; `ReduceOp::{Sum, Avg, Max, Min}`; fluent: `op()`, `dim()` (0=reduce rows, 1=reduce cols)
+
+### Benchmarks
+- `benchmarks/core/bench_motion.cpp` — overhead + throughput benchmarks for all 6 motion ops at 480×640 and 1080×1920
+- `benchmarks/core/bench_math.cpp` — overhead benchmarks for all 16 math/foundation ops; parametrized sizes for arithmetic/filter/channel groups
+- `BENCHMARKS.md` — Quick Reference + full tables updated with measured values (M4 Pro, Release build)
+- `benchmarks/results/2026-05-21-v080-*.json` — raw JSON results committed
 
 ---
 
