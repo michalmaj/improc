@@ -58,3 +58,36 @@ TEST(FindChessboardCornersTest, FluentBoardSizeReturnsThis) {
     FindChessboardCorners op;
     EXPECT_EQ(&op.board_size({9, 6}), &op);
 }
+
+TEST(FindChessboardCornersSBTest, FindsInnerCornersOnSyntheticBoard) {
+    const cv::Size board{9, 6};
+    auto result = make_chessboard_img(board) | FindChessboardCornersSB{}.board_size(board);
+    EXPECT_TRUE(result.found);
+    EXPECT_EQ(static_cast<int>(result.corners.size()), board.width * board.height);
+}
+
+TEST(FindChessboardCornersSBTest, NotFoundOnRandomNoise) {
+    cv::Mat noise(200, 200, CV_8UC1);
+    cv::randu(noise, 0, 255);
+    auto result = Image<Gray>(noise) | FindChessboardCornersSB{}.board_size({9, 6});
+    EXPECT_FALSE(result.found);
+    EXPECT_TRUE(result.corners.empty());
+}
+
+TEST(FindChessboardCornersSBTest, WorksOnBGRInput) {
+    const cv::Size board{9, 6};
+    cv::Mat bgr;
+    cv::cvtColor(make_chessboard_img(board).mat(), bgr, cv::COLOR_GRAY2BGR);
+    auto result = Image<BGR>(bgr) | FindChessboardCornersSB{}.board_size(board);
+    EXPECT_TRUE(result.found);
+}
+
+TEST(FindChessboardCornersSBTest, ThrowsWhenBoardSizeNotSet) {
+    EXPECT_THROW(make_chessboard_img({9, 6}) | FindChessboardCornersSB{},
+                 std::invalid_argument);
+}
+
+TEST(FindChessboardCornersSBTest, FluentBoardSizeReturnsThis) {
+    FindChessboardCornersSB op;
+    EXPECT_EQ(&op.board_size({9, 6}), &op);
+}

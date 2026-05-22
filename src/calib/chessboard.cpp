@@ -20,4 +20,20 @@ FindChessboardResult FindChessboardCorners::operator()(Image<BGR> img) const {
     return (*this)(Image<Gray>(std::move(gray)));
 }
 
+FindChessboardResult FindChessboardCornersSB::operator()(Image<Gray> img) const {
+    if (!has_board_size_)
+        throw std::invalid_argument("FindChessboardCornersSB: board_size must be set");
+    FindChessboardResult result;
+    result.found = cv::findChessboardCornersSB(img.mat(), board_size_,
+                                               result.corners, flags_);
+    if (!result.found) result.corners.clear();
+    return result;
+}
+
+FindChessboardResult FindChessboardCornersSB::operator()(Image<BGR> img) const {
+    cv::Mat gray;
+    cv::cvtColor(img.mat(), gray, cv::COLOR_BGR2GRAY);
+    return (*this)(Image<Gray>(std::move(gray)));
+}
+
 } // namespace improc::calib
