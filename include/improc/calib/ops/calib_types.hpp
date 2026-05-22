@@ -24,13 +24,13 @@ struct UndistortMapResult {
 };
 
 struct PnPResult {
-    bool success;
+    bool success = false;
     cv::Mat rvec;
     cv::Mat tvec;
 };
 
 struct PnPRansacResult {
-    bool success;
+    bool success = false;
     cv::Mat rvec;
     cv::Mat tvec;
     cv::Mat inliers; ///< CV_32S — indices of inlier correspondences

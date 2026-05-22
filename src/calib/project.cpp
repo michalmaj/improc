@@ -30,6 +30,10 @@ PnPResult SolvePnP::operator()(const std::vector<cv::Point3f>& obj_pts,
 PnPRansacResult SolvePnPRansac::operator()(const std::vector<cv::Point3f>& obj_pts,
                                             const std::vector<cv::Point2f>& img_pts,
                                             const cv::Mat& K, const cv::Mat& dist) const {
+    if (obj_pts.size() != img_pts.size())
+        throw std::invalid_argument("SolvePnPRansac: obj_pts and img_pts must have the same size");
+    if (obj_pts.size() < 4)
+        throw std::invalid_argument("SolvePnPRansac: at least 4 point correspondences required");
     PnPRansacResult result;
     result.success = cv::solvePnPRansac(obj_pts, img_pts, K, dist,
                                         result.rvec, result.tvec,

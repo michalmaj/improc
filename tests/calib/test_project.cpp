@@ -128,3 +128,17 @@ TEST(SolvePnPRansacTest, FluentSettersReturnThis) {
     EXPECT_EQ(&op.reprojection_error(8.f), &op);
     EXPECT_EQ(&op.iterations(100), &op);
 }
+
+TEST(SolvePnPRansacTest, ThrowsOnMismatchedSizes) {
+    auto obj = make_obj();
+    std::vector<cv::Point2f> img_pts;
+    cv::projectPoints(obj, make_rvec(), make_tvec(), make_K(), zero_dist(), img_pts);
+    img_pts.pop_back();
+    EXPECT_THROW(SolvePnPRansac{}(obj, img_pts, make_K(), zero_dist()), std::invalid_argument);
+}
+
+TEST(SolvePnPRansacTest, ThrowsOnFewerThanFourPoints) {
+    std::vector<cv::Point3f> obj3 = {{0,0,0},{1,0,0},{0,1,0}};
+    std::vector<cv::Point2f> img3 = {{100,100},{200,100},{100,200}};
+    EXPECT_THROW(SolvePnPRansac{}(obj3, img3, make_K(), zero_dist()), std::invalid_argument);
+}
