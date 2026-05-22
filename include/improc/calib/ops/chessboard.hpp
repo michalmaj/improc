@@ -1,9 +1,7 @@
 // include/improc/calib/ops/chessboard.hpp
 #pragma once
 #include <stdexcept>
-#include <vector>
 #include <opencv2/calib3d.hpp>
-#include <opencv2/imgproc.hpp>
 #include "improc/core/image.hpp"
 #include "improc/calib/ops/calib_types.hpp"
 
@@ -34,9 +32,9 @@ struct FindChessboardCorners {
     FindChessboardCorners& flags(int f)            { flags_ = f; return *this; }
 
     /// @brief Finds chessboard corners in a grayscale image.
-    FindChessboardResult operator()(const Image<Gray>& img) const;
+    FindChessboardResult operator()(Image<Gray> img) const;
     /// @brief Finds chessboard corners in a BGR image (auto-converted to Gray).
-    FindChessboardResult operator()(const Image<BGR>&  img) const;
+    FindChessboardResult operator()(Image<BGR>  img) const;
 
 private:
     cv::Size board_size_{};

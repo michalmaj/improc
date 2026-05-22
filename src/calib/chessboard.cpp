@@ -4,7 +4,7 @@
 
 namespace improc::calib {
 
-FindChessboardResult FindChessboardCorners::operator()(const Image<Gray>& img) const {
+FindChessboardResult FindChessboardCorners::operator()(Image<Gray> img) const {
     if (!has_board_size_)
         throw std::invalid_argument("FindChessboardCorners: board_size must be set");
     FindChessboardResult result;
@@ -14,7 +14,7 @@ FindChessboardResult FindChessboardCorners::operator()(const Image<Gray>& img) c
     return result;
 }
 
-FindChessboardResult FindChessboardCorners::operator()(const Image<BGR>& img) const {
+FindChessboardResult FindChessboardCorners::operator()(Image<BGR> img) const {
     cv::Mat gray;
     cv::cvtColor(img.mat(), gray, cv::COLOR_BGR2GRAY);
     return (*this)(Image<Gray>(std::move(gray)));
