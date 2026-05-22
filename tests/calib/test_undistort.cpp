@@ -69,7 +69,14 @@ TEST(UndistortMapTest, MapsHaveCorrectSize) {
 TEST(UndistortMapTest, MapsAreUsableWithCoreRemap) {
     Image<BGR> img(cv::Mat(120, 160, CV_8UC3, cv::Scalar(50,100,150)));
     auto maps = UndistortMap{}.K(make_K(160,120)).dist(zero_dist())({160, 120});
-    EXPECT_NO_THROW((img | improc::core::Remap{maps.map1, maps.map2}));
+    auto result = img | improc::core::Remap{maps.map1, maps.map2};
+    EXPECT_EQ(result.mat().rows, 120);
+    EXPECT_EQ(result.mat().cols, 160);
+}
+
+TEST(UndistortMapTest, ThrowsOnZeroImageSize) {
+    EXPECT_THROW(UndistortMap{}.K(make_K(160,120)).dist(zero_dist())({0, 0}),
+                 std::invalid_argument);
 }
 
 TEST(UndistortMapTest, ThrowsWhenKNotSet) {

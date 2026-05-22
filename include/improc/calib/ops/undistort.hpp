@@ -2,7 +2,7 @@
 #pragma once
 #include <stdexcept>
 #include <opencv2/core.hpp>
-#include <opencv2/calib3d.hpp>
+#include <opencv2/calib3d.hpp>  // template body calls cv::undistort inline
 #include "improc/core/image.hpp"
 #include "improc/core/concepts.hpp"
 #include "improc/calib/ops/calib_types.hpp"
