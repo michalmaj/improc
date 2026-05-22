@@ -14,3 +14,4 @@
 #include "improc/core/pipeline.hpp"
 #include "improc/calib/ops/calib_types.hpp"
 #include "improc/calib/ops/chessboard.hpp"
+#include "improc/calib/ops/calibrate.hpp"
