@@ -15,7 +15,7 @@ struct CalibrationResult {
     cv::Mat dist_coeffs;
     std::vector<cv::Mat> rvecs;
     std::vector<cv::Mat> tvecs;
-    double rms;
+    double rms = 0.0;
 };
 
 struct UndistortMapResult {

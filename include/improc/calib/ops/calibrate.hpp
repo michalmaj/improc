@@ -1,7 +1,7 @@
 #pragma once
 #include <stdexcept>
 #include <vector>
-#include <opencv2/calib3d.hpp>
+#include <opencv2/core.hpp>
 #include "improc/calib/ops/calib_types.hpp"
 
 namespace improc::calib {
@@ -11,6 +11,12 @@ namespace improc::calib {
 // Returns board_size.width × board_size.height points.
 inline std::vector<cv::Point3f> make_chessboard_points(cv::Size board_size,
                                                         float square_size) {
+    if (board_size.width <= 0 || board_size.height <= 0)
+        throw std::invalid_argument(
+            "make_chessboard_points: board_size dimensions must be positive");
+    if (square_size <= 0.f)
+        throw std::invalid_argument(
+            "make_chessboard_points: square_size must be positive");
     std::vector<cv::Point3f> pts;
     pts.reserve(board_size.width * board_size.height);
     for (int r = 0; r < board_size.height; ++r)

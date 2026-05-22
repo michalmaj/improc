@@ -31,11 +31,7 @@ CalibData make_calib_data() {
     cv::Mat K_gt = (cv::Mat_<double>(3,3) << fx,0,cx, 0,fy,cy, 0,0,1);
     cv::Mat dist = cv::Mat::zeros(1, 5, CV_64F);
 
-    // Generate object points for one view
-    std::vector<cv::Point3f> obj;
-    for (int r = 0; r < board.height; ++r)
-        for (int c = 0; c < board.width; ++c)
-            obj.push_back({c * sq, r * sq, 0.f});
+    auto obj = make_chessboard_points(board, sq);
 
     // Different board orientations
     std::vector<cv::Vec3d> rvecs_gt = {
@@ -91,6 +87,18 @@ TEST(MakeChessboardPointsTest, FirstPointIsOrigin) {
     EXPECT_FLOAT_EQ(pts[0].x, 0.f);
     EXPECT_FLOAT_EQ(pts[0].y, 0.f);
     EXPECT_FLOAT_EQ(pts[0].z, 0.f);
+}
+
+TEST(MakeChessboardPointsTest, ThrowsOnZeroWidth) {
+    EXPECT_THROW(make_chessboard_points({0, 6}, 25.f), std::invalid_argument);
+}
+
+TEST(MakeChessboardPointsTest, ThrowsOnNegativeDimension) {
+    EXPECT_THROW(make_chessboard_points({9, -1}, 25.f), std::invalid_argument);
+}
+
+TEST(MakeChessboardPointsTest, ThrowsOnNonPositiveSquareSize) {
+    EXPECT_THROW(make_chessboard_points({9, 6}, 0.f), std::invalid_argument);
 }
 
 // ── CalibrateCamera ──────────────────────────────────────────────────────────
