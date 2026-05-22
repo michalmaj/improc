@@ -36,4 +36,12 @@ FindChessboardResult FindChessboardCornersSB::operator()(Image<BGR> img) const {
     return (*this)(Image<Gray>(std::move(gray)));
 }
 
+std::vector<cv::Point2f> RefineCorners::operator()(Image<Gray>              img,
+                                                    std::vector<cv::Point2f> corners) const {
+    cv::cornerSubPix(img.mat(), corners, win_size_, zero_zone_,
+                     cv::TermCriteria(cv::TermCriteria::EPS | cv::TermCriteria::COUNT,
+                                      max_iter_, epsilon_));
+    return corners;
+}
+
 } // namespace improc::calib

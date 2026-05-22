@@ -91,3 +91,35 @@ TEST(FindChessboardCornersSBTest, FluentBoardSizeReturnsThis) {
     FindChessboardCornersSB op;
     EXPECT_EQ(&op.board_size({9, 6}), &op);
 }
+
+TEST(RefineCornersTest, RefinedCornersNotEmpty) {
+    const cv::Size board{9, 6};
+    auto img = make_chessboard_img(board);
+    auto found = img | FindChessboardCorners{}.board_size(board);
+    ASSERT_TRUE(found.found);
+    auto refined = RefineCorners{}(img, found.corners);
+    EXPECT_EQ(refined.size(), found.corners.size());
+}
+
+TEST(RefineCornersTest, RefinedCornersCloseToInitial) {
+    const cv::Size board{9, 6};
+    int sq = 40, border = sq;
+    auto img = make_chessboard_img(board, sq);
+    auto found = img | FindChessboardCorners{}.board_size(board);
+    ASSERT_TRUE(found.found);
+
+    auto refined = RefineCorners{}.win_size(5)(img, found.corners);
+    for (size_t i = 0; i < found.corners.size(); ++i) {
+        cv::Point2f d = refined[i] - found.corners[i];
+        float dist = std::sqrt(d.x*d.x + d.y*d.y);
+        EXPECT_LT(dist, 5.f) << "corner " << i << " moved too far during refinement";
+    }
+}
+
+TEST(RefineCornersTest, FluentSettersReturnThis) {
+    RefineCorners op;
+    EXPECT_EQ(&op.win_size(11), &op);
+    EXPECT_EQ(&op.zero_zone(-1), &op);
+    EXPECT_EQ(&op.max_iter(30), &op);
+    EXPECT_EQ(&op.epsilon(0.001), &op);
+}
