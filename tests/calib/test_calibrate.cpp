@@ -143,3 +143,9 @@ TEST(CalibrateCameraTest, RecoveredFocalLengthCloseToGroundTruth) {
     EXPECT_NEAR(fx_est, fx_gt, fx_gt * 0.05)
         << "fx_gt=" << fx_gt << " fx_est=" << fx_est;
 }
+
+TEST(CalibrateCameraTest, ThrowsOnZeroImageSize) {
+    auto data = make_calib_data();
+    EXPECT_THROW(CalibrateCamera{}(data.obj_pts, data.img_pts, {0, 0}),
+                 std::invalid_argument);
+}

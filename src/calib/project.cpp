@@ -8,6 +8,8 @@ std::vector<cv::Point2f> ProjectPoints::operator()(
         const std::vector<cv::Point3f>& obj_pts,
         const cv::Mat& rvec, const cv::Mat& tvec,
         const cv::Mat& K, const cv::Mat& dist) const {
+    if (obj_pts.empty())
+        throw std::invalid_argument("ProjectPoints: obj_pts must not be empty");
     std::vector<cv::Point2f> img_pts;
     cv::projectPoints(obj_pts, rvec, tvec, K, dist, img_pts);
     return img_pts;

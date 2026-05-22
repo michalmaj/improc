@@ -13,6 +13,9 @@ CalibrationResult CalibrateCamera::operator()(
     if (obj_pts.size() < 3)
         throw std::invalid_argument(
             "CalibrateCamera: at least 3 views required");
+    if (image_size.width <= 0 || image_size.height <= 0)
+        throw std::invalid_argument(
+            "CalibrateCamera: image_size dimensions must be positive");
 
     CalibrationResult result;
     result.rms = cv::calibrateCamera(obj_pts, img_pts, image_size,

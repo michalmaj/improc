@@ -39,6 +39,11 @@ TEST(ProjectPointsTest, PointsWithinReasonableBounds) {
     }
 }
 
+TEST(ProjectPointsTest, ThrowsOnEmptyObjectPoints) {
+    EXPECT_THROW(ProjectPoints{}({}, make_rvec(), make_tvec(), make_K(), zero_dist()),
+                 std::invalid_argument);
+}
+
 // ── SolvePnP ─────────────────────────────────────────────────────────────────
 
 TEST(SolvePnPTest, SucceedsOnSyntheticData) {

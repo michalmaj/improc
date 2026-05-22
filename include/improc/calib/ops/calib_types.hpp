@@ -6,7 +6,7 @@
 namespace improc::calib {
 
 struct FindChessboardResult {
-    bool found;
+    bool found = false;
     std::vector<cv::Point2f> corners;
 };
 
