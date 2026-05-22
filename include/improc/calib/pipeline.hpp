@@ -1,3 +1,11 @@
+/**
+ * @brief Umbrella include for all `improc::calib` pipeline ops.
+ *
+ * Including this header pulls in the calib result types (FindChessboardResult,
+ * CalibrationResult, UndistortMapResult, PnPResult, PnPRansacResult) and the
+ * core pipeline infrastructure so that callers get both namespaces from a
+ * single include and ADL finds `operator|` correctly.
+ */
 // include/improc/calib/pipeline.hpp
 #pragma once
 

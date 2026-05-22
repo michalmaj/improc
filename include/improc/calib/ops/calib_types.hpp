@@ -6,34 +6,34 @@
 namespace improc::calib {
 
 struct FindChessboardResult {
-    std::vector<cv::Point2f> corners;
     bool found;
+    std::vector<cv::Point2f> corners;
 };
 
 struct CalibrationResult {
-    cv::Mat K;
-    cv::Mat dist;
+    cv::Mat camera_matrix;
+    cv::Mat dist_coeffs;
     std::vector<cv::Mat> rvecs;
     std::vector<cv::Mat> tvecs;
     double rms;
 };
 
 struct UndistortMapResult {
-    cv::Mat map1;
-    cv::Mat map2;
+    cv::Mat map1; ///< x-map (CV_32FC1); use with Remap
+    cv::Mat map2; ///< y-map (CV_32FC1); use with Remap
 };
 
 struct PnPResult {
+    bool success;
     cv::Mat rvec;
     cv::Mat tvec;
-    bool success;
 };
 
 struct PnPRansacResult {
+    bool success;
     cv::Mat rvec;
     cv::Mat tvec;
-    bool success;
-    cv::Mat inliers; // CV_32S — indices of inlier correspondences
+    cv::Mat inliers; ///< CV_32S — indices of inlier correspondences
 };
 
 } // namespace improc::calib
