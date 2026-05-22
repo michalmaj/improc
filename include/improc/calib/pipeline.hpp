@@ -13,3 +13,4 @@
 // both namespaces from a single include and ADL finds operator| correctly.
 #include "improc/core/pipeline.hpp"
 #include "improc/calib/ops/calib_types.hpp"
+#include "improc/calib/ops/chessboard.hpp"
