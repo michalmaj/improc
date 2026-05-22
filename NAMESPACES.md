@@ -20,6 +20,7 @@ The library is organized into modular namespaces under the root `improc` namespa
 - [`improc::visualization`](#improcvisualization--chart-and-display-utilities) — Chart and display utilities
 - [`improc::onnx`](#improconnx--onnx-runtime-inference) — ONNX Runtime inference
 - [`improc::views`](#improcviews--lazy-image-pipeline) — Lazy Image Pipeline
+- [`improc::calib`](#improccalib--camera-calibration-and-pose-estimation) — Camera calibration and pose estimation
 - [Planned namespaces](#planned-namespaces)
 
 ---
@@ -1768,6 +1769,158 @@ for (const auto& [idx, img] : images | views::enumerate)
 // zip — image + mask pairs
 for (const auto& [img, mask] : views::zip(images, masks))
     result.push_back(img | ApplyMask{}.mask(mask));
+```
+
+---
+
+## `improc::calib` — Camera calibration and pose estimation
+
+**Header:** `#include "improc/calib/pipeline.hpp"`  
+**Namespace:** `improc::calib`  
+**Sources:** `include/improc/calib/`, `src/calib/`
+
+Includes `improc/core/pipeline.hpp` — `operator|` and all core ops are available after a single include.
+
+### Result types (`ops/calib_types.hpp`)
+
+**`FindChessboardResult`**
+- `.found` — `bool` — false if pattern not found; `.corners` is empty in that case
+- `.corners` — `std::vector<cv::Point2f>` — detected inner corner positions
+
+**`CalibrationResult`**
+- `.camera_matrix` — `cv::Mat` (3×3 CV_64F) — intrinsic matrix
+- `.dist_coeffs` — `cv::Mat` — distortion coefficients
+- `.rvecs` / `.tvecs` — `std::vector<cv::Mat>` — per-view rotation/translation vectors
+- `.rms` — `double` — mean reprojection error (initialized to 0.0)
+
+**`UndistortMapResult`**
+- `.map1` / `.map2` — `cv::Mat` (CV_32FC1) — precomputed undistortion maps for use with `Remap`
+
+**`PnPResult`**
+- `.success` — `bool` (initialized to false)
+- `.rvec` / `.tvec` — `cv::Mat` — estimated rotation/translation vectors
+
+**`PnPRansacResult`**
+- `.success` — `bool` (initialized to false)
+- `.rvec` / `.tvec` — `cv::Mat` — estimated rotation/translation vectors
+- `.inliers` — `cv::Mat` (CV_32S) — indices of inlier correspondences
+
+---
+
+### Chessboard detection (`ops/chessboard.hpp`)
+
+**`FindChessboardCorners`** — detects inner corners of a chessboard pattern.
+- `.board_size(cv::Size)` — **required**; inner corners (e.g. `{9,6}` for a 10×7 board); throws `std::invalid_argument` if not set
+- `.flags(int)` — default: `CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_NORMALIZE_IMAGE`
+- `operator()(Image<Gray>)` → `FindChessboardResult`
+- `operator()(Image<BGR>)` → `FindChessboardResult` (auto-converts to Gray)
+
+**`FindChessboardCornersSB`** — sub-pixel accurate variant using the newer OpenCV API.
+- Same API as `FindChessboardCorners`; `.flags(int)` default: `0`
+
+**`RefineCorners`** — refines detected corners to sub-pixel accuracy via `cv::cornerSubPix`.
+- `.win_size(int)` — default: `11`
+- `.zero_zone(int)` — default: `-1`
+- `.max_iter(int)` — default: `30`
+- `.epsilon(double)` — default: `0.001`
+- `operator()(Image<Gray>, std::vector<cv::Point2f> corners)` → `std::vector<cv::Point2f>`
+
+---
+
+### Calibration (`ops/calibrate.hpp`)
+
+**`make_chessboard_points(cv::Size board_size, float square_size)`** — free function.
+- Generates object points for one chessboard view on the Z=0 plane.
+- Returns `std::vector<cv::Point3f>` of size `board_size.width × board_size.height`.
+- `square_size` in any consistent unit (mm, m, etc.).
+- Throws `std::invalid_argument` if dimensions or square_size are not positive.
+
+**`CalibrateCamera`** — wraps `cv::calibrateCamera`.
+- `.flags(int)` — default: `0`
+- `operator()(obj_pts, img_pts, image_size)` → `CalibrationResult`
+  - `obj_pts`: `std::vector<std::vector<cv::Point3f>>` — one entry per view
+  - `img_pts`: `std::vector<std::vector<cv::Point2f>>` — one `FindChessboardResult.corners` per view
+- Throws `std::invalid_argument` if sizes mismatch or fewer than 3 views.
+
+---
+
+### Undistortion (`ops/undistort.hpp`)
+
+**`Undistort`** — pipeline op wrapping `cv::undistort`; recomputes maps on every call.
+- `.K(cv::Mat)` — **required**; 3×3 intrinsic matrix
+- `.dist(cv::Mat)` — **required**; distortion coefficients
+- `template<AnyFormat F> operator()(Image<F>)` → `Image<F>` — works on any format; composable via `operator|`
+- Throws `std::invalid_argument` if K or dist not set.
+
+**`UndistortMap`** — precomputes undistortion maps once for use with `Remap` (efficient for video).
+- `.K(cv::Mat)` — **required**
+- `.dist(cv::Mat)` — **required**
+- `.new_K(cv::Mat)` — optional; new camera matrix after undistortion
+- `.R(cv::Mat)` — optional; rectification transform (for stereo)
+- `operator()(cv::Size image_size)` → `UndistortMapResult`
+- Throws `std::invalid_argument` if K, dist not set, or image_size dimensions are not positive.
+- Pair with `Remap` from `improc::core`: `img | Remap{maps.map1, maps.map2}`
+
+---
+
+### Pose estimation (`ops/project.hpp`)
+
+**`ProjectPoints`** — 3D → 2D projection wrapping `cv::projectPoints`.
+- `operator()(obj_pts, rvec, tvec, K, dist)` → `std::vector<cv::Point2f>`
+
+**`SolvePnP`** — estimates pose from 2D/3D correspondences.
+- `.method(int)` — default: `cv::SOLVEPNP_ITERATIVE`
+- `operator()(obj_pts, img_pts, K, dist)` → `PnPResult`
+- Throws `std::invalid_argument` if sizes mismatch or fewer than 4 correspondences.
+
+**`SolvePnPRansac`** — RANSAC-robust pose estimation.
+- `.method(int)` — default: `cv::SOLVEPNP_ITERATIVE`
+- `.confidence(double)` — default: `0.99`
+- `.reprojection_error(float)` — default: `8.0`
+- `.iterations(int)` — default: `100`
+- `operator()(obj_pts, img_pts, K, dist)` → `PnPRansacResult`
+- Throws `std::invalid_argument` if sizes mismatch or fewer than 4 correspondences.
+
+---
+
+### Typical calibration workflow
+
+```cpp
+#include "improc/calib/pipeline.hpp"
+using namespace improc::calib;
+using namespace improc::core;
+
+// 1. Collect corners from multiple images
+const cv::Size board{9, 6};
+std::vector<std::vector<cv::Point3f>> all_obj;
+std::vector<std::vector<cv::Point2f>> all_img;
+
+for (const auto& img : calibration_images) {
+    auto res = img | FindChessboardCorners{}.board_size(board);
+    if (res.found) {
+        // img must be Gray for RefineCorners
+        auto gray = img | ToGray{};
+        auto refined = RefineCorners{}(gray, res.corners);
+        all_obj.push_back(make_chessboard_points(board, 25.f)); // 25mm squares
+        all_img.push_back(refined);
+    }
+}
+
+// 2. Calibrate
+auto cal = CalibrateCamera{}(all_obj, all_img, image_size);
+std::cout << "RMS: " << cal.rms << "\n";
+
+// 3. Undistort frames (video loop — precompute maps)
+auto maps = UndistortMap{}.K(cal.camera_matrix).dist(cal.dist_coeffs)(image_size);
+Image<BGR> undistorted = frame | Remap{maps.map1, maps.map2};
+
+// 4. Estimate pose of a new board image
+auto det = new_frame | FindChessboardCorners{}.board_size(board);
+if (det.found) {
+    auto pose = SolvePnP{}(make_chessboard_points(board, 25.f), det.corners,
+                           cal.camera_matrix, cal.dist_coeffs);
+    // pose.rvec, pose.tvec — board pose in camera frame
+}
 ```
 
 ---
