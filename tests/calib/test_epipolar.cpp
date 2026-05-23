@@ -64,11 +64,12 @@ TEST(FindFundamentalMatTest, ThrowsOnFewerThanEightPoints) {
 TEST(FindFundamentalMatTest, FIsThreeByThree) {
     auto scene = make_scene_pts();
     auto K = make_K();
-    auto rvec = cv::Mat(cv::Vec3d{0, 0, 0});
+    auto rvec1 = cv::Mat(cv::Vec3d{0, 0, 0});
+    auto rvec2 = cv::Mat(cv::Vec3d{0, 0.1, 0}); // slight rotation breaks planar degeneracy
     auto tvec1 = cv::Mat(cv::Vec3d{0, 0, 600});
     auto tvec2 = cv::Mat(cv::Vec3d{-100, 0, 600});
-    auto pts1 = project(scene, K, rvec, tvec1);
-    auto pts2 = project(scene, K, rvec, tvec2);
+    auto pts1 = project(scene, K, rvec1, tvec1);
+    auto pts2 = project(scene, K, rvec2, tvec2);
     auto res = FindFundamentalMat{}(pts1, pts2);
     EXPECT_EQ(res.F.rows, 3);
     EXPECT_EQ(res.F.cols, 3);
@@ -78,11 +79,12 @@ TEST(FindFundamentalMatTest, FIsThreeByThree) {
 TEST(FindFundamentalMatTest, EpipolarConstraintHoldsForInliers) {
     auto scene = make_scene_pts();
     auto K = make_K();
-    auto rvec = cv::Mat(cv::Vec3d{0, 0, 0});
+    auto rvec1 = cv::Mat(cv::Vec3d{0, 0, 0});
+    auto rvec2 = cv::Mat(cv::Vec3d{0, 0.1, 0}); // slight rotation breaks planar degeneracy
     auto tvec1 = cv::Mat(cv::Vec3d{0, 0, 600});
     auto tvec2 = cv::Mat(cv::Vec3d{-100, 0, 600});
-    auto pts1 = project(scene, K, rvec, tvec1);
-    auto pts2 = project(scene, K, rvec, tvec2);
+    auto pts1 = project(scene, K, rvec1, tvec1);
+    auto pts2 = project(scene, K, rvec2, tvec2);
     auto res = FindFundamentalMat{}(pts1, pts2);
 
     for (int i = 0; i < static_cast<int>(pts1.size()); ++i) {
