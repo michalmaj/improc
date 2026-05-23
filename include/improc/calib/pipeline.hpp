@@ -17,3 +17,5 @@
 #include "improc/calib/ops/calibrate.hpp"
 #include "improc/calib/ops/undistort.hpp"
 #include "improc/calib/ops/project.hpp"
+#include "improc/calib/ops/stereo.hpp"
+// epipolar.hpp will be added in Task 6
