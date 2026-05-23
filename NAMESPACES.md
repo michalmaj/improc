@@ -1805,6 +1805,34 @@ Includes `improc/core/pipeline.hpp` — `operator|` and all core ops are availab
 - `.rvec` / `.tvec` — `cv::Mat` — estimated rotation/translation vectors
 - `.inliers` — `cv::Mat` (CV_32S) — indices of inlier correspondences
 
+**`StereoCalibrationResult`**
+- `.K1` / `.K2` — `cv::Mat` (3×3 CV_64F) — left/right camera intrinsics
+- `.dist1` / `.dist2` — `cv::Mat` — distortion coefficients
+- `.R` — `cv::Mat` (3×3) — rotation between cameras
+- `.T` — `cv::Mat` (3×1) — translation between cameras
+- `.E` — `cv::Mat` (3×3) — essential matrix
+- `.F` — `cv::Mat` (3×3) — fundamental matrix
+- `.rms` — `double` — mean reprojection error (initialized to 0.0)
+
+**`StereoRectifyResult`**
+- `.R1` / `.R2` — `cv::Mat` (3×3) — rectification rotation transforms
+- `.P1` / `.P2` — `cv::Mat` (3×4) — projection matrices in rectified space
+- `.Q` — `cv::Mat` (4×4) — disparity-to-depth mapping matrix
+- `.validROI1` / `.validROI2` — `cv::Rect` — valid pixel regions after rectification
+
+**`FundamentalMatResult`**
+- `.F` — `cv::Mat` (3×3 CV_64F) — fundamental matrix
+- `.mask` — `cv::Mat` (CV_8U) — 1 = inlier, 0 = outlier
+
+**`EssentialMatResult`**
+- `.E` — `cv::Mat` (3×3 CV_64F) — essential matrix
+- `.mask` — `cv::Mat` (CV_8U) — 1 = inlier, 0 = outlier
+
+**`RecoverPoseResult`**
+- `.R` — `cv::Mat` (3×3) — rotation matrix
+- `.t` — `cv::Mat` (3×1) — unit-length translation vector
+- `.inliers` — `int` — number of inlier correspondences (initialized to 0)
+
 ---
 
 ### Chessboard detection (`ops/chessboard.hpp`)
@@ -1922,6 +1950,77 @@ if (det.found) {
     // pose.rvec, pose.tvec — board pose in camera frame
 }
 ```
+
+---
+
+### Stereo calibration (`ops/stereo.hpp`)
+
+**`StereoCalibrate`** — wraps `cv::stereoCalibrate`; calibrates a stereo camera pair jointly.
+- `.K1(cv::Mat)` / `.dist1(cv::Mat)` — optional initial intrinsics for left camera
+- `.K2(cv::Mat)` / `.dist2(cv::Mat)` — optional initial intrinsics for right camera
+- `.flags(int)` — default: `0`; set `cv::CALIB_FIX_INTRINSIC` when providing pre-calibrated intrinsics
+- `operator()(obj_pts, img_pts1, img_pts2, image_size)` → `StereoCalibrationResult`
+  - `obj_pts`: `std::vector<std::vector<cv::Point3f>>` — same for both cameras
+  - `img_pts1` / `img_pts2`: `std::vector<std::vector<cv::Point2f>>` — per-view corners
+- Throws `std::invalid_argument` if vector sizes differ, fewer than 3 views, or image_size not positive.
+
+**`StereoRectify`** — wraps `cv::stereoRectify`; computes rectification transforms.
+- `.alpha(double)` — default: `-1.0` (all valid pixels preserved)
+- `.new_image_size(cv::Size)` — default: `{0,0}` (same as input)
+- `operator()(K1, dist1, K2, dist2, R, T, image_size)` → `StereoRectifyResult`
+- Throws `std::invalid_argument` if any of K1/dist1/K2/dist2/R/T is empty.
+
+**`StereoBM`** — block-matching disparity; wraps `cv::StereoBM`.
+- `.num_disparities(int)` — default: `16`
+- `.block_size(int)` — default: `15`
+- `operator()(Image<Gray> left, Image<Gray> right)` → `cv::Mat` (CV_16S)
+- Divide result by `16.0` to get actual disparity values in pixels.
+- Throws `std::invalid_argument` if left and right sizes differ.
+
+**`StereoSGBM`** — semi-global block-matching; wraps `cv::StereoSGBM`.
+- `.min_disparity(int)` — default: `0`
+- `.num_disparities(int)` — default: `64`
+- `.block_size(int)` — default: `3`
+- `.p1(int)` / `.p2(int)` — smoothness penalties; `0` = no smoothness; recommended `8*blockSize²` / `32*blockSize²`
+- `.mode(int)` — default: `cv::StereoSGBM::MODE_SGBM`
+- `operator()(Image<Gray> left, Image<Gray> right)` → `cv::Mat` (CV_16S)
+- Divide result by `16.0` for actual disparity. Throws if sizes differ.
+
+**`ReprojectTo3D`** — wraps `cv::reprojectImageTo3D`.
+- `.handle_missing(bool)` — default: `false`
+- `operator()(disparity, Q)` → `cv::Mat` (CV_32FC3 point cloud, same size as disparity)
+  - `disparity`: CV_16S or CV_32F disparity map
+  - `Q`: 4×4 matrix from `StereoRectifyResult.Q`
+
+---
+
+### Epipolar geometry (`ops/epipolar.hpp`)
+
+**`FindFundamentalMat`** — wraps `cv::findFundamentalMat`.
+- `.method(int)` — default: `cv::FM_RANSAC`
+- `.ransac_threshold(double)` — default: `3.0`
+- `.confidence(double)` — default: `0.99`
+- `operator()(pts1, pts2)` → `FundamentalMatResult`
+- Throws `std::invalid_argument` if sizes mismatch or fewer than 8 points.
+
+**`FindEssentialMat`** — wraps `cv::findEssentialMat`.
+- `.method(int)` — default: `cv::RANSAC`
+- `.threshold(double)` — default: `1.0`
+- `.confidence(double)` — default: `0.99`
+- `operator()(pts1, pts2, K)` → `EssentialMatResult`
+  - `K`: 3×3 camera matrix
+- Throws `std::invalid_argument` if sizes mismatch or fewer than 5 points.
+
+**`RecoverPose`** — wraps `cv::recoverPose`; decomposes essential matrix into R and t.
+- `operator()(E, pts1, pts2, K)` → `RecoverPoseResult`
+  - `E`: essential matrix from `FindEssentialMat`
+  - `pts1` / `pts2`: same correspondences used to compute E
+  - `K`: camera matrix (same for both views if shared intrinsics)
+
+**`TriangulatePoints`** — wraps `cv::triangulatePoints`.
+- `operator()(P1, P2, pts1, pts2)` → `cv::Mat` (4×N homogeneous CV_32F)
+  - `P1` / `P2`: 3×4 projection matrices
+  - Divide each column by the 4th row to get Euclidean 3D coordinates.
 
 ---
 
