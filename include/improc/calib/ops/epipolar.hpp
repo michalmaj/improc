@@ -25,4 +25,22 @@ private:
     double confidence_       = 0.99;
 };
 
+// ── FindEssentialMat ──────────────────────────────────────────────────────────
+
+struct FindEssentialMat {
+    FindEssentialMat& method(int m)       { method_     = m; return *this; }
+    FindEssentialMat& threshold(double t) { threshold_  = t; return *this; }
+    FindEssentialMat& confidence(double c){ confidence_ = c; return *this; }
+
+    // K: 3×3 camera matrix. Throws if sizes mismatch or < 5 points.
+    EssentialMatResult operator()(const std::vector<cv::Point2f>& pts1,
+                                  const std::vector<cv::Point2f>& pts2,
+                                  const cv::Mat& K) const;
+
+private:
+    int    method_     = cv::RANSAC;
+    double threshold_  = 1.0;
+    double confidence_ = 0.99;
+};
+
 } // namespace improc::calib

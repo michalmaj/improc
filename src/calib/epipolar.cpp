@@ -20,4 +20,21 @@ FundamentalMatResult FindFundamentalMat::operator()(
     return result;
 }
 
+EssentialMatResult FindEssentialMat::operator()(
+        const std::vector<cv::Point2f>& pts1,
+        const std::vector<cv::Point2f>& pts2,
+        const cv::Mat& K) const {
+    if (pts1.size() != pts2.size())
+        throw std::invalid_argument(
+            "FindEssentialMat: pts1 and pts2 must have the same number of points");
+    if (pts1.size() < 5)
+        throw std::invalid_argument(
+            "FindEssentialMat: at least 5 point correspondences required");
+
+    EssentialMatResult result;
+    result.E = cv::findEssentialMat(pts1, pts2, K, method_,
+                                    confidence_, threshold_, result.mask);
+    return result;
+}
+
 } // namespace improc::calib

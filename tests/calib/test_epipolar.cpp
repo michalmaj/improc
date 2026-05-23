@@ -101,3 +101,56 @@ TEST(FindFundamentalMatTest, FluentSettersReturnThis) {
     EXPECT_EQ(&op.ransac_threshold(3.0), &op);
     EXPECT_EQ(&op.confidence(0.99), &op);
 }
+
+// ── FindEssentialMat ──────────────────────────────────────────────────────────
+
+TEST(FindEssentialMatTest, ThrowsOnSizeMismatch) {
+    auto scene = make_scene_pts();
+    auto K = make_K();
+    auto rvec = cv::Mat(cv::Vec3d{0, 0, 0});
+    auto tvec1 = cv::Mat(cv::Vec3d{0, 0, 600});
+    auto tvec2 = cv::Mat(cv::Vec3d{-100, 0, 600});
+    auto pts1 = project(scene, K, rvec, tvec1);
+    auto pts2 = project(scene, K, rvec, tvec2);
+    pts2.pop_back();
+    EXPECT_THROW(FindEssentialMat{}(pts1, pts2, K), std::invalid_argument);
+}
+
+TEST(FindEssentialMatTest, ThrowsOnFewerThanFivePoints) {
+    std::vector<cv::Point2f> pts(4, {1.f, 1.f});
+    EXPECT_THROW(FindEssentialMat{}(pts, pts, make_K()), std::invalid_argument);
+}
+
+TEST(FindEssentialMatTest, EIsThreeByThree) {
+    auto scene = make_scene_pts();
+    auto K = make_K();
+    auto rvec = cv::Mat(cv::Vec3d{0, 0, 0});
+    auto tvec1 = cv::Mat(cv::Vec3d{0, 0, 600});
+    auto tvec2 = cv::Mat(cv::Vec3d{-100, 0, 600});
+    auto pts1 = project(scene, K, rvec, tvec1);
+    auto pts2 = project(scene, K, rvec, tvec2);
+    auto res = FindEssentialMat{}(pts1, pts2, K);
+    EXPECT_EQ(res.E.rows, 3);
+    EXPECT_EQ(res.E.cols, 3);
+    EXPECT_FALSE(res.mask.empty());
+}
+
+TEST(FindEssentialMatTest, RankTwoPropertyHolds) {
+    auto scene = make_scene_pts();
+    auto K = make_K();
+    auto rvec = cv::Mat(cv::Vec3d{0, 0, 0});
+    auto tvec1 = cv::Mat(cv::Vec3d{0, 0, 600});
+    auto tvec2 = cv::Mat(cv::Vec3d{-100, 0, 600});
+    auto pts1 = project(scene, K, rvec, tvec1);
+    auto pts2 = project(scene, K, rvec, tvec2);
+    auto res = FindEssentialMat{}(pts1, pts2, K);
+    EXPECT_NEAR(cv::determinant(res.E), 0.0, 1e-6)
+        << "det(E) should be ~0 (rank-2 property)";
+}
+
+TEST(FindEssentialMatTest, FluentSettersReturnThis) {
+    FindEssentialMat op;
+    EXPECT_EQ(&op.method(cv::RANSAC), &op);
+    EXPECT_EQ(&op.threshold(1.0), &op);
+    EXPECT_EQ(&op.confidence(0.99), &op);
+}
