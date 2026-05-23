@@ -51,4 +51,25 @@ StereoRectifyResult StereoRectify::operator()(
     return result;
 }
 
+cv::Mat StereoBM::operator()(Image<Gray> left, Image<Gray> right) const {
+    if (left.mat().size() != right.mat().size())
+        throw std::invalid_argument(
+            "StereoBM: left and right images must have the same size");
+    auto bm = cv::StereoBM::create(num_disparities_, block_size_);
+    cv::Mat disparity;
+    bm->compute(left.mat(), right.mat(), disparity);
+    return disparity;
+}
+
+cv::Mat StereoSGBM::operator()(Image<Gray> left, Image<Gray> right) const {
+    if (left.mat().size() != right.mat().size())
+        throw std::invalid_argument(
+            "StereoSGBM: left and right images must have the same size");
+    auto sgbm = cv::StereoSGBM::create(min_disparity_, num_disparities_, block_size_,
+                                        p1_, p2_, 0, 0, 0, 0, 0, mode_);
+    cv::Mat disparity;
+    sgbm->compute(left.mat(), right.mat(), disparity);
+    return disparity;
+}
+
 } // namespace improc::calib

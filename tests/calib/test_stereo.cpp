@@ -65,6 +65,29 @@ StereoData make_stereo_data() {
     return data;
 }
 
+// Returns {left_gray, right_gray} where right is left shifted by shift_px in X.
+std::pair<Image<Gray>, Image<Gray>> make_stereo_pair(cv::Size board_size,
+                                                      int square_px,
+                                                      int shift_px) {
+    int border = square_px;
+    int cols = (board_size.width + 1) * square_px + 2 * border;
+    int rows = (board_size.height + 1) * square_px + 2 * border;
+    cv::Mat mat(rows, cols, CV_8UC1, cv::Scalar(255));
+    for (int r = 0; r <= board_size.height; ++r)
+        for (int c = 0; c <= board_size.width; ++c)
+            if ((r + c) % 2 == 0) {
+                cv::Rect rect(border + c * square_px,
+                              border + r * square_px,
+                              square_px, square_px);
+                mat(rect).setTo(0);
+            }
+    Image<Gray> left(mat);
+    cv::Mat shift_mat = (cv::Mat_<double>(2, 3) << 1, 0, -shift_px, 0, 1, 0);
+    cv::Mat right_mat;
+    cv::warpAffine(mat, right_mat, shift_mat, mat.size());
+    return {left, Image<Gray>(right_mat)};
+}
+
 } // namespace
 
 // ── StereoCalibrate ──────────────────────────────────────────────────────────
@@ -152,4 +175,66 @@ TEST(StereoRectifyTest, ValidROIsAreNonEmpty) {
                                 cal.R, cal.T, d.image_size);
     EXPECT_GT(rect.validROI1.area(), 0);
     EXPECT_GT(rect.validROI2.area(), 0);
+}
+
+// ── StereoBM ──────────────────────────────────────────────────────────────────
+
+TEST(StereoBMTest, ThrowsOnSizeMismatch) {
+    auto [left, right] = make_stereo_pair({9,6}, 20, 16);
+    cv::Mat smaller(left.mat().rows / 2, left.mat().cols / 2, CV_8UC1);
+    EXPECT_THROW(StereoBM{}(left, Image<Gray>(smaller)), std::invalid_argument);
+}
+
+TEST(StereoBMTest, OutputIsCV16SAndMatchesInputSize) {
+    auto [left, right] = make_stereo_pair({9,6}, 20, 16);
+    cv::Mat disp = StereoBM{}(left, right);
+    EXPECT_EQ(disp.type(), CV_16S);
+    EXPECT_EQ(disp.size(), left.mat().size());
+}
+
+TEST(StereoBMTest, HasValidPixels) {
+    auto [left, right] = make_stereo_pair({9,6}, 20, 16);
+    cv::Mat disp = StereoBM{}(left, right);
+    double min_val, max_val;
+    cv::minMaxLoc(disp, &min_val, &max_val);
+    EXPECT_GT(max_val, static_cast<double>(cv::StereoBM::DISP_SCALE * -1));
+}
+
+TEST(StereoBMTest, FluentSettersReturnThis) {
+    StereoBM op;
+    EXPECT_EQ(&op.num_disparities(32), &op);
+    EXPECT_EQ(&op.block_size(11), &op);
+}
+
+// ── StereoSGBM ────────────────────────────────────────────────────────────────
+
+TEST(StereoSGBMTest, ThrowsOnSizeMismatch) {
+    auto [left, right] = make_stereo_pair({9,6}, 20, 16);
+    cv::Mat smaller(left.mat().rows / 2, left.mat().cols / 2, CV_8UC1);
+    EXPECT_THROW(StereoSGBM{}(left, Image<Gray>(smaller)), std::invalid_argument);
+}
+
+TEST(StereoSGBMTest, OutputIsCV16SAndMatchesInputSize) {
+    auto [left, right] = make_stereo_pair({9,6}, 20, 16);
+    cv::Mat disp = StereoSGBM{}(left, right);
+    EXPECT_EQ(disp.type(), CV_16S);
+    EXPECT_EQ(disp.size(), left.mat().size());
+}
+
+TEST(StereoSGBMTest, HasValidPixels) {
+    auto [left, right] = make_stereo_pair({9,6}, 20, 16);
+    cv::Mat disp = StereoSGBM{}(left, right);
+    double min_val, max_val;
+    cv::minMaxLoc(disp, &min_val, &max_val);
+    EXPECT_GT(max_val, static_cast<double>(cv::StereoBM::DISP_SCALE * -1));
+}
+
+TEST(StereoSGBMTest, FluentSettersReturnThis) {
+    StereoSGBM op;
+    EXPECT_EQ(&op.min_disparity(0), &op);
+    EXPECT_EQ(&op.num_disparities(64), &op);
+    EXPECT_EQ(&op.block_size(3), &op);
+    EXPECT_EQ(&op.p1(0), &op);
+    EXPECT_EQ(&op.p2(0), &op);
+    EXPECT_EQ(&op.mode(cv::StereoSGBM::MODE_SGBM), &op);
 }

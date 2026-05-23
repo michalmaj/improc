@@ -3,9 +3,14 @@
 #include <stdexcept>
 #include <vector>
 #include <opencv2/core.hpp>
+#include <opencv2/calib3d.hpp>  // cv::StereoSGBM::MODE_SGBM used in default member initializer
 #include "improc/calib/ops/calib_types.hpp"
+#include "improc/core/image.hpp"
 
 namespace improc::calib {
+
+using improc::core::Image;
+using improc::core::Gray;
 
 // ── StereoCalibrate ───────────────────────────────────────────────────────────
 
@@ -48,6 +53,44 @@ struct StereoRectify {
 private:
     double   alpha_          = -1.0;   // -1 = OpenCV default (all valid pixels)
     cv::Size new_image_size_ = {0, 0}; // {0,0} = same as input
+};
+
+// ── StereoBM ──────────────────────────────────────────────────────────────────
+
+struct StereoBM {
+    StereoBM& num_disparities(int n) { num_disparities_ = n; return *this; }
+    StereoBM& block_size(int s)      { block_size_      = s; return *this; }
+
+    // Returns CV_16S disparity map; divide by 16.0 for actual disparity values.
+    // Throws std::invalid_argument if left/right sizes differ.
+    cv::Mat operator()(Image<Gray> left, Image<Gray> right) const;
+
+private:
+    int num_disparities_ = 16;
+    int block_size_      = 15;
+};
+
+// ── StereoSGBM ────────────────────────────────────────────────────────────────
+
+struct StereoSGBM {
+    StereoSGBM& min_disparity(int n)   { min_disparity_   = n; return *this; }
+    StereoSGBM& num_disparities(int n) { num_disparities_ = n; return *this; }
+    StereoSGBM& block_size(int s)      { block_size_      = s; return *this; }
+    StereoSGBM& p1(int p)              { p1_              = p; return *this; }
+    StereoSGBM& p2(int p)              { p2_              = p; return *this; }
+    StereoSGBM& mode(int m)            { mode_            = m; return *this; }
+
+    // Returns CV_16S disparity map; divide by 16.0 for actual disparity values.
+    // Throws std::invalid_argument if left/right sizes differ.
+    cv::Mat operator()(Image<Gray> left, Image<Gray> right) const;
+
+private:
+    int min_disparity_   = 0;
+    int num_disparities_ = 64;
+    int block_size_      = 3;
+    int p1_              = 0;  // 0 = no smoothness; recommended: 8*blockSize²
+    int p2_              = 0;  // 0 = no smoothness; recommended: 32*blockSize²
+    int mode_            = cv::StereoSGBM::MODE_SGBM;
 };
 
 } // namespace improc::calib
