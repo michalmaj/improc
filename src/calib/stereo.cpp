@@ -13,9 +13,11 @@ StereoCalibrationResult StereoCalibrate::operator()(
         throw std::invalid_argument(
             "StereoCalibrate: obj_pts, img_pts1, img_pts2 must have the same number of views");
     if (obj_pts.size() < 3)
-        throw std::invalid_argument("StereoCalibrate: at least 3 views required");
+        throw std::invalid_argument(
+            "StereoCalibrate: at least 3 views required");
     if (image_size.width <= 0 || image_size.height <= 0)
-        throw std::invalid_argument("StereoCalibrate: image_size dimensions must be positive");
+        throw std::invalid_argument(
+            "StereoCalibrate: image_size dimensions must be positive");
 
     StereoCalibrationResult result;
     result.K1    = K1_.empty()    ? cv::Mat() : K1_.clone();
