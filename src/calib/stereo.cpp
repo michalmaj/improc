@@ -33,4 +33,22 @@ StereoCalibrationResult StereoCalibrate::operator()(
     return result;
 }
 
+StereoRectifyResult StereoRectify::operator()(
+        const cv::Mat& K1, const cv::Mat& dist1,
+        const cv::Mat& K2, const cv::Mat& dist2,
+        const cv::Mat& R,  const cv::Mat& T,
+        cv::Size image_size) const {
+    if (K1.empty() || dist1.empty() || K2.empty() || dist2.empty() ||
+        R.empty()  || T.empty())
+        throw std::invalid_argument(
+            "StereoRectify: K1, dist1, K2, dist2, R, T must not be empty");
+
+    StereoRectifyResult result;
+    cv::stereoRectify(K1, dist1, K2, dist2, image_size, R, T,
+                      result.R1, result.R2, result.P1, result.P2, result.Q,
+                      cv::CALIB_ZERO_DISPARITY, alpha_, new_image_size_,
+                      &result.validROI1, &result.validROI2);
+    return result;
+}
+
 } // namespace improc::calib

@@ -123,3 +123,33 @@ TEST(StereoCalibrateTest, BaselineCloseToGroundTruth) {
     EXPECT_NEAR(t0, d.T_gt_x, std::abs(d.T_gt_x) * 0.05)
         << "T[0]=" << t0 << " expected~" << d.T_gt_x;
 }
+
+// ── StereoRectify ─────────────────────────────────────────────────────────────
+
+TEST(StereoRectifyTest, ThrowsOnEmptyMatrices) {
+    EXPECT_THROW(
+        StereoRectify{}(cv::Mat{}, cv::Mat{}, cv::Mat{}, cv::Mat{},
+                        cv::Mat{}, cv::Mat{}, {640,480}),
+        std::invalid_argument);
+}
+
+TEST(StereoRectifyTest, OutputShapesAreCorrect) {
+    auto d = make_stereo_data();
+    auto cal = StereoCalibrate{}(d.obj_pts, d.img_pts1, d.img_pts2, d.image_size);
+    auto rect = StereoRectify{}(cal.K1, cal.dist1, cal.K2, cal.dist2,
+                                cal.R, cal.T, d.image_size);
+    EXPECT_EQ(rect.R1.rows, 3);  EXPECT_EQ(rect.R1.cols, 3);
+    EXPECT_EQ(rect.R2.rows, 3);  EXPECT_EQ(rect.R2.cols, 3);
+    EXPECT_EQ(rect.P1.rows, 3);  EXPECT_EQ(rect.P1.cols, 4);
+    EXPECT_EQ(rect.P2.rows, 3);  EXPECT_EQ(rect.P2.cols, 4);
+    EXPECT_EQ(rect.Q.rows, 4);   EXPECT_EQ(rect.Q.cols, 4);
+}
+
+TEST(StereoRectifyTest, ValidROIsAreNonEmpty) {
+    auto d = make_stereo_data();
+    auto cal = StereoCalibrate{}(d.obj_pts, d.img_pts1, d.img_pts2, d.image_size);
+    auto rect = StereoRectify{}(cal.K1, cal.dist1, cal.K2, cal.dist2,
+                                cal.R, cal.T, d.image_size);
+    EXPECT_GT(rect.validROI1.area(), 0);
+    EXPECT_GT(rect.validROI2.area(), 0);
+}

@@ -33,4 +33,21 @@ private:
     int flags_ = 0;
 };
 
+// ── StereoRectify ─────────────────────────────────────────────────────────────
+
+struct StereoRectify {
+    StereoRectify& alpha(double a)            { alpha_          = a; return *this; }
+    StereoRectify& new_image_size(cv::Size s) { new_image_size_ = s; return *this; }
+
+    // Throws std::invalid_argument if any of K1/dist1/K2/dist2/R/T is empty.
+    StereoRectifyResult operator()(const cv::Mat& K1, const cv::Mat& dist1,
+                                   const cv::Mat& K2, const cv::Mat& dist2,
+                                   const cv::Mat& R,  const cv::Mat& T,
+                                   cv::Size image_size) const;
+
+private:
+    double   alpha_          = -1.0;   // -1 = OpenCV default (all valid pixels)
+    cv::Size new_image_size_ = {0, 0}; // {0,0} = same as input
+};
+
 } // namespace improc::calib
