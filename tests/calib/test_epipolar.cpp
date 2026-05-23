@@ -198,3 +198,50 @@ TEST(RecoverPoseTest, TranslationIsUnitLength) {
     EXPECT_NEAR(norm, 1.0, 1e-6)
         << "|t|₂ should be 1.0 (unit translation)";
 }
+
+// ── TriangulatePoints ─────────────────────────────────────────────────────────
+
+TEST(TriangulatePointsTest, OutputIsFourByN) {
+    auto scene = make_scene_pts();
+    auto K = make_K();
+    auto rvec = cv::Mat(cv::Vec3d{0, 0, 0});
+    auto tvec1 = cv::Mat(cv::Vec3d{0, 0, 600});
+    auto tvec2 = cv::Mat(cv::Vec3d{-100, 0, 600});
+    cv::Mat P1 = make_P(K, rvec, tvec1);
+    cv::Mat P2 = make_P(K, rvec, tvec2);
+    auto pts1 = project(scene, K, rvec, tvec1);
+    auto pts2 = project(scene, K, rvec, tvec2);
+    cv::Mat pts4d = TriangulatePoints{}(P1, P2, pts1, pts2);
+    EXPECT_EQ(pts4d.rows, 4);
+    EXPECT_EQ(pts4d.cols, static_cast<int>(scene.size()));
+}
+
+TEST(TriangulatePointsTest, TriangulatedPointsCloseToGroundTruth) {
+    auto scene = make_scene_pts();
+    auto K = make_K();
+    auto rvec = cv::Mat(cv::Vec3d{0, 0, 0});
+    auto tvec1 = cv::Mat(cv::Vec3d{0, 0, 600});
+    auto tvec2 = cv::Mat(cv::Vec3d{-100, 0, 600});
+    cv::Mat P1 = make_P(K, rvec, tvec1);
+    cv::Mat P2 = make_P(K, rvec, tvec2);
+    auto pts1 = project(scene, K, rvec, tvec1);
+    auto pts2 = project(scene, K, rvec, tvec2);
+    cv::Mat pts4d = TriangulatePoints{}(P1, P2, pts1, pts2);
+
+    // cv::triangulatePoints returns points in world frame (homogeneous).
+    // With R=I and scene on Z=0: X_world = (x, y, 0).
+    for (int i = 0; i < pts4d.cols; ++i) {
+        float w = pts4d.at<float>(3, i);
+        ASSERT_GT(std::abs(w), 1e-6f) << "degenerate homogeneous point at " << i;
+        float x_world = pts4d.at<float>(0, i) / w;
+        float y_world = pts4d.at<float>(1, i) / w;
+        float z_world = pts4d.at<float>(2, i) / w;
+
+        EXPECT_NEAR(x_world, scene[i].x, scene[i].x * 0.01f + 1.f)
+            << "x mismatch at point " << i;
+        EXPECT_NEAR(y_world, scene[i].y, scene[i].y * 0.01f + 1.f)
+            << "y mismatch at point " << i;
+        EXPECT_NEAR(z_world, 0.f, 1.f)
+            << "z mismatch at point " << i;
+    }
+}

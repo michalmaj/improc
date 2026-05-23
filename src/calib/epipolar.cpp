@@ -47,4 +47,13 @@ RecoverPoseResult RecoverPose::operator()(
     return result;
 }
 
+cv::Mat TriangulatePoints::operator()(
+        const cv::Mat& P1, const cv::Mat& P2,
+        const std::vector<cv::Point2f>& pts1,
+        const std::vector<cv::Point2f>& pts2) const {
+    cv::Mat pts4d;
+    cv::triangulatePoints(P1, P2, pts1, pts2, pts4d);
+    return pts4d;
+}
+
 } // namespace improc::calib

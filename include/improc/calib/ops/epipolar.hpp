@@ -54,4 +54,14 @@ struct RecoverPose {
                                  const cv::Mat& K) const;
 };
 
+// ── TriangulatePoints ─────────────────────────────────────────────────────────
+
+struct TriangulatePoints {
+    // P1, P2: 3×4 projection matrices.
+    // Returns 4×N homogeneous coordinates (CV_32F).
+    cv::Mat operator()(const cv::Mat& P1, const cv::Mat& P2,
+                       const std::vector<cv::Point2f>& pts1,
+                       const std::vector<cv::Point2f>& pts2) const;
+};
+
 } // namespace improc::calib
