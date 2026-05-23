@@ -238,3 +238,22 @@ TEST(StereoSGBMTest, FluentSettersReturnThis) {
     EXPECT_EQ(&op.p2(0), &op);
     EXPECT_EQ(&op.mode(cv::StereoSGBM::MODE_SGBM), &op);
 }
+
+// ── ReprojectTo3D ─────────────────────────────────────────────────────────────
+
+TEST(ReprojectTo3DTest, OutputSizeAndTypeMatchDisparity) {
+    auto d = make_stereo_data();
+    auto cal = StereoCalibrate{}(d.obj_pts, d.img_pts1, d.img_pts2, d.image_size);
+    auto rect = StereoRectify{}(cal.K1, cal.dist1, cal.K2, cal.dist2,
+                                cal.R, cal.T, d.image_size);
+    auto [left, right] = make_stereo_pair({9, 6}, 20, 16);
+    cv::Mat disp = StereoBM{}(left, right);
+    cv::Mat cloud = ReprojectTo3D{}(disp, rect.Q);
+    EXPECT_EQ(cloud.size(), disp.size());
+    EXPECT_EQ(cloud.type(), CV_32FC3);
+}
+
+TEST(ReprojectTo3DTest, FluentSetterReturnsThis) {
+    ReprojectTo3D op;
+    EXPECT_EQ(&op.handle_missing(true), &op);
+}

@@ -72,4 +72,10 @@ cv::Mat StereoSGBM::operator()(Image<Gray> left, Image<Gray> right) const {
     return disparity;
 }
 
+cv::Mat ReprojectTo3D::operator()(const cv::Mat& disparity, const cv::Mat& Q) const {
+    cv::Mat cloud;
+    cv::reprojectImageTo3D(disparity, cloud, Q, handle_missing_);
+    return cloud;
+}
+
 } // namespace improc::calib

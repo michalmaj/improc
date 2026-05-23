@@ -93,4 +93,17 @@ private:
     int mode_            = cv::StereoSGBM::MODE_SGBM;
 };
 
+// ── ReprojectTo3D ─────────────────────────────────────────────────────────────
+
+struct ReprojectTo3D {
+    ReprojectTo3D& handle_missing(bool h) { handle_missing_ = h; return *this; }
+
+    // disparity: CV_16S or CV_32F; Q: 4×4 matrix from StereoRectify.
+    // Returns CV_32FC3 point cloud; same size as disparity.
+    cv::Mat operator()(const cv::Mat& disparity, const cv::Mat& Q) const;
+
+private:
+    bool handle_missing_ = false;
+};
+
 } // namespace improc::calib
