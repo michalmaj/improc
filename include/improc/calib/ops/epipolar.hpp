@@ -43,4 +43,15 @@ private:
     double confidence_ = 0.99;
 };
 
+// ── RecoverPose ───────────────────────────────────────────────────────────────
+
+struct RecoverPose {
+    // E: essential matrix; pts1/pts2: same correspondences used to compute E.
+    // K: camera matrix (same for both views if shared intrinsics).
+    RecoverPoseResult operator()(const cv::Mat& E,
+                                 const std::vector<cv::Point2f>& pts1,
+                                 const std::vector<cv::Point2f>& pts2,
+                                 const cv::Mat& K) const;
+};
+
 } // namespace improc::calib

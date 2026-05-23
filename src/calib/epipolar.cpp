@@ -37,4 +37,14 @@ EssentialMatResult FindEssentialMat::operator()(
     return result;
 }
 
+RecoverPoseResult RecoverPose::operator()(
+        const cv::Mat& E,
+        const std::vector<cv::Point2f>& pts1,
+        const std::vector<cv::Point2f>& pts2,
+        const cv::Mat& K) const {
+    RecoverPoseResult result;
+    result.inliers = cv::recoverPose(E, pts1, pts2, K, result.R, result.t);
+    return result;
+}
+
 } // namespace improc::calib

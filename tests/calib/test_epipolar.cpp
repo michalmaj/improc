@@ -154,3 +154,47 @@ TEST(FindEssentialMatTest, FluentSettersReturnThis) {
     EXPECT_EQ(&op.threshold(1.0), &op);
     EXPECT_EQ(&op.confidence(0.99), &op);
 }
+
+// ── RecoverPose ───────────────────────────────────────────────────────────────
+
+TEST(RecoverPoseTest, HasPositiveInliers) {
+    auto scene = make_scene_pts();
+    auto K = make_K();
+    auto rvec = cv::Mat(cv::Vec3d{0, 0, 0});
+    auto tvec1 = cv::Mat(cv::Vec3d{0, 0, 600});
+    auto tvec2 = cv::Mat(cv::Vec3d{-100, 0, 600});
+    auto pts1 = project(scene, K, rvec, tvec1);
+    auto pts2 = project(scene, K, rvec, tvec2);
+    auto eres = FindEssentialMat{}(pts1, pts2, K);
+    auto pose = RecoverPose{}(eres.E, pts1, pts2, K);
+    EXPECT_GT(pose.inliers, 0);
+}
+
+TEST(RecoverPoseTest, RIsOrthogonal) {
+    auto scene = make_scene_pts();
+    auto K = make_K();
+    auto rvec = cv::Mat(cv::Vec3d{0, 0, 0});
+    auto tvec1 = cv::Mat(cv::Vec3d{0, 0, 600});
+    auto tvec2 = cv::Mat(cv::Vec3d{-100, 0, 600});
+    auto pts1 = project(scene, K, rvec, tvec1);
+    auto pts2 = project(scene, K, rvec, tvec2);
+    auto eres = FindEssentialMat{}(pts1, pts2, K);
+    auto pose = RecoverPose{}(eres.E, pts1, pts2, K);
+    EXPECT_NEAR(cv::determinant(pose.R), 1.0, 1e-6)
+        << "det(R) should be ~1.0 (proper rotation)";
+}
+
+TEST(RecoverPoseTest, TranslationIsUnitLength) {
+    auto scene = make_scene_pts();
+    auto K = make_K();
+    auto rvec = cv::Mat(cv::Vec3d{0, 0, 0});
+    auto tvec1 = cv::Mat(cv::Vec3d{0, 0, 600});
+    auto tvec2 = cv::Mat(cv::Vec3d{-100, 0, 600});
+    auto pts1 = project(scene, K, rvec, tvec1);
+    auto pts2 = project(scene, K, rvec, tvec2);
+    auto eres = FindEssentialMat{}(pts1, pts2, K);
+    auto pose = RecoverPose{}(eres.E, pts1, pts2, K);
+    double norm = cv::norm(pose.t);
+    EXPECT_NEAR(norm, 1.0, 1e-6)
+        << "|t|₂ should be 1.0 (unit translation)";
+}
