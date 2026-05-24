@@ -115,5 +115,12 @@ jobs:
             export LD_LIBRARY_PATH="$ORT_LIB:${LD_LIBRARY_PATH:-}"
             export DYLD_LIBRARY_PATH="$ORT_LIB:${DYLD_LIBRARY_PATH:-}"
           fi
-          ./build/improc_tests \
-            --gtest_filter="-VideoWriterTest.WritesToMp4AndCreatesFile:VideoWriterTest.WritesToAvi"
+          if [ "$(uname)" = "Linux" ]; then
+            # FFmpeg disabled in Conan OpenCV build (libwebp target conflict);
+            # exclude all tests that read/write video files.
+            FILTER="-VideoWriterTest.*:VideoFileCaptureTest.*:VideoReaderTest.*:VideoViewTest.*:ViewsM4VideoBatch.*"
+          else
+            # macOS: brew OpenCV has FFmpeg; only skip tests that write to disk.
+            FILTER="-VideoWriterTest.WritesToMp4AndCreatesFile:VideoWriterTest.WritesToAvi"
+          fi
+          ./build/improc_tests --gtest_filter="$FILTER"
