@@ -3,6 +3,7 @@
 #include <opencv2/objdetect/charuco_detector.hpp>
 #include <opencv2/calib3d.hpp>
 #include <opencv2/imgproc.hpp>
+#include <ranges>
 
 namespace improc::calib {
 
@@ -62,18 +63,19 @@ std::vector<ArucoPoseResult> ArucoPose::operator()(const ArucoResult& result,
                                                     const cv::Mat& dist,
                                                     float marker_length) const {
     const float half = marker_length / 2.f;
+    // TL, TR, BR, BL in marker-local frame (X right, Y up, Z out) — matches cv::aruco corner order
     const std::vector<cv::Point3f> obj_pts = {
-        {-half,  half, 0.f},  // top-left
-        { half,  half, 0.f},  // top-right
-        { half, -half, 0.f},  // bottom-right
-        {-half, -half, 0.f},  // bottom-left
+        {-half,  half, 0.f},
+        { half,  half, 0.f},
+        { half, -half, 0.f},
+        {-half, -half, 0.f},
     };
     std::vector<ArucoPoseResult> poses;
     poses.reserve(result.corners.size());
-    for (size_t i = 0; i < result.corners.size(); ++i) {
+    for (auto [corner, id] : std::views::zip(result.corners, result.ids)) {
         ArucoPoseResult pr;
-        pr.id = result.ids[i];
-        cv::solvePnP(obj_pts, result.corners[i], K, dist, pr.rvec, pr.tvec);
+        pr.id = id;
+        cv::solvePnP(obj_pts, corner, K, dist, pr.rvec, pr.tvec, false, cv::SOLVEPNP_IPPE_SQUARE);
         poses.push_back(std::move(pr));
     }
     return poses;

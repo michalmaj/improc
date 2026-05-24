@@ -186,3 +186,18 @@ TEST(ArucoPoseTest, TvecZIsPositive) {
     ASSERT_EQ(poses.size(), 1u);
     EXPECT_GT(poses[0].tvec.at<double>(2), 0.0);
 }
+
+TEST(ArucoPoseTest, FrontalMarkerRotationIsAxisAligned) {
+    // marker centred in scene: rotation angle ≈ π (marker Y-up vs camera Y-down),
+    // with no in-plane or lateral component (ry ≈ 0, rz ≈ 0)
+    auto dict         = make_dict();
+    auto scene        = make_marker_scene(dict, 5, 300);
+    Image<BGR> img(scene);
+    auto aruco_result = DetectAruco{}(img, dict);
+    ASSERT_EQ(aruco_result.ids.size(), 1u);
+    auto poses = ArucoPose{}(aruco_result, make_K(), zero_dist(), 0.1f);
+    ASSERT_EQ(poses.size(), 1u);
+    EXPECT_NEAR(cv::norm(poses[0].rvec), CV_PI, 0.05) << "rotation angle should be ~π for frontal marker";
+    EXPECT_NEAR(poses[0].rvec.at<double>(1), 0.0, 0.05) << "rvec.y should be ~0 for centered marker";
+    EXPECT_NEAR(poses[0].rvec.at<double>(2), 0.0, 0.05) << "rvec.z should be ~0 for centered marker";
+}
