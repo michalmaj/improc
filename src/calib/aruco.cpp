@@ -6,8 +6,8 @@
 
 namespace improc::calib {
 
-cv::aruco::Dictionary ArucoDict::operator()(cv::aruco::PredefinedDictionaryType) const {
-    return {};
+cv::aruco::Dictionary ArucoDict::operator()(cv::aruco::PredefinedDictionaryType type) const {
+    return cv::aruco::getPredefinedDictionary(type);
 }
 
 ArucoResult DetectAruco::operator()(Image<BGR>, const cv::aruco::Dictionary&) const {
@@ -28,7 +28,7 @@ cv::Mat DrawAruco::operator()(cv::Mat img, const ArucoResult&,
     return img.clone();
 }
 
-Image<Gray> GenerateAruco::operator()(const cv::aruco::Dictionary&,
+Image<Gray> GenerateAruco::operator()(const cv::aruco::Dictionary& dict,
                                        int id, int side_pixels) const {
     if (id < 0)
         throw std::invalid_argument(
@@ -36,7 +36,9 @@ Image<Gray> GenerateAruco::operator()(const cv::aruco::Dictionary&,
     if (side_pixels < 1)
         throw std::invalid_argument(
             "GenerateAruco: side_pixels must be >= 1");
-    return Image<Gray>(cv::Mat::ones(side_pixels, side_pixels, CV_8UC1) * 255);
+    cv::Mat img;
+    cv::aruco::generateImageMarker(dict, id, side_pixels, img, border_bits_);
+    return Image<Gray>(img);
 }
 
 std::vector<ArucoPoseResult> ArucoPose::operator()(const ArucoResult&,

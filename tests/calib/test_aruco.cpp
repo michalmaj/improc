@@ -45,3 +45,35 @@ cv::Mat make_charuco_scene(cv::Size board_size, int square_px, float marker_rati
 }
 
 } // namespace
+
+// ── ArucoDict ─────────────────────────────────────────────────────────────────
+
+TEST(ArucoDictTest, ReturnsDictWithNonEmptyBytesList) {
+    auto dict = ArucoDict{}(cv::aruco::DICT_4X4_50);
+    EXPECT_GT(dict.bytesList.rows, 0);
+}
+
+// ── GenerateAruco ─────────────────────────────────────────────────────────────
+
+TEST(GenerateArucoTest, OutputIsSquare) {
+    auto dict = make_dict();
+    auto img = GenerateAruco{}(dict, 0, 100);
+    EXPECT_EQ(img.mat().rows, 100);
+    EXPECT_EQ(img.mat().cols, 100);
+}
+
+TEST(GenerateArucoTest, OutputIsGray) {
+    auto dict = make_dict();
+    auto img = GenerateAruco{}(dict, 0, 100);
+    EXPECT_EQ(img.mat().type(), CV_8UC1);
+}
+
+TEST(GenerateArucoTest, ThrowsOnNegativeId) {
+    auto dict = make_dict();
+    EXPECT_THROW(GenerateAruco{}(dict, -1, 100), std::invalid_argument);
+}
+
+TEST(GenerateArucoTest, ThrowsOnZeroSidePixels) {
+    auto dict = make_dict();
+    EXPECT_THROW(GenerateAruco{}(dict, 0, 0), std::invalid_argument);
+}
