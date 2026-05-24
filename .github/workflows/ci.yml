@@ -38,6 +38,11 @@ jobs:
       - name: Detect Conan profile
         run: conan profile detect --force
 
+      - name: Allow Conan to install system packages (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          printf "\n[conf]\ntools.system.package_manager:mode=install\ntools.system.package_manager:sudo=True\n" >> ~/.conan2/profiles/default
+
       - name: Remove OpenCV from Conan requirements (macOS only — Homebrew provides 4.8+)
         if: runner.os == 'macOS'
         run: |
@@ -73,14 +78,21 @@ jobs:
       - name: Configure CMake
         run: |
           EXTRA=""
+          CONAN_ARGS="--build=missing"
           if [ "$(uname)" = "Darwin" ]; then
             EXTRA="-DCMAKE_PREFIX_PATH=$(brew --prefix)"
+          fi
+          if [ "$(uname)" = "Linux" ]; then
+            # Disable GPU/display features not available on CI runners.
+            # Removes vaapi/system and wayland Conan dependencies.
+            CONAN_ARGS="${CONAN_ARGS};-o;opencv/*:with_va=False;-o;opencv/*:with_va_intel=False;-o;opencv/*:with_wayland=False"
           fi
           cmake \
             -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="conan_provider.cmake" \
             -DCONAN_COMMAND=$(which conan) \
             -DCMAKE_BUILD_TYPE=Release \
             -DFETCHCONTENT_BASE_DIR=$HOME/.cmake-fetchcontent \
+            "-DCONAN_INSTALL_ARGS=${CONAN_ARGS}" \
             $EXTRA \
             -B build .
 
