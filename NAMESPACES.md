@@ -1833,6 +1833,22 @@ Includes `improc/core/pipeline.hpp` — `operator|` and all core ops are availab
 - `.t` — `cv::Mat` (3×1) — unit-length translation vector
 - `.inliers` — `int` — number of inlier correspondences (initialized to 0)
 
+**`ArucoResult`**
+- `.corners` — `std::vector<std::vector<cv::Point2f>>` — 4 corners per detected marker
+- `.ids` — `std::vector<int>` — detected marker IDs (one per corners entry)
+- `.rejected` — `std::vector<std::vector<cv::Point2f>>` — corner candidates that failed validation
+
+**`ArucoPoseResult`**
+- `.id` — `int` — marker ID (copied from `ArucoResult`)
+- `.rvec` — `cv::Mat` (3×1 CV_64F) — rotation vector (Rodrigues)
+- `.tvec` — `cv::Mat` (3×1 CV_64F) — translation vector
+
+**`CharucoResult`**
+- `.charuco_corners` — `std::vector<cv::Point2f>` — interpolated ChArUco board corners
+- `.charuco_ids` — `std::vector<int>` — board corner IDs (one per charuco_corners entry)
+- `.marker_corners` — `std::vector<std::vector<cv::Point2f>>` — detected ArUco marker corners
+- `.marker_ids` — `std::vector<int>` — detected ArUco marker IDs
+
 ---
 
 ### Chessboard detection (`ops/chessboard.hpp`)
@@ -2021,6 +2037,43 @@ if (det.found) {
 - `operator()(P1, P2, pts1, pts2)` → `cv::Mat` (4×N homogeneous CV_32F)
   - `P1` / `P2`: 3×4 projection matrices
   - Divide each column by the 4th row to get Euclidean 3D coordinates.
+
+---
+
+### ArUco detection (`ops/aruco.hpp`)
+
+Uses the OpenCV 4.8.1 unified API: value-type `cv::aruco::Dictionary` and `cv::aruco::ArucoDetector`. Deprecated free functions (`detectMarkers`, `estimatePoseSingleMarkers`) are not used.
+
+**`ArucoDict`** — thin wrapper around `cv::aruco::getPredefinedDictionary`.
+- `operator()(cv::aruco::PredefinedDictionaryType)` → `cv::aruco::Dictionary`
+- Common types: `DICT_4X4_50`, `DICT_5X5_100`, `DICT_6X6_250`, `DICT_ARUCO_ORIGINAL`
+
+**`DetectAruco`** — detects ArUco markers using `cv::aruco::ArucoDetector`.
+- `operator()(Image<BGR>, dict)` → `ArucoResult`
+- `operator()(Image<Gray>, dict)` → `ArucoResult`
+
+**`DrawAruco`** — draws marker outlines and IDs; optionally adds 3D coordinate axes.
+- `.axis_length(float)` — default: `0.05`; axis length in world units (for axes overload)
+- `operator()(cv::Mat, ArucoResult)` → `cv::Mat` — marker outlines + ID numbers
+- `operator()(cv::Mat, ArucoResult, poses, K, dist)` → `cv::Mat` — adds per-marker 3D axes
+
+**`GenerateAruco`** — generates a single ArUco marker image via `cv::aruco::generateImageMarker`.
+- `.border_bits(int)` — default: `1`
+- `operator()(dict, id, side_pixels)` → `Image<Gray>` — square gray marker image
+- Throws `std::invalid_argument` if `id < 0` or `side_pixels < 1`.
+
+**`ArucoPose`** — estimates pose for each detected marker using `cv::solvePnP` (IPPE_SQUARE).
+- `operator()(ArucoResult, K, dist, marker_length)` → `std::vector<ArucoPoseResult>`
+  - `marker_length` in world units (same as K/dist calibration units)
+  - Corner order: TL, TR, BR, BL in marker-local frame (X right, Y up, Z out of marker)
+  - Returns one result per detected marker, in detection order.
+
+**`CharucoBoard`** — detects a ChArUco calibration board using `cv::aruco::CharucoDetector`.
+- `.board_size(cv::Size)` — **required**; number of squares (cols × rows); throws if not set
+- `.square_length(float)` — **required**; physical square size in world units; throws if ≤ 0
+- `.marker_length(float)` — **required**; physical marker size in world units; throws if ≤ 0
+- `operator()(Image<BGR>, dict)` → `CharucoResult` — basic detection
+- `operator()(Image<BGR>, dict, K, dist)` → `CharucoResult` — with subpixel corner refinement
 
 ---
 
