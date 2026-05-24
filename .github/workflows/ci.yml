@@ -38,7 +38,8 @@ jobs:
       - name: Detect Conan profile
         run: conan profile detect --force
 
-      - name: Remove OpenCV from Conan requirements (use system install)
+      - name: Remove OpenCV from Conan requirements (macOS only — Homebrew provides 4.8+)
+        if: runner.os == 'macOS'
         run: |
           python3 -c "
           import pathlib
@@ -59,11 +60,11 @@ jobs:
           path: ~/.cmake-fetchcontent
           key: ort-${{ matrix.os }}-1.20.1
 
-      - name: Install system OpenCV (Linux)
+      - name: Install system build dependencies (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get install -y --no-install-recommends \
-            build-essential libopencv-dev ffmpeg
+            build-essential ffmpeg
 
       - name: Install system OpenCV (macOS)
         if: runner.os == 'macOS'
@@ -84,10 +85,12 @@ jobs:
             -B build .
 
       - name: Build
-        timeout-minutes: 30
+        timeout-minutes: 60
         run: |
           # Both Linux and macOS runners have 7 GB RAM; unlimited parallel
           # compilation OOMs on heavy C++23/visualization TUs.
+          # Timeout extended to 60 min: first Linux run builds OpenCV 4.8.1 via
+          # Conan (system libopencv-dev 4.6.0 lacks the 4.7+ objdetect/aruco API).
           cmake --build build --parallel 2 --target improc_tests
 
       - name: Run tests
