@@ -72,4 +72,23 @@ struct RecoverPoseResult {
     int inliers = 0;
 };
 
+struct ArucoResult {
+    std::vector<std::vector<cv::Point2f>> corners; ///< 4 corners per detected marker
+    std::vector<int>                      ids;
+    std::vector<std::vector<cv::Point2f>> rejected;
+};
+
+struct ArucoPoseResult {
+    int     id;   ///< marker ID (copied from ArucoResult)
+    cv::Mat rvec; ///< 3×1 rotation vector
+    cv::Mat tvec; ///< 3×1 translation vector
+};
+
+struct CharucoResult {
+    std::vector<cv::Point2f>              charuco_corners;
+    std::vector<int>                      charuco_ids;
+    std::vector<std::vector<cv::Point2f>> marker_corners;
+    std::vector<int>                      marker_ids;
+};
+
 } // namespace improc::calib
