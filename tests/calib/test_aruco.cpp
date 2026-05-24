@@ -201,3 +201,56 @@ TEST(ArucoPoseTest, FrontalMarkerRotationIsAxisAligned) {
     EXPECT_NEAR(poses[0].rvec.at<double>(1), 0.0, 0.05) << "rvec.y should be ~0 for centered marker";
     EXPECT_NEAR(poses[0].rvec.at<double>(2), 0.0, 0.05) << "rvec.z should be ~0 for centered marker";
 }
+
+// ── CharucoBoard ──────────────────────────────────────────────────────────────
+
+TEST(CharucoBoardTest, DetectsCornersOnBoardImage) {
+    auto dict  = make_dict();
+    auto scene = make_charuco_scene({5, 7}, 80, 0.6f);
+    Image<BGR> img(scene);
+    auto result = CharucoBoard{}
+        .board_size({5, 7})
+        .square_length(80.f)
+        .marker_length(48.f)
+        (img, dict);
+    EXPECT_FALSE(result.charuco_corners.empty());
+}
+
+TEST(CharucoBoardTest, IdsMatchCornerCount) {
+    auto dict  = make_dict();
+    auto scene = make_charuco_scene({5, 7}, 80, 0.6f);
+    Image<BGR> img(scene);
+    auto result = CharucoBoard{}
+        .board_size({5, 7})
+        .square_length(80.f)
+        .marker_length(48.f)
+        (img, dict);
+    EXPECT_EQ(result.charuco_ids.size(), result.charuco_corners.size());
+}
+
+TEST(CharucoBoardTest, ThrowsIfBoardSizeNotSet) {
+    auto dict  = make_dict();
+    auto scene = make_charuco_scene({5, 7}, 80, 0.6f);
+    Image<BGR> img(scene);
+    EXPECT_THROW(
+        CharucoBoard{}.square_length(80.f).marker_length(48.f)(img, dict),
+        std::invalid_argument);
+}
+
+TEST(CharucoBoardTest, ThrowsIfSquareLengthZero) {
+    auto dict  = make_dict();
+    auto scene = make_charuco_scene({5, 7}, 80, 0.6f);
+    Image<BGR> img(scene);
+    EXPECT_THROW(
+        CharucoBoard{}.board_size({5, 7}).square_length(0.f).marker_length(48.f)(img, dict),
+        std::invalid_argument);
+}
+
+TEST(CharucoBoardTest, ThrowsIfMarkerLengthZero) {
+    auto dict  = make_dict();
+    auto scene = make_charuco_scene({5, 7}, 80, 0.6f);
+    Image<BGR> img(scene);
+    EXPECT_THROW(
+        CharucoBoard{}.board_size({5, 7}).square_length(80.f).marker_length(0.f)(img, dict),
+        std::invalid_argument);
+}

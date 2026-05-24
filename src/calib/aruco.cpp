@@ -95,15 +95,31 @@ void validate_charuco(bool has_size, float sq, float mk) {
 }
 } // namespace
 
-CharucoResult CharucoBoard::operator()(Image<BGR>, const cv::aruco::Dictionary&) const {
+CharucoResult CharucoBoard::operator()(Image<BGR> img,
+                                        const cv::aruco::Dictionary& dict) const {
     validate_charuco(has_size_, square_length_, marker_length_);
-    return {};
+    cv::aruco::CharucoBoard board(board_size_, square_length_, marker_length_, dict);
+    cv::aruco::CharucoDetector detector(board);
+    CharucoResult out;
+    detector.detectBoard(img.mat(), out.charuco_corners, out.charuco_ids,
+                         out.marker_corners, out.marker_ids);
+    return out;
 }
 
-CharucoResult CharucoBoard::operator()(Image<BGR>, const cv::aruco::Dictionary&,
-                                        const cv::Mat&, const cv::Mat&) const {
+CharucoResult CharucoBoard::operator()(Image<BGR> img,
+                                        const cv::aruco::Dictionary& dict,
+                                        const cv::Mat& K,
+                                        const cv::Mat& dist) const {
     validate_charuco(has_size_, square_length_, marker_length_);
-    return {};
+    cv::aruco::CharucoBoard board(board_size_, square_length_, marker_length_, dict);
+    cv::aruco::CharucoParameters params;
+    params.cameraMatrix = K;
+    params.distCoeffs   = dist;
+    cv::aruco::CharucoDetector detector(board, params);
+    CharucoResult out;
+    detector.detectBoard(img.mat(), out.charuco_corners, out.charuco_ids,
+                         out.marker_corners, out.marker_ids);
+    return out;
 }
 
 } // namespace improc::calib
