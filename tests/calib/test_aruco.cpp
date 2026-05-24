@@ -77,3 +77,34 @@ TEST(GenerateArucoTest, ThrowsOnZeroSidePixels) {
     auto dict = make_dict();
     EXPECT_THROW(GenerateAruco{}(dict, 0, 0), std::invalid_argument);
 }
+
+// ── DetectAruco ───────────────────────────────────────────────────────────────
+
+TEST(DetectArucoTest, DetectsGeneratedMarker) {
+    auto dict  = make_dict();
+    auto scene = make_marker_scene(dict, 42);
+    Image<BGR> img(scene);
+    auto result = DetectAruco{}(img, dict);
+    ASSERT_EQ(result.ids.size(), 1u);
+    EXPECT_EQ(result.ids[0], 42);
+}
+
+TEST(DetectArucoTest, ReturnsEmptyOnBlankImage) {
+    auto dict = make_dict();
+    cv::Mat blank(400, 400, CV_8UC3, cv::Scalar(255, 255, 255));
+    Image<BGR> img(blank);
+    auto result = DetectAruco{}(img, dict);
+    EXPECT_TRUE(result.ids.empty());
+    EXPECT_TRUE(result.corners.empty());
+}
+
+TEST(DetectArucoTest, WorksOnGrayImage) {
+    auto dict  = make_dict();
+    auto scene = make_marker_scene(dict, 7);
+    cv::Mat gray;
+    cv::cvtColor(scene, gray, cv::COLOR_BGR2GRAY);
+    Image<Gray> img(gray);
+    auto result = DetectAruco{}(img, dict);
+    ASSERT_EQ(result.ids.size(), 1u);
+    EXPECT_EQ(result.ids[0], 7);
+}

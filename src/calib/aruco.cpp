@@ -10,12 +10,20 @@ cv::aruco::Dictionary ArucoDict::operator()(cv::aruco::PredefinedDictionaryType 
     return cv::aruco::getPredefinedDictionary(type);
 }
 
-ArucoResult DetectAruco::operator()(Image<BGR>, const cv::aruco::Dictionary&) const {
-    return {};
+ArucoResult DetectAruco::operator()(Image<BGR> img,
+                                     const cv::aruco::Dictionary& dict) const {
+    cv::aruco::ArucoDetector detector(dict);
+    ArucoResult result;
+    detector.detectMarkers(img.mat(), result.corners, result.ids, result.rejected);
+    return result;
 }
 
-ArucoResult DetectAruco::operator()(Image<Gray>, const cv::aruco::Dictionary&) const {
-    return {};
+ArucoResult DetectAruco::operator()(Image<Gray> img,
+                                     const cv::aruco::Dictionary& dict) const {
+    cv::aruco::ArucoDetector detector(dict);
+    ArucoResult result;
+    detector.detectMarkers(img.mat(), result.corners, result.ids, result.rejected);
+    return result;
 }
 
 cv::Mat DrawAruco::operator()(cv::Mat img, const ArucoResult&) const {
