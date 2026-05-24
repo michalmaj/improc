@@ -73,22 +73,22 @@ struct RecoverPoseResult {
 };
 
 struct ArucoResult {
-    std::vector<std::vector<cv::Point2f>> corners; ///< 4 corners per detected marker
-    std::vector<int>                      ids;
-    std::vector<std::vector<cv::Point2f>> rejected;
+    std::vector<std::vector<cv::Point2f>> corners;  ///< 4 corners per detected marker
+    std::vector<int>                      ids;      ///< detected marker IDs (one per corners entry)
+    std::vector<std::vector<cv::Point2f>> rejected; ///< corner candidates that failed validation
 };
 
 struct ArucoPoseResult {
-    int     id;   ///< marker ID (copied from ArucoResult)
+    int     id;   ///< marker ID (from ArucoResult)
     cv::Mat rvec; ///< 3×1 rotation vector
     cv::Mat tvec; ///< 3×1 translation vector
 };
 
 struct CharucoResult {
-    std::vector<cv::Point2f>              charuco_corners;
-    std::vector<int>                      charuco_ids;
-    std::vector<std::vector<cv::Point2f>> marker_corners;
-    std::vector<int>                      marker_ids;
+    std::vector<cv::Point2f>              charuco_corners; ///< interpolated ChArUco board corners
+    std::vector<int>                      charuco_ids;     ///< board corner IDs (per charuco_corners entry)
+    std::vector<std::vector<cv::Point2f>> marker_corners;  ///< detected ArUco marker corners
+    std::vector<int>                      marker_ids;      ///< detected marker IDs
 };
 
 } // namespace improc::calib
