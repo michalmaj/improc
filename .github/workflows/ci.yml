@@ -83,9 +83,12 @@ jobs:
             EXTRA="-DCMAKE_PREFIX_PATH=$(brew --prefix)"
           fi
           if [ "$(uname)" = "Linux" ]; then
-            # Disable GPU/display features not available on CI runners.
-            # Removes vaapi/system and wayland Conan dependencies.
-            CONAN_ARGS="${CONAN_ARGS};-o;opencv/*:with_va=False;-o;opencv/*:with_va_intel=False;-o;opencv/*:with_wayland=False"
+            # Disable platform-specific features not available/needed on CI runners.
+            # with_va/wayland: removes vaapi/system + wayland Conan deps (no GPU on CI).
+            # with_ffmpeg: system FFmpeg depends on libwebp::libwebp CMake target which
+            #              Conan's ffmpeg generators don't expose correctly → link error.
+            #              VideoWriter/CameraCapture tests are already excluded from CI.
+            CONAN_ARGS="${CONAN_ARGS};-o;opencv/*:with_va=False;-o;opencv/*:with_va_intel=False;-o;opencv/*:with_wayland=False;-o;opencv/*:with_ffmpeg=False"
           fi
           cmake \
             -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="conan_provider.cmake" \
