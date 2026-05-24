@@ -204,53 +204,74 @@ TEST(ArucoPoseTest, FrontalMarkerRotationIsAxisAligned) {
 
 // ── CharucoBoard ──────────────────────────────────────────────────────────────
 
+namespace {
+const cv::Size      kBoardSize   = {5, 7};
+constexpr int       kSquarePx    = 80;
+constexpr float     kSquareLen   = 80.f;
+constexpr float     kMarkerLen   = 48.f;  // kSquareLen * kMarkerRatio
+constexpr float     kMarkerRatio = 0.6f;
+} // namespace
+
 TEST(CharucoBoardTest, DetectsCornersOnBoardImage) {
     auto dict  = make_dict();
-    auto scene = make_charuco_scene({5, 7}, 80, 0.6f);
+    auto scene = make_charuco_scene(kBoardSize, kSquarePx, kMarkerRatio);
     Image<BGR> img(scene);
     auto result = CharucoBoard{}
-        .board_size({5, 7})
-        .square_length(80.f)
-        .marker_length(48.f)
+        .board_size(kBoardSize)
+        .square_length(kSquareLen)
+        .marker_length(kMarkerLen)
         (img, dict);
     EXPECT_FALSE(result.charuco_corners.empty());
 }
 
 TEST(CharucoBoardTest, IdsMatchCornerCount) {
     auto dict  = make_dict();
-    auto scene = make_charuco_scene({5, 7}, 80, 0.6f);
+    auto scene = make_charuco_scene(kBoardSize, kSquarePx, kMarkerRatio);
     Image<BGR> img(scene);
     auto result = CharucoBoard{}
-        .board_size({5, 7})
-        .square_length(80.f)
-        .marker_length(48.f)
+        .board_size(kBoardSize)
+        .square_length(kSquareLen)
+        .marker_length(kMarkerLen)
         (img, dict);
+    ASSERT_FALSE(result.charuco_corners.empty());
     EXPECT_EQ(result.charuco_ids.size(), result.charuco_corners.size());
+}
+
+TEST(CharucoBoardTest, CameraModelOverloadDetectsCorners) {
+    auto dict  = make_dict();
+    auto scene = make_charuco_scene(kBoardSize, kSquarePx, kMarkerRatio);
+    Image<BGR> img(scene);
+    auto result = CharucoBoard{}
+        .board_size(kBoardSize)
+        .square_length(kSquareLen)
+        .marker_length(kMarkerLen)
+        (img, dict, make_K(), zero_dist());
+    EXPECT_FALSE(result.charuco_corners.empty());
 }
 
 TEST(CharucoBoardTest, ThrowsIfBoardSizeNotSet) {
     auto dict  = make_dict();
-    auto scene = make_charuco_scene({5, 7}, 80, 0.6f);
+    auto scene = make_charuco_scene(kBoardSize, kSquarePx, kMarkerRatio);
     Image<BGR> img(scene);
     EXPECT_THROW(
-        CharucoBoard{}.square_length(80.f).marker_length(48.f)(img, dict),
+        CharucoBoard{}.square_length(kSquareLen).marker_length(kMarkerLen)(img, dict),
         std::invalid_argument);
 }
 
 TEST(CharucoBoardTest, ThrowsIfSquareLengthZero) {
     auto dict  = make_dict();
-    auto scene = make_charuco_scene({5, 7}, 80, 0.6f);
+    auto scene = make_charuco_scene(kBoardSize, kSquarePx, kMarkerRatio);
     Image<BGR> img(scene);
     EXPECT_THROW(
-        CharucoBoard{}.board_size({5, 7}).square_length(0.f).marker_length(48.f)(img, dict),
+        CharucoBoard{}.board_size(kBoardSize).square_length(0.f).marker_length(kMarkerLen)(img, dict),
         std::invalid_argument);
 }
 
 TEST(CharucoBoardTest, ThrowsIfMarkerLengthZero) {
     auto dict  = make_dict();
-    auto scene = make_charuco_scene({5, 7}, 80, 0.6f);
+    auto scene = make_charuco_scene(kBoardSize, kSquarePx, kMarkerRatio);
     Image<BGR> img(scene);
     EXPECT_THROW(
-        CharucoBoard{}.board_size({5, 7}).square_length(80.f).marker_length(0.f)(img, dict),
+        CharucoBoard{}.board_size(kBoardSize).square_length(kSquareLen).marker_length(0.f)(img, dict),
         std::invalid_argument);
 }

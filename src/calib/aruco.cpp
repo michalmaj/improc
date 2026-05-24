@@ -3,6 +3,7 @@
 #include <opencv2/objdetect/charuco_detector.hpp>
 #include <opencv2/calib3d.hpp>
 #include <opencv2/imgproc.hpp>
+#include <optional>
 #include <ranges>
 
 namespace improc::calib {
@@ -82,28 +83,39 @@ std::vector<ArucoPoseResult> ArucoPose::operator()(const ArucoResult& result,
 }
 
 namespace {
-void validate_charuco(bool has_size, float sq, float mk) {
+void validate_charuco(bool has_size, float square_length, float marker_length) {
     if (!has_size)
         throw std::invalid_argument(
             "CharucoBoard: board_size must be set before use");
-    if (sq <= 0.f)
+    if (square_length <= 0.f)
         throw std::invalid_argument(
             "CharucoBoard: square_length must be positive");
-    if (mk <= 0.f)
+    if (marker_length <= 0.f)
         throw std::invalid_argument(
             "CharucoBoard: marker_length must be positive");
+}
+
+CharucoResult run_charuco_detection(const cv::Mat& mat,
+                                    cv::Size board_size,
+                                    float square_length, float marker_length,
+                                    const cv::aruco::Dictionary& dict,
+                                    std::optional<cv::aruco::CharucoParameters> params) {
+    cv::aruco::CharucoBoard board(board_size, square_length, marker_length, dict);
+    cv::aruco::CharucoDetector detector = params.has_value()
+        ? cv::aruco::CharucoDetector(board, *params)
+        : cv::aruco::CharucoDetector(board);
+    CharucoResult out;
+    detector.detectBoard(mat, out.charuco_corners, out.charuco_ids,
+                         out.marker_corners, out.marker_ids);
+    return out;
 }
 } // namespace
 
 CharucoResult CharucoBoard::operator()(Image<BGR> img,
                                         const cv::aruco::Dictionary& dict) const {
     validate_charuco(has_size_, square_length_, marker_length_);
-    cv::aruco::CharucoBoard board(board_size_, square_length_, marker_length_, dict);
-    cv::aruco::CharucoDetector detector(board);
-    CharucoResult out;
-    detector.detectBoard(img.mat(), out.charuco_corners, out.charuco_ids,
-                         out.marker_corners, out.marker_ids);
-    return out;
+    return run_charuco_detection(img.mat(), board_size_, square_length_, marker_length_,
+                                 dict, std::nullopt);
 }
 
 CharucoResult CharucoBoard::operator()(Image<BGR> img,
@@ -111,15 +123,11 @@ CharucoResult CharucoBoard::operator()(Image<BGR> img,
                                         const cv::Mat& K,
                                         const cv::Mat& dist) const {
     validate_charuco(has_size_, square_length_, marker_length_);
-    cv::aruco::CharucoBoard board(board_size_, square_length_, marker_length_, dict);
     cv::aruco::CharucoParameters params;
     params.cameraMatrix = K;
     params.distCoeffs   = dist;
-    cv::aruco::CharucoDetector detector(board, params);
-    CharucoResult out;
-    detector.detectBoard(img.mat(), out.charuco_corners, out.charuco_ids,
-                         out.marker_corners, out.marker_ids);
-    return out;
+    return run_charuco_detection(img.mat(), board_size_, square_length_, marker_length_,
+                                 dict, params);
 }
 
 } // namespace improc::calib
