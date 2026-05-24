@@ -57,11 +57,26 @@ Image<Gray> GenerateAruco::operator()(const cv::aruco::Dictionary& dict,
     return Image<Gray>(img);
 }
 
-std::vector<ArucoPoseResult> ArucoPose::operator()(const ArucoResult&,
-                                                    const cv::Mat&,
-                                                    const cv::Mat&,
-                                                    float) const {
-    return {};
+std::vector<ArucoPoseResult> ArucoPose::operator()(const ArucoResult& result,
+                                                    const cv::Mat& K,
+                                                    const cv::Mat& dist,
+                                                    float marker_length) const {
+    const float half = marker_length / 2.f;
+    const std::vector<cv::Point3f> obj_pts = {
+        {-half,  half, 0.f},  // top-left
+        { half,  half, 0.f},  // top-right
+        { half, -half, 0.f},  // bottom-right
+        {-half, -half, 0.f},  // bottom-left
+    };
+    std::vector<ArucoPoseResult> poses;
+    poses.reserve(result.corners.size());
+    for (size_t i = 0; i < result.corners.size(); ++i) {
+        ArucoPoseResult pr;
+        pr.id = result.ids[i];
+        cv::solvePnP(obj_pts, result.corners[i], K, dist, pr.rvec, pr.tvec);
+        poses.push_back(std::move(pr));
+    }
+    return poses;
 }
 
 namespace {

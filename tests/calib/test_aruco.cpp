@@ -140,3 +140,49 @@ TEST(DrawArucoTest, AxesOverloadDoesNotThrow) {
     auto poses = ArucoPose{}(result, K, dist, 0.1f);
     EXPECT_NO_THROW(DrawAruco{}(scene, result, poses, K, dist));
 }
+
+// ── ArucoPose ─────────────────────────────────────────────────────────────────
+
+TEST(ArucoPoseTest, ReturnsOneResultPerMarker) {
+    auto dict         = make_dict();
+    auto scene        = make_marker_scene(dict, 5);
+    Image<BGR> img(scene);
+    auto aruco_result = DetectAruco{}(img, dict);
+    auto poses        = ArucoPose{}(aruco_result, make_K(), zero_dist(), 0.1f);
+    EXPECT_EQ(poses.size(), aruco_result.ids.size());
+}
+
+TEST(ArucoPoseTest, IdMatchesDetection) {
+    auto dict         = make_dict();
+    auto scene        = make_marker_scene(dict, 5);
+    Image<BGR> img(scene);
+    auto aruco_result = DetectAruco{}(img, dict);
+    ASSERT_EQ(aruco_result.ids.size(), 1u);
+    auto poses = ArucoPose{}(aruco_result, make_K(), zero_dist(), 0.1f);
+    ASSERT_EQ(poses.size(), 1u);
+    EXPECT_EQ(poses[0].id, 5);
+}
+
+TEST(ArucoPoseTest, RvecAndTvecNonEmpty) {
+    auto dict         = make_dict();
+    auto scene        = make_marker_scene(dict, 5);
+    Image<BGR> img(scene);
+    auto aruco_result = DetectAruco{}(img, dict);
+    ASSERT_EQ(aruco_result.ids.size(), 1u);
+    auto poses = ArucoPose{}(aruco_result, make_K(), zero_dist(), 0.1f);
+    ASSERT_EQ(poses.size(), 1u);
+    EXPECT_FALSE(poses[0].rvec.empty());
+    EXPECT_FALSE(poses[0].tvec.empty());
+}
+
+TEST(ArucoPoseTest, TvecZIsPositive) {
+    // 300px marker in 400px scene → frontal view, z > 0
+    auto dict         = make_dict();
+    auto scene        = make_marker_scene(dict, 5, 300);
+    Image<BGR> img(scene);
+    auto aruco_result = DetectAruco{}(img, dict);
+    ASSERT_EQ(aruco_result.ids.size(), 1u);
+    auto poses = ArucoPose{}(aruco_result, make_K(), zero_dist(), 0.1f);
+    ASSERT_EQ(poses.size(), 1u);
+    EXPECT_GT(poses[0].tvec.at<double>(2), 0.0);
+}
