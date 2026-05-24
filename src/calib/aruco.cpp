@@ -26,14 +26,22 @@ ArucoResult DetectAruco::operator()(Image<Gray> img,
     return result;
 }
 
-cv::Mat DrawAruco::operator()(cv::Mat img, const ArucoResult&) const {
-    return img.clone();
+cv::Mat DrawAruco::operator()(cv::Mat img, const ArucoResult& result) const {
+    cv::Mat out = img.clone();
+    if (!result.ids.empty())
+        cv::aruco::drawDetectedMarkers(out, result.corners, result.ids);
+    return out;
 }
 
-cv::Mat DrawAruco::operator()(cv::Mat img, const ArucoResult&,
-                               const std::vector<ArucoPoseResult>&,
-                               const cv::Mat&, const cv::Mat&) const {
-    return img.clone();
+cv::Mat DrawAruco::operator()(cv::Mat img,
+                               const ArucoResult& result,
+                               const std::vector<ArucoPoseResult>& poses,
+                               const cv::Mat& K,
+                               const cv::Mat& dist) const {
+    cv::Mat out = operator()(img, result);
+    for (const auto& pose : poses)
+        cv::drawFrameAxes(out, K, dist, pose.rvec, pose.tvec, axis_length_);
+    return out;
 }
 
 Image<Gray> GenerateAruco::operator()(const cv::aruco::Dictionary& dict,

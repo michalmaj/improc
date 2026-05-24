@@ -108,3 +108,35 @@ TEST(DetectArucoTest, WorksOnGrayImage) {
     ASSERT_EQ(result.ids.size(), 1u);
     EXPECT_EQ(result.ids[0], 7);
 }
+
+// ── DrawAruco ─────────────────────────────────────────────────────────────────
+
+TEST(DrawArucoTest, OutputSameSize) {
+    auto dict  = make_dict();
+    auto scene = make_marker_scene(dict, 0);
+    Image<BGR> img(scene);
+    auto result = DetectAruco{}(img, dict);
+    auto out = DrawAruco{}(scene, result);
+    EXPECT_EQ(out.rows, scene.rows);
+    EXPECT_EQ(out.cols, scene.cols);
+}
+
+TEST(DrawArucoTest, OutputIsBGR) {
+    auto dict  = make_dict();
+    auto scene = make_marker_scene(dict, 0);
+    Image<BGR> img(scene);
+    auto result = DetectAruco{}(img, dict);
+    auto out = DrawAruco{}(scene, result);
+    EXPECT_EQ(out.type(), CV_8UC3);
+}
+
+TEST(DrawArucoTest, AxesOverloadDoesNotThrow) {
+    auto dict  = make_dict();
+    auto scene = make_marker_scene(dict, 0);
+    Image<BGR> img(scene);
+    auto result = DetectAruco{}(img, dict);
+    auto K     = make_K();
+    auto dist  = zero_dist();
+    auto poses = ArucoPose{}(result, K, dist, 0.1f);
+    EXPECT_NO_THROW(DrawAruco{}(scene, result, poses, K, dist));
+}
