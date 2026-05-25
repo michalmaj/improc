@@ -37,7 +37,17 @@ LineSet DetectLines::operator()(Image<Gray> img) const {
 }
 
 QRResult DetectQR::operator()(Image<BGR> img) const {
-    return {};
+    QRResult out;
+    cv::QRCodeDetectorAruco detector;
+    cv::Mat points_mat;
+    bool found = detector.detectAndDecodeMulti(img.mat(), out.decoded, points_mat);
+    if (found && !points_mat.empty()) {
+        // points_mat is N×4×2 (CV_32FC2); split into per-code mats
+        out.points.reserve(static_cast<std::size_t>(points_mat.rows));
+        for (int i = 0; i < points_mat.rows; ++i)
+            out.points.push_back(points_mat.row(i));
+    }
+    return out;
 }
 
 BarcodeResult DetectBarcode::operator()(Image<BGR> img) const {

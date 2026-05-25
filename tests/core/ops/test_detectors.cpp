@@ -142,3 +142,37 @@ TEST(DetectLinesTest, DetectedAngleMatchesDrawnAngle) {
     // 45° diagonal — allow wide tolerance for LSD sub-pixel fitting
     EXPECT_NEAR(angle_deg, 45.0, 15.0);
 }
+
+// ── DetectQR ─────────────────────────────────────────────────────────────────
+
+namespace {
+Image<BGR> make_qr_scene(const std::string& text) {
+    auto encoder = cv::QRCodeEncoder::create();
+    cv::Mat qr_gray;
+    encoder->encode(text, qr_gray);
+    cv::Mat large;
+    cv::resize(qr_gray, large, {200, 200}, 0.0, 0.0, cv::INTER_NEAREST);
+    cv::Mat bgr;
+    cv::cvtColor(large, bgr, cv::COLOR_GRAY2BGR);
+    return Image<BGR>(bgr);
+}
+} // namespace
+
+TEST(DetectQRTest, DecodesGeneratedCode) {
+    auto img = make_qr_scene("HELLO");
+    auto result = DetectQR{}(img);
+    ASSERT_EQ(result.size(), 1u);
+    EXPECT_EQ(result.decoded[0], "HELLO");
+}
+
+TEST(DetectQRTest, BlankImageNoQR) {
+    auto img = make_blank_bgr();
+    auto result = DetectQR{}(img);
+    EXPECT_TRUE(result.empty());
+}
+
+TEST(DetectQRTest, PointsCountMatchesDecoded) {
+    auto img = make_qr_scene("TEST");
+    auto result = DetectQR{}(img);
+    EXPECT_EQ(result.decoded.size(), result.points.size());
+}
