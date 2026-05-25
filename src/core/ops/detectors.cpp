@@ -1,0 +1,31 @@
+// src/core/ops/detectors.cpp
+#include "improc/core/ops/detectors.hpp"
+#include <opencv2/imgproc.hpp>
+
+namespace improc::core {
+
+KeypointSet DetectFAST::operator()(Image<Gray> img) const {
+    return {};
+}
+
+KeypointSet DetectBlob::operator()(Image<Gray> img) const {
+    return {};
+}
+
+MSERResult DetectMSER::operator()(Image<Gray> img) const {
+    return {};
+}
+
+LineSet DetectLines::operator()(Image<Gray> img) const {
+    return {};
+}
+
+QRResult DetectQR::operator()(Image<BGR> img) const {
+    return {};
+}
+
+BarcodeResult DetectBarcode::operator()(Image<BGR> img) const {
+    return {};
+}
+
+} // namespace improc::core
