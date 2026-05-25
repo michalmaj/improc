@@ -95,3 +95,24 @@ TEST(DetectBlobTest, KeypointsWithinCircleRegion) {
         EXPECT_NEAR(kp.pt.y, 150.f, 20.f);
     }
 }
+
+// ── DetectMSER ───────────────────────────────────────────────────────────────
+
+TEST(DetectMSERTest, FindsRegionInNestedRects) {
+    auto img = make_nested_rect_gray();
+    auto result = DetectMSER{}(img);
+    EXPECT_FALSE(result.empty());
+    EXPECT_EQ(result.regions.size(), result.bboxes.size());
+}
+
+TEST(DetectMSERTest, BlankImageNoRegions) {
+    auto img = make_blank_gray();
+    auto result = DetectMSER{}(img);
+    EXPECT_TRUE(result.empty());
+}
+
+TEST(DetectMSERTest, SizeAndBboxesConsistent) {
+    auto img = make_nested_rect_gray();
+    auto result = DetectMSER{}(img);
+    EXPECT_EQ(result.size(), result.bboxes.size());
+}

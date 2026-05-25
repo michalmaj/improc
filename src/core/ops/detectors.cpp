@@ -17,7 +17,10 @@ KeypointSet DetectBlob::operator()(Image<Gray> img) const {
 }
 
 MSERResult DetectMSER::operator()(Image<Gray> img) const {
-    return {};
+    MSERResult out;
+    cv::MSER::create(delta_, min_area_, max_area_)
+        ->detectRegions(img.mat(), out.regions, out.bboxes);
+    return out;
 }
 
 LineSet DetectLines::operator()(Image<Gray> img) const {
