@@ -51,7 +51,20 @@ QRResult DetectQR::operator()(Image<BGR> img) const {
 }
 
 BarcodeResult DetectBarcode::operator()(Image<BGR> img) const {
-    return {};
+    BarcodeResult out;
+    cv::barcode::BarcodeDetector detector;
+    std::vector<cv::Point2f> raw_pts;  // 4 corners per barcode, consecutive
+    bool found = detector.detectAndDecodeWithType(
+        img.mat(), out.decoded, out.types, raw_pts);
+    if (!found || out.decoded.empty())
+        return out;
+    // raw_pts layout: [barcode0_corner0..corner3, barcode1_corner0..corner3, ...]
+    for (std::size_t i = 0; i < out.decoded.size(); ++i) {
+        std::vector<cv::Point2f> corners(raw_pts.begin() + i * 4,
+                                         raw_pts.begin() + i * 4 + 4);
+        out.bboxes.push_back(cv::minAreaRect(corners));
+    }
+    return out;
 }
 
 } // namespace improc::core

@@ -176,3 +176,18 @@ TEST(DetectQRTest, PointsCountMatchesDecoded) {
     auto result = DetectQR{}(img);
     EXPECT_EQ(result.decoded.size(), result.points.size());
 }
+
+// ── DetectBarcode ─────────────────────────────────────────────────────────────
+
+TEST(DetectBarcodeTest, BlankImageNoBarcode) {
+    auto img = make_blank_bgr();
+    auto result = DetectBarcode{}(img);
+    EXPECT_TRUE(result.empty());
+}
+
+TEST(DetectBarcodeTest, ResultSizesConsistent) {
+    auto img = make_blank_bgr();
+    auto result = DetectBarcode{}(img);
+    EXPECT_EQ(result.decoded.size(), result.types.size());
+    EXPECT_EQ(result.decoded.size(), result.bboxes.size());
+}
