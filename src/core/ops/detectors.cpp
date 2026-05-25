@@ -24,7 +24,16 @@ MSERResult DetectMSER::operator()(Image<Gray> img) const {
 }
 
 LineSet DetectLines::operator()(Image<Gray> img) const {
-    return {};
+    LineSet out;
+    cv::Mat lines_mat;
+    cv::createLineSegmentDetector(cv::LSD_REFINE_STD, scale_, sigma_scale_)
+        ->detect(img.mat(), lines_mat);
+    if (lines_mat.empty())
+        return out;
+    out.lines.reserve(lines_mat.rows);
+    for (int i = 0; i < lines_mat.rows; ++i)
+        out.lines.push_back(lines_mat.at<cv::Vec4f>(i, 0));
+    return out;
 }
 
 QRResult DetectQR::operator()(Image<BGR> img) const {

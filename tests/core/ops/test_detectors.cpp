@@ -116,3 +116,29 @@ TEST(DetectMSERTest, SizeAndBboxesConsistent) {
     auto result = DetectMSER{}(img);
     EXPECT_EQ(result.size(), result.bboxes.size());
 }
+
+// ── DetectLines ──────────────────────────────────────────────────────────────
+
+TEST(DetectLinesTest, DetectsDiagonalLine) {
+    auto img = make_diagonal_line_gray();
+    auto result = DetectLines{}(img);
+    EXPECT_FALSE(result.empty());
+}
+
+TEST(DetectLinesTest, BlankImageNoLines) {
+    cv::Mat m(200, 200, CV_8UC1, cv::Scalar(255));
+    Image<Gray> img(m);
+    auto result = DetectLines{}(img);
+    EXPECT_TRUE(result.empty());
+}
+
+TEST(DetectLinesTest, DetectedAngleMatchesDrawnAngle) {
+    auto img = make_diagonal_line_gray();
+    auto result = DetectLines{}(img);
+    ASSERT_FALSE(result.empty());
+    const auto& l = result.lines[0];
+    double angle_rad = std::atan2(l[3] - l[1], l[2] - l[0]);
+    double angle_deg = std::abs(angle_rad * 180.0 / CV_PI);
+    // 45° diagonal — allow wide tolerance for LSD sub-pixel fitting
+    EXPECT_NEAR(angle_deg, 45.0, 15.0);
+}
