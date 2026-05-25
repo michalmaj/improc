@@ -393,6 +393,28 @@ Image<BGR> match_vis = DrawMatches{bgr_img, ks_orb, bgr_img, ks_orb, ms_bf}();
 
 // WarpPerspective — apply a 3×3 homography to an image
 Image<BGR> warped = src | WarpPerspective{}.homography(H).width(640).height(480);
+
+// DetectFAST / DetectBlob / DetectMSER / DetectLines — ops/detectors.hpp — take Image<Gray>
+KeypointSet fast_kps = gray | DetectFAST{}.threshold(20);
+KeypointSet blob_kps = gray | DetectBlob{};
+MSERResult  mser     = gray | DetectMSER{}.min_area(100);
+LineSet     lines    = gray | DetectLines{}.scale(0.8);
+
+// DetectQR / DetectBarcode — ops/detectors.hpp — take Image<BGR>
+QRResult      qr = bgr | DetectQR{};
+BarcodeResult bc = bgr | DetectBarcode{};
+
+// DetectFaceYN / RecognizeFace — ops/face.hpp — stateful, hold as named lvalue
+// Model files must be downloaded separately; not bundled in the repo.
+DetectFaceYN face_detector;
+face_detector.model("face_detection_yunet.onnx").score_threshold(0.9f);
+std::vector<FaceDetection> faces = face_detector(bgr_img);
+
+RecognizeFace recognizer;
+recognizer.model("face_recognition_sface.onnx");
+cv::Mat emb_a = recognizer.embed(face_chip_a);
+cv::Mat emb_b = recognizer.embed(face_chip_b);
+float   sim   = RecognizeFace::match(emb_a, emb_b);  // static; no model instance needed
 ```
 
 **`GammaCorrection`** throws `ParameterError` if `gamma <= 0`. Uses an 8-bit LUT for integer formats (fast); `cv::pow` + clamp for float formats.
@@ -437,11 +459,37 @@ Image<BGR> warped = src | WarpPerspective{}.homography(H).width(640).height(480)
 
 **`KeypointSet`** — result type with a public `keypoints` (`std::vector<cv::KeyPoint>`) member plus `size()` and `empty()` helpers. No bounds checking — use standard vector access. A default-constructed `KeypointSet` is empty.
 
+**`MSERResult`** — result type with `regions` (`std::vector<std::vector<cv::Point>>`) and `bboxes` (`std::vector<cv::Rect>`). `size()` returns `regions.size()`; `empty()` returns `true` when no regions found. From `ops/detector_types.hpp`.
+
+**`LineSet`** — result type with `lines` (`std::vector<cv::Vec4f>`), each entry `(x1, y1, x2, y2)`. `size()` and `empty()` helpers. From `ops/detector_types.hpp`.
+
+**`QRResult`** — result type with `decoded` (`std::vector<std::string>`) and `points` (`std::vector<cv::Mat>`) — one Mat per detected QR code. `size()` returns number of detected codes. From `ops/detector_types.hpp`.
+
+**`BarcodeResult`** — result type with `decoded` (strings), `types` (format names), and `bboxes` (`std::vector<cv::RotatedRect>`). Sizes always consistent. From `ops/detector_types.hpp`.
+
+**`FaceDetection`** — per-face struct: `bbox` (`cv::Rect2f`), `confidence` (float), `landmarks` (`std::array<cv::Point2f, 5>` — right-eye, left-eye, nose, right-mouth, left-mouth). From `ops/detector_types.hpp`.
+
 **`DetectORB`** detects ORB keypoints in `Image<Gray>` using `cv::ORB`. Returns `KeypointSet`. Fluent setters: `max_features(n)` (default 500), `scale_factor(f)` (default 1.2), `n_levels(n)` (default 8). `max_features` strictly limits the returned count. No parameters throw.
 
 **`DetectSIFT`** detects SIFT keypoints in `Image<Gray>` using `cv::SIFT` (main OpenCV ≥ 4.4). Returns `KeypointSet`. Fluent setters: `max_features(n)` (default 0 = no limit), `n_octave_layers(n)` (default 3). No parameters throw.
 
 **`DetectAKAZE`** detects AKAZE keypoints in `Image<Gray>` using `cv::AKAZE`. Returns `KeypointSet`. Fluent setter: `threshold(f)` (default 0.001f). Higher threshold → stricter → fewer keypoints. No parameters throw.
+
+**`DetectFAST`** (`ops/detectors.hpp`) — detects FAST corners in `Image<Gray>`. Returns `KeypointSet`. Fluent setters: `threshold(t)` (default 10), `non_max_suppression(b)` (default true). No parameters throw.
+
+**`DetectBlob`** (`ops/detectors.hpp`) — detects blobs in `Image<Gray>` using `cv::SimpleBlobDetector`. Returns `KeypointSet`. Fluent setter: `params(cv::SimpleBlobDetector::Params)` (default detects dark blobs, area 25–5000, circularity ≥ 0.8). No parameters throw.
+
+**`DetectMSER`** (`ops/detectors.hpp`) — detects MSER stable regions in `Image<Gray>`. Returns `MSERResult`. Fluent setters: `delta(d)` (default 5), `min_area(a)` (default 60), `max_area(a)` (default 14400). No parameters throw.
+
+**`DetectLines`** (`ops/detectors.hpp`) — detects line segments in `Image<Gray>` using `cv::LineSegmentDetector`. Returns `LineSet` — each entry `(x1, y1, x2, y2)`. Fluent setters: `scale(s)` (default 0.8), `sigma_scale(s)` (default 0.6). No parameters throw.
+
+**`DetectQR`** (`ops/detectors.hpp`) — detects and decodes QR codes in `Image<BGR>` using `cv::QRCodeDetectorAruco`. Returns `QRResult`. Stateless, no setters. Empty result on blank image.
+
+**`DetectBarcode`** (`ops/detectors.hpp`) — detects and decodes barcodes in `Image<BGR>` using `cv::barcode::BarcodeDetector` (built-in, no model file). Returns `BarcodeResult`. Stateless, no setters. Empty result on blank image.
+
+**`DetectFaceYN`** (`ops/face.hpp`) — stateful YuNet face detector. Requires `.model(path)` before first call. Non-const `operator()(Image<BGR>)`; hold as named lvalue. Lazy-initialises the model on first call or when frame size changes. Throws `std::invalid_argument` if model path not set; `FileNotFoundError` if file absent; `ModelError` on load failure. Returns `std::vector<FaceDetection>`.
+
+**`RecognizeFace`** (`ops/face.hpp`) — stateful SFace face recogniser. Requires `.model(path)` before calling `embed()`. `embed(Image<BGR>)` returns a `(1, 128)` `CV_32F` embedding; non-const. `match(emb_a, emb_b)` is **static** — cosine similarity in `[-1, 1]`, no model required.
 
 **`DescriptorSet`** — result type with a `KeypointSet keypoints` member and a `cv::Mat descriptors` member. `size()` returns `keypoints.size()`, which equals `descriptors.rows` after computation; `empty()` returns `true` when the stored `KeypointSet` is empty. Descriptor type: CV_32F for SIFT; CV_8U for ORB and AKAZE. A default-constructed `DescriptorSet` is empty. The underlying OpenCV `cv::Feature2D::compute()` call may prune keypoints that cannot be described; the stored `keypoints` reflects the pruned set.
 
