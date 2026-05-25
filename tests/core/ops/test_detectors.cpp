@@ -1,0 +1,72 @@
+// tests/core/ops/test_detectors.cpp
+#include <gtest/gtest.h>
+#include <opencv2/core.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/objdetect.hpp>
+#include "improc/core/pipeline.hpp"
+
+using namespace improc::core;
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+static Image<Gray> make_blank_gray() {
+    return Image<Gray>(cv::Mat(200, 200, CV_8UC1, cv::Scalar(255)));
+}
+
+static Image<Gray> make_corner_scene() {
+    cv::Mat m(200, 200, CV_8UC1, cv::Scalar(255));
+    // Draw a distinct cross/checkerboard pattern with high contrast
+    for (int i = 0; i < 10; ++i) {
+        for (int j = 0; j < 10; ++j) {
+            if ((i + j) % 2 == 0)
+                cv::rectangle(m, {i*20, j*20}, {i*20+19, j*20+19}, cv::Scalar(0), -1);
+        }
+    }
+    return Image<Gray>(m);
+}
+
+static Image<Gray> make_circles_gray() {
+    cv::Mat m(300, 300, CV_8UC1, cv::Scalar(255));
+    cv::circle(m, {75,  150}, 30, cv::Scalar(0), -1);
+    cv::circle(m, {150, 150}, 30, cv::Scalar(0), -1);
+    cv::circle(m, {225, 150}, 30, cv::Scalar(0), -1);
+    return Image<Gray>(m);
+}
+
+static Image<Gray> make_nested_rect_gray() {
+    cv::Mat m(200, 200, CV_8UC1, cv::Scalar(255));
+    cv::rectangle(m, {40, 40}, {160, 160}, cv::Scalar(0), -1);
+    cv::rectangle(m, {70, 70}, {130, 130}, cv::Scalar(200), -1);
+    return Image<Gray>(m);
+}
+
+static Image<Gray> make_diagonal_line_gray() {
+    cv::Mat m(200, 200, CV_8UC1, cv::Scalar(255));
+    cv::line(m, {20, 20}, {180, 180}, cv::Scalar(0), 3);
+    return Image<Gray>(m);
+}
+
+static Image<BGR> make_blank_bgr() {
+    return Image<BGR>(cv::Mat(200, 200, CV_8UC3, cv::Scalar(255, 255, 255)));
+}
+
+// ── DetectFAST ────────────────────────────────────────────────────────────────
+
+TEST(DetectFASTTest, FindsCornersInCornerScene) {
+    auto img = make_circles_gray();
+    auto result = DetectFAST{}.threshold(30)(img);
+    EXPECT_GT(result.size(), 0u);
+}
+
+TEST(DetectFASTTest, BlankImageNoKeypoints) {
+    auto img = make_blank_gray();
+    auto result = DetectFAST{}(img);
+    EXPECT_TRUE(result.empty());
+}
+
+TEST(DetectFASTTest, ThresholdReducesCount) {
+    auto img = make_corner_scene();
+    auto low  = DetectFAST{}.threshold(5)(img);
+    auto high = DetectFAST{}.threshold(200)(img);
+    EXPECT_GE(low.size(), high.size());
+}

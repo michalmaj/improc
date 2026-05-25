@@ -5,7 +5,9 @@
 namespace improc::core {
 
 KeypointSet DetectFAST::operator()(Image<Gray> img) const {
-    return {};
+    KeypointSet out;
+    cv::FAST(img.mat(), out.keypoints, threshold_, nms_);
+    return out;
 }
 
 KeypointSet DetectBlob::operator()(Image<Gray> img) const {
