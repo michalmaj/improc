@@ -11,7 +11,9 @@ KeypointSet DetectFAST::operator()(Image<Gray> img) const {
 }
 
 KeypointSet DetectBlob::operator()(Image<Gray> img) const {
-    return {};
+    KeypointSet out;
+    cv::SimpleBlobDetector::create(params_)->detect(img.mat(), out.keypoints);
+    return out;
 }
 
 MSERResult DetectMSER::operator()(Image<Gray> img) const {

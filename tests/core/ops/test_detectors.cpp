@@ -70,3 +70,28 @@ TEST(DetectFASTTest, ThresholdReducesCount) {
     auto high = DetectFAST{}.threshold(200)(img);
     EXPECT_GE(low.size(), high.size());
 }
+
+// ── DetectBlob ───────────────────────────────────────────────────────────────
+
+TEST(DetectBlobTest, DetectsThreeCircles) {
+    auto img = make_circles_gray();
+    auto result = DetectBlob{}(img);
+    EXPECT_EQ(result.size(), 3u);
+}
+
+TEST(DetectBlobTest, BlankImageNoBlobs) {
+    auto img = make_blank_gray();
+    auto result = DetectBlob{}(img);
+    EXPECT_TRUE(result.empty());
+}
+
+TEST(DetectBlobTest, KeypointsWithinCircleRegion) {
+    auto img = make_circles_gray();
+    auto result = DetectBlob{}(img);
+    ASSERT_EQ(result.size(), 3u);
+    for (const auto& kp : result.keypoints) {
+        EXPECT_GE(kp.pt.x, 40.f);
+        EXPECT_LE(kp.pt.x, 260.f);
+        EXPECT_NEAR(kp.pt.y, 150.f, 20.f);
+    }
+}
