@@ -22,7 +22,8 @@
  * SplitChannels, MergeChannels,
  * Convolve, BoxFilter, SobelGradient, ScharrGradient, ConvertScaleAbs,
  * Add, Subtract, Multiply, Divide,
- * IntegralImage, MinMaxLoc, MeanStdDev, CountNonZero, Reduce)
+ * IntegralImage, MinMaxLoc, MeanStdDev, CountNonZero, Reduce,
+ * DetectFAST, DetectBlob, DetectMSER, DetectLines, DetectQR, DetectBarcode)
  * and the generic `operator|` pipeline dispatch.
  *
  * @code
@@ -66,6 +67,7 @@
 #include "improc/core/ops/connected_components.hpp"
 #include "improc/core/ops/distance_transform.hpp"
 #include "improc/core/ops/feature_detection.hpp"
+#include "improc/core/ops/detectors.hpp"
 #include "improc/core/ops/matching.hpp"
 #include "improc/core/ops/draw_matches.hpp"
 #include "improc/core/ops/homography.hpp"
