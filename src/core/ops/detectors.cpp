@@ -45,7 +45,7 @@ QRResult DetectQR::operator()(Image<BGR> img) const {
         // points_mat is N×4×2 (CV_32FC2); split into per-code mats
         out.points.reserve(static_cast<std::size_t>(points_mat.rows));
         for (int i = 0; i < points_mat.rows; ++i)
-            out.points.push_back(points_mat.row(i));
+            out.points.push_back(points_mat.row(i).clone());
     }
     return out;
 }
@@ -59,7 +59,7 @@ BarcodeResult DetectBarcode::operator()(Image<BGR> img) const {
     if (!found || out.decoded.empty())
         return out;
     // raw_pts layout: [barcode0_corner0..corner3, barcode1_corner0..corner3, ...]
-    for (std::size_t i = 0; i < out.decoded.size(); ++i) {
+    for (std::size_t i = 0; i < out.decoded.size() && (i + 1) * 4 <= raw_pts.size(); ++i) {
         std::vector<cv::Point2f> corners(raw_pts.begin() + i * 4,
                                          raw_pts.begin() + i * 4 + 4);
         out.bboxes.push_back(cv::minAreaRect(corners));

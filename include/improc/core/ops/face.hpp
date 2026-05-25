@@ -12,15 +12,17 @@ namespace improc::core {
 /// @brief Stateful YuNet face detector. Requires `.model(path)` before first call.
 /// Hold as a named lvalue — operator() is non-const (lazy model init on first call).
 /// Throws std::invalid_argument if model path not set; FileNotFoundError if absent; ModelError on load failure.
+/// Setters `score_threshold`, `nms_threshold`, `top_k` are only applied at model creation;
+/// calling them after the first `operator()` has no effect.
 /// @code
 /// DetectFaceYN op;
 /// op.model("face_detection_yunet.onnx").score_threshold(0.9f);
 /// auto faces = op(bgr_img);  // std::vector<FaceDetection>
 /// @endcode
+/// Fluent setters: `model()`, `score_threshold()`, `nms_threshold()`, `top_k()`.
 class DetectFaceYN {
 public:
     DetectFaceYN& model(std::string path)  { model_path_       = std::move(path); return *this; }
-    DetectFaceYN& input_size(cv::Size s)   { input_size_       = s;               return *this; }
     DetectFaceYN& score_threshold(float t) { score_threshold_  = t;               return *this; }
     DetectFaceYN& nms_threshold(float t)   { nms_threshold_    = t;               return *this; }
     DetectFaceYN& top_k(int k)             { top_k_            = k;               return *this; }
@@ -31,7 +33,6 @@ private:
     void ensure_initialized(cv::Size frame_size);
 
     std::string model_path_;
-    cv::Size    input_size_      = {320, 320};
     float       score_threshold_ = 0.9f;
     float       nms_threshold_   = 0.3f;
     int         top_k_           = 5000;

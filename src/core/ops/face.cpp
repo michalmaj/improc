@@ -10,7 +10,7 @@ namespace improc::core {
 void DetectFaceYN::ensure_initialized(cv::Size frame_size) {
     if (model_path_.empty())
         throw std::invalid_argument("DetectFaceYN: model path not set — call .model(path) first");
-    if (!detector_ || frame_size != last_size_) {
+    if (!detector_) {
         if (!std::filesystem::exists(model_path_))
             throw improc::FileNotFoundError{model_path_};
         try {
@@ -20,6 +20,9 @@ void DetectFaceYN::ensure_initialized(cv::Size frame_size) {
         } catch (const cv::Exception& e) {
             throw improc::ModelError{model_path_, e.what()};
         }
+        last_size_ = frame_size;
+    } else if (frame_size != last_size_) {
+        detector_->setInputSize(frame_size);
         last_size_ = frame_size;
     }
 }
