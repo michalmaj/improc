@@ -69,3 +69,31 @@ Image<BGR> make_blank_bgr(int h, int w) {
 }
 
 } // namespace
+
+// ── DetectFAST — overhead ─────────────────────────────────────────────────────
+
+static void BM_raw_detect_fast(benchmark::State& state) {
+    auto img = make_textured_gray(480, 640);
+    for (auto _ : state) {
+        std::vector<cv::KeyPoint> kps;
+        cv::FAST(img.mat(), kps, 10, true);
+        benchmark::DoNotOptimize(kps);
+    }
+}
+BENCHMARK(BM_raw_detect_fast);
+
+static void BM_improc_detect_fast(benchmark::State& state) {
+    auto img = make_textured_gray(480, 640);
+    for (auto _ : state)
+        benchmark::DoNotOptimize(DetectFAST{}(img));
+}
+BENCHMARK(BM_improc_detect_fast);
+
+// ── DetectFAST — throughput ───────────────────────────────────────────────────
+
+static void BM_detect_fast(benchmark::State& state) {
+    auto img = make_textured_gray(state.range(0), state.range(1));
+    for (auto _ : state)
+        benchmark::DoNotOptimize(DetectFAST{}(img));
+}
+BENCHMARK(BM_detect_fast)->Args({480, 640})->Args({720, 1280});
