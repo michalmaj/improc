@@ -513,3 +513,66 @@ static void BM_triangulate_points(benchmark::State& state) {
             TriangulatePoints{}(d.P1, d.P2, d.pts1, d.pts2));
 }
 BENCHMARK(BM_triangulate_points)->Arg(50)->Arg(500);
+
+// ── DetectAruco — overhead ────────────────────────────────────────────────────
+
+static void BM_raw_detect_aruco(benchmark::State& state) {
+    auto dict  = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_50);
+    auto scene = make_aruco_scene(dict, 42);
+    auto detector = cv::aruco::ArucoDetector(dict);
+    for (auto _ : state) {
+        std::vector<std::vector<cv::Point2f>> corners, rejected;
+        std::vector<int> ids;
+        detector.detectMarkers(scene, corners, ids, rejected);
+        benchmark::DoNotOptimize(ids);
+    }
+}
+BENCHMARK(BM_raw_detect_aruco);
+
+static void BM_detect_aruco(benchmark::State& state) {
+    auto dict  = ArucoDict{}(cv::aruco::DICT_4X4_50);
+    // DetectAruco wraps cv::aruco::ArucoDetector::detectMarkers
+    auto scene = make_aruco_scene(dict, 42);
+    Image<BGR> img(scene);
+    for (auto _ : state)
+        benchmark::DoNotOptimize(DetectAruco{}(img, dict));
+}
+BENCHMARK(BM_detect_aruco);
+
+// ── GenerateAruco — throughput (parametrized by marker size px) ───────────────
+
+static void BM_generate_aruco(benchmark::State& state) {
+    auto dict = ArucoDict{}(cv::aruco::DICT_4X4_50);
+    int  px   = static_cast<int>(state.range(0));
+    for (auto _ : state)
+        benchmark::DoNotOptimize(GenerateAruco{}(dict, 0, px));
+}
+BENCHMARK(BM_generate_aruco)->Arg(100)->Arg(200);
+
+// ── ArucoPose — fixed ─────────────────────────────────────────────────────────
+
+static void BM_aruco_pose(benchmark::State& state) {
+    auto dict   = ArucoDict{}(cv::aruco::DICT_4X4_50);
+    auto scene  = make_aruco_scene(dict, 42);
+    Image<BGR> img(scene);
+    auto result = DetectAruco{}(img, dict);
+    auto K      = make_K();
+    auto dist   = make_dist();
+    for (auto _ : state)
+        benchmark::DoNotOptimize(ArucoPose{}(result, K, dist, 0.05f));
+}
+BENCHMARK(BM_aruco_pose);
+
+// ── CharucoBoard — fixed ──────────────────────────────────────────────────────
+
+static void BM_charuco_board(benchmark::State& state) {
+    auto dict  = ArucoDict{}(cv::aruco::DICT_4X4_50);
+    auto scene = make_charuco_scene({5, 7}, 80, 0.6f);
+    Image<BGR> img(scene);
+    for (auto _ : state)
+        benchmark::DoNotOptimize(
+            CharucoBoard{}.board_size({5, 7})
+                          .square_length(80.f)
+                          .marker_length(48.f)(img, dict));
+}
+BENCHMARK(BM_charuco_board);
