@@ -84,6 +84,7 @@ BENCHMARK(BM_raw_detect_fast);
 
 static void BM_improc_detect_fast(benchmark::State& state) {
     auto img = make_textured_gray(480, 640);
+    // DetectFAST defaults: threshold=10, non_max_suppression=true — matches raw above
     for (auto _ : state)
         benchmark::DoNotOptimize(DetectFAST{}(img));
 }
@@ -96,4 +97,4 @@ static void BM_detect_fast(benchmark::State& state) {
     for (auto _ : state)
         benchmark::DoNotOptimize(DetectFAST{}(img));
 }
-BENCHMARK(BM_detect_fast)->Args({480, 640})->Args({720, 1280});
+BENCHMARK(BM_detect_fast)->Args({480, 640})->Args({720, 1280})->Iterations(5);
