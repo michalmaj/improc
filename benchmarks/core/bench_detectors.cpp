@@ -206,3 +206,61 @@ static void BM_detect_barcode(benchmark::State& state) {
         benchmark::DoNotOptimize(DetectBarcode{}(img));
 }
 BENCHMARK(BM_detect_barcode)->Iterations(5);
+
+// ── DetectFaceYN — model-gated ────────────────────────────────────────────────
+
+static void BM_detect_face(benchmark::State& state) {
+    if (!std::filesystem::exists(kFaceModel)) {
+        state.SkipWithMessage(
+            "model not found — place face_detection_yunet.onnx in tests/core/testdata/");
+        return;
+    }
+    auto img = make_blank_bgr(480, 640);
+    DetectFaceYN detector;
+    detector.model(kFaceModel);
+    detector(img);  // warm-up init
+    for (auto _ : state)
+        benchmark::DoNotOptimize(detector(img));
+}
+BENCHMARK(BM_detect_face);
+
+// ── RecognizeFace::embed — model-gated ───────────────────────────────────────
+
+static void BM_recognize_face_embed(benchmark::State& state) {
+    if (!std::filesystem::exists(kRecogModel)) {
+        state.SkipWithMessage(
+            "model not found — place face_recognition_sface.onnx in tests/core/testdata/");
+        return;
+    }
+    auto img = make_blank_bgr(112, 112);
+    RecognizeFace recognizer;
+    recognizer.model(kRecogModel);
+    recognizer.embed(img);  // warm-up init
+    for (auto _ : state)
+        benchmark::DoNotOptimize(recognizer.embed(img));
+}
+BENCHMARK(BM_recognize_face_embed);
+
+// ── RecognizeFace::match — overhead (no model needed) ────────────────────────
+
+static void BM_raw_recognize_face_match(benchmark::State& state) {
+    cv::Mat a(1, 128, CV_32F), b(1, 128, CV_32F);
+    cv::randu(a, -1.f, 1.f);
+    cv::randu(b, -1.f, 1.f);
+    for (auto _ : state) {
+        cv::Mat a_norm, b_norm;
+        cv::normalize(a, a_norm, 1.0, 0.0, cv::NORM_L2);
+        cv::normalize(b, b_norm, 1.0, 0.0, cv::NORM_L2);
+        benchmark::DoNotOptimize(static_cast<float>(a_norm.dot(b_norm)));
+    }
+}
+BENCHMARK(BM_raw_recognize_face_match);
+
+static void BM_recognize_face_match(benchmark::State& state) {
+    cv::Mat a(1, 128, CV_32F), b(1, 128, CV_32F);
+    cv::randu(a, -1.f, 1.f);
+    cv::randu(b, -1.f, 1.f);
+    for (auto _ : state)
+        benchmark::DoNotOptimize(RecognizeFace::match(a, b));
+}
+BENCHMARK(BM_recognize_face_match);
