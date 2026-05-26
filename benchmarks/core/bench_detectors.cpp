@@ -128,3 +128,33 @@ static void BM_detect_blob(benchmark::State& state) {
         benchmark::DoNotOptimize(DetectBlob{}(img));
 }
 BENCHMARK(BM_detect_blob)->Args({480, 640})->Args({720, 1280})->Iterations(5);
+
+// ── DetectMSER — overhead ─────────────────────────────────────────────────────
+
+static void BM_raw_detect_mser(benchmark::State& state) {
+    auto img = make_nested_rects_gray(480, 640);
+    for (auto _ : state) {
+        std::vector<std::vector<cv::Point>> regions;
+        std::vector<cv::Rect> bboxes;
+        cv::MSER::create()->detectRegions(img.mat(), regions, bboxes);
+        benchmark::DoNotOptimize(regions);
+    }
+}
+BENCHMARK(BM_raw_detect_mser);
+
+static void BM_improc_detect_mser(benchmark::State& state) {
+    auto img = make_nested_rects_gray(480, 640);
+    // DetectMSER defaults: delta=5, min_area=60, max_area=14400 — matches MSER::create() defaults
+    for (auto _ : state)
+        benchmark::DoNotOptimize(DetectMSER{}(img));
+}
+BENCHMARK(BM_improc_detect_mser);
+
+// ── DetectMSER — throughput ───────────────────────────────────────────────────
+
+static void BM_detect_mser(benchmark::State& state) {
+    auto img = make_nested_rects_gray(state.range(0), state.range(1));
+    for (auto _ : state)
+        benchmark::DoNotOptimize(DetectMSER{}(img));
+}
+BENCHMARK(BM_detect_mser)->Args({480, 640})->Args({720, 1280})->Iterations(5);
