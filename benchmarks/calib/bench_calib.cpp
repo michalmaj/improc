@@ -352,3 +352,74 @@ static void BM_undistort_map(benchmark::State& state) {
         benchmark::DoNotOptimize(UndistortMap{}.K(K).dist(dist)(sz));
 }
 BENCHMARK(BM_undistort_map)->Args({480, 640})->Args({720, 1280})->Iterations(5);
+
+// ── SolvePnP — overhead ───────────────────────────────────────────────────────
+
+static void BM_raw_solve_pnp(benchmark::State& state) {
+    auto d    = make_pnp_data(6);
+    auto K    = make_K();
+    auto dist = make_dist();
+    for (auto _ : state) {
+        cv::Mat rvec, tvec;
+        bool ok = cv::solvePnP(d.obj_pts, d.img_pts, K, dist, rvec, tvec);
+        benchmark::DoNotOptimize(ok);
+    }
+}
+BENCHMARK(BM_raw_solve_pnp);
+
+static void BM_improc_solve_pnp(benchmark::State& state) {
+    auto d    = make_pnp_data(6);
+    auto K    = make_K();
+    auto dist = make_dist();
+    // SolvePnP defaults: method=SOLVEPNP_ITERATIVE — matches cv::solvePnP above
+    for (auto _ : state)
+        benchmark::DoNotOptimize(SolvePnP{}(d.obj_pts, d.img_pts, K, dist));
+}
+BENCHMARK(BM_improc_solve_pnp);
+
+// ── SolvePnP — throughput ─────────────────────────────────────────────────────
+
+static void BM_solve_pnp(benchmark::State& state) {
+    auto d    = make_pnp_data(6);
+    auto K    = make_K();
+    auto dist = make_dist();
+    for (auto _ : state)
+        benchmark::DoNotOptimize(SolvePnP{}(d.obj_pts, d.img_pts, K, dist));
+}
+BENCHMARK(BM_solve_pnp);
+
+// ── SolvePnPRansac ────────────────────────────────────────────────────────────
+
+static void BM_solve_pnp_ransac(benchmark::State& state) {
+    // 20 points with 20% synthetic outliers (last 4 points corrupted)
+    auto d    = make_pnp_data(20);
+    auto K    = make_K();
+    auto dist = make_dist();
+    for (int i = 16; i < 20; ++i) {
+        d.img_pts[i].x += 50.f;
+        d.img_pts[i].y += 50.f;
+    }
+    for (auto _ : state)
+        benchmark::DoNotOptimize(
+            SolvePnPRansac{}(d.obj_pts, d.img_pts, K, dist));
+}
+BENCHMARK(BM_solve_pnp_ransac);
+
+// ── ProjectPoints — throughput (parametrized by point count) ─────────────────
+
+static void BM_project_points(benchmark::State& state) {
+    int n     = static_cast<int>(state.range(0));
+    auto K    = make_K();
+    auto dist = make_dist();
+    cv::Mat rvec = (cv::Mat_<double>(3,1) << 0.1, 0.2, 0.0);
+    cv::Mat tvec = (cv::Mat_<double>(3,1) << 0.0, 0.0, 2.0);
+
+    std::vector<cv::Point3f> obj_pts;
+    obj_pts.reserve(n);
+    for (int i = 0; i < n; ++i)
+        obj_pts.push_back({(i % 20) * 0.01f, (i / 20) * 0.01f, 0.f});
+
+    for (auto _ : state)
+        benchmark::DoNotOptimize(ProjectPoints{}(obj_pts, rvec, tvec, K, dist));
+}
+BENCHMARK(BM_project_points)->Arg(50)->Arg(500)->Arg(5000);
