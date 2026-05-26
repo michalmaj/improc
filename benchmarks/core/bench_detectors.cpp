@@ -98,3 +98,33 @@ static void BM_detect_fast(benchmark::State& state) {
         benchmark::DoNotOptimize(DetectFAST{}(img));
 }
 BENCHMARK(BM_detect_fast)->Args({480, 640})->Args({720, 1280})->Iterations(5);
+
+// ── DetectBlob — overhead ─────────────────────────────────────────────────────
+
+static void BM_raw_detect_blob(benchmark::State& state) {
+    auto img      = make_circles_gray(480, 640);
+    auto detector = cv::SimpleBlobDetector::create();
+    for (auto _ : state) {
+        std::vector<cv::KeyPoint> kps;
+        detector->detect(img.mat(), kps);
+        benchmark::DoNotOptimize(kps);
+    }
+}
+BENCHMARK(BM_raw_detect_blob);
+
+static void BM_improc_detect_blob(benchmark::State& state) {
+    auto img = make_circles_gray(480, 640);
+    // DetectBlob default-constructs params — same defaults as SimpleBlobDetector::create()
+    for (auto _ : state)
+        benchmark::DoNotOptimize(DetectBlob{}(img));
+}
+BENCHMARK(BM_improc_detect_blob);
+
+// ── DetectBlob — throughput ───────────────────────────────────────────────────
+
+static void BM_detect_blob(benchmark::State& state) {
+    auto img = make_circles_gray(state.range(0), state.range(1));
+    for (auto _ : state)
+        benchmark::DoNotOptimize(DetectBlob{}(img));
+}
+BENCHMARK(BM_detect_blob)->Args({480, 640})->Args({720, 1280})->Iterations(5);
