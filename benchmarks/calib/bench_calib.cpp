@@ -278,3 +278,26 @@ static void BM_refine_corners(benchmark::State& state) {
         benchmark::DoNotOptimize(RefineCorners{}(img, result.corners));
 }
 BENCHMARK(BM_refine_corners)->Arg(60)->Arg(90)->Iterations(5);
+
+// ── CalibrateCamera — one-shot ────────────────────────────────────────────────
+
+static void BM_calibrate_camera(benchmark::State& state) {
+    auto d = make_calib_data(10);
+    for (auto _ : state)
+        benchmark::DoNotOptimize(
+            CalibrateCamera{}(d.obj_pts, d.img_pts, d.img_size));
+}
+BENCHMARK(BM_calibrate_camera)->Iterations(5);
+
+// ── StereoCalibrate — one-shot ────────────────────────────────────────────────
+
+static void BM_stereo_calibrate(benchmark::State& state) {
+    auto d = make_stereo_calib_data(10);
+    for (auto _ : state)
+        benchmark::DoNotOptimize(
+            StereoCalibrate{}.K1(d.K1).dist1(d.dist1)
+                              .K2(d.K2).dist2(d.dist2)
+                              .flags(cv::CALIB_FIX_INTRINSIC)(
+                d.obj_pts, d.img_pts1, d.img_pts2, d.img_size));
+}
+BENCHMARK(BM_stereo_calibrate)->Iterations(5);
