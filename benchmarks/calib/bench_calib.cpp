@@ -472,3 +472,44 @@ static void BM_reproject_to_3d(benchmark::State& state) {
         benchmark::DoNotOptimize(ReprojectTo3D{}(disp, Q));
 }
 BENCHMARK(BM_reproject_to_3d);
+
+// ── FindFundamentalMat — throughput (parametrized by point count) ─────────────
+
+static void BM_find_fundamental_mat(benchmark::State& state) {
+    auto [pts1, pts2] = make_point_pairs(static_cast<int>(state.range(0)));
+    for (auto _ : state)
+        benchmark::DoNotOptimize(FindFundamentalMat{}(pts1, pts2));
+}
+BENCHMARK(BM_find_fundamental_mat)->Arg(20)->Arg(200);
+
+// ── FindEssentialMat — throughput (parametrized by point count) ───────────────
+
+static void BM_find_essential_mat(benchmark::State& state) {
+    auto K            = make_K();
+    auto [pts1, pts2] = make_point_pairs(static_cast<int>(state.range(0)));
+    for (auto _ : state)
+        benchmark::DoNotOptimize(FindEssentialMat{}(pts1, pts2, K));
+}
+BENCHMARK(BM_find_essential_mat)->Arg(20)->Arg(200);
+
+// ── RecoverPose — fixed ───────────────────────────────────────────────────────
+
+static void BM_recover_pose(benchmark::State& state) {
+    auto K            = make_K();
+    auto [pts1, pts2] = make_point_pairs(50);
+    // Pre-compute E so benchmark only times RecoverPose
+    auto er = FindEssentialMat{}(pts1, pts2, K);
+    for (auto _ : state)
+        benchmark::DoNotOptimize(RecoverPose{}(er.E, pts1, pts2, K));
+}
+BENCHMARK(BM_recover_pose);
+
+// ── TriangulatePoints — throughput (parametrized by point count) ──────────────
+
+static void BM_triangulate_points(benchmark::State& state) {
+    auto d = make_triangulate_data(static_cast<int>(state.range(0)));
+    for (auto _ : state)
+        benchmark::DoNotOptimize(
+            TriangulatePoints{}(d.P1, d.P2, d.pts1, d.pts2));
+}
+BENCHMARK(BM_triangulate_points)->Arg(50)->Arg(500);
