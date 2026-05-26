@@ -301,3 +301,54 @@ static void BM_stereo_calibrate(benchmark::State& state) {
                 d.obj_pts, d.img_pts1, d.img_pts2, d.img_size));
 }
 BENCHMARK(BM_stereo_calibrate)->Iterations(5);
+
+// ── Undistort — overhead ──────────────────────────────────────────────────────
+
+static void BM_raw_undistort(benchmark::State& state) {
+    cv::Mat src(state.range(0), state.range(1), CV_8UC3);
+    cv::randu(src, 0, 255);
+    auto K    = make_K();
+    auto dist = make_dist();
+    for (auto _ : state) {
+        cv::Mat dst;
+        cv::undistort(src, dst, K, dist);
+        benchmark::DoNotOptimize(dst);
+    }
+}
+BENCHMARK(BM_raw_undistort)->Args({480, 640})->Args({720, 1280});
+
+static void BM_improc_undistort(benchmark::State& state) {
+    cv::Mat src(state.range(0), state.range(1), CV_8UC3);
+    cv::randu(src, 0, 255);
+    Image<BGR> img(src);
+    auto K    = make_K();
+    auto dist = make_dist();
+    // Undistort defaults match cv::undistort with identity new camera matrix
+    for (auto _ : state)
+        benchmark::DoNotOptimize(Undistort{}.K(K).dist(dist)(img));
+}
+BENCHMARK(BM_improc_undistort)->Args({480, 640})->Args({720, 1280});
+
+// ── Undistort — throughput ────────────────────────────────────────────────────
+
+static void BM_undistort(benchmark::State& state) {
+    cv::Mat src(state.range(0), state.range(1), CV_8UC3);
+    cv::randu(src, 0, 255);
+    Image<BGR> img(src);
+    auto K    = make_K();
+    auto dist = make_dist();
+    for (auto _ : state)
+        benchmark::DoNotOptimize(Undistort{}.K(K).dist(dist)(img));
+}
+BENCHMARK(BM_undistort)->Args({480, 640})->Args({720, 1280})->Iterations(5);
+
+// ── UndistortMap — throughput (map init only) ─────────────────────────────────
+
+static void BM_undistort_map(benchmark::State& state) {
+    auto K    = make_K();
+    auto dist = make_dist();
+    cv::Size sz{static_cast<int>(state.range(1)), static_cast<int>(state.range(0))};
+    for (auto _ : state)
+        benchmark::DoNotOptimize(UndistortMap{}.K(K).dist(dist)(sz));
+}
+BENCHMARK(BM_undistort_map)->Args({480, 640})->Args({720, 1280})->Iterations(5);
