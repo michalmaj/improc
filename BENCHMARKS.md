@@ -30,6 +30,9 @@ One representative number per namespace. Full tables with all variants are in th
 | `core` | `DenseDISFlow` (UltraFast) | 480×640 | 0.9 ms | 3 presets: UltraFast/Fast/Medium |
 | `core` | `Add` | 480×640 | 18.5 µs | wrapper overhead ≈0 ns vs raw |
 | `core` | `SobelGradient` | 480×640 | 99.6 µs | returns CV_16S dx+dy pair |
+| `core` | `DetectFAST` | 480×640 | TBD | FAST corner detector; threshold=10 |
+| `calib` | `Undistort` | 480×640 | TBD | wrapper overhead ≤5 ns vs raw |
+| `calib` | `StereoBM` | 480×640 | TBD | disparity map CV_16S |
 | `ml` | `Compose` (3 ops) | 224×224 | 730 µs | ~1,370 img/s |
 | `ml` | `IouTracker` | 100 dets | 17.5 µs | SortTracker: 254 µs — IouTracker is fastest when Kalman not needed |
 | `views` | `transform \| take(16/256)` | 224×224 | 561 µs lazy · 9,061 µs eager | **16× lazy speedup** |
@@ -351,6 +354,120 @@ Filter-before-transform avoids processing elements that will be discarded. Speed
 | 2 | 2.8 µs |
 | 4 | 2.8 µs |
 | 12 | 2.7 µs |
+
+</details>
+
+<details>
+<summary><strong>v0.9.0 Detectors (improc::core)</strong> — DetectFAST · DetectBlob · DetectMSER · DetectLines · DetectQR · DetectBarcode · face (model-gated)</summary>
+
+All overhead times in ns at 480×640. Throughput in µs.
+
+### Overhead (480×640)
+
+| Op | raw (ns) | improc++ (ns) | delta (ns) |
+|---|---|---|---|
+| `DetectFAST` | TBD | TBD | TBD |
+| `DetectBlob` | TBD | TBD | TBD |
+| `DetectMSER` | TBD | TBD | TBD |
+| `DetectLines` | TBD | TBD | TBD |
+| `RecognizeFace::match` | TBD | TBD | TBD |
+
+### Throughput — SD (480×640, µs)
+
+| Op | Time |
+|---|---|
+| `DetectFAST` | TBD |
+| `DetectBlob` | TBD |
+| `DetectMSER` | TBD |
+| `DetectLines` | TBD |
+| `DetectQR` | TBD |
+| `DetectBarcode` | TBD |
+
+### Throughput — HD (720×1280, µs)
+
+| Op | Time |
+|---|---|
+| `DetectFAST` | TBD |
+| `DetectBlob` | TBD |
+| `DetectMSER` | TBD |
+| `DetectLines` | TBD |
+
+### Face (model-gated, 480×640)
+
+| Op | Time |
+|---|---|
+| `DetectFaceYN` | requires `face_detection_yunet.onnx` |
+| `RecognizeFace::embed` | requires `face_recognition_sface.onnx` |
+
+</details>
+
+<details>
+<summary><strong>v0.9.0 Camera Geometry (improc::calib)</strong> — chessboard · calibration · pose · stereo · epipolar · ArUco</summary>
+
+### Chessboard detection
+
+| Op | SD (60px cell) | HD (90px cell) |
+|---|---|---|
+| `FindChessboardCorners` | TBD µs | TBD µs |
+| `FindChessboardCornersSB` | TBD µs | TBD µs |
+| `RefineCorners` | TBD µs | TBD µs |
+
+### Calibration (one-shot, 10 synthetic views)
+
+| Op | Time |
+|---|---|
+| `CalibrateCamera` | TBD ms |
+| `StereoCalibrate` | TBD ms |
+
+### Undistort
+
+| Op | SD (480×640) | HD (720×1280) |
+|---|---|---|
+| `Undistort` raw | TBD µs | TBD µs |
+| `Undistort` improc++ | TBD µs | TBD µs |
+| `UndistortMap` (init) | TBD µs | TBD µs |
+
+### Pose estimation
+
+| Op | Input | Time |
+|---|---|---|
+| `SolvePnP` | 6 pts | TBD µs |
+| `SolvePnPRansac` | 20 pts, 20% outliers | TBD µs |
+| `ProjectPoints` | 50 pts | TBD µs |
+| `ProjectPoints` | 500 pts | TBD µs |
+| `ProjectPoints` | 5000 pts | TBD µs |
+
+### Stereo (SD 480×640)
+
+| Op | Time |
+|---|---|
+| `StereoBM` | TBD ms |
+| `StereoSGBM` | TBD ms |
+| `StereoRectify` | TBD µs |
+| `ReprojectTo3D` | TBD µs |
+
+### Epipolar geometry
+
+| Op | 20 pts | 200 pts |
+|---|---|---|
+| `FindFundamentalMat` | TBD µs | TBD µs |
+| `FindEssentialMat` | TBD µs | TBD µs |
+| `TriangulatePoints` | TBD µs | TBD µs |
+
+| Op | Input | Time |
+|---|---|---|
+| `RecoverPose` | 50 pts | TBD µs |
+
+### ArUco
+
+| Op | Input | Time |
+|---|---|---|
+| `DetectAruco` raw | 400×400 scene | TBD µs |
+| `DetectAruco` improc++ | 400×400 scene | TBD µs |
+| `GenerateAruco` | 100×100 px | TBD µs |
+| `GenerateAruco` | 200×200 px | TBD µs |
+| `ArucoPose` | 1 marker | TBD µs |
+| `CharucoBoard` | 5×7, 80px | TBD ms |
 
 </details>
 
