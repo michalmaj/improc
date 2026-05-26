@@ -158,3 +158,33 @@ static void BM_detect_mser(benchmark::State& state) {
         benchmark::DoNotOptimize(DetectMSER{}(img));
 }
 BENCHMARK(BM_detect_mser)->Args({480, 640})->Args({720, 1280})->Iterations(5);
+
+// ── DetectLines — overhead ────────────────────────────────────────────────────
+
+static void BM_raw_detect_lines(benchmark::State& state) {
+    auto img = make_lines_gray(480, 640);
+    auto lsd  = cv::createLineSegmentDetector(cv::LSD_REFINE_STD, 0.8, 0.6);
+    for (auto _ : state) {
+        cv::Mat lines_mat;
+        lsd->detect(img.mat(), lines_mat);
+        benchmark::DoNotOptimize(lines_mat);
+    }
+}
+BENCHMARK(BM_raw_detect_lines);
+
+static void BM_improc_detect_lines(benchmark::State& state) {
+    auto img = make_lines_gray(480, 640);
+    // DetectLines defaults: scale=0.8, sigma_scale=0.6 — matches LSD_REFINE_STD above
+    for (auto _ : state)
+        benchmark::DoNotOptimize(DetectLines{}(img));
+}
+BENCHMARK(BM_improc_detect_lines);
+
+// ── DetectLines — throughput ──────────────────────────────────────────────────
+
+static void BM_detect_lines(benchmark::State& state) {
+    auto img = make_lines_gray(state.range(0), state.range(1));
+    for (auto _ : state)
+        benchmark::DoNotOptimize(DetectLines{}(img));
+}
+BENCHMARK(BM_detect_lines)->Args({480, 640})->Args({720, 1280})->Iterations(5);
