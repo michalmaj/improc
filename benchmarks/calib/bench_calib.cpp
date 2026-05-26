@@ -423,3 +423,52 @@ static void BM_project_points(benchmark::State& state) {
         benchmark::DoNotOptimize(ProjectPoints{}(obj_pts, rvec, tvec, K, dist));
 }
 BENCHMARK(BM_project_points)->Arg(50)->Arg(500)->Arg(5000);
+
+// ── StereoBM — throughput (SD only; memory-intensive) ────────────────────────
+
+static void BM_stereo_bm(benchmark::State& state) {
+    auto [left, right] = make_stereo_pair(480, 640);
+    for (auto _ : state)
+        benchmark::DoNotOptimize(StereoBM{}(left, right));
+}
+BENCHMARK(BM_stereo_bm);
+
+// ── StereoSGBM — throughput (SD only, Iterations=3) ──────────────────────────
+
+static void BM_stereo_sgbm(benchmark::State& state) {
+    auto [left, right] = make_stereo_pair(480, 640);
+    int bs = 3;
+    for (auto _ : state)
+        benchmark::DoNotOptimize(
+            StereoSGBM{}.block_size(bs).p1(8*bs*bs).p2(32*bs*bs)(left, right));
+}
+BENCHMARK(BM_stereo_sgbm)->Iterations(3);
+
+// ── StereoRectify — fixed ─────────────────────────────────────────────────────
+
+static void BM_stereo_rectify(benchmark::State& state) {
+    auto K    = make_K();
+    auto dist = make_dist();
+    cv::Mat R = cv::Mat::eye(3, 3, CV_64F);
+    cv::Mat T = (cv::Mat_<double>(3,1) << -0.10, 0, 0);
+    for (auto _ : state)
+        benchmark::DoNotOptimize(
+            StereoRectify{}(K, dist, K, dist, R, T, {640, 480}));
+}
+BENCHMARK(BM_stereo_rectify);
+
+// ── ReprojectTo3D — throughput (SD) ──────────────────────────────────────────
+
+static void BM_reproject_to_3d(benchmark::State& state) {
+    cv::Mat disp(480, 640, CV_16S);
+    cv::randu(disp, cv::Scalar(0), cv::Scalar(1024));
+    // Typical Q matrix for a 10 cm baseline with fx=800
+    cv::Mat Q = (cv::Mat_<double>(4,4) <<
+        1,  0,  0, -320,
+        0,  1,  0, -240,
+        0,  0,  0,  800,
+        0,  0, -10,   0);
+    for (auto _ : state)
+        benchmark::DoNotOptimize(ReprojectTo3D{}(disp, Q));
+}
+BENCHMARK(BM_reproject_to_3d);
