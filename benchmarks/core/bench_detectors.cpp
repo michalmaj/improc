@@ -188,3 +188,21 @@ static void BM_detect_lines(benchmark::State& state) {
         benchmark::DoNotOptimize(DetectLines{}(img));
 }
 BENCHMARK(BM_detect_lines)->Args({480, 640})->Args({720, 1280})->Iterations(5);
+
+// ── DetectQR ──────────────────────────────────────────────────────────────────
+
+static void BM_detect_qr(benchmark::State& state) {
+    auto img = make_qr_bgr(480, 640);
+    for (auto _ : state)
+        benchmark::DoNotOptimize(DetectQR{}(img));
+}
+BENCHMARK(BM_detect_qr)->Iterations(5);
+
+// ── DetectBarcode ─────────────────────────────────────────────────────────────
+
+static void BM_detect_barcode(benchmark::State& state) {
+    auto img = make_blank_bgr(480, 640);
+    for (auto _ : state)
+        benchmark::DoNotOptimize(DetectBarcode{}(img));
+}
+BENCHMARK(BM_detect_barcode)->Iterations(5);
