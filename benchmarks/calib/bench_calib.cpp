@@ -239,3 +239,42 @@ cv::Mat make_charuco_scene(cv::Size board_size, int square_px, float marker_rati
 }
 
 } // namespace
+
+// ── FindChessboardCorners — throughput ───────────────────────────────────────
+// SD: 10×7 squares at 60px → 640×460 image; inner corners {9,6}
+// HD: 10×7 squares at 90px → 940×670 image; inner corners {9,6}
+
+static void BM_find_chessboard_corners(benchmark::State& state) {
+    int cell = state.range(0);
+    cv::Mat board = make_chessboard_gray(10, 7, cell);
+    Image<Gray> img(board);
+    for (auto _ : state)
+        benchmark::DoNotOptimize(
+            FindChessboardCorners{}.board_size({9, 6})(img));
+}
+BENCHMARK(BM_find_chessboard_corners)->Arg(60)->Arg(90)->Iterations(5);
+
+// ── FindChessboardCornersSB — throughput ─────────────────────────────────────
+
+static void BM_find_chessboard_corners_sb(benchmark::State& state) {
+    int cell = state.range(0);
+    cv::Mat board = make_chessboard_gray(10, 7, cell);
+    Image<Gray> img(board);
+    for (auto _ : state)
+        benchmark::DoNotOptimize(
+            FindChessboardCornersSB{}.board_size({9, 6})(img));
+}
+BENCHMARK(BM_find_chessboard_corners_sb)->Arg(60)->Arg(90)->Iterations(5);
+
+// ── RefineCorners — throughput ────────────────────────────────────────────────
+
+static void BM_refine_corners(benchmark::State& state) {
+    int cell = state.range(0);
+    cv::Mat board = make_chessboard_gray(10, 7, cell);
+    Image<Gray> img(board);
+    auto result = FindChessboardCorners{}.board_size({9, 6})(img);
+    if (!result.found || result.corners.empty()) return;
+    for (auto _ : state)
+        benchmark::DoNotOptimize(RefineCorners{}(img, result.corners));
+}
+BENCHMARK(BM_refine_corners)->Arg(60)->Arg(90)->Iterations(5);
