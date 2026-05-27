@@ -8,6 +8,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## Table of Contents
 
 - [[Unreleased]](#unreleased)
+- [[0.9.0]](#090--2026-05-27) — 2026-05-27 · Camera Geometry + Detectors: new `improc::calib` namespace (31 ops), 8 detector ops in `improc::core`, benchmarks for all new ops
 - [[0.8.0]](#080--2026-05-21) — 2026-05-21 · Classic CV ops: 22 new ops (motion analysis, math/foundation), benchmarks for all new ops
 - [[0.7.0]](#070--2026-05-19) — 2026-05-19 · Video Pipeline + Packaging: VideoFileCapture, CMake install rules, BackgroundSubtractMOG2/KNN
 - [[0.6.0]](#060--2026-05-18) — 2026-05-18 · Real-Time Pipeline: unified camera API (WebcamCapture, IPCameraCapture, OakDCapture), CameraFrame, AnyCameraSource, FramePipeline update
@@ -20,6 +21,41 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ---
 
 ## [Unreleased]
+
+---
+
+## [0.9.0] — 2026-05-27
+
+### Added
+
+#### `improc::calib` — new namespace
+
+**Header:** `#include "improc/calib/pipeline.hpp"`
+
+- **Chessboard detection** — `FindChessboardCorners` (standard), `FindChessboardCornersSB` (sub-pixel accurate Saddle-Based detector), `RefineCorners` (`cv::cornerSubPix` wrapper); all return `FindChessboardResult{found, corners}`
+- **Camera calibration** — `CalibrateCamera` wraps `cv::calibrateCamera`; `make_chessboard_points({cols, rows}, cell_size_m)` helper generates 3D object points; returns `CalibrationResult{K, dist, rvecs, tvecs, rms}`
+- **Stereo calibration** — `StereoCalibrate` calibrates a stereo pair jointly from shared 3D/2D correspondences; returns `StereoCalibrationResult{K1, K2, dist1, dist2, R, T, E, F, rms}`; `.flags(cv::CALIB_FIX_INTRINSIC)` for pre-calibrated intrinsics
+- **Undistort** — `Undistort{}.K(K).dist(dist)` — pipeline op, accepts any `Image<Format>`; `UndistortMap{}.K(K).dist(dist)` — precomputes remap tables, returns `UndistortMapResult{map1, map2}` for repeated use
+- **Pose estimation** — `SolvePnP` (Levenberg-Marquardt, ≥4 pts), `SolvePnPRansac` (RANSAC, ≥4 pts with automatic outlier rejection); both return `PnPResult{success, rvec, tvec}`; `ProjectPoints` projects 3D→2D given `rvec`, `tvec`, `K`, `dist`; fluent: `.flags()`, `.iterations()`, `.reprojection_error()`
+- **Stereo processing** — `StereoBM` (block matching, returns `cv::Mat` CV_16S disparity), `StereoSGBM` (semi-global BM, fluent: `.block_size()`, `.p1()`, `.p2()`); `StereoRectify` wraps `cv::stereoRectify`, returns `StereoRectifyResult`; `ReprojectTo3D` reprojects disparity → 3D using `Q` matrix
+- **Epipolar geometry** — `FindFundamentalMat` (RANSAC, ≥8 pts), `FindEssentialMat` (requires calibration matrix `K`, RANSAC), `RecoverPose` (extracts `R`, `T` from essential matrix), `TriangulatePoints` (DLT triangulation from two projection matrices)
+- **ArUco** — `ArucoDict` wraps `cv::aruco::getPredefinedDictionary`; `DetectAruco` detects markers → `ArucoResult`; `DrawAruco` draws marker outlines + optional 3D axes; `GenerateAruco` renders a single marker to `Image<Gray>`; `ArucoPose` estimates per-marker pose via PnP; `CharucoBoard` detects ChArUco boards → `CharucoResult`
+
+#### `improc::core` — detector ops
+
+- **`DetectFAST`** (`ops/detectors.hpp`) — FAST corner detector on `Image<Gray>`; returns `KeypointSet`; fluent: `threshold(t)` (default 10), `non_max_suppression(b)` (default true)
+- **`DetectBlob`** — blob detector via `cv::SimpleBlobDetector`; returns `KeypointSet`; fluent: `params(cv::SimpleBlobDetector::Params)`
+- **`DetectMSER`** — Maximally Stable Extremal Regions; returns `MSERResult{regions, bboxes}`; fluent: `delta()`, `min_area()`, `max_area()`
+- **`DetectLines`** — Line Segment Detector (LSD) on `Image<Gray>`; returns `LineSet`; fluent: `scale()`, `sigma_scale()`
+- **`DetectQR`** — QR code detect + decode on `Image<BGR>` via `cv::QRCodeDetectorAruco`; returns `QRResult{decoded, points}`
+- **`DetectBarcode`** — barcode detect + decode on `Image<BGR>` via `cv::barcode::BarcodeDetector` (no model file); returns `BarcodeResult{decoded, types, points}`
+- **`DetectFaceYN`** (`ops/face.hpp`) — YuNet face detector (requires `.onnx` model); lazy model init on first call; returns `FaceDetectionResult`; fluent: `model()`, `score_threshold()`, `nms_threshold()`, `top_k()`
+- **`RecognizeFace`** — SFace face recognizer (requires `.onnx` model); `embed(img)` → 128-D `cv::Mat`; `RecognizeFace::match(a, b)` → cosine similarity (static); fluent: `model()`
+
+### Benchmarks
+- `benchmarks/core/bench_detectors.cpp` — overhead (raw `cv::` vs wrapper) + throughput benchmarks for all 8 detector ops at SD (480×640) and HD (720×1280); face ops model-gated via `state.SkipWithMessage()`
+- `benchmarks/calib/bench_calib.cpp` — throughput benchmarks for all 22 calib/ArUco ops: chessboard, calibration, undistort, pose, stereo, epipolar, ArUco; overhead pair for `Undistort` and `DetectAruco`
+- `BENCHMARKS.md` — Quick Reference table extended; new v0.9.0 sections with measured values (Apple M4 Pro, Release build)
 
 ---
 

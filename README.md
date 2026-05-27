@@ -38,13 +38,14 @@
 
 ## Status
 
-> **Latest release: v0.8.0** — Classic CV Ops. `improc::core` adds 22 new ops: 6 motion analysis ops (`SparseLKFlow`, `DenseFarnebackFlow`, `DenseDISFlow`, `CamShift`, `MeanShift`, `PhaseCorrelate`) with a new `Flow` format tag; 16 math/foundation ops (arithmetic, filters, gradients, channel split/merge, analysis); Google Benchmark suite updated with motion and math results.  
-> **Previous highlights:** v0.7.0 — Video Pipeline + Packaging. v0.6.0 — unified real-time camera API. v0.5.0 — ML evaluation, multi-object tracking, Google Benchmark suite.  
+> **Latest release: v0.9.0** — Camera Geometry + Detectors. New `improc::calib` namespace with 31 ops covering chessboard detection, camera/stereo calibration, undistort, pose estimation (SolvePnP/Ransac, ProjectPoints), stereo processing (StereoBM/SGBM, StereoRectify, ReprojectTo3D), epipolar geometry (FindFundamentalMat, FindEssentialMat, RecoverPose, TriangulatePoints), and full ArUco/ChArUco support (detect, generate, pose, charuco). `improc::core` adds 8 detector ops: `DetectFAST`, `DetectBlob`, `DetectMSER`, `DetectLines`, `DetectQR`, `DetectBarcode`, `DetectFaceYN`, `RecognizeFace`. Google Benchmark suite updated with detector and calib results.
+> **Previous highlights:** v0.8.0 — Classic CV ops (motion analysis, math/foundation). v0.7.0 — Video Pipeline + Packaging. v0.6.0 — unified real-time camera API.  
 > APIs are stabilising but may still change between minor versions.
 
 | Namespace | Status | Notes |
 |---|---|---|
 | `improc::core` | ✅ Stable | New ops added regularly |
+| `improc::calib` | ✅ Stable | Camera calibration, stereo, pose, ArUco (v0.9.0) |
 | `improc::io` | ✅ Stable | |
 | `improc::ml` | ✅ Stable | New ops added regularly |
 | `improc::threading` | ✅ Stable | |
@@ -142,6 +143,11 @@ OpenCV is powerful but its raw API is stringly-typed, mutation-heavy, and easy t
 - **Contour analysis** — `FindContours` → `ContourSet` (with `area()`, `perimeter()`, `bounding_rect()`); `DrawContours` (fill or stroke, single or all); `ConvexHull`, `ApproxPolyDP` (Douglas-Peucker), `MinAreaRect` (`cv::RotatedRect`), `BoundingRect`
 - **Connected components** — `ConnectedComponents` → `ComponentMap` (labels, stats, centroids, per-component masks); `DistanceTransform` → `Image<Float32>`
 - **Feature detection pipeline** — `DetectORB` / `DetectSIFT` / `DetectAKAZE` → `KeypointSet`; `DescribeORB` / `DescribeSIFT` / `DescribeAKAZE` → `DescriptorSet`; `MatchBF` / `MatchFlann` → `MatchSet`; `DrawKeypoints` / `DrawMatches` for visualisation
+- **Detector ops** — `DetectFAST` (FAST corners), `DetectBlob` (SimpleBlobDetector), `DetectMSER` (extremal regions), `DetectLines` (LSD line segments), `DetectQR` (QR detect + decode), `DetectBarcode` (barcode detect + decode, no model file); `DetectFaceYN` (YuNet face detector, model-gated), `RecognizeFace` (SFace embed + cosine similarity match, model-gated)
+- **Camera calibration** (`improc::calib`) — `FindChessboardCorners` / `FindChessboardCornersSB` / `RefineCorners`; `CalibrateCamera` + `make_chessboard_points()`; `StereoCalibrate`; `Undistort` (pipeline op) + `UndistortMap` (precomputed remap tables)
+- **Pose estimation** (`improc::calib`) — `SolvePnP`, `SolvePnPRansac` (RANSAC outlier rejection), `ProjectPoints`; `StereoRectify`; `ReprojectTo3D`; `StereoBM` / `StereoSGBM` disparity maps
+- **Epipolar geometry** (`improc::calib`) — `FindFundamentalMat`, `FindEssentialMat`, `RecoverPose`, `TriangulatePoints`
+- **ArUco / ChArUco** (`improc::calib`) — `ArucoDict`, `DetectAruco`, `DrawAruco`, `GenerateAruco`, `ArucoPose`, `CharucoBoard`
 - **Pixel ops** — `InRange` (binary mask), `Invert`, `Brightness`, `Contrast`, `WeightedBlend`, `AlphaBlend`, `ApplyMask`; element-wise `Add`, `Subtract`, `Multiply`, `Divide`, `AbsDiff`; bitwise `BitwiseAnd`, `BitwiseOr`, `BitwiseNot`; `LUT` (256-entry lookup table)
 - **Channel ops** — `SplitChannels` (BGR/BGRA → vector of Gray), `MergeChannels` (vector of Gray → BGR/BGRA)
 - **Normalization** — `Normalize`, `NormalizeTo`, `Standardize` for ML preprocessing
@@ -672,6 +678,9 @@ Single-thread performance on Apple M4 Pro. Highlights:
 | SparseLKFlow 480×640 | 0.5 ms | per tracked point batch |
 | Add / Subtract 480×640 | ~18 µs | wrapper overhead ≈0 vs raw `cv::add` |
 | SobelGradient 480×640 | 99.6 µs | returns CV_16S dx+dy pair |
+| DetectFAST 480×640 | 2.5 ms | |
+| Undistort 480×640 | 1.9 ms | wrapper overhead ≈0 ns vs raw |
+| StereoBM 480×640 | 3.8 ms | CV_16S disparity map |
 | IouTracker @ 100 dets | 17.5 µs | |
 | Lazy `take(16/256)` | 16× faster than eager | |
 
