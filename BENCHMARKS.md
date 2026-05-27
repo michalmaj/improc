@@ -550,3 +550,24 @@ was correct all along — the benchmark was the issue.
 | `transform \| take(16/256)` **lazy** | 561 µs | 1,939 µs |
 | `transform \| take(16/256)` **eager** | 9,061 µs | 30,179 µs |
 | Speedup | **16×** | **16×** |
+
+<details>
+<summary><strong>v0.10.0-A — Photo + Stitching (improc::core)</strong></summary>
+
+> Build: `cmake --build build --target improc_benchmarks`
+> Run: `./build/improc_benchmarks --benchmark_filter="edge_preserving|detail_enhance|stylize|pencil|seamless|merge_hdr|tonemap|stitch"`
+
+### Throughput — SD (480×640), Apple M4 Pro, Release
+
+| Op | Time | Notes |
+|---|---|---|
+| EdgePreservingFilter | 15.7 ms | Recursive filter (default) |
+| DetailEnhance | 12.8 ms | |
+| Stylize | 58.6 ms | |
+| PencilSketch | 14.3 ms | Returns {gray, color} |
+| SeamlessClone | 10.3 ms | Normal clone mode |
+| MergeHDR (Mertens) | 3.5 ms | 3 frames, 5 iterations |
+| ToneMap (Reinhard) | 2.66 ms | Float32C3→BGR |
+| Stitch | 1.81 ms | 2-image panorama, 5 iterations |
+
+</details>
