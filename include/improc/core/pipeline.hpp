@@ -105,6 +105,8 @@
 #include "improc/core/ops/flood_fill.hpp"
 #include "improc/core/ops/photo.hpp"
 #include "improc/core/ops/stitching.hpp"
+#include "improc/core/ops/quality.hpp"
+#include "improc/core/ops/img_hash.hpp"
 
 namespace improc::core {
 
