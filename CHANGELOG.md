@@ -8,6 +8,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## Table of Contents
 
 - [[Unreleased]](#unreleased)
+- [[0.10.0]](#0100--2026-05-27) — 2026-05-27 · Photo + Creative + Quality + Hashing: 8 photo/creative ops, panorama stitching, 4 quality metrics, 6 perceptual hash ops (all standard OpenCV, no contrib)
 - [[0.9.0]](#090--2026-05-27) — 2026-05-27 · Camera Geometry + Detectors: new `improc::calib` namespace (31 ops), 8 detector ops in `improc::core`, benchmarks for all new ops
 - [[0.8.0]](#080--2026-05-21) — 2026-05-21 · Classic CV ops: 22 new ops (motion analysis, math/foundation), benchmarks for all new ops
 - [[0.7.0]](#070--2026-05-19) — 2026-05-19 · Video Pipeline + Packaging: VideoFileCapture, CMake install rules, BackgroundSubtractMOG2/KNN
@@ -21,6 +22,55 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ---
 
 ## [Unreleased]
+
+---
+
+## [0.10.0] — 2026-05-27
+
+### Added
+
+#### `improc::core` — Photo / Creative ops (`ops/photo.hpp`)
+
+**Header:** `#include "improc/core/pipeline.hpp"` (or `"improc/core/ops/photo.hpp"` directly)
+
+- **`EdgePreservingFilter`** — domain-transform or recursive filter edge-preserving smoothing (`cv::edgePreservingFilter`); fluent: `sigma_s()` (spatial, default 60), `sigma_r()` (range, default 0.4), `filter(EdgePreservingFilter::Filter)` (RecursiveFilter / NormConv)
+- **`DetailEnhance`** — sharpens texture while suppressing noise (`cv::detailEnhance`); fluent: `sigma_s()`, `sigma_r()`
+- **`Stylize`** — oil-painting-like stylization (`cv::stylization`); fluent: `sigma_s()`, `sigma_r()`
+- **`PencilSketch`** — returns `PencilSketchResult{gray, color}` (grayscale + colour pencil sketch via `cv::pencilSketch`); fluent: `sigma_s()`, `sigma_r()`, `shade_factor()`
+- **`SeamlessClone`** — Poisson image blending of a source into a destination (`cv::seamlessClone`); fluent: `mode(SeamlessClone::Mode)` (Normal, Mixed, MonochromeTransfer); takes `(src, dst, mask, center)` 4-arg call; throws `ParameterError` on out-of-bounds center
+- **`NLMeansDenoisingMulti`** — non-local means denoising over a temporal window of `Image<BGR>` frames; fluent: `h()`, `template_window_size()`, `search_window_size()`, `index()` (frame to denoise); throws `ParameterError` when fewer than 2 images provided
+- **`MergeHDR`** — HDR exposure fusion from a bracket of `Image<BGR>` frames; returns `Image<Float32C3>` (32-bit 3-channel HDR radiance map); fluent: `method(MergeHDR::Method)` (Mertens / Debevec); Debevec requires `times` exposure durations
+- **`ToneMap`** — tone-maps an `Image<Float32C3>` HDR image to an 8-bit `Image<BGR>` LDR output; fluent: `gamma()`, `algorithm(ToneMap::Algorithm)` (Linear, Drago, Reinhard, Mantiuk)
+
+#### `improc::core` — Panorama stitching (`ops/stitching.hpp`)
+
+- **`Stitch`** — wraps `cv::Stitcher`; takes a `std::vector<Image<BGR>>`; returns `StitchResult{ok, panorama}` where `ok` is false on failure (panorama is a 1×1 placeholder image); fluent: `mode(Stitch::Mode)` (Panorama, Scans)
+
+#### `improc::core` — Quality metrics (`ops/quality.hpp`)
+
+All quality ops have overloads for `Image<BGR>` and `Image<Gray>`; throw `ParameterError` on size mismatch. Implemented using standard OpenCV only (no contrib required).
+
+- **`PSNR`** — Peak Signal-to-Noise Ratio in dB; returns `+∞` for identical images; uses `cv::absdiff` + squared L2 + per-channel mean
+- **`SSIM`** — Structural Similarity Index (−1 to 1, identical = 1); Gaussian window (11×11, σ=1.5), per-channel then averaged; C1=6.5025, C2=58.5225
+- **`GMSD`** — Gradient Magnitude Similarity Deviation (lower = more similar); Prewitt gradient magnitudes on grayscale, stddev of GMSM similarity map; returns 0.0 for identical images
+- **`MSE`** — Mean Squared Error; returns 0.0 for identical images; averaged over all channels and pixels
+
+#### `improc::core` — Perceptual hashing (`ops/img_hash.hpp`)
+
+All hash ops take `Image<BGR>` and return `cv::Mat`. Implemented using standard OpenCV only (no contrib required). Use `OpName::distance(h1, h2)` for the canonical similarity distance.
+
+- **`AverageHash`** — resize 8×8 gray, bit = pixel > mean; 1×8 `CV_8U` (64 bits); Hamming distance
+- **`PHash`** — resize 32×32 gray → DCT → 8×8 top-left (excluding DC) → bit = value > mean; 1×8 `CV_8U`; Hamming distance
+- **`MarrHildrethHash`** — Laplacian-of-Gaussian (GaussianBlur + Laplacian) on 24×24 gray, encode sign bits; 1×72 `CV_8U` (576 bits); Hamming distance
+- **`RadialVarianceHash`** — 40 radial lines (0 to π) from center of 64×64 gray image, variance per line; 1×40 `CV_64F`; L2 distance
+- **`ColorMomentHash`** — resize 16×16 → YCrCb; per-channel: mean, std, moments 3–6, 8-bin histogram = 14 values × 3 channels = 42 values; 1×42 `CV_64F`; L2 distance
+- **`BlockMeanHash`** — resize 256×256 gray → 16×16 blocks of 16×16 px, bit = block mean > overall mean; 1×32 `CV_8U` (256 bits); Hamming distance
+
+### Benchmarks
+
+- `benchmarks/core/bench_photo.cpp` — throughput benchmarks for all 8 photo ops + Stitch at HD (480×640); measured on Apple M4 Pro, Release build
+- `benchmarks/core/bench_quality.cpp` — throughput benchmarks for PSNR, SSIM, GMSD, MSE + all 6 hash ops + 2 distance overhead benchmarks at 480×640
+- `BENCHMARKS.md` — Quick Reference table extended; new v0.10.0-A (photo) and v0.10.0-B (quality + hashing) sections with measured values
 
 ---
 
