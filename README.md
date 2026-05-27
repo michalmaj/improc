@@ -38,13 +38,13 @@
 
 ## Status
 
-> **Latest release: v0.9.0** — Camera Geometry + Detectors. New `improc::calib` namespace with 31 ops covering chessboard detection, camera/stereo calibration, undistort, pose estimation (SolvePnP/Ransac, ProjectPoints), stereo processing (StereoBM/SGBM, StereoRectify, ReprojectTo3D), epipolar geometry (FindFundamentalMat, FindEssentialMat, RecoverPose, TriangulatePoints), and full ArUco/ChArUco support (detect, generate, pose, charuco). `improc::core` adds 8 detector ops: `DetectFAST`, `DetectBlob`, `DetectMSER`, `DetectLines`, `DetectQR`, `DetectBarcode`, `DetectFaceYN`, `RecognizeFace`. Google Benchmark suite updated with detector and calib results.
-> **Previous highlights:** v0.8.0 — Classic CV ops (motion analysis, math/foundation). v0.7.0 — Video Pipeline + Packaging. v0.6.0 — unified real-time camera API.  
+> **Latest release: v0.10.0** — Photo + Creative + Quality + Hashing. `improc::core` adds 20 new ops: 8 photo/creative ops (`EdgePreservingFilter`, `DetailEnhance`, `Stylize`, `PencilSketch`, `SeamlessClone`, `NLMeansDenoisingMulti`, `MergeHDR`, `ToneMap`), panorama `Stitch`, 4 quality metrics (`PSNR`, `SSIM`, `GMSD`, `MSE`), and 6 perceptual hash ops (`AverageHash`, `PHash`, `MarrHildrethHash`, `RadialVarianceHash`, `ColorMomentHash`, `BlockMeanHash`). All implemented with standard OpenCV — no contrib required. Google Benchmark suite updated with photo, quality, and hash results.
+> **Previous highlights:** v0.9.0 — Camera Geometry + Detectors (`improc::calib`, 31 ops, 8 detector ops). v0.8.0 — Classic CV ops (motion analysis, math/foundation). v0.7.0 — Video Pipeline + Packaging.  
 > APIs are stabilising but may still change between minor versions.
 
 | Namespace | Status | Notes |
 |---|---|---|
-| `improc::core` | ✅ Stable | New ops added regularly |
+| `improc::core` | ✅ Stable | Photo/creative, quality metrics, perceptual hashing (v0.10.0) |
 | `improc::calib` | ✅ Stable | Camera calibration, stereo, pose, ArUco (v0.9.0) |
 | `improc::io` | ✅ Stable | |
 | `improc::ml` | ✅ Stable | New ops added regularly |
@@ -144,6 +144,9 @@ OpenCV is powerful but its raw API is stringly-typed, mutation-heavy, and easy t
 - **Connected components** — `ConnectedComponents` → `ComponentMap` (labels, stats, centroids, per-component masks); `DistanceTransform` → `Image<Float32>`
 - **Feature detection pipeline** — `DetectORB` / `DetectSIFT` / `DetectAKAZE` → `KeypointSet`; `DescribeORB` / `DescribeSIFT` / `DescribeAKAZE` → `DescriptorSet`; `MatchBF` / `MatchFlann` → `MatchSet`; `DrawKeypoints` / `DrawMatches` for visualisation
 - **Detector ops** — `DetectFAST` (FAST corners), `DetectBlob` (SimpleBlobDetector), `DetectMSER` (extremal regions), `DetectLines` (LSD line segments), `DetectQR` (QR detect + decode), `DetectBarcode` (barcode detect + decode, no model file); `DetectFaceYN` (YuNet face detector, model-gated), `RecognizeFace` (SFace embed + cosine similarity match, model-gated)
+- **Photo / creative ops** — `EdgePreservingFilter`, `DetailEnhance`, `Stylize`, `PencilSketch` (returns `{gray, color}` pair), `SeamlessClone` (Poisson blending), `NLMeansDenoisingMulti` (temporal denoising), `MergeHDR` (Mertens/Debevec → `Image<Float32C3>`), `ToneMap` (Linear/Drago/Reinhard/Mantiuk HDR→LDR); panorama `Stitch` (returns `StitchResult{ok, panorama}`)
+- **Quality metrics** — `PSNR` (peak signal-to-noise ratio, ∞ for identical), `SSIM` (structural similarity, 1.0 for identical), `GMSD` (gradient magnitude similarity deviation, 0.0 for identical), `MSE` (mean squared error); BGR and Gray overloads; standard OpenCV only, no contrib
+- **Perceptual hashing** — `AverageHash`, `PHash` (DCT-based), `MarrHildrethHash` (LoG sign bits), `RadialVarianceHash`, `ColorMomentHash`, `BlockMeanHash`; each exposes `::distance(h1, h2)` for the canonical similarity metric; standard OpenCV only, no contrib
 - **Camera calibration** (`improc::calib`) — `FindChessboardCorners` / `FindChessboardCornersSB` / `RefineCorners`; `CalibrateCamera` + `make_chessboard_points()`; `StereoCalibrate`; `Undistort` (pipeline op) + `UndistortMap` (precomputed remap tables)
 - **Pose estimation** (`improc::calib`) — `SolvePnP`, `SolvePnPRansac` (RANSAC outlier rejection), `ProjectPoints`; `StereoRectify`; `ReprojectTo3D`; `StereoBM` / `StereoSGBM` disparity maps
 - **Epipolar geometry** (`improc::calib`) — `FindFundamentalMat`, `FindEssentialMat`, `RecoverPose`, `TriangulatePoints`
