@@ -38,8 +38,8 @@
 
 ## Status
 
-> **Latest release: v0.10.0** — Photo + Creative + Quality + Hashing. `improc::core` adds 20 new ops: 8 photo/creative ops (`EdgePreservingFilter`, `DetailEnhance`, `Stylize`, `PencilSketch`, `SeamlessClone`, `NLMeansDenoisingMulti`, `MergeHDR`, `ToneMap`), panorama `Stitch`, 4 quality metrics (`PSNR`, `SSIM`, `GMSD`, `MSE`), and 6 perceptual hash ops (`AverageHash`, `PHash`, `MarrHildrethHash`, `RadialVarianceHash`, `ColorMomentHash`, `BlockMeanHash`). All implemented with standard OpenCV — no contrib required. Google Benchmark suite updated with photo, quality, and hash results.
-> **Previous highlights:** v0.9.0 — Camera Geometry + Detectors (`improc::calib`, 31 ops, 8 detector ops). v0.8.0 — Classic CV ops (motion analysis, math/foundation). v0.7.0 — Video Pipeline + Packaging.  
+> **Latest release: v0.11.0** — Documentation Coverage: 8 tutorials + 11 examples covering motion analysis, camera calibration, stereo vision, ArUco markers, object detectors, photo/creative effects, HDR, image quality metrics, and perceptual hashing.
+> **Previous highlights:** v0.10.0 — Photo + Creative + Quality + Hashing (20 new ops). v0.9.0 — Camera Geometry + Detectors (`improc::calib`, 31 ops). v0.8.0 — Classic CV ops.  
 > APIs are stabilising but may still change between minor versions.
 
 | Namespace | Status | Notes |

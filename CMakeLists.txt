@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.30)
-project(improc__ VERSION 0.10.0)
+project(improc__ VERSION 0.11.0)
 
 if(APPLE)
     string(REPLACE "--as-needed" "" CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
@@ -397,6 +397,14 @@ target_link_libraries(demo_matching PRIVATE improc)
 add_executable(demo_draw_matches examples/core/demo_draw_matches.cpp)
 target_link_libraries(demo_draw_matches PRIVATE improc)
 
+# Structure / region detectors demo (FAST, Blob, MSER, Lines)
+add_executable(demo_detectors examples/core/demo_detectors.cpp)
+target_link_libraries(demo_detectors PRIVATE improc)
+
+# QR code + barcode detection demo
+add_executable(demo_qr_barcode examples/core/demo_qr_barcode.cpp)
+target_link_libraries(demo_qr_barcode PRIVATE improc)
+
 # Views demos (M1: single-image lazy pipeline, M2: collection pipeline, M3: external sources, M4: batch/enumerate/zip)
 add_executable(demo_views_m1 examples/views/demo_views_m1.cpp)
 target_link_libraries(demo_views_m1 PRIVATE improc)
@@ -409,6 +417,22 @@ target_link_libraries(demo_views_m3 PRIVATE improc)
 
 add_executable(demo_views_m4 examples/views/demo_views_m4.cpp)
 target_link_libraries(demo_views_m4 PRIVATE improc)
+
+# Photo / creative effects demo (v0.11.0)
+add_executable(demo_photo examples/core/demo_photo.cpp)
+target_link_libraries(demo_photo PRIVATE improc)
+
+# HDR + stitching demo (v0.11.0)
+add_executable(demo_hdr examples/core/demo_hdr.cpp)
+target_link_libraries(demo_hdr PRIVATE improc)
+
+# Quality metrics demo (v0.11.0)
+add_executable(demo_quality examples/core/demo_quality.cpp)
+target_link_libraries(demo_quality PRIVATE improc)
+
+# Perceptual hashing demo (v0.11.0)
+add_executable(demo_hashing examples/core/demo_hashing.cpp)
+target_link_libraries(demo_hashing PRIVATE improc)
 
 # Calibration demos
 add_executable(demo_calibrate examples/calib/demo_calibrate.cpp)

@@ -8,6 +8,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## Table of Contents
 
 - [[Unreleased]](#unreleased)
+- [[0.11.0]](#0110--2026-05-28) — 2026-05-28 · Documentation Coverage: 8 tutorials + 11 examples for motion, calib, stereo, ArUco, detectors, photo/creative, HDR, quality metrics, and perceptual hashing
 - [[0.10.0]](#0100--2026-05-27) — 2026-05-27 · Photo + Creative + Quality + Hashing: 8 photo/creative ops, panorama stitching, 4 quality metrics, 6 perceptual hash ops (all standard OpenCV, no contrib)
 - [[0.9.0]](#090--2026-05-27) — 2026-05-27 · Camera Geometry + Detectors: new `improc::calib` namespace (31 ops), 8 detector ops in `improc::core`, benchmarks for all new ops
 - [[0.8.0]](#080--2026-05-21) — 2026-05-21 · Classic CV ops: 22 new ops (motion analysis, math/foundation), benchmarks for all new ops
@@ -22,6 +23,38 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ---
 
 ## [Unreleased]
+
+---
+
+## [0.11.0] — 2026-05-28
+
+### Documentation
+
+**Tutorials added (8):**
+- `docs/tutorials/motion-analysis.md` — SparseLKFlow, DenseFarnebackFlow, DenseDISFlow, CamShift, MeanShift, PhaseCorrelate
+- `docs/tutorials/camera-calibration.md` — FindChessboardCorners*, CalibrateCamera, Undistort, UndistortMap, SolvePnP, SolvePnPRansac
+- `docs/tutorials/stereo-vision.md` — StereoCalibrate, StereoRectify, StereoBM, StereoSGBM, ReprojectTo3D, FindFundamentalMat, FindEssentialMat, RecoverPose, TriangulatePoints
+- `docs/tutorials/aruco-markers.md` — ArucoDict, GenerateAruco, DetectAruco, DrawAruco, ArucoPose, CharucoBoard
+- `docs/tutorials/object-detectors.md` — DetectFAST, DetectBlob, DetectMSER, DetectLines, DetectQR, DetectBarcode
+- `docs/tutorials/photo-creative.md` — EdgePreservingFilter, DetailEnhance, Stylize, PencilSketch, SeamlessClone, NLMeansDenoisingMulti, MergeHDR, ToneMap, Stitch
+- `docs/tutorials/image-quality.md` — PSNR, SSIM, GMSD, MSE
+- `docs/tutorials/perceptual-hashing.md` — AverageHash, PHash, MarrHildrethHash, RadialVarianceHash, ColorMomentHash, BlockMeanHash
+
+**Examples added (11):**
+- `examples/core/demo_optical_flow.cpp` — SparseLKFlow, DenseFarnebackFlow, DenseDISFlow
+- `examples/core/demo_camshift.cpp` — CamShift, MeanShift, PhaseCorrelate
+- `examples/calib/demo_calibrate.cpp` — FindChessboardCornersSB, CalibrateCamera, Undistort, UndistortMap
+- `examples/calib/demo_pose.cpp` — SolvePnP, SolvePnPRansac, ProjectPoints
+- `examples/calib/demo_stereo.cpp` — StereoBM, StereoSGBM, ReprojectTo3D
+- `examples/calib/demo_aruco.cpp` — ArucoDict, GenerateAruco, DetectAruco, DrawAruco, ArucoPose
+- `examples/core/demo_detectors.cpp` — DetectFAST, DetectBlob, DetectMSER, DetectLines
+- `examples/core/demo_qr_barcode.cpp` — DetectQR, DetectBarcode
+- `examples/core/demo_photo.cpp` — EdgePreservingFilter, DetailEnhance, Stylize, PencilSketch, SeamlessClone
+- `examples/core/demo_hdr.cpp` — MergeHDR, ToneMap, Stitch
+- `examples/core/demo_quality.cpp` — PSNR, SSIM, GMSD, MSE
+- `examples/core/demo_hashing.cpp` — AverageHash, PHash, MarrHildrethHash, RadialVarianceHash, ColorMomentHash, BlockMeanHash
+
+**Also:** Updated `pipeline.hpp` `@brief` doc comment to include all v0.10.0 ops (PR 1).
 
 ---
 
