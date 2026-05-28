@@ -115,7 +115,7 @@ CamShift (Continuously Adaptive MeanShift) tracks an object described by a colou
 
 ```cpp
 // Step 1 — build hue histogram from the object ROI in frame1
-Image<BGR> hsv1 = bgr1 | ToHSV{};
+Image<HSV> hsv1 = bgr1 | ToHSV{};
 cv::Mat hue1(hsv1.mat().rows, hsv1.mat().cols, CV_8U);
 int from_to[] = {0, 0};
 cv::mixChannels({hsv1.mat()}, {hue1}, from_to, 1);
@@ -130,13 +130,13 @@ cv::calcHist(&roi_hue, 1, nullptr, cv::Mat{}, hist, 1, &histSize, &histRange);
 cv::normalize(hist, hist, 0, 255, cv::NORM_MINMAX);
 ```
 
-`ToHSV{}` converts the BGR image to HSV in-place (stored in an `Image<BGR>` wrapper, matching OpenCV's convention). We extract only the hue channel via `cv::mixChannels` because hue is more invariant to lighting changes than full colour.
+`ToHSV{}` converts the BGR image to `Image<HSV>` (H∈[0,179], S∈[0,255], V∈[0,255]). We extract only the hue channel via `cv::mixChannels` because hue is more invariant to lighting changes than full colour.
 
 ### Back-project and track
 
 ```cpp
 // Step 2 — back-project onto frame2
-Image<BGR> hsv2 = bgr2 | ToHSV{};
+Image<HSV> hsv2 = bgr2 | ToHSV{};
 cv::Mat hue2(hsv2.mat().rows, hsv2.mat().cols, CV_8U);
 cv::mixChannels({hsv2.mat()}, {hue2}, from_to, 1);
 cv::Mat bp_mat;
