@@ -24,7 +24,12 @@
  * Add, Subtract, Multiply, Divide,
  * IntegralImage, MinMaxLoc, MeanStdDev, CountNonZero, Reduce,
  * DetectFAST, DetectBlob, DetectMSER, DetectLines, DetectQR, DetectBarcode,
- * DetectFaceYN, RecognizeFace)
+ * DetectFaceYN, RecognizeFace,
+ * EdgePreservingFilter, DetailEnhance, Stylize, PencilSketch, SeamlessClone,
+ * NLMeansDenoisingMulti, MergeHDR, ToneMap, Stitch,
+ * PSNR, SSIM, GMSD, MSE,
+ * AverageHash, PHash, MarrHildrethHash, RadialVarianceHash,
+ * ColorMomentHash, BlockMeanHash)
  * and the generic `operator|` pipeline dispatch.
  *
  * @code
