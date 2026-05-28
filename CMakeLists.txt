@@ -410,6 +410,10 @@ target_link_libraries(demo_views_m3 PRIVATE improc)
 add_executable(demo_views_m4 examples/views/demo_views_m4.cpp)
 target_link_libraries(demo_views_m4 PRIVATE improc)
 
+# Calibration demos
+add_executable(demo_calibrate examples/calib/demo_calibrate.cpp)
+target_link_libraries(demo_calibrate PRIVATE improc)
+
 # ONNX inference demo
 if(IMPROC_WITH_ONNX)
     add_executable(demo_onnx_inference examples/ml/demo_onnx_inference.cpp)
