@@ -260,6 +260,14 @@ target_link_libraries(demo_morph_extras PRIVATE improc)
 add_executable(demo_harris_laplacian examples/core/demo_harris_laplacian.cpp)
 target_link_libraries(demo_harris_laplacian PRIVATE improc)
 
+# Optical flow demo (SparseLKFlow, DenseFarnebackFlow, DenseDISFlow)
+add_executable(demo_optical_flow examples/core/demo_optical_flow.cpp)
+target_link_libraries(demo_optical_flow PRIVATE improc)
+
+# CamShift / MeanShift / PhaseCorrelate demo
+add_executable(demo_camshift examples/core/demo_camshift.cpp)
+target_link_libraries(demo_camshift PRIVATE improc)
+
 # Threading demos
 add_executable(demo_thread_pool examples/threading/demo_thread_pool.cpp)
 target_link_libraries(demo_thread_pool PRIVATE improc)
@@ -401,6 +409,19 @@ target_link_libraries(demo_views_m3 PRIVATE improc)
 
 add_executable(demo_views_m4 examples/views/demo_views_m4.cpp)
 target_link_libraries(demo_views_m4 PRIVATE improc)
+
+# Calibration demos
+add_executable(demo_calibrate examples/calib/demo_calibrate.cpp)
+target_link_libraries(demo_calibrate PRIVATE improc)
+
+add_executable(demo_pose examples/calib/demo_pose.cpp)
+target_link_libraries(demo_pose PRIVATE improc)
+
+add_executable(demo_stereo examples/calib/demo_stereo.cpp)
+target_link_libraries(demo_stereo PRIVATE improc)
+
+add_executable(demo_aruco examples/calib/demo_aruco.cpp)
+target_link_libraries(demo_aruco PRIVATE improc)
 
 # ONNX inference demo
 if(IMPROC_WITH_ONNX)
