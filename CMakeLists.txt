@@ -401,6 +401,10 @@ target_link_libraries(demo_draw_matches PRIVATE improc)
 add_executable(demo_detectors examples/core/demo_detectors.cpp)
 target_link_libraries(demo_detectors PRIVATE improc)
 
+# QR code + barcode detection demo
+add_executable(demo_qr_barcode examples/core/demo_qr_barcode.cpp)
+target_link_libraries(demo_qr_barcode PRIVATE improc)
+
 # Views demos (M1: single-image lazy pipeline, M2: collection pipeline, M3: external sources, M4: batch/enumerate/zip)
 add_executable(demo_views_m1 examples/views/demo_views_m1.cpp)
 target_link_libraries(demo_views_m1 PRIVATE improc)
