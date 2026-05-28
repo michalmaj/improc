@@ -260,6 +260,14 @@ target_link_libraries(demo_morph_extras PRIVATE improc)
 add_executable(demo_harris_laplacian examples/core/demo_harris_laplacian.cpp)
 target_link_libraries(demo_harris_laplacian PRIVATE improc)
 
+# Optical flow demo (SparseLKFlow, DenseFarnebackFlow, DenseDISFlow)
+add_executable(demo_optical_flow examples/core/demo_optical_flow.cpp)
+target_link_libraries(demo_optical_flow PRIVATE improc)
+
+# CamShift / MeanShift / PhaseCorrelate demo
+add_executable(demo_camshift examples/core/demo_camshift.cpp)
+target_link_libraries(demo_camshift PRIVATE improc)
+
 # Threading demos
 add_executable(demo_thread_pool examples/threading/demo_thread_pool.cpp)
 target_link_libraries(demo_thread_pool PRIVATE improc)
