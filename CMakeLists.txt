@@ -417,6 +417,9 @@ target_link_libraries(demo_calibrate PRIVATE improc)
 add_executable(demo_pose examples/calib/demo_pose.cpp)
 target_link_libraries(demo_pose PRIVATE improc)
 
+add_executable(demo_stereo examples/calib/demo_stereo.cpp)
+target_link_libraries(demo_stereo PRIVATE improc)
+
 # ONNX inference demo
 if(IMPROC_WITH_ONNX)
     add_executable(demo_onnx_inference examples/ml/demo_onnx_inference.cpp)
