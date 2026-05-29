@@ -64,8 +64,8 @@ int main() {
     show("2 — Tone-mapped (Reinhard)", tm_reinhard.mat());
 
     Image<BGR> tm_drago = ToneMap{}
-        .gamma(1.f)
-        .algorithm(ToneMap::Algorithm::Drago)
+        .gamma(1.f)                               // gamma correction (default: 1)
+        .algorithm(ToneMap::Algorithm::Drago)     // Reinhard, Linear, Drago, Mantiuk
         (hdr);
     show("3 — Tone-mapped (Drago)", tm_drago.mat());
 

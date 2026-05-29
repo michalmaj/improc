@@ -40,7 +40,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `docs/tutorials/image-quality.md` — PSNR, SSIM, GMSD, MSE
 - `docs/tutorials/perceptual-hashing.md` — AverageHash, PHash, MarrHildrethHash, RadialVarianceHash, ColorMomentHash, BlockMeanHash
 
-**Examples added (11):**
+**Examples added (12):**
 - `examples/core/demo_optical_flow.cpp` — SparseLKFlow, DenseFarnebackFlow, DenseDISFlow
 - `examples/core/demo_camshift.cpp` — CamShift, MeanShift, PhaseCorrelate
 - `examples/calib/demo_calibrate.cpp` — FindChessboardCornersSB, CalibrateCamera, Undistort, UndistortMap
