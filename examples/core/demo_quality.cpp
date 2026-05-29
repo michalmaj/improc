@@ -27,7 +27,9 @@ int main() {
     Image<BGR> identical(raw.clone());
 
     // Gaussian blur
-    Image<BGR> blurred = ref | GaussianBlur{}.kernel_size(7).sigma(3.0);
+    Image<BGR> blurred = ref | GaussianBlur{}
+        .kernel_size(7)   // kernel side length, must be odd (default: 3)
+        .sigma(3.0);      // Gaussian standard deviation (default: 0)
 
     // JPEG compression artefacts
     std::vector<uchar> buf;

@@ -10,6 +10,7 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <opencv2/highgui.hpp>
 #include "improc/io/camera_capture.hpp"
 #include "improc/io/video_writer.hpp"
 #include "improc/core/pipeline.hpp"
@@ -44,7 +45,8 @@ static void demo_camera(const std::string& out_path) {
         if (!result) continue;
 
         // pipeline: write frame, then display it
-        auto img = Image<BGR>(result->clone());
+        if (!result->rgb) continue;
+        auto img = result->rgb->clone();
         img = writer(std::move(img));    // write
         cv::imshow("Recording", img.mat());
         if (cv::waitKey(1) == 27) break; // ESC to stop early
