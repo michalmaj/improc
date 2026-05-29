@@ -40,8 +40,10 @@ target_include_directories(improc PUBLIC
 
 target_link_libraries(improc PUBLIC
         opencv::opencv
-        onnxruntime::onnxruntime
         $<BUILD_INTERFACE:nlohmann_json::nlohmann_json>
+)
+target_link_libraries(improc PRIVATE
+        onnxruntime::onnxruntime
 )
 
 # === depthai-core (optional) ===
