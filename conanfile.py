@@ -18,3 +18,12 @@ class ConanApplication(ConanFile):
         requirements = self.conan_data.get('requirements', [])
         for requirement in requirements:
             self.requires(requirement)
+
+    def configure(self):
+        self.options["opencv"].with_protobuf = False
+        # Disable opencv's eigen to resolve conflict with onnxruntime which needs eigen >= 5.0.1
+        # We use eigen/5.0.1 as an explicit requirement instead
+        try:
+            self.options["opencv"].with_eigen = False
+        except:
+            pass  # Option might not exist in all versions
