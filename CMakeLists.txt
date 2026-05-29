@@ -14,6 +14,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Dependencies
 find_package(OpenCV REQUIRED)
 find_package(GTest REQUIRED)
+find_package(onnxruntime REQUIRED)
+find_package(nlohmann_json REQUIRED)
 
 # Compatibility shim: system OpenCV uses OpenCV_LIBS, Conan uses opencv::opencv
 if(NOT TARGET opencv::opencv)
@@ -22,63 +24,8 @@ if(NOT TARGET opencv::opencv)
     target_include_directories(opencv::opencv INTERFACE ${OpenCV_INCLUDE_DIRS})
 endif()
 
-# === ONNX Runtime (optional, CPU + CoreML on Apple) ===
-option(IMPROC_WITH_ONNX "Build with ONNX Runtime inference support" ON)
-
 # === OAK-D depth camera support (optional) ===
 option(IMPROC_WITH_DEPTHAI "Build with OAK-D support via depthai-core v2" OFF)
-
-if(IMPROC_WITH_ONNX)
-    set(ORT_VERSION "1.20.1")
-
-    if(APPLE)
-        if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
-            set(_ort_archive "onnxruntime-osx-arm64-${ORT_VERSION}.tgz")
-        else()
-            set(_ort_archive "onnxruntime-osx-x86_64-${ORT_VERSION}.tgz")
-        endif()
-    elseif(UNIX)
-        set(_ort_archive "onnxruntime-linux-x64-${ORT_VERSION}.tgz")
-    else()
-        message(FATAL_ERROR "IMPROC_WITH_ONNX: unsupported platform")
-    endif()
-
-    include(FetchContent)
-    FetchContent_Declare(onnxruntime
-        URL      "https://github.com/microsoft/onnxruntime/releases/download/v${ORT_VERSION}/${_ort_archive}"
-        DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-    )
-    FetchContent_MakeAvailable(onnxruntime)
-
-    # The archive extracts with a named top-level directory inside SOURCE_DIR
-    file(GLOB _ort_candidates LIST_DIRECTORIES true "${onnxruntime_SOURCE_DIR}/onnxruntime-*")
-    if(_ort_candidates)
-        list(GET _ort_candidates 0 ORT_ROOT)
-    else()
-        set(ORT_ROOT "${onnxruntime_SOURCE_DIR}")
-    endif()
-
-    find_library(ORT_LIBRARY NAMES onnxruntime
-        PATHS "${ORT_ROOT}/lib" NO_DEFAULT_PATH REQUIRED)
-
-    add_library(onnxruntime::onnxruntime SHARED IMPORTED GLOBAL)
-    set_target_properties(onnxruntime::onnxruntime PROPERTIES
-        IMPORTED_LOCATION             "${ORT_LIBRARY}"
-        IMPORTED_NO_SONAME            TRUE
-        INTERFACE_INCLUDE_DIRECTORIES "${ORT_ROOT}/include"
-    )
-
-    message(STATUS "ONNX Runtime ${ORT_VERSION}: ${ORT_LIBRARY}")
-endif()
-
-# === nlohmann/json (header-only, FetchContent) ===
-include(FetchContent)
-FetchContent_Declare(nlohmann_json
-    URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz
-    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-)
-set(JSON_BuildTests OFF CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(nlohmann_json)
 
 # === improc LIBRARY ===
 file(GLOB_RECURSE IMPROC_HEADERS CONFIGURE_DEPENDS include/improc/**/*.hpp)
@@ -93,12 +40,8 @@ target_include_directories(improc PUBLIC
 
 target_link_libraries(improc PUBLIC
         opencv::opencv
-        $<$<BOOL:${IMPROC_WITH_ONNX}>:onnxruntime::onnxruntime>
+        onnxruntime::onnxruntime
         $<BUILD_INTERFACE:nlohmann_json::nlohmann_json>
-)
-
-target_compile_definitions(improc PUBLIC
-        $<$<BOOL:${IMPROC_WITH_ONNX}>:IMPROC_WITH_ONNX>
 )
 
 # === depthai-core (optional) ===
@@ -162,11 +105,6 @@ file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS tests/*.cpp)
 
 add_executable(improc_tests ${TEST_SOURCES})
 target_link_libraries(improc_tests PRIVATE improc GTest::gtest GTest::gtest_main)
-
-if(IMPROC_WITH_ONNX)
-    list(APPEND CMAKE_BUILD_RPATH "${ORT_ROOT}/lib")
-    set_property(TARGET improc_tests APPEND PROPERTY BUILD_RPATH "${ORT_ROOT}/lib")
-endif()
 
 include(GoogleTest)
 gtest_discover_tests(improc_tests)
@@ -448,11 +386,8 @@ add_executable(demo_aruco examples/calib/demo_aruco.cpp)
 target_link_libraries(demo_aruco PRIVATE improc)
 
 # ONNX inference demo
-if(IMPROC_WITH_ONNX)
-    add_executable(demo_onnx_inference examples/ml/demo_onnx_inference.cpp)
-    target_link_libraries(demo_onnx_inference PRIVATE improc)
-    set_property(TARGET demo_onnx_inference APPEND PROPERTY BUILD_RPATH "${ORT_ROOT}/lib")
-endif()
+add_executable(demo_onnx_inference examples/ml/demo_onnx_inference.cpp)
+target_link_libraries(demo_onnx_inference PRIVATE improc)
 
 # Benchmarks (opt-in: cmake -DIMPROC_BENCHMARKS=ON ...)
 if(IMPROC_BENCHMARKS)
