@@ -25,5 +25,5 @@ class ConanApplication(ConanFile):
         # We use eigen/5.0.1 as an explicit requirement instead
         try:
             self.options["opencv"].with_eigen = False
-        except:
+        except Exception:
             pass  # Option might not exist in all versions
