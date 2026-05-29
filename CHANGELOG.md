@@ -24,6 +24,12 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- `onnxruntime` dependency migrated from FetchContent binary download to Conan (`onnxruntime/1.24.4`), upgrading from v1.20.1; `eigen` upgraded to 5.0.1 to satisfy onnxruntime's requirements
+- `nlohmann_json` dependency migrated from FetchContent to Conan (`nlohmann_json/3.11.3`)
+- `IMPROC_WITH_ONNX` CMake option removed — ONNX Runtime is now always available via Conan
+- `opencv` built without protobuf (resolves Conan graph conflict; Caffe model loading was unused)
+
 ---
 
 ## [0.11.0] — 2026-05-28
