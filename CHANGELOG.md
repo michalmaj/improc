@@ -8,7 +8,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## Table of Contents
 
 - [[Unreleased]](#unreleased)
-- [[0.11.0]](#0110--2026-05-28) — 2026-05-28 · Documentation Coverage: 8 tutorials + 11 examples for motion, calib, stereo, ArUco, detectors, photo/creative, HDR, quality metrics, and perceptual hashing
+- [[0.11.0]](#0110--2026-05-28) — 2026-05-28 · Documentation Coverage: 8 tutorials + 12 examples for motion, calib, stereo, ArUco, detectors, photo/creative, HDR, quality metrics, and perceptual hashing
 - [[0.10.0]](#0100--2026-05-27) — 2026-05-27 · Photo + Creative + Quality + Hashing: 8 photo/creative ops, panorama stitching, 4 quality metrics, 6 perceptual hash ops (all standard OpenCV, no contrib)
 - [[0.9.0]](#090--2026-05-27) — 2026-05-27 · Camera Geometry + Detectors: new `improc::calib` namespace (31 ops), 8 detector ops in `improc::core`, benchmarks for all new ops
 - [[0.8.0]](#080--2026-05-21) — 2026-05-21 · Classic CV ops: 22 new ops (motion analysis, math/foundation), benchmarks for all new ops
