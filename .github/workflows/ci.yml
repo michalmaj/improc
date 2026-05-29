@@ -43,13 +43,15 @@ jobs:
         run: |
           printf "\n[conf]\ntools.system.package_manager:mode=install\ntools.system.package_manager:sudo=True\n" >> ~/.conan2/profiles/default
 
-      - name: Remove OpenCV from Conan requirements (macOS only — Homebrew provides 4.8+)
+      - name: Remove OpenCV and onnxruntime from Conan requirements (macOS — Homebrew provides both)
         if: runner.os == 'macOS'
         run: |
           python3 -c "
           import pathlib
           f = pathlib.Path('conandata.yml')
-          f.write_text(''.join(l for l in f.read_text().splitlines(keepends=True) if 'opencv' not in l.lower()))
+          skip = {'opencv', 'onnxruntime'}
+          f.write_text(''.join(l for l in f.read_text().splitlines(keepends=True)
+              if not any(s in l.lower() for s in skip)))
           "
 
       - name: Cache Conan packages
@@ -59,21 +61,15 @@ jobs:
           key: conan-${{ matrix.os }}-${{ hashFiles('conandata.yml') }}
           restore-keys: conan-${{ matrix.os }}-
 
-      - name: Cache ONNX Runtime download
-        uses: actions/cache@v4
-        with:
-          path: ~/.cmake-fetchcontent
-          key: ort-${{ matrix.os }}-1.20.1
-
       - name: Install system build dependencies (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get install -y --no-install-recommends \
             build-essential ffmpeg
 
-      - name: Install system OpenCV (macOS)
+      - name: Install system dependencies (macOS)
         if: runner.os == 'macOS'
-        run: brew install opencv
+        run: brew install opencv onnxruntime
 
       - name: Configure CMake
         run: |
@@ -94,7 +90,6 @@ jobs:
             -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="conan_provider.cmake" \
             -DCONAN_COMMAND=$(which conan) \
             -DCMAKE_BUILD_TYPE=Release \
-            -DFETCHCONTENT_BASE_DIR=$HOME/.cmake-fetchcontent \
             "-DCONAN_INSTALL_ARGS=${CONAN_ARGS}" \
             $EXTRA \
             -B build .
@@ -110,11 +105,6 @@ jobs:
 
       - name: Run tests
         run: |
-          ORT_LIB=$(find $HOME/.cmake-fetchcontent -name "libonnxruntime*" -not -name "*.dSYM" | head -1 | xargs dirname 2>/dev/null || true)
-          if [ -n "$ORT_LIB" ]; then
-            export LD_LIBRARY_PATH="$ORT_LIB:${LD_LIBRARY_PATH:-}"
-            export DYLD_LIBRARY_PATH="$ORT_LIB:${DYLD_LIBRARY_PATH:-}"
-          fi
           if [ "$(uname)" = "Linux" ]; then
             # FFmpeg disabled in Conan OpenCV build (libwebp target conflict);
             # exclude all tests that read/write video files.
