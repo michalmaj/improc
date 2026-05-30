@@ -1,7 +1,9 @@
 // include/improc/io/camera_capture.hpp
-// Backward-compat alias — existing code using CameraCapture compiles unchanged.
-// New code should use WebcamCapture directly.
 #pragma once
+/** @file camera_capture.hpp
+ *  @brief Backward-compatibility alias: `improc::io::CameraCapture` → `WebcamCapture`.
+ *  @deprecated New code should use `WebcamCapture` directly.
+ */
 #include "improc/io/webcam_capture.hpp"
 
 namespace improc::io {
