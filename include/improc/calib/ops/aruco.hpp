@@ -15,12 +15,24 @@ using improc::core::Gray;
 
 // ── ArucoDict ─────────────────────────────────────────────────────────────────
 
+/**
+ * @brief Retrieves a predefined ArUco dictionary by type.
+ *
+ * @code
+ * auto dict = ArucoDict()(cv::aruco::DICT_4X4_50);
+ * @endcode
+ */
 struct ArucoDict {
     cv::aruco::Dictionary operator()(cv::aruco::PredefinedDictionaryType type) const;
 };
 
 // ── DetectAruco ───────────────────────────────────────────────────────────────
 
+/**
+ * @brief Detects ArUco markers in a BGR or Gray image.
+ *
+ * @return `ArucoResult` containing corners, IDs, and rejected candidates.
+ */
 struct DetectAruco {
     ArucoResult operator()(Image<BGR>  img, const cv::aruco::Dictionary& dict) const;
     ArucoResult operator()(Image<Gray> img, const cv::aruco::Dictionary& dict) const;
@@ -28,8 +40,11 @@ struct DetectAruco {
 
 // ── DrawAruco ─────────────────────────────────────────────────────────────────
 
+/**
+ * @brief Draws ArUco marker outlines, IDs, and optionally 3-D pose axes onto an image.
+ */
 struct DrawAruco {
-    /// Sets the axis length used when drawing 3D axes (world units). Default: 0.05.
+    /// @brief Sets the axis length used when drawing 3-D frames (default: 0.05 world units).
     DrawAruco& axis_length(float l) { axis_length_ = l; return *this; }
 
     // Overload 1: draws marker outlines + ID numbers only.
@@ -49,12 +64,15 @@ private:
 
 // ── GenerateAruco ─────────────────────────────────────────────────────────────
 
+/**
+ * @brief Renders a single ArUco marker as a square grayscale image.
+ */
 struct GenerateAruco {
-    /// Sets the number of border bits. Default: 1.
+    /// @brief Sets the number of border bits (default: 1).
     GenerateAruco& border_bits(int b) { border_bits_ = b; return *this; }
 
-    // Returns a square Gray image of size side_pixels × side_pixels.
-    // Throws std::invalid_argument if id < 0 or side_pixels < 1.
+    /// @brief Renders marker `id` from `dict` at `side_pixels × side_pixels`.
+    /// @throws std::invalid_argument if `id` < 0 or `side_pixels` < 1.
     Image<Gray> operator()(const cv::aruco::Dictionary& dict,
                            int id,
                            int side_pixels) const;
@@ -65,12 +83,20 @@ private:
 
 // ── ArucoPose ─────────────────────────────────────────────────────────────────
 
+/**
+ * @brief Estimates the 6-DoF pose of each detected ArUco marker via `cv::solvePnP`.
+ *
+ * Object points are defined with the marker centre at the origin:
+ * top-left = (-half, half, 0), top-right = (half, half, 0),
+ * bottom-right = (half, -half, 0), bottom-left = (-half, -half, 0).
+ */
 struct ArucoPose {
-    // Estimates pose per detected marker via cv::solvePnP (not deprecated estimatePoseSingleMarkers).
-    // Object points per marker (half = marker_length/2):
-    //   top-left=(-half, half, 0), top-right=(half, half, 0),
-    //   bottom-right=(half, -half, 0), bottom-left=(-half, -half, 0)
-    // Returns one ArucoPoseResult per detected marker (same order as ArucoResult).
+    /// @brief Estimates poses for all markers in `result`.
+    /// @param result       Detected markers from `DetectAruco`.
+    /// @param K            3×3 camera matrix.
+    /// @param dist         Distortion coefficients.
+    /// @param marker_length Physical marker side length in world units.
+    /// @return One `ArucoPoseResult` per detected marker, in the same order as `result`.
     std::vector<ArucoPoseResult> operator()(const ArucoResult& result,
                                             const cv::Mat& K,
                                             const cv::Mat& dist,
@@ -79,16 +105,29 @@ struct ArucoPose {
 
 // ── CharucoBoard ──────────────────────────────────────────────────────────────
 
+/**
+ * @brief Detects ChArUco board corners with optional subpixel refinement.
+ *
+ * @code
+ * auto result = CharucoBoard()
+ *     .board_size({5, 7})
+ *     .square_length(0.04f)
+ *     .marker_length(0.02f)
+ *     (img, dict);
+ * @endcode
+ */
 struct CharucoBoard {
-    // board_size: number of squares (cols × rows), e.g. {5, 7} = 5 columns, 7 rows.
+    /// @brief Sets the board dimensions as (cols, rows) of chessboard squares.
     CharucoBoard& board_size(cv::Size s) { board_size_    = s; has_size_ = true; return *this; }
+    /// @brief Sets the physical square side length in world units (e.g. metres).
     CharucoBoard& square_length(float s) { square_length_ = s; return *this; }
+    /// @brief Sets the physical ArUco marker side length in world units.
     CharucoBoard& marker_length(float m) { marker_length_ = m; return *this; }
 
-    // Throws std::invalid_argument if board_size not set, square_length <= 0, or marker_length <= 0.
-    // Overload 1: basic detection, no subpixel refinement.
+    /// @brief Detects board corners (no subpixel refinement).
+    /// @throws std::invalid_argument if `board_size` not set, or lengths <= 0.
     CharucoResult operator()(Image<BGR> img, const cv::aruco::Dictionary& dict) const;
-    // Overload 2: enables subpixel corner refinement via CharucoParameters.
+    /// @brief Detects board corners with subpixel refinement using camera intrinsics.
     CharucoResult operator()(Image<BGR> img,
                              const cv::aruco::Dictionary& dict,
                              const cv::Mat& K,
