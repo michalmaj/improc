@@ -9,9 +9,14 @@
 
 namespace improc::core {
 
+/**
+ * @brief Computes the absolute difference between an image and a fixed matrix.
+ */
 struct AbsDiff {
+    /// @brief Constructs with the subtrahend matrix.
     explicit AbsDiff(cv::Mat other) : other_(std::move(other)) {}
 
+    /// @throws std::invalid_argument if sizes or types differ.
     template<AnyFormat F>
     Image<F> operator()(Image<F> img) const {
         if (img.mat().size() != other_.size() || img.mat().type() != other_.type())
@@ -25,9 +30,15 @@ private:
     cv::Mat other_;
 };
 
+/**
+ * @brief Applies element-wise bitwise AND with a fixed mask.
+ * Requires an integer-format image (BGR, Gray, BGRA).
+ */
 struct BitwiseAnd {
+    /// @brief Constructs with the mask matrix.
     explicit BitwiseAnd(cv::Mat other) : other_(std::move(other)) {}
 
+    /// @throws std::invalid_argument if sizes or types differ.
     template<IntegerFormat F>
     Image<F> operator()(Image<F> img) const {
         if (img.mat().size() != other_.size() || img.mat().type() != other_.type())
@@ -41,9 +52,15 @@ private:
     cv::Mat other_;
 };
 
+/**
+ * @brief Applies element-wise bitwise OR with a fixed mask.
+ * Requires an integer-format image (BGR, Gray, BGRA).
+ */
 struct BitwiseOr {
+    /// @brief Constructs with the mask matrix.
     explicit BitwiseOr(cv::Mat other) : other_(std::move(other)) {}
 
+    /// @throws std::invalid_argument if sizes or types differ.
     template<IntegerFormat F>
     Image<F> operator()(Image<F> img) const {
         if (img.mat().size() != other_.size() || img.mat().type() != other_.type())
@@ -57,16 +74,30 @@ private:
     cv::Mat other_;
 };
 
+/// @brief Alias for `Invert` — applies element-wise bitwise NOT.
 using BitwiseNot = Invert;
 
+/**
+ * @brief Applies a 2-D convolution with a custom kernel via `cv::filter2D`.
+ *
+ * @code
+ * cv::Mat sobel_x = (cv::Mat_<float>(3,3) << -1,0,1, -2,0,2, -1,0,1);
+ * auto edges = Convolve(sobel_x)(img);
+ * @endcode
+ */
 struct Convolve {
+    /// @brief Constructs with the convolution kernel.
+    /// @throws std::invalid_argument if kernel is empty.
     explicit Convolve(cv::Mat kernel) : kernel_(std::move(kernel)) {
         if (kernel_.empty())
             throw std::invalid_argument("Convolve: kernel must not be empty");
     }
 
+    /// @brief Sets the anchor point (default: {-1,-1} = kernel centre).
     Convolve& anchor(cv::Point a) { anchor_ = a; return *this; }
+    /// @brief Sets the optional value added to the filtered result (default: 0).
     Convolve& delta(double d)     { delta_  = d; return *this; }
+    /// @brief Sets the border extrapolation method (default: cv::BORDER_REFLECT_101).
     Convolve& border(int t)       { border_ = t; return *this; }
 
     template<AnyFormat F>
@@ -83,12 +114,18 @@ private:
     int      border_  = cv::BORDER_REFLECT_101;
 };
 
-// Takes a raw cv::Mat (e.g. Sobel gradient output CV_16S) rather than Image<F> —
-// its primary purpose is converting signed/float gradient data to displayable uint8.
+/**
+ * @brief Converts a signed/float matrix to displayable 8-bit via `cv::convertScaleAbs`.
+ *
+ * Primary use case: converting CV_16S Sobel/Laplacian output for visualisation.
+ */
 struct ConvertScaleAbs {
+    /// @brief Sets the multiplicative scale factor (default: 1.0).
     ConvertScaleAbs& alpha(double a) { alpha_ = a; return *this; }
+    /// @brief Sets the additive shift (default: 0.0).
     ConvertScaleAbs& beta(double b)  { beta_  = b; return *this; }
 
+    /// @return Grayscale Image<Gray> (CV_8UC1).
     Image<Gray> operator()(const cv::Mat& src) const {
         cv::Mat result;
         cv::convertScaleAbs(src, result, alpha_, beta_);
@@ -100,9 +137,14 @@ private:
     double beta_  = 0.0;
 };
 
+/**
+ * @brief Adds two images element-wise via `cv::add`.
+ */
 struct Add {
+    /// @brief Constructs with the addend matrix.
     explicit Add(cv::Mat other) : other_(std::move(other)) {}
 
+    /// @throws std::invalid_argument if sizes or types differ.
     template<AnyFormat F>
     Image<F> operator()(Image<F> img) const {
         if (img.mat().size() != other_.size() || img.mat().type() != other_.type())
@@ -116,9 +158,14 @@ private:
     cv::Mat other_;
 };
 
+/**
+ * @brief Subtracts a fixed matrix from an image element-wise via `cv::subtract`.
+ */
 struct Subtract {
+    /// @brief Constructs with the subtrahend matrix.
     explicit Subtract(cv::Mat other) : other_(std::move(other)) {}
 
+    /// @throws std::invalid_argument if sizes or types differ.
     template<AnyFormat F>
     Image<F> operator()(Image<F> img) const {
         if (img.mat().size() != other_.size() || img.mat().type() != other_.type())
@@ -132,10 +179,16 @@ private:
     cv::Mat other_;
 };
 
+/**
+ * @brief Multiplies two images element-wise via `cv::multiply`.
+ */
 struct Multiply {
+    /// @brief Constructs with the multiplicand matrix.
     explicit Multiply(cv::Mat other) : other_(std::move(other)) {}
+    /// @brief Sets an optional scale factor applied after multiplication (default: 1.0).
     Multiply& scale(double s) { scale_ = s; return *this; }
 
+    /// @throws std::invalid_argument if sizes or types differ.
     template<AnyFormat F>
     Image<F> operator()(Image<F> img) const {
         if (img.mat().size() != other_.size() || img.mat().type() != other_.type())
@@ -150,10 +203,16 @@ private:
     double  scale_ = 1.0;
 };
 
+/**
+ * @brief Divides an image by a fixed matrix element-wise via `cv::divide`.
+ */
 struct Divide {
+    /// @brief Constructs with the divisor matrix.
     explicit Divide(cv::Mat other) : other_(std::move(other)) {}
+    /// @brief Sets an optional scale factor applied after division (default: 1.0).
     Divide& scale(double s) { scale_ = s; return *this; }
 
+    /// @throws std::invalid_argument if sizes or types differ.
     template<AnyFormat F>
     Image<F> operator()(Image<F> img) const {
         if (img.mat().size() != other_.size() || img.mat().type() != other_.type())
