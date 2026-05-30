@@ -27,8 +27,19 @@ inline const cv::Scalar kCyan  {248, 189,  56};
 inline const cv::Scalar kGreen {153, 211,  52};
 } // namespace detail::cbc
 
+/**
+ * @brief Renders a per-class bar chart for Precision/Recall/F1 or AP metrics.
+ *
+ * Three constructors accept `ClassMetrics` (P/R/F1 bars), `DetectionMetrics` (AP bar),
+ * or a raw `map<string, array<float,3>>`.
+ *
+ * @code
+ * auto chart = ClassBarChart(metrics).width(800).height(400).title("Validation");
+ * auto img   = chart();
+ * @endcode
+ */
 struct ClassBarChart {
-    // From ClassMetrics: 3 bars per class (P/R/F1)
+    /// @brief Constructs from `ClassMetrics` — renders 3 bars per class (Precision, Recall, F1).
     explicit ClassBarChart(const improc::ml::ClassMetrics& m) {
         for (const auto& [cls, p] : m.per_class_precision) {
             float r = m.per_class_recall.count(cls) ? m.per_class_recall.at(cls) : 0.f;
@@ -37,22 +48,27 @@ struct ClassBarChart {
         }
     }
 
-    // From DetectionMetrics: 1 bar per class (AP only)
+    /// @brief Constructs from `DetectionMetrics` — renders 1 AP bar per class.
     explicit ClassBarChart(const improc::ml::DetectionMetrics& m) : single_mode_(true) {
         for (const auto& [cls, ap] : m.per_class_AP)
             data_[cls] = {ap, 0.f, 0.f};
     }
 
-    // Raw form: explicit {P, R, F1} per class
+    /// @brief Constructs from raw per-class values.
     explicit ClassBarChart(std::map<std::string, std::array<float,3>> vals) {
         for (const auto& [cls, arr] : vals)
             data_[cls] = {arr[0], arr[1], arr[2]};
     }
 
+    /// @brief Sets the canvas width in pixels (default: 640).
     ClassBarChart& width(int w)         { width_ = w;            return *this; }
+    /// @brief Sets the canvas height in pixels (default: 400).
     ClassBarChart& height(int h)        { height_ = h;           return *this; }
+    /// @brief Sets the chart title text (default: empty).
     ClassBarChart& title(std::string t) { title_ = std::move(t); return *this; }
 
+    /// @brief Renders and returns the chart as a BGR image.
+    /// @throws improc::ParameterError if width or height <= 0.
     Image<BGR> operator()() const {
         if (width_ <= 0)  throw improc::ParameterError{"width",  "must be positive", "ClassBarChart"};
         if (height_ <= 0) throw improc::ParameterError{"height", "must be positive", "ClassBarChart"};

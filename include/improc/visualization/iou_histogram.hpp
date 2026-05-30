@@ -34,16 +34,36 @@ inline const std::array<cv::Scalar,4> kViolets{
 };
 } // namespace detail::iou
 
+/**
+ * @brief Renders a histogram of IoU scores with a threshold marker and stat badges.
+ *
+ * Bars below the threshold are amber-tinted; bars above use a violet gradient.
+ * Mean IoU and the percentage above threshold are shown as stat badges.
+ *
+ * @code
+ * auto hist = IoUHistogram(iou_scores)
+ *     .bins(20).threshold(0.5f).width(800).height(300);
+ * auto img = hist();
+ * @endcode
+ */
 struct IoUHistogram {
+    /// @brief Constructs from a vector of IoU scores in [0, 1].
     explicit IoUHistogram(std::vector<float> scores)
         : scores_(std::move(scores)) {}
 
+    /// @brief Sets the canvas width in pixels (default: 800).
     IoUHistogram& width(int w)         { width_ = w;            return *this; }
+    /// @brief Sets the canvas height in pixels (default: 300).
     IoUHistogram& height(int h)        { height_ = h;           return *this; }
+    /// @brief Sets the number of histogram bins (default: 20).
     IoUHistogram& bins(int b)          { bins_ = b;             return *this; }
+    /// @brief Sets the IoU threshold line position (default: 0.5).
     IoUHistogram& threshold(float t)   { threshold_ = t;        return *this; }
+    /// @brief Sets the chart title text (default: empty).
     IoUHistogram& title(std::string t) { title_ = std::move(t); return *this; }
 
+    /// @brief Renders and returns the histogram as a BGR image.
+    /// @throws improc::ParameterError if width, height, or bins <= 0, or threshold outside [0, 1].
     Image<BGR> operator()() const {
         if (width_ <= 0)
             throw improc::ParameterError{"width",     "must be positive",   "IoUHistogram"};

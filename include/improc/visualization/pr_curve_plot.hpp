@@ -26,15 +26,27 @@ inline const std::vector<cv::Scalar> kColors{
 };
 } // namespace detail::pr
 
+/**
+ * @brief Renders Precision–Recall curves for one or more classes.
+ *
+ * Optionally displays an mAP badge at the bottom.
+ *
+ * @code
+ * auto plot = PRCurvePlot(eval.pr_curves())
+ *     .mAP_50(metrics.mAP_50)
+ *     .title("Validation PR");
+ * auto img = plot();
+ * @endcode
+ */
 struct PRCurvePlot {
     using CurveMap = std::map<std::string,
         std::pair<std::vector<float>, std::vector<float>>>;
 
-    // Struct form — direct from DetectionEval::pr_curves()
+    /// @brief Constructs from a class → (recall[], precision[]) map.
     explicit PRCurvePlot(CurveMap curves)
         : curves_(std::move(curves)) {}
 
-    // Raw form — separate recall and precision maps
+    /// @brief Constructs from separate recall and precision maps keyed by class name.
     PRCurvePlot(std::map<std::string, std::vector<float>> recalls,
                 std::map<std::string, std::vector<float>> precisions) {
         for (const auto& [cls, rec] : recalls) {
@@ -44,12 +56,19 @@ struct PRCurvePlot {
         }
     }
 
+    /// @brief Sets the canvas width in pixels (default: 640).
     PRCurvePlot& width(int w)           { width_ = w;            return *this; }
+    /// @brief Sets the canvas height in pixels (default: 480).
     PRCurvePlot& height(int h)          { height_ = h;           return *this; }
+    /// @brief Sets the chart title text (default: empty).
     PRCurvePlot& title(std::string t)   { title_ = std::move(t); return *this; }
+    /// @brief Sets the mAP@IoU value shown in the badge; negative = no badge (default: -1).
     PRCurvePlot& mAP_50(float v)        { mAP50_ = v;            return *this; }
+    /// @brief Sets the IoU threshold label shown alongside mAP (default: 0.50).
     PRCurvePlot& iou_threshold(float t) { iou_thr_ = t;          return *this; }
 
+    /// @brief Renders and returns the PR curve plot as a BGR image.
+    /// @throws improc::ParameterError if width or height <= 0.
     Image<BGR> operator()() const {
         if (width_ <= 0)  throw improc::ParameterError{"width",  "must be positive", "PRCurvePlot"};
         if (height_ <= 0) throw improc::ParameterError{"height", "must be positive", "PRCurvePlot"};
