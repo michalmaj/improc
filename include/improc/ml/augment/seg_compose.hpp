@@ -9,10 +9,18 @@
 
 namespace improc::ml {
 
+/**
+ * @brief Sequential pipeline of augmentation ops applied to `SegmentedImage<Format>` (image + class/instance masks).
+ *
+ * Each op receives and returns the full segmented image, ensuring masks stay aligned.
+ * Inherits `bind(rng)` from `BindMixin`.
+ */
 template<AnyFormat Format>
 struct SegCompose : detail::BindMixin<SegCompose<Format>> {
     using Op = std::function<SegmentedImage<Format>(SegmentedImage<Format>, std::mt19937&)>;
 
+    /// @brief Appends a segmented-image augmentation op.
+    /// @throws improc::ParameterError if `op` is null.
     SegCompose& add(Op op) {
         if (!op) throw ParameterError{"op", "must not be null", "SegCompose"};
         ops_.push_back(std::move(op));

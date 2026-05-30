@@ -16,14 +16,34 @@ namespace improc::ml {
 using improc::core::AnyFormat;
 using improc::core::Image;
 
+/**
+ * @brief Randomly applies one of {Gaussian, Median, Bilateral} blur with a randomly sampled odd kernel size.
+ *
+ * @code
+ * std::mt19937 rng(42);
+ * auto aug = RandomBlur()
+ *     .types({RandomBlur::Type::Gaussian, RandomBlur::Type::Median})
+ *     .kernel_size(3, 7);
+ * img = img | aug.bind(rng);
+ * @endcode
+ */
 struct RandomBlur : detail::BindMixin<RandomBlur> {
-    enum class Type { Gaussian, Median, Bilateral };
+    /// @brief Blur algorithm choices.
+    enum class Type {
+        Gaussian,  ///< Gaussian blur via cv::GaussianBlur.
+        Median,    ///< Median blur via cv::medianBlur.
+        Bilateral  ///< Bilateral filter via cv::bilateralFilter.
+    };
 
+    /// @brief Sets the blur type pool to sample from (default: {Gaussian, Median}).
+    /// @throws improc::ParameterError if `t` is empty.
     RandomBlur& types(std::vector<Type> t) {
         if (t.empty())
             throw ParameterError{"types", "must not be empty", "RandomBlur"};
         types_ = std::move(t); return *this;
     }
+    /// @brief Sets the odd kernel-size range in [3, 31] (default: [3, 7]).
+    /// @throws improc::ParameterError if values are out of range or even.
     RandomBlur& kernel_size(int min_k, int max_k) {
         if (min_k < 3 || max_k > 31 || min_k % 2 == 0 || max_k % 2 == 0 || min_k > max_k)
             throw ParameterError{"kernel_size", "must be odd, in [3, 31], min <= max", "RandomBlur"};
@@ -73,12 +93,20 @@ private:
     int               max_k_  = 7;
 };
 
+/**
+ * @brief Randomly applies unsharp masking to enhance image sharpness.
+ * Applies with probability `p`; strength is sampled uniformly from [min_s, max_s].
+ */
 struct RandomSharpness : detail::BindMixin<RandomSharpness> {
+    /// @brief Sets the sharpness strength range (default: [0.0, 1.0]).
+    /// @throws improc::ParameterError if `min_s` < 0 or `min_s` > `max_s`.
     RandomSharpness& range(float min_s, float max_s) {
         if (min_s < 0.0f || min_s > max_s)
             throw ParameterError{"range", "must satisfy 0 <= min <= max", "RandomSharpness"};
         min_s_ = min_s; max_s_ = max_s; return *this;
     }
+    /// @brief Sets the application probability (default: 0.5).
+    /// @throws improc::ParameterError if `prob` is outside [0, 1].
     RandomSharpness& p(float prob) {
         if (prob < 0.0f || prob > 1.0f)
             throw ParameterError{"p", "must be in [0, 1]", "RandomSharpness"};

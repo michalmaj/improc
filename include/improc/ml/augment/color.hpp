@@ -18,7 +18,12 @@ using improc::core::AnyFormat;
 using improc::core::BGRFormat;
 using improc::core::Image;
 
+/**
+ * @brief Multiplies all pixel values by a factor sampled uniformly from [low, high].
+ */
 struct RandomBrightness : detail::BindMixin<RandomBrightness> {
+    /// @brief Sets the brightness scale range (default: [0.8, 1.2]).
+    /// @throws improc::ParameterError if `low` <= 0 or `low` > `high`.
     RandomBrightness& range(float low, float high) {
         if (low <= 0.0f)
             throw ParameterError{"low", "must be > 0", "RandomBrightness"};
@@ -51,7 +56,13 @@ private:
     float high_ = 1.2f;
 };
 
+/**
+ * @brief Adjusts contrast via alpha blending with the channel mean:
+ * `dst = alpha * src + (1 - alpha) * mean`.
+ */
 struct RandomContrast : detail::BindMixin<RandomContrast> {
+    /// @brief Sets the contrast scale range (default: [0.8, 1.2]).
+    /// @throws improc::ParameterError if `low` <= 0 or `low` > `high`.
     RandomContrast& range(float low, float high) {
         if (low <= 0.0f)
             throw ParameterError{"low", "must be > 0", "RandomContrast"};
@@ -85,22 +96,43 @@ private:
     float high_ = 1.2f;
 };
 
+/**
+ * @brief Jointly randomises brightness, contrast, saturation, and hue of a BGR image.
+ *
+ * Only supports 8-bit `BGR` images. Hue is applied in HSV space.
+ *
+ * @code
+ * auto jitter = ColorJitter()
+ *     .brightness(0.8f, 1.2f)
+ *     .contrast(0.8f, 1.2f)
+ *     .saturation(0.8f, 1.2f)
+ *     .hue(-10.f, 10.f);
+ * @endcode
+ */
 struct ColorJitter : detail::BindMixin<ColorJitter> {
+    /// @brief Sets brightness multiplier range (default: [0.8, 1.2]).
+    /// @throws improc::ParameterError if `low` <= 0 or `low` > `high`.
     ColorJitter& brightness(float low, float high) {
         if (low <= 0.0f) throw ParameterError{"brightness.low", "must be > 0", "ColorJitter"};
         if (low > high)  throw ParameterError{"brightness.low", "must be <= high", "ColorJitter"};
         br_low_ = low; br_high_ = high; return *this;
     }
+    /// @brief Sets contrast scale range (default: [0.8, 1.2]).
+    /// @throws improc::ParameterError if `low` <= 0 or `low` > `high`.
     ColorJitter& contrast(float low, float high) {
         if (low <= 0.0f) throw ParameterError{"contrast.low", "must be > 0", "ColorJitter"};
         if (low > high)  throw ParameterError{"contrast.low", "must be <= high", "ColorJitter"};
         ct_low_ = low; ct_high_ = high; return *this;
     }
+    /// @brief Sets HSV saturation scale range (default: [0.8, 1.2]).
+    /// @throws improc::ParameterError if `low` <= 0 or `low` > `high`.
     ColorJitter& saturation(float low, float high) {
         if (low <= 0.0f) throw ParameterError{"saturation.low", "must be > 0", "ColorJitter"};
         if (low > high)  throw ParameterError{"saturation.low", "must be <= high", "ColorJitter"};
         sa_low_ = low; sa_high_ = high; return *this;
     }
+    /// @brief Sets hue shift range in degrees (default: [-10, 10]).
+    /// @throws improc::ParameterError if either bound is outside [-180, 180] or `low` > `high`.
     ColorJitter& hue(float low, float high) {
         if (std::abs(low) > 180.0f || std::abs(high) > 180.0f)
             throw ParameterError{"hue", "values must be in [-180, 180]", "ColorJitter"};
@@ -172,7 +204,13 @@ private:
     float hu_low_ = -10.f, hu_high_ = 10.0f;
 };
 
+/**
+ * @brief With probability `p`, converts a BGR image to grayscale (3-channel, equal channels).
+ * Non-BGR formats are returned unchanged.
+ */
 struct RandomGrayscale : detail::BindMixin<RandomGrayscale> {
+    /// @brief Sets the grayscale conversion probability (default: 0.1).
+    /// @throws improc::ParameterError if `prob` is outside [0, 1].
     RandomGrayscale& p(float prob) {
         if (prob < 0.0f || prob > 1.0f)
             throw ParameterError{"p", "must be in [0, 1]", "RandomGrayscale"};
@@ -203,12 +241,20 @@ private:
     float p_ = 0.1f;
 };
 
+/**
+ * @brief With probability `p`, inverts pixel values at or above `threshold`.
+ * No-op on float images.
+ */
 struct RandomSolarize : detail::BindMixin<RandomSolarize> {
+    /// @brief Sets the solarization threshold in [0, 255] (default: 128).
+    /// @throws improc::ParameterError if `t` is outside [0, 255].
     RandomSolarize& threshold(int t) {
         if (t < 0 || t > 255)
             throw ParameterError{"threshold", "must be in [0, 255]", "RandomSolarize"};
         threshold_ = t; return *this;
     }
+    /// @brief Sets the application probability (default: 0.5).
+    /// @throws improc::ParameterError if `prob` is outside [0, 1].
     RandomSolarize& p(float prob) {
         if (prob < 0.0f || prob > 1.0f)
             throw ParameterError{"p", "must be in [0, 1]", "RandomSolarize"};
@@ -243,12 +289,20 @@ private:
     float p_         = 0.5f;
 };
 
+/**
+ * @brief With probability `p`, reduces each channel to `bits` significant bits.
+ * No-op on float images.
+ */
 struct RandomPosterize : detail::BindMixin<RandomPosterize> {
+    /// @brief Sets the bit depth to retain per channel (default: 4). Must be in [1, 8].
+    /// @throws improc::ParameterError if `b` is outside [1, 8].
     RandomPosterize& bits(int b) {
         if (b < 1 || b > 8)
             throw ParameterError{"bits", "must be in [1, 8]", "RandomPosterize"};
         bits_ = b; return *this;
     }
+    /// @brief Sets the application probability (default: 0.5).
+    /// @throws improc::ParameterError if `prob` is outside [0, 1].
     RandomPosterize& p(float prob) {
         if (prob < 0.0f || prob > 1.0f)
             throw ParameterError{"p", "must be in [0, 1]", "RandomPosterize"};
@@ -284,7 +338,14 @@ private:
     float p_    = 0.5f;
 };
 
+/**
+ * @brief With probability `p`, applies histogram equalisation.
+ * BGR: equalises the Y channel of YCrCb. Gray: direct `equalizeHist`.
+ * Other formats are returned unchanged.
+ */
 struct RandomEqualize : detail::BindMixin<RandomEqualize> {
+    /// @brief Sets the application probability (default: 0.5).
+    /// @throws improc::ParameterError if `prob` is outside [0, 1].
     RandomEqualize& p(float prob) {
         if (prob < 0.0f || prob > 1.0f)
             throw ParameterError{"p", "must be in [0, 1]", "RandomEqualize"};
