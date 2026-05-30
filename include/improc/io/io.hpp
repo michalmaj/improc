@@ -1,5 +1,11 @@
 // include/improc/io/io.hpp
 #pragma once
+/** @file io.hpp
+ *  @brief Convenience header — includes all `improc::io` types:
+ *         CameraFrame, CameraSource, WebcamCapture, IPCameraCapture,
+ *         AnyCameraSource, OakDCapture, CameraCapture, ImageIO,
+ *         VideoReader, VideoWriter, VideoFileCapture.
+ */
 
 #include "improc/io/camera_frame.hpp"
 #include "improc/io/camera_source.hpp"

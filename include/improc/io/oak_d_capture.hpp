@@ -15,29 +15,32 @@
 
 namespace improc::io {
 
-// OakDCapture — streams aligned RGB + metric depth from an OAK-D camera.
-// Only available when compiled with -DIMPROC_WITH_DEPTHAI=ON.
-// Satisfies CameraSourceType<OakDCapture>.
-//
-// Usage:
-//   OakDCapture oak;                          // first found device
-//   OakDCapture oak("14442C10D13B8D1300");   // specific MX ID
-//   oak.start();
-//   auto frame = oak.getFrame();
-//   oak.stop();
-//
-// getFrame() blocks until both RGB and depth are available (up to timeout_ms_).
-// Returns Error::Code::Timeout if either queue times out.
-// Returns Error::Code::CameraUnavailable if start() was not called.
+/**
+ * @brief Streams aligned RGB + metric depth from a Luxonis OAK-D camera.
+ *
+ * Requires the library to be built with `-DIMPROC_WITH_DEPTHAI=ON`.
+ * Without it, all methods throw `std::runtime_error` at runtime.
+ * Satisfies `CameraSourceType<OakDCapture>`.
+ *
+ * @code
+ * OakDCapture oak;   // first available device
+ * oak.start();
+ * if (auto f = oak.getFrame()) {
+ *     cv::imshow("rgb",   f->rgb.mat());
+ *     cv::imshow("depth", f->depth->mat());
+ * }
+ * oak.stop();
+ * @endcode
+ */
 
 #ifdef IMPROC_WITH_DEPTHAI
 
 class OakDCapture {
 public:
-    // Constructs OakDCapture targeting the first available device.
+    /// @brief Constructs targeting the first available OAK-D device.
     OakDCapture();
 
-    // Constructs OakDCapture targeting a specific device by MX ID.
+    /// @brief Constructs targeting a specific device identified by MX ID.
     explicit OakDCapture(std::string mx_id);
 
     ~OakDCapture();
@@ -47,19 +50,14 @@ public:
     OakDCapture(OakDCapture&&) = delete;
     OakDCapture& operator=(OakDCapture&&) = delete;
 
-    // Opens the device and starts the pipeline. Idempotent.
+    /// @brief Opens the device and starts the DepthAI pipeline. Idempotent.
     void start();
 
-    // Stops the pipeline and closes the device. Idempotent.
+    /// @brief Stops the pipeline and closes the device. Idempotent.
     void stop();
 
-    // Blocks until an aligned RGB+depth pair is available, up to timeout_ms_.
-    // Returns a CameraFrame with both rgb and depth populated on success.
-    // Returns Error::Code::Timeout if either queue times out.
-    // Returns Error::Code::CameraUnavailable if not started.
-    //
-    // Thread safety: getFrame() and stop() must not be called concurrently.
-    // FramePipeline guarantees this — it stops the pipeline before joining workers.
+    /// @brief Returns an aligned RGB+depth frame, blocking up to 1000 ms per queue.
+    /// @return Error::Code::Timeout if either queue times out; CameraUnavailable if not started.
     std::expected<CameraFrame, improc::Error> getFrame();
 
 private:
@@ -77,9 +75,7 @@ static_assert(CameraSourceType<OakDCapture>);
 
 #else  // !IMPROC_WITH_DEPTHAI
 
-// Stub that fails at runtime when OAK-D support was not compiled in.
-// Provides the same interface so code can be written against it and
-// the build failure only happens at the call site when depthai is OFF.
+/// @brief Stub — OAK-D support not compiled in. All methods throw `std::runtime_error`.
 class OakDCapture {
 public:
     OakDCapture() = default;

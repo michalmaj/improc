@@ -1,3 +1,9 @@
+/**
+ * @file quality.hpp
+ * @brief Full-reference image quality metrics (PSNR, SSIM, GMSD, MSE).
+ *
+ * All ops throw improc::ParameterError when ref.size() != cmp.size().
+ */
 #pragma once
 #include <limits>
 #include <opencv2/core.hpp>
@@ -7,28 +13,38 @@
 
 namespace improc::core {
 
-// All reference-based ops throw ParameterError when ref.size() != cmp.size().
-
+/**
+ * @brief Peak Signal-to-Noise Ratio — higher is better.
+ *
+ * @return INFINITY when images are identical (MSE == 0).
+ */
 struct PSNR {
-    // Returns INFINITY when images are identical (MSE == 0).
     double operator()(const Image<BGR>&  ref, const Image<BGR>&  cmp) const;
     double operator()(const Image<Gray>& ref, const Image<Gray>& cmp) const;
 };
 
+/**
+ * @brief Structural Similarity Index — higher is better; maximum is 1.0.
+ *
+ * @return 1.0 for identical images.
+ */
 struct SSIM {
-    // Returns 1.0 for identical images.
     double operator()(const Image<BGR>&  ref, const Image<BGR>&  cmp) const;
     double operator()(const Image<Gray>& ref, const Image<Gray>& cmp) const;
 };
 
+/**
+ * @brief Gradient Magnitude Similarity Deviation — lower is better; 0 for identical images.
+ */
 struct GMSD {
-    // Lower = better quality. Returns 0.0 for identical images.
     double operator()(const Image<BGR>&  ref, const Image<BGR>&  cmp) const;
     double operator()(const Image<Gray>& ref, const Image<Gray>& cmp) const;
 };
 
+/**
+ * @brief Mean Squared Error — lower is better; 0 for identical images.
+ */
 struct MSE {
-    // Returns 0.0 for identical images.
     double operator()(const Image<BGR>&  ref, const Image<BGR>&  cmp) const;
     double operator()(const Image<Gray>& ref, const Image<Gray>& cmp) const;
 };

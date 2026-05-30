@@ -14,7 +14,13 @@ namespace improc::ml {
 using improc::core::AnyFormat;
 using improc::core::Image;
 
+/**
+ * @brief Adds Gaussian noise with zero mean and a standard deviation sampled from [std_low, std_high].
+ * Pixel values are clamped to the valid range after noise addition.
+ */
 struct RandomGaussianNoise : detail::BindMixin<RandomGaussianNoise> {
+    /// @brief Sets the standard deviation range (default: [5.0, 20.0]).
+    /// @throws improc::ParameterError if `low` < 0 or `low` > `high`.
     RandomGaussianNoise& std_dev(float low, float high) {
         if (low < 0.0f)
             throw ParameterError{"std_dev.low", "must be >= 0", "RandomGaussianNoise"};
@@ -22,6 +28,7 @@ struct RandomGaussianNoise : detail::BindMixin<RandomGaussianNoise> {
             throw ParameterError{"std_dev.low", "must be <= high", "RandomGaussianNoise"};
         std_low_ = low; std_high_ = high; return *this;
     }
+    /// @brief Sets the noise mean (default: 0.0).
     RandomGaussianNoise& mean(float m) { mean_ = m; return *this; }
 
     template<AnyFormat Format>
@@ -54,7 +61,13 @@ private:
     float mean_     =  0.0f;
 };
 
+/**
+ * @brief Randomly sets pixels to 0 (pepper) or max (salt) with probability `p` per pixel.
+ * Supports 8-bit and float32 images.
+ */
 struct RandomSaltAndPepper : detail::BindMixin<RandomSaltAndPepper> {
+    /// @brief Sets the per-pixel noise probability (default: 0.05).
+    /// @throws improc::ParameterError if `prob` is outside [0, 1].
     RandomSaltAndPepper& p(float prob) {
         if (prob < 0.0f || prob > 1.0f)
             throw ParameterError{"p", std::format("must be in [0, 1], got {}", prob), "RandomSaltAndPepper"};

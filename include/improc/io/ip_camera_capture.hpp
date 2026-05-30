@@ -12,8 +12,23 @@
 
 namespace improc::io {
 
+/**
+ * @brief Threaded RTSP / HTTP camera source that streams from a URL.
+ *
+ * Starts a background thread on `start()` that continuously reads frames
+ * via `cv::VideoCapture`. `getFrame()` returns the most recent decoded frame.
+ * Non-copyable and non-movable (owns a `std::thread`).
+ *
+ * @code
+ * IPCameraCapture cam("rtsp://192.168.1.100:554/stream");
+ * cam.start();
+ * auto frame = cam.getFrame();
+ * cam.stop();
+ * @endcode
+ */
 class IPCameraCapture {
 public:
+    /// @brief Constructs the capture for the given URL (RTSP, HTTP, or any OpenCV-compatible URI).
     explicit IPCameraCapture(std::string url);
     ~IPCameraCapture();
 
@@ -22,8 +37,12 @@ public:
     IPCameraCapture(IPCameraCapture&&) = delete;
     IPCameraCapture& operator=(IPCameraCapture&&) = delete;
 
+    /// @brief Opens the stream and starts the background capture thread.
     void start();
+    /// @brief Stops the capture thread and closes the stream.
     void stop();
+    /// @brief Returns the most recently decoded frame.
+    /// @return CameraUnavailable if start() was not called or the stream has no frames yet.
     std::expected<CameraFrame, improc::Error> getFrame();
 
 private:

@@ -11,30 +11,53 @@
 
 namespace improc::ml {
 
-// Intersection over Union of two bounding boxes.
-// Returns 0.0 when either box has zero area.
+/// @brief Computes the Intersection-over-Union of two axis-aligned bounding boxes.
+/// @param a First bounding box.
+/// @param b Second bounding box.
+/// @return Value in [0, 1]. Returns 0 if either box has zero area.
 [[nodiscard]] float iou(const BBox& a, const BBox& b);
 
-// Area under the precision-recall curve using 101-point COCO interpolation.
-// recalls and precisions must have the same length.
+/// @brief Computes Average Precision (AP) using the 101-point interpolation (COCO style).
+/// @param recalls    Recall values in ascending order.
+/// @param precisions Precision values corresponding to `recalls`.
+/// @return AP in [0, 1].
 [[nodiscard]] float average_precision(std::span<const float> recalls,
                                       std::span<const float> precisions);
 
+/**
+ * @brief mAP and per-class AP detection metrics at IoU thresholds 0.50 and 0.50:0.95.
+ */
 struct DetectionMetrics {
-    float mAP_50    = 0.0f;
-    float mAP_50_95 = 0.0f;
-    std::map<std::string, float> per_class_AP;
+    float mAP_50    = 0.0f; ///< Mean Average Precision at IoU ≥ 0.50.
+    float mAP_50_95 = 0.0f; ///< Mean AP averaged over IoU thresholds 0.50–0.95 (step 0.05).
+    std::map<std::string, float> per_class_AP; ///< AP@0.50 per class name.
 };
 
+/**
+ * @brief Stateful accumulator for object detection evaluation.
+ *
+ * Accumulates predictions and ground truths across frames, then computes
+ * mAP@0.50 and mAP@0.50:0.95 matching COCO evaluation conventions.
+ *
+ * @code
+ * DetectionEval eval;
+ * eval.update(predictions, ground_truths);
+ * auto metrics = eval.compute();
+ * @endcode
+ */
 struct DetectionEval {
+    /// @brief Appends a frame's predicted `Detection` list and ground-truth `BBox` list.
     void update(const std::vector<Detection>& preds,
                 const std::vector<BBox>&      gts);
+    /// @brief Computes and returns detection metrics from all accumulated data.
     [[nodiscard]] DetectionMetrics compute() const;
-    // Returns recall[] and precision[] per class at IoU=0.50.
-    // Recalls are non-decreasing. Returns empty map before any update() calls.
+    /// @brief Returns recall and precision curves per class at IoU=0.50.
+    ///
+    /// Recalls are non-decreasing. Returns empty map before any `update()` calls.
     [[nodiscard]]
     std::map<std::string, std::pair<std::vector<float>, std::vector<float>>>
     pr_curves() const;
+    /// @brief Resets all accumulated state.
     void reset();
 
 private:

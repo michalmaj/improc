@@ -24,8 +24,21 @@ inline const cv::Scalar kCmpAmber { 11, 158, 245};
 inline const cv::Scalar kCmpRed   { 68,  68, 239};
 } // namespace detail::cmp
 
+/**
+ * @brief Renders a heatmap-style confusion matrix with accuracy/F1 badge.
+ *
+ * Diagonal cells use a blue-to-orange gradient; off-diagonal cells use an
+ * amber-to-red gradient. A colour bar and Accuracy/Macro-F1 summary are included.
+ *
+ * @code
+ * auto plot = ConfusionMatrixPlot(metrics)
+ *     .width(500).height(500)
+ *     .class_names({"cat","dog","bird"});
+ * auto img = plot();
+ * @endcode
+ */
 struct ConfusionMatrixPlot {
-    // Struct form from ConfusionMatrix
+    /// @brief Constructs from a `ConfusionMatrix` struct.
     explicit ConfusionMatrixPlot(const improc::ml::ConfusionMatrix& cm) {
         if (!cm.mat.empty()) {
             int n = cm.mat.rows;
@@ -36,23 +49,29 @@ struct ConfusionMatrixPlot {
         }
     }
 
-    // Struct form from ClassMetrics (uses embedded confusion matrix)
+    /// @brief Constructs from `ClassMetrics` using its embedded confusion matrix.
     explicit ConfusionMatrixPlot(const improc::ml::ClassMetrics& m)
         : ConfusionMatrixPlot(m.confusion_matrix) {}
 
-    // Raw form: 2D vector + optional class names
+    /// @brief Constructs from a raw 2-D count vector and optional class names.
     explicit ConfusionMatrixPlot(std::vector<std::vector<int>> matrix,
                                  std::vector<std::string> names = {})
         : matrix_(std::move(matrix))
         , class_names_(std::move(names)) {}
 
+    /// @brief Sets the canvas width in pixels (default: 400).
     ConfusionMatrixPlot& width(int w)          { width_ = w;              return *this; }
+    /// @brief Sets the canvas height in pixels (default: 400).
     ConfusionMatrixPlot& height(int h)         { height_ = h;             return *this; }
+    /// @brief Sets the chart title text (default: empty).
     ConfusionMatrixPlot& title(std::string t)  { title_ = std::move(t);   return *this; }
+    /// @brief Sets class label strings for row and column headers.
     ConfusionMatrixPlot& class_names(std::vector<std::string> n) {
         class_names_ = std::move(n); return *this;
     }
 
+    /// @brief Renders and returns the confusion matrix plot as a BGR image.
+    /// @throws improc::ParameterError if width or height <= 0 or canvas is too small for the matrix.
     Image<BGR> operator()() const {
         if (width_ <= 0)  throw improc::ParameterError{"width",  "must be positive", "ConfusionMatrixPlot"};
         if (height_ <= 0) throw improc::ParameterError{"height", "must be positive", "ConfusionMatrixPlot"};

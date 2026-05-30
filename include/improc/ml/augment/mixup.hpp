@@ -27,18 +27,34 @@ inline float sample_beta(float alpha, std::mt19937& rng) {
 }
 } // namespace detail
 
+/**
+ * @brief Applies MixUp augmentation: blends two `LabeledImage<F>` samples by a Beta(alpha, alpha) weight.
+ *
+ * Reference: Zhang et al., "mixup: Beyond Empirical Risk Minimisation", ICLR 2018.
+ *
+ * @code
+ * std::mt19937 rng(42);
+ * auto mixed = MixUp().alpha(0.4f)(a, b, rng);
+ * @endcode
+ */
 struct MixUp {
+    /// @brief Sets the Beta distribution concentration parameter (default: 0.4).
+    /// @throws improc::ParameterError if `a` <= 0.
     MixUp& alpha(float a) {
         if (a <= 0.0f)
             throw ParameterError{"alpha", "must be > 0", "MixUp"};
         alpha_ = a; return *this;
     }
+    /// @brief Sets the application probability (default: 1.0).
+    /// @throws improc::ParameterError if `prob` is outside [0, 1].
     MixUp& p(float prob) {
         if (prob < 0.0f || prob > 1.0f)
             throw ParameterError{"p", "must be in [0, 1]", "MixUp"};
         p_ = prob; return *this;
     }
 
+    /// @brief Mixes `a` with `b` using a Beta-sampled weight.
+    /// @throws improc::ParameterError if images differ in size or label vectors differ in length.
     template<AnyFormat F>
     LabeledImage<F> operator()(LabeledImage<F> a,
                                 const LabeledImage<F>& b,
@@ -72,12 +88,22 @@ private:
     float p_     = 1.0f;
 };
 
+/**
+ * @brief Applies CutMix: pastes a rectangular patch from a secondary image into the primary,
+ * with soft labels proportional to the patch area.
+ *
+ * Reference: Yun et al., "CutMix: Training Strategy", ICCV 2019.
+ */
 struct CutMix {
+    /// @brief Sets the Beta distribution concentration parameter (default: 1.0).
+    /// @throws improc::ParameterError if `a` <= 0.
     CutMix& alpha(float a) {
         if (a <= 0.0f)
             throw ParameterError{"alpha", "must be > 0", "CutMix"};
         alpha_ = a; return *this;
     }
+    /// @brief Sets the application probability (default: 1.0).
+    /// @throws improc::ParameterError if `prob` is outside [0, 1].
     CutMix& p(float prob) {
         if (prob < 0.0f || prob > 1.0f)
             throw ParameterError{"p", "must be in [0, 1]", "CutMix"};
@@ -136,12 +162,17 @@ private:
     float p_     = 1.0f;
 };
 
+/**
+ * @brief Sequential pipeline of mix-style augmentation ops (MixUp, CutMix) applied to pairs of `LabeledImage<F>`.
+ */
 template<AnyFormat Format>
 struct MixCompose {
     using Op = std::function<LabeledImage<Format>(LabeledImage<Format>,
                                                    const LabeledImage<Format>&,
                                                    std::mt19937&)>;
 
+    /// @brief Appends a mix op to the pipeline.
+    /// @throws improc::ParameterError if `op` is null.
     MixCompose& add(Op op) {
         if (!op) throw ParameterError{"op", "must not be null", "MixCompose"};
         ops_.push_back(std::move(op));
@@ -156,8 +187,8 @@ struct MixCompose {
         return primary;
     }
 
-    // secondary, rng, and this MixCompose must outlive the returned functor.
-    // Intended for immediate operator| use: `li | pipe.bind(b, rng)`.
+    /// @brief Returns a unary functor `LabeledImage<F> → LabeledImage<F>` for use with `operator|`.
+    /// @warning `secondary`, `rng`, and this `MixCompose` must outlive the returned functor.
     [[nodiscard]] auto bind(const LabeledImage<Format>& secondary, std::mt19937& rng) const {
         return [this, &secondary, &rng](LabeledImage<Format> primary) {
             return (*this)(std::move(primary), secondary, rng);

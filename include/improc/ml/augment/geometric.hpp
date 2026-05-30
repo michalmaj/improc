@@ -59,13 +59,27 @@ inline bool keep_box(cv::Rect2f clipped, cv::Rect2f original, float threshold) {
 
 } // namespace detail
 
+/**
+ * @brief Randomly flips an image (and its bounding boxes / segmentation mask) along a spatial axis.
+ *
+ * @code
+ * std::mt19937 rng(42);
+ * auto flip = RandomFlip().p(0.5f).axis(core::Axis::Horizontal);
+ * img = img | flip.bind(rng);
+ * @endcode
+ */
 struct RandomFlip : detail::BindMixin<RandomFlip> {
+    /// @brief Sets the flip probability (default: 0.5).
+    /// @throws improc::ParameterError if `prob` is outside [0, 1].
     RandomFlip& p(float prob) {
         if (prob < 0.0f || prob > 1.0f)
             throw ParameterError{"p", std::format("must be in [0, 1], got {}", prob), "RandomFlip"};
         p_ = prob; return *this;
     }
+    /// @brief Sets the flip axis (default: Horizontal).
     RandomFlip& axis(core::Axis a) { axis_ = a; return *this; }
+    /// @brief Sets the minimum retained area ratio for bounding boxes after flip (default: 0.1).
+    /// @throws improc::ParameterError if `r` is outside [0, 1].
     RandomFlip& min_area_ratio(float r) {
         if (r < 0.0f || r > 1.0f)
             throw ParameterError{"min_area_ratio", "must be in [0, 1]", "RandomFlip"};
@@ -139,17 +153,27 @@ private:
     float      min_area_ratio_  = 0.1f;
 };
 
+/**
+ * @brief Randomly rotates an image by an angle sampled uniformly from [min_deg, max_deg].
+ * Bounding boxes are transformed via corner-rotation + axis-aligned re-fitting.
+ */
 struct RandomRotate : detail::BindMixin<RandomRotate> {
+    /// @brief Sets the rotation range in degrees (default: [-15, 15]).
+    /// @throws improc::ParameterError if `min_deg` > `max_deg`.
     RandomRotate& range(float min_deg, float max_deg) {
         if (min_deg > max_deg)
             throw ParameterError{"min_deg", "must be <= max_deg", "RandomRotate"};
         min_deg_ = min_deg; max_deg_ = max_deg; return *this;
     }
+    /// @brief Sets the rotation scale factor (default: 1.0).
+    /// @throws improc::ParameterError if `s` <= 0.
     RandomRotate& scale(float s) {
         if (s <= 0.0f)
             throw ParameterError{"scale", "must be > 0", "RandomRotate"};
         scale_ = s; return *this;
     }
+    /// @brief Sets the minimum retained area ratio for bounding boxes (default: 0.1).
+    /// @throws improc::ParameterError if `r` is outside [0, 1].
     RandomRotate& min_area_ratio(float r) {
         if (r < 0.0f || r > 1.0f)
             throw ParameterError{"min_area_ratio", "must be in [0, 1]", "RandomRotate"};
@@ -226,15 +250,25 @@ private:
     float min_area_ratio_  =   0.1f;
 };
 
+/**
+ * @brief Randomly crops a fixed-size region from an image.
+ * Bounding boxes that fall outside the crop region by more than `min_area_ratio` are discarded.
+ */
 struct RandomCrop : detail::BindMixin<RandomCrop> {
+    /// @brief Sets the crop width in pixels. Must be called before `operator()`.
+    /// @throws improc::ParameterError if `w` <= 0.
     RandomCrop& width(int w) {
         if (w <= 0) throw ParameterError{"width", "must be positive", "RandomCrop"};
         width_ = w; return *this;
     }
+    /// @brief Sets the crop height in pixels. Must be called before `operator()`.
+    /// @throws improc::ParameterError if `h` <= 0.
     RandomCrop& height(int h) {
         if (h <= 0) throw ParameterError{"height", "must be positive", "RandomCrop"};
         height_ = h; return *this;
     }
+    /// @brief Sets the minimum retained area ratio for bounding boxes (default: 0.1).
+    /// @throws improc::ParameterError if `r` is outside [0, 1].
     RandomCrop& min_area_ratio(float r) {
         if (r < 0.0f || r > 1.0f)
             throw ParameterError{"min_area_ratio", "must be in [0, 1]", "RandomCrop"};
@@ -311,7 +345,13 @@ private:
     float min_area_ratio_  = 0.1f;
 };
 
+/**
+ * @brief Randomly resizes an image so its shorter side equals a value sampled from [min_side, max_side].
+ * Aspect ratio is preserved. Bounding box coordinates are scaled proportionally.
+ */
 struct RandomResize : detail::BindMixin<RandomResize> {
+    /// @brief Sets the shorter-side target range in pixels (default: [224, 256]).
+    /// @throws improc::ParameterError if `min_side` <= 0 or `min_side` > `max_side`.
     RandomResize& range(int min_side, int max_side) {
         if (min_side <= 0)
             throw ParameterError{"min_side", "must be > 0", "RandomResize"};
@@ -319,6 +359,8 @@ struct RandomResize : detail::BindMixin<RandomResize> {
             throw ParameterError{"min_side", "must be <= max_side", "RandomResize"};
         min_side_ = min_side; max_side_ = max_side; return *this;
     }
+    /// @brief Sets the minimum retained area ratio for bounding boxes (default: 0.1).
+    /// @throws improc::ParameterError if `r` is outside [0, 1].
     RandomResize& min_area_ratio(float r) {
         if (r < 0.0f || r > 1.0f)
             throw ParameterError{"min_area_ratio", "must be in [0, 1]", "RandomResize"};
@@ -395,7 +437,12 @@ private:
     float min_area_ratio_  = 0.1f;
 };
 
+/**
+ * @brief Randomly zooms into an image by cropping a fraction of [min_scale, max_scale] and upscaling back.
+ */
 struct RandomZoom : detail::BindMixin<RandomZoom> {
+    /// @brief Sets the crop scale range as a fraction of the image side (default: [0.7, 1.0]).
+    /// @throws improc::ParameterError if values are outside (0, 1].
     RandomZoom& range(float min_scale, float max_scale) {
         if (min_scale <= 0.0f || max_scale <= 0.0f || min_scale > 1.0f || max_scale > 1.0f)
             throw ParameterError{"min_scale/max_scale", "must be in (0, 1]", "RandomZoom"};
@@ -403,6 +450,8 @@ struct RandomZoom : detail::BindMixin<RandomZoom> {
             throw ParameterError{"min_scale", "must be <= max_scale", "RandomZoom"};
         min_scale_ = min_scale; max_scale_ = max_scale; return *this;
     }
+    /// @brief Sets the minimum retained area ratio for bounding boxes (default: 0.1).
+    /// @throws improc::ParameterError if `r` is outside [0, 1].
     RandomZoom& min_area_ratio(float r) {
         if (r < 0.0f || r > 1.0f)
             throw ParameterError{"min_area_ratio", "must be in [0, 1]", "RandomZoom"};
@@ -486,17 +535,26 @@ private:
     float min_area_ratio_  = 0.1f;
 };
 
+/**
+ * @brief Applies a random affine shear transformation along one axis.
+ */
 struct RandomShear : detail::BindMixin<RandomShear> {
+    /// @brief Sets the shear angle range in degrees (default: [-15, 15]).
+    /// @throws improc::ParameterError if `min_deg` > `max_deg`.
     RandomShear& range(float min_deg, float max_deg) {
         if (min_deg > max_deg)
             throw ParameterError{"min_deg", "must be <= max_deg", "RandomShear"};
         min_deg_ = min_deg; max_deg_ = max_deg; return *this;
     }
+    /// @brief Sets the shear axis — Horizontal or Vertical (default: Horizontal).
+    /// @throws improc::ParameterError if `Axis::Both` is passed.
     RandomShear& axis(core::Axis a) {
         if (a == core::Axis::Both)
             throw ParameterError{"axis", "Axis::Both is not supported; use Horizontal or Vertical", "RandomShear"};
         axis_ = a; return *this;
     }
+    /// @brief Sets the minimum retained area ratio for bounding boxes (default: 0.1).
+    /// @throws improc::ParameterError if `r` is outside [0, 1].
     RandomShear& min_area_ratio(float r) {
         if (r < 0.0f || r > 1.0f)
             throw ParameterError{"min_area_ratio", "must be in [0, 1]", "RandomShear"};
@@ -579,12 +637,20 @@ private:
     float      min_area_ratio_ =   0.1f;
 };
 
+/**
+ * @brief Applies a random perspective (projective) warp.
+ * Each corner of the image is perturbed by up to `distortion_scale * min(W,H) / 2` pixels.
+ */
 struct RandomPerspective : detail::BindMixin<RandomPerspective> {
+    /// @brief Sets the corner perturbation scale in [0, 1] (default: 0.5).
+    /// @throws improc::ParameterError if `s` is outside [0, 1].
     RandomPerspective& distortion_scale(float s) {
         if (s < 0.0f || s > 1.0f)
             throw ParameterError{"distortion_scale", "must be in [0, 1]", "RandomPerspective"};
         distortion_scale_ = s; return *this;
     }
+    /// @brief Sets the minimum retained area ratio for bounding boxes (default: 0.1).
+    /// @throws improc::ParameterError if `r` is outside [0, 1].
     RandomPerspective& min_area_ratio(float r) {
         if (r < 0.0f || r > 1.0f)
             throw ParameterError{"min_area_ratio", "must be in [0, 1]", "RandomPerspective"};

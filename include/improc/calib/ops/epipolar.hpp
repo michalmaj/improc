@@ -10,12 +10,19 @@ namespace improc::calib {
 
 // ── FindFundamentalMat ────────────────────────────────────────────────────────
 
+/**
+ * @brief Estimates the fundamental matrix from point correspondences using RANSAC.
+ */
 struct FindFundamentalMat {
+    /// @brief Sets the estimation method (default: `cv::FM_RANSAC`).
     FindFundamentalMat& method(int m)              { method_           = m; return *this; }
+    /// @brief Sets the RANSAC reprojection threshold in pixels (default: 3.0).
     FindFundamentalMat& ransac_threshold(double t) { ransac_threshold_ = t; return *this; }
+    /// @brief Sets the desired solution confidence in [0, 1] (default: 0.99).
     FindFundamentalMat& confidence(double c)       { confidence_       = c; return *this; }
 
-    // Throws std::invalid_argument if pts1.size() != pts2.size() or < 8 points.
+    /// @brief Estimates the fundamental matrix.
+    /// @throws std::invalid_argument if `pts1.size() != pts2.size()` or fewer than 8 points.
     FundamentalMatResult operator()(const std::vector<cv::Point2f>& pts1,
                                     const std::vector<cv::Point2f>& pts2) const;
 
@@ -27,12 +34,20 @@ private:
 
 // ── FindEssentialMat ──────────────────────────────────────────────────────────
 
+/**
+ * @brief Estimates the essential matrix from point correspondences and a shared camera matrix.
+ */
 struct FindEssentialMat {
+    /// @brief Sets the estimation method (default: `cv::RANSAC`).
     FindEssentialMat& method(int m)       { method_     = m; return *this; }
+    /// @brief Sets the RANSAC reprojection threshold in pixels (default: 1.0).
     FindEssentialMat& threshold(double t) { threshold_  = t; return *this; }
+    /// @brief Sets the desired solution confidence in [0, 1] (default: 0.99).
     FindEssentialMat& confidence(double c){ confidence_ = c; return *this; }
 
-    // K: 3×3 camera matrix. Throws if sizes mismatch or < 5 points.
+    /// @brief Estimates the essential matrix.
+    /// @param K 3×3 camera intrinsic matrix (same for both views).
+    /// @throws std::invalid_argument if sizes mismatch or fewer than 5 points.
     EssentialMatResult operator()(const std::vector<cv::Point2f>& pts1,
                                   const std::vector<cv::Point2f>& pts2,
                                   const cv::Mat& K) const;
@@ -45,9 +60,13 @@ private:
 
 // ── RecoverPose ───────────────────────────────────────────────────────────────
 
+/**
+ * @brief Recovers rotation and (unit) translation from an essential matrix via cheirality check.
+ */
 struct RecoverPose {
-    // E: essential matrix; pts1/pts2: same correspondences used to compute E.
-    // K: camera matrix (same for both views if shared intrinsics).
+    /// @brief Recovers R and t.
+    /// @param E Essential matrix (from `FindEssentialMat`).
+    /// @param K Camera matrix (shared intrinsics assumed).
     RecoverPoseResult operator()(const cv::Mat& E,
                                  const std::vector<cv::Point2f>& pts1,
                                  const std::vector<cv::Point2f>& pts2,
@@ -56,9 +75,14 @@ struct RecoverPose {
 
 // ── TriangulatePoints ─────────────────────────────────────────────────────────
 
+/**
+ * @brief Triangulates 3-D points from matched 2-D correspondences and two projection matrices.
+ */
 struct TriangulatePoints {
-    // P1, P2: 3×4 projection matrices.
-    // Returns 4×N homogeneous coordinates (CV_32F).
+    /// @brief Triangulates `pts1`/`pts2` using `P1`/`P2`.
+    /// @param P1 3×4 projection matrix of the first camera.
+    /// @param P2 3×4 projection matrix of the second camera.
+    /// @return 4×N homogeneous point cloud (CV_32F); divide by row 3 for Euclidean coordinates.
     cv::Mat operator()(const cv::Mat& P1, const cv::Mat& P2,
                        const std::vector<cv::Point2f>& pts1,
                        const std::vector<cv::Point2f>& pts2) const;

@@ -32,10 +32,24 @@ struct CameraSourceImpl final : ICameraSourceErased {
 
 } // namespace detail
 
+/**
+ * @brief Type-erased wrapper for any `CameraSourceType` — holds a webcam, IP cam, OAK-D, or other source.
+ *
+ * The wrapped source is heap-allocated via `make<T>(args...)`. Copying is disabled; move is allowed.
+ *
+ * @code
+ * auto src = AnyCameraSource::make<WebcamCapture>(0);
+ * src.start();
+ * while (auto frame = src.getFrame()) { ... }
+ * src.stop();
+ * @endcode
+ */
 class AnyCameraSource {
 public:
+    /// @brief Constructs an empty (no-op) source. getFrame() returns CameraUnavailable.
     AnyCameraSource() = default;
 
+    /// @brief Constructs an AnyCameraSource wrapping a new instance of T built from args.
     template<CameraSourceType T, typename... Args>
     static AnyCameraSource make(Args&&... args) {
         AnyCameraSource any;
@@ -44,8 +58,12 @@ public:
         return any;
     }
 
+    /// @brief Starts the wrapped source. No-op if empty.
     void start() { if (impl_) impl_->start(); }
+    /// @brief Stops the wrapped source. No-op if empty.
     void stop()  { if (impl_) impl_->stop(); }
+    /// @brief Returns the next frame from the wrapped source.
+    /// @return CameraUnavailable error if the source is empty; otherwise delegates to the wrapped source.
     std::expected<CameraFrame, improc::Error> getFrame() {
         if (!impl_)
             return std::unexpected(improc::Error{
@@ -54,6 +72,7 @@ public:
         return impl_->getFrame();
     }
 
+    /// @brief Returns true if a camera source has been wrapped.
     explicit operator bool() const noexcept { return impl_ != nullptr; }
 
 private:

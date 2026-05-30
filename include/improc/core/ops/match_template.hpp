@@ -7,9 +7,18 @@
 
 namespace improc::core {
 
+/**
+ * @brief Slides a template over an image and returns the best match location.
+ *
+ * @code
+ * auto [pt, score] = MatchTemplate().method(cv::TM_CCOEFF_NORMED)(img, templ);
+ * @endcode
+ */
 struct MatchTemplate {
+    /// @brief Sets the matching method (default: cv::TM_CCOEFF_NORMED).
     MatchTemplate& method(int m);
 
+    /// @return {best_match_top_left, match_score}.
     std::pair<cv::Point, double> operator()(const Image<BGR>& img,
                                              const Image<BGR>& templ) const;
 

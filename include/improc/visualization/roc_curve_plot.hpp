@@ -27,14 +27,24 @@ inline const std::vector<cv::Scalar> kColors{
 };
 } // namespace detail::roc
 
+/**
+ * @brief Renders ROC curves for one or more classes with AUC values in the legend.
+ *
+ * A dashed diagonal (random-classifier baseline) is drawn automatically.
+ *
+ * @code
+ * auto plot = ROCCurvePlot(fpr_map, tpr_map).title("ROC curves");
+ * auto img = plot();
+ * @endcode
+ */
 struct ROCCurvePlot {
     using RocMap = std::map<std::string,
         std::pair<std::vector<float>, std::vector<float>>>;
 
-    // Map form: class → (fpr[], tpr[])
+    /// @brief Constructs from a class → (fpr[], tpr[]) map.
     explicit ROCCurvePlot(RocMap curves) : curves_(std::move(curves)) {}
 
-    // Raw form: separate fpr and tpr maps
+    /// @brief Constructs from separate FPR and TPR maps keyed by class name.
     ROCCurvePlot(std::map<std::string, std::vector<float>> fprs,
                  std::map<std::string, std::vector<float>> tprs) {
         for (const auto& [cls, fpr] : fprs) {
@@ -43,10 +53,15 @@ struct ROCCurvePlot {
         }
     }
 
+    /// @brief Sets the canvas width in pixels (default: 640).
     ROCCurvePlot& width(int w)          { width_ = w;            return *this; }
+    /// @brief Sets the canvas height in pixels (default: 480).
     ROCCurvePlot& height(int h)         { height_ = h;           return *this; }
+    /// @brief Sets the chart title text (default: empty).
     ROCCurvePlot& title(std::string t)  { title_ = std::move(t); return *this; }
 
+    /// @brief Renders and returns the ROC curve plot as a BGR image.
+    /// @throws improc::ParameterError if width or height <= 0.
     Image<BGR> operator()() const {
         if (width_ <= 0)  throw improc::ParameterError{"width",  "must be positive", "ROCCurvePlot"};
         if (height_ <= 0) throw improc::ParameterError{"height", "must be positive", "ROCCurvePlot"};
