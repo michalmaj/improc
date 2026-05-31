@@ -297,6 +297,10 @@ target_link_libraries(demo_color_lab_ycrcb PRIVATE improc)
 add_executable(demo_pixel_ops examples/core/demo_pixel_ops.cpp)
 target_link_libraries(demo_pixel_ops PRIVATE improc)
 
+# Filter ops demo — BilateralFilter, CenterCrop, Remap (v0.14.0)
+add_executable(demo_filter_ops examples/core/demo_filter_ops.cpp)
+target_link_libraries(demo_filter_ops PRIVATE improc)
+
 # Image I/O demo (imread / imwrite)
 add_executable(demo_image_io examples/io/demo_image_io.cpp)
 target_link_libraries(demo_image_io PRIVATE improc)
