@@ -8,6 +8,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## Table of Contents
 
 - [[Unreleased]](#unreleased)
+- [[0.12.0]](#0120--2026-05-30) — 2026-05-30 · Documentation Completion: 100% Doxygen coverage across all 51 public headers; Conan migration for onnxruntime and nlohmann_json
 - [[0.11.0]](#0110--2026-05-28) — 2026-05-28 · Documentation Coverage: 8 tutorials + 12 examples for motion, calib, stereo, ArUco, detectors, photo/creative, HDR, quality metrics, and perceptual hashing
 - [[0.10.0]](#0100--2026-05-27) — 2026-05-27 · Photo + Creative + Quality + Hashing: 8 photo/creative ops, panorama stitching, 4 quality metrics, 6 perceptual hash ops (all standard OpenCV, no contrib)
 - [[0.9.0]](#090--2026-05-27) — 2026-05-27 · Camera Geometry + Detectors: new `improc::calib` namespace (31 ops), 8 detector ops in `improc::core`, benchmarks for all new ops
@@ -23,6 +24,14 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ---
 
 ## [Unreleased]
+
+---
+
+## [0.12.0] — 2026-05-30
+
+### Documentation
+
+- Doxygen coverage: added `/** @brief */` / `/// @brief` documentation to all 51 previously undocumented public headers across all namespaces (`improc::core`, `improc::calib`, `improc::ml`, `improc::io`, `improc::visualization`, `improc::onnx`)
 
 ### Changed
 - `onnxruntime` dependency migrated from FetchContent binary download to Conan (`onnxruntime/1.24.4`), upgrading from v1.20.1; `eigen` upgraded to 5.0.1 to satisfy onnxruntime's requirements

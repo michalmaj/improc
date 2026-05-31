@@ -1,0 +1,162 @@
+{
+  "context": {
+    "date": "2026-05-31T18:51:36+02:00",
+    "host_name": "Michas-MacBook-Pro.local",
+    "executable": "/tmp/improc_bench",
+    "num_cpus": 12,
+    "mhz_per_cpu": 24,
+    "cpu_scaling_enabled": false,
+    "caches": [
+      {
+        "type": "Data",
+        "level": 1,
+        "size": 65536,
+        "num_sharing": 0
+      },
+      {
+        "type": "Instruction",
+        "level": 1,
+        "size": 131072,
+        "num_sharing": 0
+      },
+      {
+        "type": "Unified",
+        "level": 2,
+        "size": 4194304,
+        "num_sharing": 1
+      }
+    ],
+    "load_avg": [3.76025,3.3623,2.69775],
+    "library_version": "v1.9.1",
+    "library_build_type": "release",
+    "json_schema_version": 1
+  },
+  "benchmarks": [
+    {
+      "name": "BM_iou_tracker_update/10",
+      "family_index": 0,
+      "per_family_instance_index": 0,
+      "run_name": "BM_iou_tracker_update/10",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 1661772,
+      "real_time": 4.2406857974098324e+02,
+      "cpu_time": 4.2366401648360943e+02,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_iou_tracker_update/50",
+      "family_index": 0,
+      "per_family_instance_index": 1,
+      "run_name": "BM_iou_tracker_update/50",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 153915,
+      "real_time": 4.5508159310549236e+03,
+      "cpu_time": 4.5491602507877706e+03,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_iou_tracker_update/100",
+      "family_index": 0,
+      "per_family_instance_index": 2,
+      "run_name": "BM_iou_tracker_update/100",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 40770,
+      "real_time": 1.7067770420434081e+04,
+      "cpu_time": 1.7054304635761582e+04,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_sort_tracker_update/10",
+      "family_index": 1,
+      "per_family_instance_index": 0,
+      "run_name": "BM_sort_tracker_update/10",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 30971,
+      "real_time": 2.2805806238614769e+04,
+      "cpu_time": 2.2791482354460615e+04,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_sort_tracker_update/50",
+      "family_index": 1,
+      "per_family_instance_index": 1,
+      "run_name": "BM_sort_tracker_update/50",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 5913,
+      "real_time": 1.1838448488901820e+05,
+      "cpu_time": 1.1825063419583965e+05,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_sort_tracker_update/100",
+      "family_index": 1,
+      "per_family_instance_index": 2,
+      "run_name": "BM_sort_tracker_update/100",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 2775,
+      "real_time": 2.5609286812444529e+05,
+      "cpu_time": 2.5575603603603615e+05,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_byte_tracker_update/10",
+      "family_index": 2,
+      "per_family_instance_index": 0,
+      "run_name": "BM_byte_tracker_update/10",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 30548,
+      "real_time": 2.3090750621018338e+04,
+      "cpu_time": 2.3078466675396074e+04,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_byte_tracker_update/50",
+      "family_index": 2,
+      "per_family_instance_index": 1,
+      "run_name": "BM_byte_tracker_update/50",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 5859,
+      "real_time": 1.1839149887784031e+05,
+      "cpu_time": 1.1830756101723803e+05,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_byte_tracker_update/100",
+      "family_index": 2,
+      "per_family_instance_index": 2,
+      "run_name": "BM_byte_tracker_update/100",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 2736,
+      "real_time": 2.5643095177018264e+05,
+      "cpu_time": 2.5608735380116937e+05,
+      "time_unit": "ns"
+    }
+  ]
+}

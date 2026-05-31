@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.30)
-project(improc VERSION 0.11.0)
+project(improc VERSION 0.12.0)
 
 if(APPLE)
     string(REPLACE "--as-needed" "" CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
@@ -289,6 +289,34 @@ target_link_libraries(demo_video_writer PRIVATE improc)
 add_executable(demo_color_adjust examples/core/demo_color_adjust.cpp)
 target_link_libraries(demo_color_adjust PRIVATE improc)
 
+# Color space demo — ToLAB, ToYCrCb (v0.14.0)
+add_executable(demo_color_lab_ycrcb examples/core/demo_color_lab_ycrcb.cpp)
+target_link_libraries(demo_color_lab_ycrcb PRIVATE improc)
+
+# Pixel ops demo — Add, Subtract, Multiply, AbsDiff, SplitChannels, MergeChannels (v0.14.0)
+add_executable(demo_pixel_ops examples/core/demo_pixel_ops.cpp)
+target_link_libraries(demo_pixel_ops PRIVATE improc)
+
+# Filter ops demo — BilateralFilter, CenterCrop, Remap (v0.14.0)
+add_executable(demo_filter_ops examples/core/demo_filter_ops.cpp)
+target_link_libraries(demo_filter_ops PRIVATE improc)
+
+# Morphological ops demo — FloodFill, GrabCut, Watershed, DistanceTransform, Inpaint (v0.14.0)
+add_executable(demo_morphological_ops examples/core/demo_morphological_ops.cpp)
+target_link_libraries(demo_morphological_ops PRIVATE improc)
+
+# Analysis ops demo — IntegralImage, MinMaxLoc, MeanStdDev, Moments (v0.14.0)
+add_executable(demo_analysis_ops examples/core/demo_analysis_ops.cpp)
+target_link_libraries(demo_analysis_ops PRIVATE improc)
+
+# Feature ops demo — HoughLinesP, HoughCircles, MatchTemplate (v0.14.0)
+add_executable(demo_feature_ops examples/core/demo_feature_ops.cpp)
+target_link_libraries(demo_feature_ops PRIVATE improc)
+
+# Detector types demo — MSERResult, LineSet, QRResult, BarcodeResult, FaceDetection (v0.14.0)
+add_executable(demo_detector_types_usage examples/core/demo_detector_types.cpp)
+target_link_libraries(demo_detector_types_usage PRIVATE improc)
+
 # Image I/O demo (imread / imwrite)
 add_executable(demo_image_io examples/io/demo_image_io.cpp)
 target_link_libraries(demo_image_io PRIVATE improc)
@@ -386,6 +414,10 @@ target_link_libraries(demo_stereo PRIVATE improc)
 
 add_executable(demo_aruco examples/calib/demo_aruco.cpp)
 target_link_libraries(demo_aruco PRIVATE improc)
+
+# Epipolar geometry demo — FindFundamentalMat, FindEssentialMat, RecoverPose, TriangulatePoints (v0.14.0)
+add_executable(demo_epipolar examples/calib/demo_epipolar.cpp)
+target_link_libraries(demo_epipolar PRIVATE improc)
 
 # ONNX inference demo
 add_executable(demo_onnx_inference examples/ml/demo_onnx_inference.cpp)

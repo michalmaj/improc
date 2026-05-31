@@ -1,0 +1,176 @@
+{
+  "context": {
+    "date": "2026-05-31T18:51:46+02:00",
+    "host_name": "Michas-MacBook-Pro.local",
+    "executable": "/tmp/improc_bench",
+    "num_cpus": 12,
+    "mhz_per_cpu": 24,
+    "cpu_scaling_enabled": false,
+    "caches": [
+      {
+        "type": "Data",
+        "level": 1,
+        "size": 65536,
+        "num_sharing": 0
+      },
+      {
+        "type": "Instruction",
+        "level": 1,
+        "size": 131072,
+        "num_sharing": 0
+      },
+      {
+        "type": "Unified",
+        "level": 2,
+        "size": 4194304,
+        "num_sharing": 1
+      }
+    ],
+    "load_avg": [3.49561,3.31738,2.68896],
+    "library_version": "v1.9.1",
+    "library_build_type": "release",
+    "json_schema_version": 1
+  },
+  "benchmarks": [
+    {
+      "name": "BM_views_take_lazy/224/224",
+      "family_index": 0,
+      "per_family_instance_index": 0,
+      "run_name": "BM_views_take_lazy/224/224",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 1212,
+      "real_time": 5.9066058164185821e+05,
+      "cpu_time": 5.5483663366336643e+05,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_views_take_lazy/640/640",
+      "family_index": 0,
+      "per_family_instance_index": 1,
+      "run_name": "BM_views_take_lazy/640/640",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 327,
+      "real_time": 2.2389102935084691e+06,
+      "cpu_time": 2.1012079510703357e+06,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_views_take_eager/224/224",
+      "family_index": 1,
+      "per_family_instance_index": 0,
+      "run_name": "BM_views_take_eager/224/224",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 76,
+      "real_time": 9.5133601969696190e+06,
+      "cpu_time": 8.8895921052631587e+06,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_views_take_eager/640/640",
+      "family_index": 1,
+      "per_family_instance_index": 1,
+      "run_name": "BM_views_take_eager/640/640",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 21,
+      "real_time": 3.5001763907660328e+07,
+      "cpu_time": 3.2777333333333321e+07,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_views_filter_lazy/224/224",
+      "family_index": 2,
+      "per_family_instance_index": 0,
+      "run_name": "BM_views_filter_lazy/224/224",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 154,
+      "real_time": 4.7288571436006529e+06,
+      "cpu_time": 4.4326428571428517e+06,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_views_filter_lazy/640/640",
+      "family_index": 2,
+      "per_family_instance_index": 1,
+      "run_name": "BM_views_filter_lazy/640/640",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 40,
+      "real_time": 1.8228935427032411e+07,
+      "cpu_time": 1.7184000000000000e+07,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_views_filter_eager/224/224",
+      "family_index": 3,
+      "per_family_instance_index": 0,
+      "run_name": "BM_views_filter_eager/224/224",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 147,
+      "real_time": 5.0891320883188723e+06,
+      "cpu_time": 4.7978571428571418e+06,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_views_filter_eager/640/640",
+      "family_index": 3,
+      "per_family_instance_index": 1,
+      "run_name": "BM_views_filter_eager/640/640",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 42,
+      "real_time": 1.8042338307991270e+07,
+      "cpu_time": 1.6734428571428575e+07,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_views_batch/224/224",
+      "family_index": 4,
+      "per_family_instance_index": 0,
+      "run_name": "BM_views_batch/224/224",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 150818,
+      "real_time": 4.6522337062493243e+03,
+      "cpu_time": 4.6482846875041359e+03,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_views_batch/640/640",
+      "family_index": 4,
+      "per_family_instance_index": 1,
+      "run_name": "BM_views_batch/640/640",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 149888,
+      "real_time": 4.6985371334674701e+03,
+      "cpu_time": 4.6877134927412553e+03,
+      "time_unit": "ns"
+    }
+  ]
+}
