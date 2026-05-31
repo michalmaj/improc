@@ -1,0 +1,68 @@
+{
+  "context": {
+    "date": "2026-05-31T18:50:26+02:00",
+    "host_name": "Michas-MacBook-Pro.local",
+    "executable": "/tmp/improc_bench",
+    "num_cpus": 12,
+    "mhz_per_cpu": 24,
+    "cpu_scaling_enabled": false,
+    "caches": [
+      {
+        "type": "Data",
+        "level": 1,
+        "size": 65536,
+        "num_sharing": 0
+      },
+      {
+        "type": "Instruction",
+        "level": 1,
+        "size": 131072,
+        "num_sharing": 0
+      },
+      {
+        "type": "Unified",
+        "level": 2,
+        "size": 4194304,
+        "num_sharing": 1
+      }
+    ],
+    "load_avg": [5.71143,3.44238,2.66553],
+    "library_version": "v1.9.1",
+    "library_build_type": "release",
+    "json_schema_version": 1
+  },
+  "benchmarks": [
+    {
+      "name": "BM_raw_video_file_capture",
+      "family_index": 0,
+      "per_family_instance_index": 0,
+      "run_name": "BM_raw_video_file_capture",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "error_occurred": true,
+      "error_message": "video file unavailable",
+      "iterations": 0,
+      "real_time": 0.0000000000000000e+00,
+      "cpu_time": 0.0000000000000000e+00,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_improc_video_file_capture",
+      "family_index": 1,
+      "per_family_instance_index": 0,
+      "run_name": "BM_improc_video_file_capture",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "error_occurred": true,
+      "error_message": "video file unavailable",
+      "iterations": 0,
+      "real_time": 0.0000000000000000e+00,
+      "cpu_time": 0.0000000000000000e+00,
+      "time_unit": "ns"
+    }
+  ]
+}

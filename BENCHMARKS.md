@@ -2,7 +2,7 @@
 
 Measured on **Apple M4 Pro** (12-core), single thread, Release build (`-O3`).  
 All times are CPU time from [Google Benchmark](https://github.com/google/benchmark) 1.9.1.  
-Raw JSON: [`benchmarks/results/2026-05-17-baseline.json`](benchmarks/results/2026-05-17-baseline.json)
+Raw JSON: [`benchmarks/results/2026-05-31-overhead.json`](benchmarks/results/2026-05-31-overhead.json)
 
 To reproduce on your machine:
 
@@ -21,22 +21,22 @@ One representative number per namespace. Full tables with all variants are in th
 
 | Namespace | Operation | Input | Time | Notes |
 |---|---|---|---|---|
-| `core` | `GaussianBlur` | 480×640 | 82 µs | wrapper cost < 2% vs raw OpenCV |
-| `core` | `CLAHE` | 480×640 | 328 µs | wrapper cost < 1% |
-| `core` | `NLMeansDenoising` | 480×640 | **123 ms** | ⚠️ algorithmically slow — see API `@warning` |
-| `core` | `DetectORB` | 480×640 | 6.1 ms | real-time capable |
-| `core` | `DetectSIFT` | 480×640 | 13.6 ms | ⚠️ 2× slower than ORB; full pipeline 311 ms @ 1080p |
-| `core` | `DenseFarnebackFlow` | 480×640 | 17.1 ms | two-frame optical flow |
+| `core` | `GaussianBlur` | 480×640 | 88 µs | wrapper cost < 2% vs raw OpenCV |
+| `core` | `CLAHE` | 480×640 | 441 µs | wrapper cost < 4% |
+| `core` | `NLMeansDenoising` | 480×640 | **115 ms** | ⚠️ algorithmically slow — see API `@warning` |
+| `core` | `DetectORB` | 480×640 | 6.5 ms | real-time capable |
+| `core` | `DetectSIFT` | 480×640 | 14.3 ms | ⚠️ 2× slower than ORB; full pipeline 316 ms @ 1080p |
+| `core` | `DenseFarnebackFlow` | 480×640 | 16.7 ms | two-frame optical flow |
 | `core` | `DenseDISFlow` (UltraFast) | 480×640 | 0.9 ms | 3 presets: UltraFast/Fast/Medium |
-| `core` | `Add` | 480×640 | 18.5 µs | wrapper overhead ≈0 ns vs raw |
-| `core` | `SobelGradient` | 480×640 | 99.6 µs | returns CV_16S dx+dy pair |
-| `core` | `DetectFAST` | 480×640 | 1.90 ms | FAST corner detector; threshold=10 |
-| `calib` | `Undistort` | 480×640 | 1.89 ms | wrapper overhead ≈ 0 ns vs raw |
-| `calib` | `StereoBM` | 480×640 | 3.81 ms | disparity map CV_16S |
-| `ml` | `Compose` (3 ops) | 224×224 | 730 µs | ~1,370 img/s |
-| `ml` | `IouTracker` | 100 dets | 17.5 µs | SortTracker: 254 µs — IouTracker is fastest when Kalman not needed |
-| `views` | `transform \| take(16/256)` | 224×224 | 561 µs lazy · 9,061 µs eager | **16× lazy speedup** |
-| `threading` | `FramePipeline` | 16 × 480×640 | 3.6× @ 4 threads | 89% parallel efficiency |
+| `core` | `Add` | 480×640 | 23.3 µs | wrapper overhead ≈0 ns vs raw |
+| `core` | `SobelGradient` | 480×640 | 98.3 µs | returns CV_16S dx+dy pair |
+| `core` | `DetectFAST` | 480×640 | 1.9 ms | FAST corner detector; threshold=10 |
+| `calib` | `Undistort` | 480×640 | 1.9 ms | wrapper overhead ≈ 0 ns vs raw |
+| `calib` | `StereoBM` | 480×640 | 3.8 ms | disparity map CV_16S |
+| `ml` | `Compose` (3 ops) | 224×224 | 728 µs | ~1,373 img/s |
+| `ml` | `IouTracker` | 100 dets | 17.1 µs | SortTracker: 256 µs — IouTracker is fastest when Kalman not needed |
+| `views` | `transform \| take(16/256)` | 224×224 | 591 µs lazy · 9,500 µs eager | **16× lazy speedup** |
+| `threading` | `FramePipeline` | 16 × 480×640 | 3.7× @ 4 threads | 88% parallel efficiency |
 
 ---
 
@@ -51,17 +51,17 @@ All ops measured at 480×640 unless noted. `delta = improc − raw`; negative = 
 
 | Op | raw (µs) | improc++ (µs) | delta (µs) |
 |---|---|---|---|
-| `Resize` | 89 | 90 | +1 |
-| `GaussianBlur` | 81 | 82 | +1 |
-| `GammaCorrection` | 69 | 71 | +2 |
+| `Resize` | 90 | 91 | +1 |
+| `GaussianBlur` | 87 | 88 | +1 |
+| `GammaCorrection` | 59 | 60 | +1 |
 | `ToFloat32C3` | 58 | 58 | 0 |
-| `NormalizeTo` | 177 | 123 | **−54** |
-| `WarpAffine` | 186 | 186 | 0 |
-| `Invert` 480×640 | 14 | 16 | +2 |
-| `Invert` 1080×1920 | 97 | 101 | +4 |
-| `InRange` 480×640 | 115 | 110 | −5 |
-| `ToLAB` 480×640 | 103 | 109 | +6 |
-| `ToYCrCb` 480×640 | 52 | 61 | +9 |
+| `NormalizeTo` | 173 | 123 | **−50** |
+| `WarpAffine` | 195 | 195 | 0 |
+| `Invert` 480×640 | 14 | 15 | +1 |
+| `Invert` 1080×1920 | 98 | 98 | 0 |
+| `InRange` 480×640 | 112 | 112 | 0 |
+| `ToLAB` 480×640 | 112 | 111 | −1 |
+| `ToYCrCb` 480×640 | 58 | 58 | 0 |
 
 `NormalizeTo` is faster than the naive raw equivalent because improc++ writes in-place via `convertTo` to the same buffer, avoiding a 600 KB heap allocation per call. See [engineering story 2](#2--ml-pipeline-overhead-17--eliminated).
 
@@ -69,24 +69,24 @@ All ops measured at 480×640 unless noted. `delta = improc − raw`; negative = 
 
 | Op | 480×640 raw | 480×640 improc | 1080×1920 raw | 1080×1920 improc |
 |---|---|---|---|---|
-| `MorphOpen` | 57 | 57 | 315 | 312 |
-| `MorphClose` | 56 | 57 | 312 | 312 |
-| `MorphGradient` | 63 | 64 | 354 | 355 |
-| `TopHat` | 63 | 63 | 352 | 353 |
-| `BlackHat` | 63 | 63 | 353 | 352 |
+| `MorphOpen` | 56 | 56 | 309 | 311 |
+| `MorphClose` | 56 | 56 | 307 | 305 |
+| `MorphGradient` | 64 | 65 | 349 | 350 |
+| `TopHat` | 63 | 64 | 347 | 352 |
+| `BlackHat` | 63 | 63 | 357 | 352 |
 
 ### Heavier ops (µs)
 
 | Op | 480×640 raw | 480×640 improc | 1080×1920 raw | 1080×1920 improc |
 |---|---|---|---|---|
-| `AdaptiveThreshold` | 361 | 362 | 2,436 | 2,439 |
-| `HistogramEqualization` | 445 | 439 | 1,284 | 1,319 |
-| `CLAHE` | 339 | 328 | — | — |
-| `BilateralFilter` | 1,383 | 1,385 | — | — |
-| `HarrisCorner` | 822 | 827 | 6,039 | 6,153 |
-| `PyrDown` | 127 | 128 | 321 | 335 |
-| `PyrUp` | 605 | 607 | 4,417 | 4,418 |
-| `NLMeansDenoising` ⚠️ | 122,283 | 122,525 | — | — |
+| `AdaptiveThreshold` | 358 | 359 | 2,440 | 2,440 |
+| `HistogramEqualization` | 524 | 505 | 1,534 | 1,481 |
+| `CLAHE` | 427 | 441 | — | — |
+| `BilateralFilter` | 1,400 | 1,400 | — | — |
+| `HarrisCorner` | 816 | 830 | 6,100 | 6,100 |
+| `PyrDown` | 150 | 150 | 355 | 358 |
+| `PyrUp` | 602 | 603 | 4,500 | 4,500 |
+| `NLMeansDenoising` ⚠️ | 117,200 | 115,400 | — | — |
 
 NLMeansDenoising at 1080×1920 has only 5 iterations due to its cost (~135–250 ms range); results vary significantly between runs on that size.
 
@@ -101,30 +101,30 @@ All times in µs. `e2e` = detect + describe + match (brute-force).
 
 | Algorithm | 480×640 raw | 480×640 improc | 1080×1920 raw | 1080×1920 improc |
 |---|---|---|---|---|
-| ORB | 6,172 | 6,092 | 39,392 | 39,288 |
-| SIFT ⚠️ | 13,305 | 13,615 | 89,298 | 89,477 |
-| AKAZE | 8,562 | 8,589 | 49,873 | 47,602 |
+| ORB | 6,400 | 6,500 | 41,300 | 40,700 |
+| SIFT ⚠️ | 13,800 | 14,300 | 93,400 | 92,500 |
+| AKAZE | 9,400 | 9,300 | 53,100 | 52,800 |
 
 ### Description (µs)
 
 | Algorithm | 480×640 raw | 480×640 improc | 1080×1920 raw | 1080×1920 improc |
 |---|---|---|---|---|
-| ORB | 1,305 | 1,277 | 6,115 | 6,123 |
-| SIFT ⚠️ | 9,201 | 9,150 | 63,236 | 63,145 |
+| ORB | 1,400 | 1,400 | 6,500 | 6,500 |
+| SIFT ⚠️ | 9,400 | 9,400 | 65,500 | 64,600 |
 
 ### Matching (µs)
 
 | Algorithm | raw | improc++ |
 |---|---|---|
-| BruteForce | 630 | 620 |
-| FLANN | 2,922 | 2,924 |
+| BruteForce | 659 | 690 |
+| FLANN | 3,000 | 3,000 |
 
 ### End-to-end pipeline (detect + describe + match, µs)
 
 | Algorithm | 480×640 | 1080×1920 |
 |---|---|---|
-| ORB | 15,638 | 93,384 |
-| SIFT ⚠️ | 49,250 | 311,360 |
+| ORB | 16,600 | 97,300 |
+| SIFT ⚠️ | 50,200 | 316,500 |
 
 </details>
 
@@ -135,9 +135,9 @@ Input: binary `Image<Gray>` (random noise → threshold). Times in µs.
 
 | Op | 480×640 raw | 480×640 improc | 1080×1920 raw | 1080×1920 improc |
 |---|---|---|---|---|
-| `FindContours` | 993 | 906 | 6,334 | 6,289 |
-| `ConnectedComponents` | 544 | 571 | 2,449 | 2,495 |
-| `DistanceTransform` | 1,010 | 1,053 | 7,263 | 7,289 |
+| `FindContours` | 937 | 948 | 6,700 | 6,800 |
+| `ConnectedComponents` | 556 | 562 | 2,600 | 2,600 |
+| `DistanceTransform` | 1,000 | 994 | 7,600 | 7,500 |
 
 </details>
 
@@ -152,35 +152,35 @@ Wrapper overhead is within measurement noise for all ops — the algorithms domi
 
 | Op | raw | improc++ |
 |---|---|---|
-| DenseFarnebackFlow | 17.0 | 17.2 |
-| DenseDISFlow (UltraFast) | 0.832 | 0.837 |
-| SparseLKFlow | 0.533 | 0.533 |
-| PhaseCorrelate | 3.200 | 3.263 |
+| DenseFarnebackFlow | 16.7 | 16.7 |
+| DenseDISFlow (UltraFast) | 0.860 | 0.860 |
+| SparseLKFlow | 0.521 | 0.518 |
+| PhaseCorrelate | 3.200 | 3.200 |
 
 **Tracking ops (µs)**
 
 | Op | raw | improc++ |
 |---|---|---|
-| CamShift | 12.5 | 12.5 |
-| MeanShift | 5.8 | 5.7 |
+| CamShift | 12.4 | 12.3 |
+| MeanShift | 5.6 | 5.7 |
 
 ### Throughput — optical flow (ms/frame)
 
 | Op | 480×640 | 1080×1920 |
 |---|---|---|
-| DenseFarnebackFlow | 17.1 | 117.5 |
-| DenseDISFlow UltraFast | 0.9 | 2.9 |
-| DenseDISFlow Fast | 3.2 | 12.5 |
-| DenseDISFlow Medium | 9.2 | 35.9 |
-| SparseLKFlow | 0.5 | 1.3 |
-| PhaseCorrelate | 3.3 | 26.3 |
+| DenseFarnebackFlow | 16.7 | 115.8 |
+| DenseDISFlow UltraFast | 0.9 | 3.2 |
+| DenseDISFlow Fast | 3.3 | 14.9 |
+| DenseDISFlow Medium | 10.2 | 40.0 |
+| SparseLKFlow | 0.5 | 1.4 |
+| PhaseCorrelate | 3.2 | 26.0 |
 
 ### Throughput — tracking (µs/call)
 
 | Op | 480×640 | 1080×1920 |
 |---|---|---|
-| CamShift | 31 | 246 |
-| MeanShift | 25 | 215 |
+| CamShift | 30 | 244 |
+| MeanShift | 25 | 216 |
 
 </details>
 
@@ -193,58 +193,58 @@ Wrapper overhead is within measurement noise for all ops.
 
 | Op | raw | improc++ |
 |---|---|---|
-| Add | 18.7 | 18.5 |
-| Subtract | 19.3 | 19.6 |
-| Multiply | 19.1 | 19.2 |
-| Divide | 182.5 | 181.6 |
+| Add | 23.3 | 23.4 |
+| Subtract | 23.5 | 23.5 |
+| Multiply | 23.5 | 23.4 |
+| Divide | 178.5 | 178.3 |
 
 ### Arithmetic throughput (µs)
 
 | Op | 480×640 | 1080×1920 |
 |---|---|---|
-| Add | 18.5 | 121.7 |
-| Subtract | 19.6 | 121.0 |
-| Multiply | 19.2 | 123.6 |
-| Divide | 181.6 | 1,232.6 |
+| Add | 23.3 | 158.4 |
+| Subtract | 23.5 | 158.2 |
+| Multiply | 23.4 | 152.8 |
+| Divide | 178.3 | 1,200 |
 
 ### Filter overhead (µs, 480×640 CV_8UC3)
 
 | Op | raw | improc++ |
 |---|---|---|
-| BoxFilter 5×5 | 136.3 | 136.0 |
-| Convolve 3×3 | 540.8 | 543.5 |
+| BoxFilter 5×5 | 134.8 | 135.4 |
+| Convolve 3×3 | 540.3 | 536.0 |
 
 ### Filter throughput (µs)
 
 | Op | 480×640 | 1080×1920 |
 |---|---|---|
-| BoxFilter 5×5 | 136.0 | 929.4 |
-| Convolve 3×3 | 543.5 | 3,646.1 |
+| BoxFilter 5×5 | 135.4 | 913.8 |
+| Convolve 3×3 | 536.0 | 3,600 |
 
 ### Gradient & conversion (µs, 480×640 CV_8UC1)
 
 | Op | raw | improc++ |
 |---|---|---|
-| SobelGradient | 99.4 | 99.6 |
-| ScharrGradient | 128.8 | 128.7 |
-| ConvertScaleAbs | 31.7 | 32.0 |
+| SobelGradient | 97.8 | 98.3 |
+| ScharrGradient | 127.0 | 126.9 |
+| ConvertScaleAbs | 31.4 | 31.5 |
 
 ### Channel ops overhead (µs)
 
 | Op | 480×640 raw | 480×640 improc | 1080×1920 raw | 1080×1920 improc |
 |---|---|---|---|---|
-| SplitChannels | 25.4 | 25.4 | 175.9 | 175.5 |
-| MergeChannels | 19.9 | 19.9 | 133.2 | 134.2 |
+| SplitChannels | 31.4 | 31.4 | 211.0 | 210.7 |
+| MergeChannels | 19.8 | 19.8 | 131.9 | 132.0 |
 
 ### Analysis ops (µs, 480×640 CV_8UC1)
 
 | Op | raw | improc++ |
 |---|---|---|
-| IntegralImage | 45.0 | 44.9 |
-| MinMaxLoc | 10.0 | 10.0 |
-| MeanStdDev | 56.8 | 57.1 |
-| CountNonZero | 9.5 | 9.5 |
-| Reduce (Sum) | 52.5 | 52.2 |
+| IntegralImage | 43.5 | 43.5 |
+| MinMaxLoc | 9.9 | 9.9 |
+| MeanStdDev | 52.7 | 52.8 |
+| CountNonZero | 9.0 | 9.0 |
+| Reduce (Sum) | 58.2 | 57.2 |
 
 </details>
 
@@ -253,8 +253,8 @@ Wrapper overhead is within measurement noise for all ops.
 
 | Implementation | Time (ms) | Throughput (img/s) |
 |---|---|---|
-| improc++ pipeline | 0.453 | 2,207 |
-| Raw OpenCV (equivalent) | 0.454 | 2,200 |
+| improc++ pipeline | 0.452 | 2,212 |
+| Raw OpenCV (equivalent) | 0.456 | 2,193 |
 
 improc++ pipeline is on par with hand-written OpenCV code under equivalent allocation conditions.
 
@@ -268,14 +268,14 @@ Times in µs. All ops take `Image<BGR>` and an `std::mt19937` rng.
 | Op | 224×224 | 640×640 |
 |---|---|---|
 | `RandomFlip` | 7 | 60 |
-| `RandomRotate` | 143 | 209 |
-| `ColorJitter` | 376 | 2,363 |
-| `RandomGaussianNoise` | 361 | 2,959 |
-| `BBoxCompose` | 149 | 283 |
+| `RandomRotate` | 147 | 225 |
+| `ColorJitter` | 336 | 2,400 |
+| `RandomGaussianNoise` | 358 | 2,900 |
+| `BBoxCompose` | 148 | 297 |
 | `RandomApply` | 4 | 30 |
-| `MixUp` | 23 | 183 |
+| `MixUp` | 23 | 182 |
 | `CutMix` | 4 | 28 |
-| `Compose` (RandomFlip + ColorJitter + GaussianNoise) | 730 | 5,377 |
+| `Compose` (RandomFlip + ColorJitter + GaussianNoise) | 728 | 5,400 |
 
 </details>
 
@@ -286,10 +286,10 @@ Times in µs. All ops take `Image<BGR>` and an `std::mt19937` rng.
 |---|---|---|
 | `ClassEval::update()` | — | 1.5 ns |
 | `DetectionEval::update()` | 5 dets | 2.9 µs |
-| `DetectionEval::update()` | 20 dets | 16.1 µs |
-| `DetectionEval::update()` | 50 dets | 71.8 µs |
-| `SegEval::update()` | 224×224 mask | 20.3 µs |
-| `SegEval::update()` | 640×640 mask | 159.3 µs |
+| `DetectionEval::update()` | 20 dets | 15.7 µs |
+| `DetectionEval::update()` | 50 dets | 69.2 µs |
+| `SegEval::update()` | 224×224 mask | 20.0 µs |
+| `SegEval::update()` | 640×640 mask | 157.4 µs |
 
 </details>
 
@@ -300,11 +300,11 @@ Times in µs per `update()` call. All trackers are drop-in replaceable.
 
 | Tracker | 10 dets | 50 dets | 100 dets |
 |---|---|---|---|
-| `IouTracker` | 0.4 | 4.6 | **17.5** |
-| `SortTracker` | 22.8 | 117.7 | 253.8 |
-| `ByteTracker` | 22.8 | 117.6 | 252.0 |
+| `IouTracker` | 0.4 | 4.6 | **17.1** |
+| `SortTracker` | 22.8 | 118.4 | 256.1 |
+| `ByteTracker` | 23.1 | 118.4 | 256.4 |
 
-`IouTracker` is fastest when Kalman prediction is not needed (e.g. high-confidence detections, stable scenes). `SortTracker` and `ByteTracker` add motion prediction at ~14× the cost at 100 detections.
+`IouTracker` is fastest when Kalman prediction is not needed (e.g. high-confidence detections, stable scenes). `SortTracker` and `ByteTracker` add motion prediction at ~15× the cost at 100 detections.
 
 </details>
 
@@ -315,8 +315,8 @@ Times in µs per `update()` call. All trackers are drop-in replaceable.
 
 | Variant | 224×224 | 640×640 |
 |---|---|---|
-| `transform \| take(16/256)` lazy | 561 µs | 1,939 µs |
-| `transform \| take(16/256)` eager (all 256) | 9,061 µs | 30,179 µs |
+| `transform \| take(16/256)` lazy | 591 µs | 2,200 µs |
+| `transform \| take(16/256)` eager (all 256) | 9,500 µs | 35,000 µs |
 | **Speedup** | **16×** | **16×** |
 
 Lazy views execute only the work you consume. With `take(N)`, exactly N transforms run regardless of collection size.
@@ -325,8 +325,8 @@ Lazy views execute only the work you consume. With `take(N)`, exactly N transfor
 
 | Variant | 224×224 | 640×640 |
 |---|---|---|
-| `filter \| transform` lazy | 4,540 µs | 16,112 µs |
-| `transform \| filter` eager | 4,835 µs | 16,326 µs |
+| `filter \| transform` lazy | 4,700 µs | 18,200 µs |
+| `transform \| filter` eager | 5,100 µs | 18,000 µs |
 
 Filter-before-transform avoids processing elements that will be discarded. Speedup depends on the filter selectivity; here half of images pass the filter.
 
@@ -341,56 +341,56 @@ Filter-before-transform avoids processing elements that will be discarded. Speed
 
 | Mode | Wall time (µs) | Speedup |
 |---|---|---|
-| Sequential | 1,862 | 1.0× |
-| 2 threads | 975 | 1.91× |
-| 4 threads | 513 | **3.63×** |
-| 12 threads | 312 | 5.97× |
+| Sequential | 1,900 | 1.0× |
+| 2 threads | 971 | 1.96× |
+| 4 threads | 510 | **3.73×** |
+| 12 threads | 306 | 6.21× |
 
 ### ThreadPool::submit() latency (trivial task)
 
 | Threads | CPU time |
 |---|---|
-| 1 | 2.7 µs |
-| 2 | 2.8 µs |
-| 4 | 2.8 µs |
-| 12 | 2.7 µs |
+| 1 | 5.2 µs |
+| 2 | 5.1 µs |
+| 4 | 5.3 µs |
+| 12 | 5.3 µs |
 
 </details>
 
 <details>
 <summary><strong>v0.9.0 Detectors (improc::core)</strong> — DetectFAST · DetectBlob · DetectMSER · DetectLines · DetectQR · DetectBarcode · face (model-gated)</summary>
 
-All overhead times in ns at 480×640. Throughput in µs.
+All overhead times at 480×640. Throughput in µs.
 
 ### Overhead (480×640)
 
 | Op | raw | improc++ | delta |
 |---|---|---|---|
-| `DetectFAST` | 1927 µs | 1901 µs | ≈ 0 ns |
-| `DetectBlob` | 790 µs | 798 µs | ≈ 0 ns |
-| `DetectMSER` | 3670 µs | 3659 µs | ≈ 0 ns |
-| `DetectLines` | 3048 µs | 3109 µs | ≈ 0 ns |
-| `RecognizeFace::match` | 237 ns | 239 ns | +2 ns |
+| `DetectFAST` | 1,900 µs | 1,900 µs | ≈ 0 ns |
+| `DetectBlob` | 853 µs | 856 µs | ≈ 0 ns |
+| `DetectMSER` | 3,800 µs | 3,800 µs | ≈ 0 ns |
+| `DetectLines` | 3,200 µs | 3,200 µs | ≈ 0 ns |
+| `RecognizeFace::match` | 229 ns | 230 ns | +1 ns |
 
 ### Throughput — SD (480×640, µs)
 
 | Op | Time |
 |---|---|
-| `DetectFAST` | 2549 µs |
-| `DetectBlob` | 788 µs |
-| `DetectMSER` | 3599 µs |
-| `DetectLines` | 3112 µs |
-| `DetectQR` | 5775 µs |
-| `DetectBarcode` | 1355 µs |
+| `DetectFAST` | 2,100 µs |
+| `DetectBlob` | 848 µs |
+| `DetectMSER` | 3,800 µs |
+| `DetectLines` | 3,200 µs |
+| `DetectQR` | 6,300 µs |
+| `DetectBarcode` | 1,500 µs |
 
 ### Throughput — HD (720×1280, µs)
 
 | Op | Time |
 |---|---|
-| `DetectFAST` | 6145 µs |
-| `DetectBlob` | 1405 µs |
-| `DetectMSER` | 11536 µs |
-| `DetectLines` | 9135 µs |
+| `DetectFAST` | 6,300 µs |
+| `DetectBlob` | 1,500 µs |
+| `DetectMSER` | 12,300 µs |
+| `DetectLines` | 9,800 µs |
 
 ### Face (model-gated, 480×640)
 
@@ -408,66 +408,80 @@ All overhead times in ns at 480×640. Throughput in µs.
 
 | Op | SD (60px cell) | HD (90px cell) |
 |---|---|---|
-| `FindChessboardCorners` | 910 µs | 1267 µs |
-| `FindChessboardCornersSB` | 7762 µs | 14342 µs |
-| `RefineCorners` | 46 µs | 50 µs |
+| `FindChessboardCorners` | 2,087 µs | 1,266 µs |
+| `FindChessboardCornersSB` | 9,384 µs | 16,212 µs |
+| `RefineCorners` | 47 µs | 47 µs |
 
 ### Calibration (one-shot, 10 synthetic views)
 
 | Op | Time |
 |---|---|
-| `CalibrateCamera` | 33.9 ms |
-| `StereoCalibrate` | 2.83 ms |
+| `CalibrateCamera` | 34.7 ms |
+| `StereoCalibrate` | 2.86 ms |
 
 ### Undistort
 
 | Op | SD (480×640) | HD (720×1280) |
 |---|---|---|
-| `Undistort` raw | 1872 µs | 5758 µs |
-| `Undistort` improc++ | 1890 µs | 5745 µs |
-| `UndistortMap` (init) | 201 µs | 445 µs |
+| `Undistort` raw | 1,917 µs | 6,197 µs |
+| `Undistort` improc++ | 1,924 µs | 6,191 µs |
+| `UndistortMap` (init) | 225 µs | 465 µs |
 
 ### Pose estimation
 
 | Op | Input | Time |
 |---|---|---|
-| `SolvePnP` | 6 pts | 28.6 µs |
-| `SolvePnPRansac` | 20 pts, 20% outliers | 213 µs |
-| `ProjectPoints` | 50 pts | 0.93 µs |
-| `ProjectPoints` | 500 pts | 3.31 µs |
-| `ProjectPoints` | 5000 pts | 29.1 µs |
+| `SolvePnP` | 6 pts | 31 µs |
+| `SolvePnPRansac` | 20 pts, 20% outliers | 209 µs |
+| `ProjectPoints` | 50 pts | 1 µs |
+| `ProjectPoints` | 500 pts | 3 µs |
+| `ProjectPoints` | 5000 pts | 29 µs |
 
 ### Stereo (SD 480×640)
 
 | Op | Time |
 |---|---|
-| `StereoBM` | 3.81 ms |
-| `StereoSGBM` | 21.7 ms |
-| `StereoRectify` | 7.7 µs |
-| `ReprojectTo3D` | 470 µs |
+| `StereoBM` | 3.79 ms |
+| `StereoSGBM` | 21.4 ms |
+| `StereoRectify` | 8 µs |
+| `ReprojectTo3D` | 463 µs |
 
 ### Epipolar geometry
 
 | Op | 20 pts | 200 pts |
 |---|---|---|
-| `FindFundamentalMat` | 36 µs | 27 µs |
-| `FindEssentialMat` | 311 µs | 3858 µs |
-| `TriangulatePoints` | 134 µs | 1417 µs |
+| `FindFundamentalMat` | 35 µs | 26 µs |
+| `FindEssentialMat` | 302 µs | 3,757 µs |
+| `TriangulatePoints` | 131 µs | 1,404 µs |
 
 | Op | Input | Time |
 |---|---|---|
-| `RecoverPose` | 50 pts | 147 µs |
+| `RecoverPose` | 50 pts | 144 µs |
 
 ### ArUco
 
 | Op | Input | Time |
 |---|---|---|
-| `DetectAruco` raw | 400×400 scene | 174 µs |
-| `DetectAruco` improc++ | 400×400 scene | 176 µs |
-| `GenerateAruco` | 100×100 px | 3.0 µs |
-| `GenerateAruco` | 200×200 px | 9.4 µs |
-| `ArucoPose` | 1 marker | 4.2 µs |
-| `CharucoBoard` | 5×7, 80px | 1.26 ms |
+| `DetectAruco` raw | 400×400 scene | 275 µs |
+| `DetectAruco` improc++ | 400×400 scene | 276 µs |
+| `GenerateAruco` | 100×100 px | 3 µs |
+| `GenerateAruco` | 200×200 px | 10 µs |
+| `ArucoPose` | 1 marker | 4 µs |
+| `CharucoBoard` | 5×7, 80px | 1.51 ms |
+
+</details>
+
+<details>
+<summary><strong>v0.14.0 Background subtraction (improc::core)</strong> — BackgroundSubtractMOG2 · BackgroundSubtractKNN</summary>
+
+Wrapper overhead ≈ 0 for both algorithms. Times in µs/frame.
+
+| Op | 480×640 raw | 480×640 improc | 1080×1920 raw | 1080×1920 improc |
+|---|---|---|---|---|
+| `BackgroundSubtractMOG2` | 287 | 288 | 1,800 | 1,800 |
+| `BackgroundSubtractKNN` | 332 | 331 | 2,000 | 1,800 |
+
+Raw JSON: [`benchmarks/results/2026-05-31-background-subtract.json`](benchmarks/results/2026-05-31-background-subtract.json)
 
 </details>
 
@@ -524,8 +538,8 @@ present in real production code.
 
 | Implementation | Before | After |
 |---|---|---|
-| improc++ | 0.571 ms · 1,752 img/s | 0.453 ms · 2,207 img/s |
-| Raw OpenCV | 0.477 ms · 2,097 img/s | 0.454 ms · 2,200 img/s |
+| improc++ | 0.571 ms · 1,752 img/s | 0.452 ms · 2,212 img/s |
+| Raw OpenCV | 0.477 ms · 2,097 img/s | 0.456 ms · 2,193 img/s |
 
 improc++ is now on par with the raw baseline under equivalent conditions.
 
@@ -547,8 +561,8 @@ was correct all along — the benchmark was the issue.
 
 | Variant | 224×224 | 640×640 |
 |---|---|---|
-| `transform \| take(16/256)` **lazy** | 561 µs | 1,939 µs |
-| `transform \| take(16/256)` **eager** | 9,061 µs | 30,179 µs |
+| `transform \| take(16/256)` **lazy** | 591 µs | 2,200 µs |
+| `transform \| take(16/256)` **eager** | 9,500 µs | 35,000 µs |
 | Speedup | **16×** | **16×** |
 
 <details>
@@ -561,14 +575,16 @@ was correct all along — the benchmark was the issue.
 
 | Op | Time | Notes |
 |---|---|---|
-| EdgePreservingFilter | 15.7 ms | Recursive filter (default) |
-| DetailEnhance | 12.8 ms | |
-| Stylize | 58.6 ms | |
-| PencilSketch | 14.3 ms | Returns {gray, color} |
-| SeamlessClone | 10.3 ms | Normal clone mode |
-| MergeHDR (Mertens) | 3.5 ms | 3 frames, 5 iterations |
-| ToneMap (Reinhard) | 2.66 ms | Float32C3→BGR |
-| Stitch | 1.81 ms | 2-image panorama, 5 iterations |
+| EdgePreservingFilter | 14.7 ms | Recursive filter (default) |
+| DetailEnhance | 18.5 ms | |
+| Stylize | 58.0 ms | |
+| PencilSketch | 14.0 ms | Returns {gray, color} |
+| SeamlessClone | 10.5 ms | Normal clone mode |
+| MergeHDR (Mertens) | 3.6 ms | 3 frames, 5 iterations |
+| ToneMap (Reinhard) | 2.6 ms | Float32C3→BGR |
+| Stitch | 2.1 ms | 2-image panorama, 5 iterations |
+
+Raw JSON: [`benchmarks/results/2026-05-31-photo.json`](benchmarks/results/2026-05-31-photo.json)
 
 </details>
 
@@ -581,27 +597,29 @@ was correct all along — the benchmark was the issue.
 
 | Op | Time | Notes |
 |---|---|---|
-| PSNR | 426 µs | Mean over 3 channels |
-| SSIM | 11.4 ms | Gaussian window (11×11, σ=1.5) |
-| GMSD | 2.18 ms | Prewitt gradient, grayscale |
-| MSE | 429 µs | Mean over 3 channels |
+| PSNR | 458 µs | Mean over 3 channels |
+| SSIM | 11.6 ms | Gaussian window (11×11, σ=1.5) |
+| GMSD | 2.3 ms | Prewitt gradient, grayscale |
+| MSE | 461 µs | Mean over 3 channels |
 
 ### Perceptual hashing — SD (480×640)
 
 | Op | Time | Hash size | Notes |
 |---|---|---|---|
-| AverageHash | 100 µs | 8 B (64 bits) | Hamming distance |
-| PHash | 96 µs | 8 B (64 bits) | DCT-based, Hamming |
-| MarrHildrethHash | 981 µs | 72 B (576 bits) | LoG zero-crossing, Hamming |
-| RadialVarianceHash | 1.02 ms | 40 × f64 | L2 distance |
-| ColorMomentHash | 169 µs | 42 × f64 | L2 distance |
-| BlockMeanHash | 1.05 ms | 32 B (256 bits) | 16×16 blocks, Hamming |
+| AverageHash | 110 µs | 8 B (64 bits) | Hamming distance |
+| PHash | 106 µs | 8 B (64 bits) | DCT-based, Hamming |
+| MarrHildrethHash | 985 µs | 72 B (576 bits) | LoG zero-crossing, Hamming |
+| RadialVarianceHash | 1.1 ms | 40 × f64 | L2 distance |
+| ColorMomentHash | 175 µs | 42 × f64 | L2 distance |
+| BlockMeanHash | 854 µs | 32 B (256 bits) | 16×16 blocks, Hamming |
 
 ### Distance overhead (480×640 pre-hashed)
 
 | | Time |
 |---|---|
-| `PHash::distance` (Hamming) | 96 ns |
+| `PHash::distance` (Hamming) | 108 ns |
 | `RadialVarianceHash::distance` (L2) | 36 ns |
+
+Raw JSON: [`benchmarks/results/2026-05-31-quality.json`](benchmarks/results/2026-05-31-quality.json)
 
 </details>

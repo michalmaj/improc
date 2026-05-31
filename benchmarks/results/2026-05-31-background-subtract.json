@@ -1,0 +1,148 @@
+{
+  "context": {
+    "date": "2026-05-31T18:48:15+02:00",
+    "host_name": "Michas-MacBook-Pro.local",
+    "executable": "/tmp/improc_bench",
+    "num_cpus": 12,
+    "mhz_per_cpu": 24,
+    "cpu_scaling_enabled": false,
+    "caches": [
+      {
+        "type": "Data",
+        "level": 1,
+        "size": 65536,
+        "num_sharing": 0
+      },
+      {
+        "type": "Instruction",
+        "level": 1,
+        "size": 131072,
+        "num_sharing": 0
+      },
+      {
+        "type": "Unified",
+        "level": 2,
+        "size": 4194304,
+        "num_sharing": 1
+      }
+    ],
+    "load_avg": [2.45752,2.43164,2.25586],
+    "library_version": "v1.9.1",
+    "library_build_type": "release",
+    "json_schema_version": 1
+  },
+  "benchmarks": [
+    {
+      "name": "BM_raw_background_subtract_mog2/480/640",
+      "family_index": 0,
+      "per_family_instance_index": 0,
+      "run_name": "BM_raw_background_subtract_mog2/480/640",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 2513,
+      "real_time": 2.8688211303087190e+05,
+      "cpu_time": 2.7599363310783909e+05,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_raw_background_subtract_mog2/1080/1920",
+      "family_index": 0,
+      "per_family_instance_index": 1,
+      "run_name": "BM_raw_background_subtract_mog2/1080/1920",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 424,
+      "real_time": 1.7646871087633355e+06,
+      "cpu_time": 1.5893773584905660e+06,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_improc_background_subtract_mog2/480/640",
+      "family_index": 1,
+      "per_family_instance_index": 0,
+      "run_name": "BM_improc_background_subtract_mog2/480/640",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 2507,
+      "real_time": 2.8798716912870039e+05,
+      "cpu_time": 2.7825209413641802e+05,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_improc_background_subtract_mog2/1080/1920",
+      "family_index": 1,
+      "per_family_instance_index": 1,
+      "run_name": "BM_improc_background_subtract_mog2/1080/1920",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 428,
+      "real_time": 1.7767780374465771e+06,
+      "cpu_time": 1.6265794392523351e+06,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_raw_background_subtract_knn/480/640",
+      "family_index": 2,
+      "per_family_instance_index": 0,
+      "run_name": "BM_raw_background_subtract_knn/480/640",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 2078,
+      "real_time": 3.3210312373509508e+05,
+      "cpu_time": 3.2080991337824898e+05,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_raw_background_subtract_knn/1080/1920",
+      "family_index": 2,
+      "per_family_instance_index": 1,
+      "run_name": "BM_raw_background_subtract_knn/1080/1920",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 294,
+      "real_time": 2.0463093806400287e+06,
+      "cpu_time": 1.7266972789115640e+06,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_improc_background_subtract_knn/480/640",
+      "family_index": 3,
+      "per_family_instance_index": 0,
+      "run_name": "BM_improc_background_subtract_knn/480/640",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 2071,
+      "real_time": 3.3137449686191097e+05,
+      "cpu_time": 3.2097585707387747e+05,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_improc_background_subtract_knn/1080/1920",
+      "family_index": 3,
+      "per_family_instance_index": 1,
+      "run_name": "BM_improc_background_subtract_knn/1080/1920",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 410,
+      "real_time": 1.8317484756840803e+06,
+      "cpu_time": 1.5556999999999984e+06,
+      "time_unit": "ns"
+    }
+  ]
+}

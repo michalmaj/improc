@@ -1,0 +1,120 @@
+{
+  "context": {
+    "date": "2026-05-31T18:50:51+02:00",
+    "host_name": "Michas-MacBook-Pro.local",
+    "executable": "/tmp/improc_bench",
+    "num_cpus": 12,
+    "mhz_per_cpu": 24,
+    "cpu_scaling_enabled": false,
+    "caches": [
+      {
+        "type": "Data",
+        "level": 1,
+        "size": 65536,
+        "num_sharing": 0
+      },
+      {
+        "type": "Instruction",
+        "level": 1,
+        "size": 131072,
+        "num_sharing": 0
+      },
+      {
+        "type": "Unified",
+        "level": 2,
+        "size": 4194304,
+        "num_sharing": 1
+      }
+    ],
+    "load_avg": [5.62891,3.58643,2.73584],
+    "library_version": "v1.9.1",
+    "library_build_type": "release",
+    "json_schema_version": 1
+  },
+  "benchmarks": [
+    {
+      "name": "BM_class_eval_update",
+      "family_index": 0,
+      "per_family_instance_index": 0,
+      "run_name": "BM_class_eval_update",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 462592766,
+      "real_time": 1.5212354183967445e+00,
+      "cpu_time": 1.5199891820184668e+00,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_detection_eval_update/5",
+      "family_index": 1,
+      "per_family_instance_index": 0,
+      "run_name": "BM_detection_eval_update/5",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 241171,
+      "real_time": 2.9232263292491430e+03,
+      "cpu_time": 2.9194015864262306e+03,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_detection_eval_update/20",
+      "family_index": 1,
+      "per_family_instance_index": 1,
+      "run_name": "BM_detection_eval_update/20",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 44702,
+      "real_time": 1.5677397902854113e+04,
+      "cpu_time": 1.5640731958301640e+04,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_detection_eval_update/50",
+      "family_index": 1,
+      "per_family_instance_index": 2,
+      "run_name": "BM_detection_eval_update/50",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 10262,
+      "real_time": 6.9186107305070385e+04,
+      "cpu_time": 6.9002923406743343e+04,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_seg_eval_update/224/224",
+      "family_index": 2,
+      "per_family_instance_index": 0,
+      "run_name": "BM_seg_eval_update/224/224",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 34872,
+      "real_time": 2.0002681238471650e+04,
+      "cpu_time": 1.9981819224592786e+04,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_seg_eval_update/640/640",
+      "family_index": 2,
+      "per_family_instance_index": 1,
+      "run_name": "BM_seg_eval_update/640/640",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 4470,
+      "real_time": 1.5736539911695442e+05,
+      "cpu_time": 1.5718434004474265e+05,
+      "time_unit": "ns"
+    }
+  ]
+}
