@@ -1598,7 +1598,7 @@ All five functors: fluent `.width(int)/.height(int)/.title(string)`, throw `Para
 
 ## `improc::onnx` — ONNX Runtime inference
 
-**Status: Implemented** (ONNX Runtime 1.20.1 — CPU + CoreML EP on Apple Silicon)
+**Status: Implemented** (ONNX Runtime 1.24.4 via Conan — CPU + CoreML EP on Apple Silicon)
 
 **Umbrella header:** `improc/onnx/onnx.hpp`
 
