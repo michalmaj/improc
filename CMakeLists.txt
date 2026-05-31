@@ -293,6 +293,10 @@ target_link_libraries(demo_color_adjust PRIVATE improc)
 add_executable(demo_color_lab_ycrcb examples/core/demo_color_lab_ycrcb.cpp)
 target_link_libraries(demo_color_lab_ycrcb PRIVATE improc)
 
+# Pixel ops demo — Add, Subtract, Multiply, AbsDiff, SplitChannels, MergeChannels (v0.14.0)
+add_executable(demo_pixel_ops examples/core/demo_pixel_ops.cpp)
+target_link_libraries(demo_pixel_ops PRIVATE improc)
+
 # Image I/O demo (imread / imwrite)
 add_executable(demo_image_io examples/io/demo_image_io.cpp)
 target_link_libraries(demo_image_io PRIVATE improc)
