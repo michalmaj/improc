@@ -1,6 +1,5 @@
 // tests/core/ops/test_detector_types.cpp
 #include <gtest/gtest.h>
-#include <opencv2/core.hpp>
 #include "improc/core/ops/detector_types.hpp"
 
 using namespace improc::core;
