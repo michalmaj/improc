@@ -415,6 +415,10 @@ target_link_libraries(demo_stereo PRIVATE improc)
 add_executable(demo_aruco examples/calib/demo_aruco.cpp)
 target_link_libraries(demo_aruco PRIVATE improc)
 
+# Epipolar geometry demo — FindFundamentalMat, FindEssentialMat, RecoverPose, TriangulatePoints (v0.14.0)
+add_executable(demo_epipolar examples/calib/demo_epipolar.cpp)
+target_link_libraries(demo_epipolar PRIVATE improc)
+
 # ONNX inference demo
 add_executable(demo_onnx_inference examples/ml/demo_onnx_inference.cpp)
 target_link_libraries(demo_onnx_inference PRIVATE improc)
