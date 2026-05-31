@@ -313,6 +313,10 @@ target_link_libraries(demo_analysis_ops PRIVATE improc)
 add_executable(demo_feature_ops examples/core/demo_feature_ops.cpp)
 target_link_libraries(demo_feature_ops PRIVATE improc)
 
+# Detector types demo — MSERResult, LineSet, QRResult, BarcodeResult, FaceDetection (v0.14.0)
+add_executable(demo_detector_types_usage examples/core/demo_detector_types.cpp)
+target_link_libraries(demo_detector_types_usage PRIVATE improc)
+
 # Image I/O demo (imread / imwrite)
 add_executable(demo_image_io examples/io/demo_image_io.cpp)
 target_link_libraries(demo_image_io PRIVATE improc)
