@@ -305,6 +305,10 @@ target_link_libraries(demo_filter_ops PRIVATE improc)
 add_executable(demo_morphological_ops examples/core/demo_morphological_ops.cpp)
 target_link_libraries(demo_morphological_ops PRIVATE improc)
 
+# Analysis ops demo — IntegralImage, MinMaxLoc, MeanStdDev, Moments (v0.14.0)
+add_executable(demo_analysis_ops examples/core/demo_analysis_ops.cpp)
+target_link_libraries(demo_analysis_ops PRIVATE improc)
+
 # Image I/O demo (imread / imwrite)
 add_executable(demo_image_io examples/io/demo_image_io.cpp)
 target_link_libraries(demo_image_io PRIVATE improc)
