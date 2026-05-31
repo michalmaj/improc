@@ -1,6 +1,6 @@
 // examples/core/demo_pixel_ops.cpp
 //
-// Demo: Add, Subtract, Multiply, AbsDiff, BitwiseAnd, SplitChannels, MergeChannels
+// Demo: Add, Subtract, Multiply, AbsDiff, SplitChannels, MergeChannels
 
 #include <format>
 #include <iostream>
