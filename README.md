@@ -38,8 +38,8 @@
 
 ## Status
 
-> **Latest release: v0.11.0** — Documentation Coverage: 8 tutorials + 12 examples covering motion analysis, camera calibration, stereo vision, ArUco markers, object detectors, photo/creative effects, HDR, image quality metrics, and perceptual hashing.
-> **Previous highlights:** v0.10.0 — Photo + Creative + Quality + Hashing (20 new ops). v0.9.0 — Camera Geometry + Detectors (`improc::calib`, 31 ops). v0.8.0 — Classic CV ops.  
+> **Latest release: v0.12.0** — Documentation Completion: 100% Doxygen coverage across all 51 public headers; Conan migration for onnxruntime and nlohmann_json.
+> **Previous highlights:** v0.11.0 — 8 tutorials + 12 examples. v0.10.0 — Photo + Creative + Quality + Hashing (20 new ops). v0.9.0 — Camera Geometry + Detectors (`improc::calib`, 31 ops). v0.8.0 — Classic CV ops.
 > APIs are stabilising but may still change between minor versions.
 
 | Namespace | Status | Notes |
@@ -51,7 +51,7 @@
 | `improc::threading` | ✅ Stable | |
 | `improc::visualization` | ✅ Stable | New ops added regularly |
 | `improc::views` | ✅ Stable | Lazy image pipeline adapters |
-| `improc::onnx` | ✅ Stable | ONNX Runtime 1.20.1; CPU + CoreML on Apple Silicon |
+| `improc::onnx` | ✅ Stable | ONNX Runtime 1.24.4 (via Conan); CPU + CoreML on Apple Silicon |
 | `improc::cuda` | 🔜 Planned | GPU-accelerated ops via OpenCV CUDA |
 
 ## Getting Started
@@ -600,7 +600,7 @@ MatchSet      sift_ms   = MatchFlann{sift_desc, sift_desc}.ratio_threshold(0.7f)
 
 - C++23 or later
 - [OpenCV](https://opencv.org/) 4.8+
-- [ONNX Runtime](https://onnxruntime.ai/) 1.20.1 (auto-downloaded via CMake FetchContent)
+- [ONNX Runtime](https://onnxruntime.ai/) 1.24.4 (via Conan)
 - [GoogleTest](https://github.com/google/googletest) 1.16+
 - [Conan 2.0](https://conan.io/) for dependency management
 
