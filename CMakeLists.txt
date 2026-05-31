@@ -289,6 +289,10 @@ target_link_libraries(demo_video_writer PRIVATE improc)
 add_executable(demo_color_adjust examples/core/demo_color_adjust.cpp)
 target_link_libraries(demo_color_adjust PRIVATE improc)
 
+# Color space demo — ToLAB, ToYCrCb (v0.14.0)
+add_executable(demo_color_lab_ycrcb examples/core/demo_color_lab_ycrcb.cpp)
+target_link_libraries(demo_color_lab_ycrcb PRIVATE improc)
+
 # Image I/O demo (imread / imwrite)
 add_executable(demo_image_io examples/io/demo_image_io.cpp)
 target_link_libraries(demo_image_io PRIVATE improc)
