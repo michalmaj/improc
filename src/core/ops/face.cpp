@@ -9,7 +9,7 @@ namespace improc::core {
 
 void DetectFaceYN::ensure_initialized(cv::Size frame_size) {
     if (model_path_.empty())
-        throw std::invalid_argument("DetectFaceYN: model path not set — call .model(path) first");
+        throw improc::ParameterError{"model_path", "must be set — call .model(path) first", "DetectFaceYN"};
     if (!detector_) {
         if (!std::filesystem::exists(model_path_))
             throw improc::FileNotFoundError{model_path_};
@@ -54,7 +54,7 @@ std::vector<FaceDetection> DetectFaceYN::operator()(Image<BGR> img) {
 
 void RecognizeFace::ensure_initialized() {
     if (model_path_.empty())
-        throw std::invalid_argument("RecognizeFace: model path not set — call .model(path) first");
+        throw improc::ParameterError{"model_path", "must be set — call .model(path) first", "RecognizeFace"};
     if (!recognizer_) {
         if (!std::filesystem::exists(model_path_))
             throw improc::FileNotFoundError{model_path_};

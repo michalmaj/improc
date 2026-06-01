@@ -70,12 +70,12 @@ TEST(GenerateArucoTest, OutputIsGray) {
 
 TEST(GenerateArucoTest, ThrowsOnNegativeId) {
     auto dict = make_dict();
-    EXPECT_THROW(GenerateAruco{}(dict, -1, 100), std::invalid_argument);
+    EXPECT_THROW(GenerateAruco{}(dict, -1, 100), improc::ParameterError);
 }
 
 TEST(GenerateArucoTest, ThrowsOnZeroSidePixels) {
     auto dict = make_dict();
-    EXPECT_THROW(GenerateAruco{}(dict, 0, 0), std::invalid_argument);
+    EXPECT_THROW(GenerateAruco{}(dict, 0, 0), improc::ParameterError);
 }
 
 // ── DetectAruco ───────────────────────────────────────────────────────────────
@@ -255,7 +255,7 @@ TEST(CharucoBoardTest, ThrowsIfBoardSizeNotSet) {
     Image<BGR> img(scene);
     EXPECT_THROW(
         CharucoBoard{}.square_length(kSquareLen).marker_length(kMarkerLen)(img, dict),
-        std::invalid_argument);
+        improc::ParameterError);
 }
 
 TEST(CharucoBoardTest, ThrowsIfSquareLengthZero) {
@@ -264,7 +264,7 @@ TEST(CharucoBoardTest, ThrowsIfSquareLengthZero) {
     Image<BGR> img(scene);
     EXPECT_THROW(
         CharucoBoard{}.board_size(kBoardSize).square_length(0.f).marker_length(kMarkerLen)(img, dict),
-        std::invalid_argument);
+        improc::ParameterError);
 }
 
 TEST(CharucoBoardTest, ThrowsIfMarkerLengthZero) {
@@ -273,5 +273,5 @@ TEST(CharucoBoardTest, ThrowsIfMarkerLengthZero) {
     Image<BGR> img(scene);
     EXPECT_THROW(
         CharucoBoard{}.board_size(kBoardSize).square_length(kSquareLen).marker_length(0.f)(img, dict),
-        std::invalid_argument);
+        improc::ParameterError);
 }

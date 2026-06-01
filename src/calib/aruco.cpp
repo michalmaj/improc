@@ -1,5 +1,6 @@
 // src/calib/aruco.cpp
 #include "improc/calib/ops/aruco.hpp"
+#include "improc/exceptions.hpp"
 #include <opencv2/objdetect/charuco_detector.hpp>
 #include <opencv2/calib3d.hpp>
 #include <opencv2/imgproc.hpp>
@@ -49,11 +50,9 @@ cv::Mat DrawAruco::operator()(cv::Mat img,
 Image<Gray> GenerateAruco::operator()(const cv::aruco::Dictionary& dict,
                                        int id, int side_pixels) const {
     if (id < 0)
-        throw std::invalid_argument(
-            "GenerateAruco: id must be >= 0");
+        throw improc::ParameterError{"id", "must be >= 0", "GenerateAruco"};
     if (side_pixels < 1)
-        throw std::invalid_argument(
-            "GenerateAruco: side_pixels must be >= 1");
+        throw improc::ParameterError{"side_pixels", "must be >= 1", "GenerateAruco"};
     cv::Mat img;
     cv::aruco::generateImageMarker(dict, id, side_pixels, img, border_bits_);
     return Image<Gray>(img);
@@ -85,14 +84,11 @@ std::vector<ArucoPoseResult> ArucoPose::operator()(const ArucoResult& result,
 namespace {
 void validate_charuco(bool has_size, float square_length, float marker_length) {
     if (!has_size)
-        throw std::invalid_argument(
-            "CharucoBoard: board_size must be set before use");
+        throw improc::ParameterError{"board_size", "must be set before use", "CharucoBoard"};
     if (square_length <= 0.f)
-        throw std::invalid_argument(
-            "CharucoBoard: square_length must be positive");
+        throw improc::ParameterError{"square_length", "must be positive", "CharucoBoard"};
     if (marker_length <= 0.f)
-        throw std::invalid_argument(
-            "CharucoBoard: marker_length must be positive");
+        throw improc::ParameterError{"marker_length", "must be positive", "CharucoBoard"};
 }
 
 CharucoResult run_charuco_detection(const cv::Mat& mat,

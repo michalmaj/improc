@@ -1,13 +1,14 @@
 // src/core/ops/flood_fill.cpp
 #include <stdexcept>
 #include "improc/core/ops/flood_fill.hpp"
+#include "improc/exceptions.hpp"
 
 namespace improc::core {
 
 namespace {
 void check_seed(int rows, int cols, cv::Point seed) {
     if (seed.x < 0 || seed.y < 0 || seed.x >= cols || seed.y >= rows)
-        throw std::invalid_argument("FloodFill: seed point is outside image bounds");
+        throw improc::ParameterError{"seed", "is outside image bounds", "FloodFill"};
 }
 } // namespace
 

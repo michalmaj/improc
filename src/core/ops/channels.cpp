@@ -1,5 +1,6 @@
 // src/core/ops/channels.cpp
 #include "improc/core/ops/channels.hpp"
+#include "improc/exceptions.hpp"
 
 namespace improc::core {
 
@@ -19,7 +20,7 @@ std::array<Image<Gray>, 4> SplitChannels::operator()(const Image<BGRA>& img) con
 static void check_sizes(const Image<Gray>& a, const Image<Gray>& b, const Image<Gray>& c) {
     if (a.rows() != b.rows() || a.rows() != c.rows() ||
         a.cols() != b.cols() || a.cols() != c.cols())
-        throw std::invalid_argument("MergeChannels: all channels must have the same size");
+        throw improc::ParameterError{"channels", "all channels must have the same size", "MergeChannels"};
 }
 
 Image<BGR> MergeChannels::operator()(const Image<Gray>& b, const Image<Gray>& g,
@@ -34,7 +35,7 @@ Image<BGRA> MergeChannels::operator()(const Image<Gray>& b, const Image<Gray>& g
                                        const Image<Gray>& r, const Image<Gray>& a) const {
     check_sizes(b, g, r);
     if (a.rows() != b.rows() || a.cols() != b.cols())
-        throw std::invalid_argument("MergeChannels: all channels must have the same size");
+        throw improc::ParameterError{"channels", "all channels must have the same size", "MergeChannels"};
     cv::Mat result;
     cv::merge(std::vector<cv::Mat>{b.mat(), g.mat(), r.mat(), a.mat()}, result);
     return Image<BGRA>(std::move(result));

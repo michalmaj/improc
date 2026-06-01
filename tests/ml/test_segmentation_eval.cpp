@@ -42,7 +42,7 @@ TEST(PixelIouTest, DimensionMismatchThrows) {
     cv::Mat pred_m(4, 4, CV_8U, cv::Scalar(1));
     cv::Mat gt_m(8, 8, CV_8U, cv::Scalar(1));
     EXPECT_THROW(pixel_iou(Image<Gray>(pred_m), Image<Gray>(gt_m), 1),
-                 std::invalid_argument);
+                 improc::ParameterError);
 }
 
 // ── dice ─────────────────────────────────────────────────────────────────────

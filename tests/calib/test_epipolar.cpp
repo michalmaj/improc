@@ -53,12 +53,12 @@ TEST(FindFundamentalMatTest, ThrowsOnSizeMismatch) {
     auto pts1 = project(scene, K, rvec1, tvec1);
     auto pts2 = project(scene, K, rvec1, tvec2);
     pts2.pop_back();
-    EXPECT_THROW(FindFundamentalMat{}(pts1, pts2), std::invalid_argument);
+    EXPECT_THROW(FindFundamentalMat{}(pts1, pts2), improc::ParameterError);
 }
 
 TEST(FindFundamentalMatTest, ThrowsOnFewerThanEightPoints) {
     std::vector<cv::Point2f> pts(7, {1.f, 1.f});
-    EXPECT_THROW(FindFundamentalMat{}(pts, pts), std::invalid_argument);
+    EXPECT_THROW(FindFundamentalMat{}(pts, pts), improc::ParameterError);
 }
 
 TEST(FindFundamentalMatTest, FIsThreeByThree) {
@@ -115,12 +115,12 @@ TEST(FindEssentialMatTest, ThrowsOnSizeMismatch) {
     auto pts1 = project(scene, K, rvec, tvec1);
     auto pts2 = project(scene, K, rvec, tvec2);
     pts2.pop_back();
-    EXPECT_THROW(FindEssentialMat{}(pts1, pts2, K), std::invalid_argument);
+    EXPECT_THROW(FindEssentialMat{}(pts1, pts2, K), improc::ParameterError);
 }
 
 TEST(FindEssentialMatTest, ThrowsOnFewerThanFivePoints) {
     std::vector<cv::Point2f> pts(4, {1.f, 1.f});
-    EXPECT_THROW(FindEssentialMat{}(pts, pts, make_K()), std::invalid_argument);
+    EXPECT_THROW(FindEssentialMat{}(pts, pts, make_K()), improc::ParameterError);
 }
 
 TEST(FindEssentialMatTest, EIsThreeByThree) {

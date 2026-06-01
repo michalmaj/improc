@@ -39,12 +39,12 @@ TEST(GrabCutTest, EmptyRectThrows) {
     auto img = make_test_image();
     cv::Rect roi{20, 20, 0, 0};
     GrabCut op;
-    EXPECT_THROW(op(img, roi), std::invalid_argument);
+    EXPECT_THROW(op(img, roi), improc::ParameterError);
 }
 
 TEST(GrabCutTest, RectOutsideBoundsThrows) {
     auto img = make_test_image();
     cv::Rect roi{50, 50, 80, 80};  // 50+80=130 > 100
     GrabCut op;
-    EXPECT_THROW(op(img, roi), std::invalid_argument);
+    EXPECT_THROW(op(img, roi), improc::ParameterError);
 }

@@ -1,5 +1,6 @@
 // src/ml/segmentation_eval.cpp
 #include "improc/ml/eval/segmentation.hpp"
+#include "improc/exceptions.hpp"
 #include <stdexcept>
 
 namespace improc::ml {
@@ -8,7 +9,7 @@ float pixel_iou(const Image<Gray>& pred, const Image<Gray>& gt, int class_id) {
     const auto& pm = pred.mat();
     const auto& gm = gt.mat();
     if (pm.rows != gm.rows || pm.cols != gm.cols)
-        throw std::invalid_argument("pixel_iou: pred and gt dimensions must match");
+        throw improc::ParameterError{"pred", "pred and gt dimensions must match", "pixel_iou"};
     int64_t tp = 0, fp = 0, fn = 0;
     for (int r = 0; r < pm.rows; ++r) {
         for (int c = 0; c < pm.cols; ++c) {
@@ -30,7 +31,7 @@ float dice(const Image<Gray>& pred, const Image<Gray>& gt, int class_id) {
     const auto& pm = pred.mat();
     const auto& gm = gt.mat();
     if (pm.rows != gm.rows || pm.cols != gm.cols)
-        throw std::invalid_argument("dice: pred and gt dimensions must match");
+        throw improc::ParameterError{"pred", "pred and gt dimensions must match", "dice"};
     int64_t tp = 0, fp = 0, fn = 0;
     for (int r = 0; r < pm.rows; ++r) {
         for (int c = 0; c < pm.cols; ++c) {
@@ -52,7 +53,7 @@ void SegEval::update(const Image<Gray>& pred, const Image<Gray>& gt) {
     if (num_classes_ <= 0)
         throw std::runtime_error("SegEval: call num_classes() before update()");
     if (pred.mat().rows != gt.mat().rows || pred.mat().cols != gt.mat().cols)
-        throw std::invalid_argument("SegEval: pred and gt dimensions must match");
+        throw improc::ParameterError{"pred", "pred and gt dimensions must match", "SegEval"};
     const auto& pm = pred.mat();
     const auto& gm = gt.mat();
     for (int r = 0; r < pm.rows; ++r) {

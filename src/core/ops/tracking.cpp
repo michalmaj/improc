@@ -1,5 +1,6 @@
 // src/core/ops/tracking.cpp
 #include "improc/core/ops/tracking.hpp"
+#include "improc/exceptions.hpp"
 #include <stdexcept>
 
 namespace improc::core {
@@ -9,7 +10,7 @@ void check_window(const cv::Rect& window, int rows, int cols) {
     if (window.x < 0 || window.y < 0 ||
         window.x + window.width  > cols ||
         window.y + window.height > rows)
-        throw std::invalid_argument("CamShift/MeanShift: window is outside image bounds");
+        throw improc::ParameterError{"window", "is outside image bounds", "CamShift/MeanShift"};
 }
 } // namespace
 

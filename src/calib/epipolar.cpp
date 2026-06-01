@@ -1,5 +1,6 @@
 // src/calib/epipolar.cpp
 #include "improc/calib/ops/epipolar.hpp"
+#include "improc/exceptions.hpp"
 #include <opencv2/calib3d.hpp>
 
 namespace improc::calib {
@@ -8,11 +9,9 @@ FundamentalMatResult FindFundamentalMat::operator()(
         const std::vector<cv::Point2f>& pts1,
         const std::vector<cv::Point2f>& pts2) const {
     if (pts1.size() != pts2.size())
-        throw std::invalid_argument(
-            "FindFundamentalMat: pts1 and pts2 must have the same number of points");
+        throw improc::ParameterError{"pts1", "must be same size as pts2", "FindFundamentalMat"};
     if (pts1.size() < 8)
-        throw std::invalid_argument(
-            "FindFundamentalMat: at least 8 point correspondences required");
+        throw improc::ParameterError{"pts1", "at least 8 point correspondences required", "FindFundamentalMat"};
 
     FundamentalMatResult result;
     result.F = cv::findFundamentalMat(pts1, pts2, method_,
@@ -25,11 +24,9 @@ EssentialMatResult FindEssentialMat::operator()(
         const std::vector<cv::Point2f>& pts2,
         const cv::Mat& K) const {
     if (pts1.size() != pts2.size())
-        throw std::invalid_argument(
-            "FindEssentialMat: pts1 and pts2 must have the same number of points");
+        throw improc::ParameterError{"pts1", "must be same size as pts2", "FindEssentialMat"};
     if (pts1.size() < 5)
-        throw std::invalid_argument(
-            "FindEssentialMat: at least 5 point correspondences required");
+        throw improc::ParameterError{"pts1", "at least 5 point correspondences required", "FindEssentialMat"};
 
     EssentialMatResult result;
     result.E = cv::findEssentialMat(pts1, pts2, K, method_,

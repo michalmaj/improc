@@ -1,12 +1,13 @@
 // src/calib/chessboard.cpp
 #include "improc/calib/ops/chessboard.hpp"
+#include "improc/exceptions.hpp"
 #include <opencv2/imgproc.hpp>
 
 namespace improc::calib {
 
 FindChessboardResult FindChessboardCorners::operator()(Image<Gray> img) const {
     if (!has_board_size_)
-        throw std::invalid_argument("FindChessboardCorners: board_size must be set");
+        throw improc::ParameterError{"board_size", "must be set before calling operator()", "FindChessboardCorners"};
     FindChessboardResult result;
     result.found = cv::findChessboardCorners(img.mat(), board_size_,
                                              result.corners, flags_);
@@ -22,7 +23,7 @@ FindChessboardResult FindChessboardCorners::operator()(Image<BGR> img) const {
 
 FindChessboardResult FindChessboardCornersSB::operator()(Image<Gray> img) const {
     if (!has_board_size_)
-        throw std::invalid_argument("FindChessboardCornersSB: board_size must be set");
+        throw improc::ParameterError{"board_size", "must be set before calling operator()", "FindChessboardCornersSB"};
     FindChessboardResult result;
     result.found = cv::findChessboardCornersSB(img.mat(), board_size_,
                                                result.corners, flags_);

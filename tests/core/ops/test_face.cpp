@@ -20,7 +20,7 @@ Image<BGR> make_blank_bgr_face() {
 TEST(DetectFaceYNTest, ThrowsIfModelNotSet) {
     Image<BGR> img = make_blank_bgr_face();
     DetectFaceYN op;
-    EXPECT_THROW(op(img), std::invalid_argument);
+    EXPECT_THROW(op(img), improc::ParameterError);
 }
 
 TEST(DetectFaceYNTest, ThrowsIfModelFileDoesNotExist) {
@@ -47,7 +47,7 @@ TEST(DetectFaceYNTest, DetectsNoFaceInBlankImage) {
 TEST(RecognizeFaceTest, ThrowsIfModelNotSet) {
     Image<BGR> img = make_blank_bgr_face();
     RecognizeFace op;
-    EXPECT_THROW(op.embed(img), std::invalid_argument);
+    EXPECT_THROW(op.embed(img), improc::ParameterError);
 }
 
 TEST(RecognizeFaceTest, ThrowsIfModelFileDoesNotExist) {

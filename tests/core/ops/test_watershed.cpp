@@ -36,13 +36,13 @@ TEST(WatershedTest, ValidMarkersNoThrow) {
 TEST(WatershedTest, WrongTypeMarkersThrows) {
     auto img = make_two_region_image();
     cv::Mat markers(50, 50, CV_8UC1, cv::Scalar(0));
-    EXPECT_THROW(Watershed{}(img, markers), std::invalid_argument);
+    EXPECT_THROW(Watershed{}(img, markers), improc::ParameterError);
 }
 
 TEST(WatershedTest, WrongSizeMarkersThrows) {
     auto img = make_two_region_image();
     cv::Mat markers(30, 30, CV_32SC1, cv::Scalar(0));
-    EXPECT_THROW(Watershed{}(img, markers), std::invalid_argument);
+    EXPECT_THROW(Watershed{}(img, markers), improc::ParameterError);
 }
 
 TEST(WatershedTest, BothLabelsPresentAfterCall) {

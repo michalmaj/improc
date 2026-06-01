@@ -51,7 +51,7 @@ TEST(FindChessboardCornersTest, WorksOnBGRInput) {
 
 TEST(FindChessboardCornersTest, ThrowsWhenBoardSizeNotSet) {
     EXPECT_THROW(make_chessboard_img({9, 6}) | FindChessboardCorners{},
-                 std::invalid_argument);
+                 improc::ParameterError);
 }
 
 TEST(FindChessboardCornersTest, FluentBoardSizeReturnsThis) {
@@ -84,7 +84,7 @@ TEST(FindChessboardCornersSBTest, WorksOnBGRInput) {
 
 TEST(FindChessboardCornersSBTest, ThrowsWhenBoardSizeNotSet) {
     EXPECT_THROW(make_chessboard_img({9, 6}) | FindChessboardCornersSB{},
-                 std::invalid_argument);
+                 improc::ParameterError);
 }
 
 TEST(FindChessboardCornersSBTest, FluentBoardSizeReturnsThis) {
