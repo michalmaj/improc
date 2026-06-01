@@ -4,6 +4,7 @@
 #include <opencv2/core.hpp>
 #include "improc/core/image.hpp"
 #include "improc/core/concepts.hpp"
+#include "improc/exceptions.hpp"
 
 namespace improc::core {
 
@@ -20,9 +21,9 @@ namespace improc::core {
 struct LUT {
     explicit LUT(cv::Mat table) : table_(std::move(table)) {
         if (table_.total() != 256)
-            throw std::invalid_argument("LUT table must have exactly 256 entries");
+            throw improc::ParameterError{"table", "must have exactly 256 entries", "LUT"};
         if (table_.depth() != CV_8U)
-            throw std::invalid_argument("LUT table must be CV_8U");
+            throw improc::ParameterError{"table", "must be CV_8U", "LUT"};
     }
 
     template<AnyFormat F>

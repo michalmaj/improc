@@ -1,6 +1,7 @@
 // tests/calib/test_undistort.cpp
 #include <gtest/gtest.h>
 #include "improc/calib/pipeline.hpp"
+#include "improc/exceptions.hpp"
 
 using namespace improc::calib;
 using namespace improc::core;
@@ -43,12 +44,12 @@ TEST(UndistortTest, ZeroDistortionPreservesPixels) {
 
 TEST(UndistortTest, ThrowsWhenKNotSet) {
     Image<BGR> img(cv::Mat(120, 160, CV_8UC3, cv::Scalar(0)));
-    EXPECT_THROW(img | Undistort{}.dist(zero_dist()), std::invalid_argument);
+    EXPECT_THROW(img | Undistort{}.dist(zero_dist()), improc::ParameterError);
 }
 
 TEST(UndistortTest, ThrowsWhenDistNotSet) {
     Image<BGR> img(cv::Mat(120, 160, CV_8UC3, cv::Scalar(0)));
-    EXPECT_THROW(img | Undistort{}.K(make_K(160,120)), std::invalid_argument);
+    EXPECT_THROW(img | Undistort{}.K(make_K(160,120)), improc::ParameterError);
 }
 
 TEST(UndistortTest, FluentSettersReturnThis) {
@@ -76,15 +77,15 @@ TEST(UndistortMapTest, MapsAreUsableWithCoreRemap) {
 
 TEST(UndistortMapTest, ThrowsOnZeroImageSize) {
     EXPECT_THROW(UndistortMap{}.K(make_K(160,120)).dist(zero_dist())({0, 0}),
-                 std::invalid_argument);
+                 improc::ParameterError);
 }
 
 TEST(UndistortMapTest, ThrowsWhenKNotSet) {
-    EXPECT_THROW(UndistortMap{}.dist(zero_dist())({160, 120}), std::invalid_argument);
+    EXPECT_THROW(UndistortMap{}.dist(zero_dist())({160, 120}), improc::ParameterError);
 }
 
 TEST(UndistortMapTest, ThrowsWhenDistNotSet) {
-    EXPECT_THROW(UndistortMap{}.K(make_K(160,120))({160, 120}), std::invalid_argument);
+    EXPECT_THROW(UndistortMap{}.K(make_K(160,120))({160, 120}), improc::ParameterError);
 }
 
 TEST(UndistortMapTest, FluentSettersReturnThis) {

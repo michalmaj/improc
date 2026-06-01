@@ -1,8 +1,8 @@
 #pragma once
-#include <stdexcept>
 #include <vector>
 #include <opencv2/core.hpp>
 #include "improc/calib/ops/calib_types.hpp"
+#include "improc/exceptions.hpp"
 
 namespace improc::calib {
 
@@ -10,15 +10,13 @@ namespace improc::calib {
 /// @param board_size Inner corner count; `board_size.width × board_size.height` points are returned.
 /// @param square_size Physical side length of one square in any consistent unit.
 /// @return `board_size.width * board_size.height` points in row-major order.
-/// @throws std::invalid_argument if any dimension of `board_size` <= 0 or `square_size` <= 0.
+/// @throws improc::ParameterError if any dimension of `board_size` <= 0 or `square_size` <= 0.
 inline std::vector<cv::Point3f> make_chessboard_points(cv::Size board_size,
                                                         float square_size) {
     if (board_size.width <= 0 || board_size.height <= 0)
-        throw std::invalid_argument(
-            "make_chessboard_points: board_size dimensions must be positive");
+        throw improc::ParameterError{"board_size", "dimensions must be positive", "make_chessboard_points"};
     if (square_size <= 0.f)
-        throw std::invalid_argument(
-            "make_chessboard_points: square_size must be positive");
+        throw improc::ParameterError{"square_size", "must be positive", "make_chessboard_points"};
     std::vector<cv::Point3f> pts;
     pts.reserve(board_size.width * board_size.height);
     for (int r = 0; r < board_size.height; ++r)

@@ -3,6 +3,7 @@
 #include <opencv2/core.hpp>
 #include "improc/core/ops/arithmetic.hpp"
 #include "improc/core/pipeline.hpp"
+#include "improc/exceptions.hpp"
 
 using namespace improc::core;
 
@@ -25,12 +26,12 @@ TEST(AbsDiffTest, KnownScalarDifference) {
 
 TEST(AbsDiffTest, SizeMismatchThrows) {
     Image<Gray> img(cv::Mat(50, 50, CV_8UC1, cv::Scalar(0)));
-    EXPECT_THROW(img | AbsDiff(cv::Mat(60, 60, CV_8UC1, cv::Scalar(0))), std::invalid_argument);
+    EXPECT_THROW(img | AbsDiff(cv::Mat(60, 60, CV_8UC1, cv::Scalar(0))), improc::ParameterError);
 }
 
 TEST(AbsDiffTest, TypeMismatchThrows) {
     Image<Gray> img(cv::Mat(50, 50, CV_8UC1, cv::Scalar(0)));
-    EXPECT_THROW(img | AbsDiff(cv::Mat(50, 50, CV_8UC3)), std::invalid_argument);
+    EXPECT_THROW(img | AbsDiff(cv::Mat(50, 50, CV_8UC3)), improc::ParameterError);
 }
 
 // ── BitwiseAnd ────────────────────────────────────────────────────────────────
@@ -55,7 +56,7 @@ TEST(BitwiseAndTest, AndWith255IsIdentity) {
 
 TEST(BitwiseAndTest, SizeMismatchThrows) {
     Image<Gray> img(cv::Mat(50, 50, CV_8UC1, cv::Scalar(0)));
-    EXPECT_THROW(img | BitwiseAnd(cv::Mat(60, 60, CV_8UC1, cv::Scalar(0))), std::invalid_argument);
+    EXPECT_THROW(img | BitwiseAnd(cv::Mat(60, 60, CV_8UC1, cv::Scalar(0))), improc::ParameterError);
 }
 
 // ── BitwiseOr ─────────────────────────────────────────────────────────────────
@@ -80,7 +81,7 @@ TEST(BitwiseOrTest, OrWith255GivesAllOnes) {
 
 TEST(BitwiseOrTest, SizeMismatchThrows) {
     Image<Gray> img(cv::Mat(50, 50, CV_8UC1, cv::Scalar(0)));
-    EXPECT_THROW(img | BitwiseOr(cv::Mat(60, 60, CV_8UC1, cv::Scalar(0))), std::invalid_argument);
+    EXPECT_THROW(img | BitwiseOr(cv::Mat(60, 60, CV_8UC1, cv::Scalar(0))), improc::ParameterError);
 }
 
 // ── BitwiseNot ────────────────────────────────────────────────────────────────
@@ -115,7 +116,7 @@ TEST(ConvolveTest, IdentityKernelPreservesImage) {
 
 TEST(ConvolveTest, EmptyKernelThrows) {
     Image<Gray> img(cv::Mat(50, 50, CV_8UC1, cv::Scalar(0)));
-    EXPECT_THROW(img | Convolve(cv::Mat{}), std::invalid_argument);
+    EXPECT_THROW(img | Convolve(cv::Mat{}), improc::ParameterError);
 }
 
 TEST(ConvolveTest, FluentSettersReturnThis) {
@@ -186,7 +187,7 @@ TEST(AddTest, SaturationAtMax) {
 
 TEST(AddTest, SizeMismatchThrows) {
     Image<Gray> img(cv::Mat(50, 50, CV_8UC1, cv::Scalar(0)));
-    EXPECT_THROW(img | Add(cv::Mat(60, 60, CV_8UC1)), std::invalid_argument);
+    EXPECT_THROW(img | Add(cv::Mat(60, 60, CV_8UC1)), improc::ParameterError);
 }
 
 // ── Subtract ──────────────────────────────────────────────────────────────────
@@ -209,7 +210,7 @@ TEST(SubtractTest, SaturationAtZero) {
 
 TEST(SubtractTest, SizeMismatchThrows) {
     Image<Gray> img(cv::Mat(50, 50, CV_8UC1, cv::Scalar(0)));
-    EXPECT_THROW(img | Subtract(cv::Mat(60, 60, CV_8UC1)), std::invalid_argument);
+    EXPECT_THROW(img | Subtract(cv::Mat(60, 60, CV_8UC1)), improc::ParameterError);
 }
 
 // ── Pipeline syntax ───────────────────────────────────────────────────────────
@@ -247,7 +248,7 @@ TEST(MultiplyTest, ScaleParameterApplied) {
 
 TEST(MultiplyTest, SizeMismatchThrows) {
     Image<Gray> img(cv::Mat(50, 50, CV_8UC1, cv::Scalar(0)));
-    EXPECT_THROW(img | Multiply(cv::Mat(60, 60, CV_8UC1)), std::invalid_argument);
+    EXPECT_THROW(img | Multiply(cv::Mat(60, 60, CV_8UC1)), improc::ParameterError);
 }
 
 // ── Divide ────────────────────────────────────────────────────────────────────
@@ -270,5 +271,5 @@ TEST(DivideTest, DivideByZeroGivesZero) {
 
 TEST(DivideTest, SizeMismatchThrows) {
     Image<Gray> img(cv::Mat(50, 50, CV_8UC1, cv::Scalar(0)));
-    EXPECT_THROW(img | Divide(cv::Mat(60, 60, CV_8UC1)), std::invalid_argument);
+    EXPECT_THROW(img | Divide(cv::Mat(60, 60, CV_8UC1)), improc::ParameterError);
 }

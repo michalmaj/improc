@@ -1,9 +1,9 @@
 // include/improc/core/ops/remap.hpp
 #pragma once
-#include <stdexcept>
 #include <opencv2/imgproc.hpp>
 #include "improc/core/image.hpp"
 #include "improc/core/concepts.hpp"
+#include "improc/exceptions.hpp"
 
 namespace improc::core {
 
@@ -14,7 +14,7 @@ namespace improc::core {
  * map2 holds the y-coordinates (row index). Both must be CV_32FC1 and
  * have identical sizes.
  *
- * @throws std::invalid_argument if either map is empty or their sizes differ.
+ * @throws improc::ParameterError if either map is empty or their sizes differ.
  *
  * @code
  * cv::Mat map1, map2;
@@ -26,9 +26,9 @@ struct Remap {
     Remap(cv::Mat map1, cv::Mat map2)
         : map1_(std::move(map1)), map2_(std::move(map2)) {
         if (map1_.empty() || map2_.empty())
-            throw std::invalid_argument("Remap: maps must not be empty");
+            throw improc::ParameterError{"maps", "must not be empty", "Remap"};
         if (map1_.size() != map2_.size())
-            throw std::invalid_argument("Remap: map1 and map2 must have the same size");
+            throw improc::ParameterError{"maps", "map1 and map2 must have the same size", "Remap"};
     }
 
     /// @brief Sets the interpolation method (default: cv::INTER_LINEAR).

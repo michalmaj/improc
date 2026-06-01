@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 #include <opencv2/core.hpp>
 #include "improc/core/pipeline.hpp"
+#include "improc/exceptions.hpp"
 
 using namespace improc::core;
 
@@ -137,6 +138,6 @@ TEST(ReduceTest, MinAlongCols) {
 
 TEST(ReduceTest, InvalidDimThrows) {
     Image<Gray> img(cv::Mat(4, 4, CV_8UC1, cv::Scalar(0)));
-    EXPECT_THROW(Reduce{}.dim(2), std::invalid_argument);
-    EXPECT_THROW(Reduce{}.dim(-1), std::invalid_argument);
+    EXPECT_THROW(Reduce{}.dim(2), improc::ParameterError);
+    EXPECT_THROW(Reduce{}.dim(-1), improc::ParameterError);
 }

@@ -1,11 +1,11 @@
 // include/improc/calib/ops/undistort.hpp
 #pragma once
-#include <stdexcept>
 #include <opencv2/core.hpp>
 #include <opencv2/calib3d.hpp>  // template body calls cv::undistort inline
 #include "improc/core/image.hpp"
 #include "improc/core/concepts.hpp"
 #include "improc/calib/ops/calib_types.hpp"
+#include "improc/exceptions.hpp"
 
 namespace improc::calib {
 
@@ -17,7 +17,7 @@ using improc::core::AnyFormat;
  *
  * Wraps `cv::undistort`. Both K and dist must be set before invoking.
  *
- * @throws std::invalid_argument if K or dist have not been set.
+ * @throws improc::ParameterError if K or dist have not been set.
  *
  * @code
  * auto undist = img | Undistort{}.K(camera_matrix).dist(dist_coeffs);
@@ -32,9 +32,9 @@ struct Undistort {
     template<AnyFormat F>
     Image<F> operator()(Image<F> img) const {
         if (K_.empty())
-            throw std::invalid_argument("Undistort: K must be set");
+            throw improc::ParameterError{"K", "must be set before calling operator()", "Undistort"};
         if (dist_.empty())
-            throw std::invalid_argument("Undistort: dist must be set");
+            throw improc::ParameterError{"dist", "must be set before calling operator()", "Undistort"};
         cv::Mat dst;
         cv::undistort(img.mat(), dst, K_, dist_);
         return Image<F>(std::move(dst));
@@ -51,7 +51,7 @@ private:
  * Wraps `cv::initUndistortRectifyMap`. Both K and dist must be set before invoking.
  * Optionally accepts a new camera matrix and rotation matrix for stereo rectification.
  *
- * @throws std::invalid_argument if K or dist have not been set.
+ * @throws improc::ParameterError if K or dist have not been set.
  *
  * @code
  * auto maps = UndistortMap{}.K(camera_matrix).dist(dist_coeffs)(image_size);

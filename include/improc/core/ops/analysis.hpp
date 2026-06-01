@@ -1,9 +1,9 @@
 // include/improc/core/ops/analysis.hpp
 #pragma once
-#include <stdexcept>
 #include <opencv2/core.hpp>
 #include "improc/core/image.hpp"
 #include "improc/core/concepts.hpp"
+#include "improc/exceptions.hpp"
 
 namespace improc::core {
 
@@ -85,10 +85,10 @@ struct Reduce {
     /// @brief Sets the reduction operation (default: Sum).
     Reduce& op(ReduceOp o) { op_  = o; return *this; }
     /// @brief Sets the reduction dimension: 0 = reduce rows → single row; 1 = reduce cols → single col.
-    /// @throws std::invalid_argument if dim is not 0 or 1.
+    /// @throws improc::ParameterError if dim is not 0 or 1.
     Reduce& dim(int d) {
         if (d != 0 && d != 1)
-            throw std::invalid_argument("Reduce: dim must be 0 (reduce rows) or 1 (reduce cols)");
+            throw improc::ParameterError{"dim", "must be 0 (reduce rows) or 1 (reduce cols)", "Reduce"};
         dim_ = d;
         return *this;
     }

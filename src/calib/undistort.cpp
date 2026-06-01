@@ -5,11 +5,11 @@ namespace improc::calib {
 
 UndistortMapResult UndistortMap::operator()(cv::Size image_size) const {
     if (K_.empty())
-        throw std::invalid_argument("UndistortMap: K must be set");
+        throw improc::ParameterError{"K", "must be set before calling operator()", "UndistortMap"};
     if (dist_.empty())
-        throw std::invalid_argument("UndistortMap: dist must be set");
+        throw improc::ParameterError{"dist", "must be set before calling operator()", "UndistortMap"};
     if (image_size.width <= 0 || image_size.height <= 0)
-        throw std::invalid_argument("UndistortMap: image_size dimensions must be positive");
+        throw improc::ParameterError{"image_size", "dimensions must be positive", "UndistortMap"};
     cv::Mat R = R_.empty() ? cv::Mat::eye(3, 3, CV_64F) : R_;
     cv::Mat new_K = new_K_.empty() ? K_ : new_K_;
     UndistortMapResult result;
