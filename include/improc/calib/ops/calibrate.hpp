@@ -39,7 +39,7 @@ struct CalibrateCamera {
     CalibrateCamera& flags(int f) { flags_ = f; return *this; }
 
     /// @brief Runs the calibration.
-    /// @throws std::invalid_argument if sizes mismatch or fewer than 3 views are provided.
+    /// @throws improc::ParameterError if sizes mismatch or fewer than 3 views are provided.
     CalibrationResult operator()(const std::vector<std::vector<cv::Point3f>>& obj_pts,
                                  const std::vector<std::vector<cv::Point2f>>& img_pts,
                                  cv::Size image_size) const;
