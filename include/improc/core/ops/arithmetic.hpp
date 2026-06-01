@@ -20,7 +20,7 @@ struct AbsDiff {
     template<AnyFormat F>
     Image<F> operator()(Image<F> img) const {
         if (img.mat().size() != other_.size() || img.mat().type() != other_.type())
-            throw improc::ParameterError{"AbsDiff", "images must have the same size and type"};
+            throw improc::ParameterError{"other", "must have the same size and type as lhs", "AbsDiff"};
         cv::Mat result;
         cv::absdiff(img.mat(), other_, result);
         return Image<F>(std::move(result));
@@ -42,7 +42,7 @@ struct BitwiseAnd {
     template<IntegerFormat F>
     Image<F> operator()(Image<F> img) const {
         if (img.mat().size() != other_.size() || img.mat().type() != other_.type())
-            throw improc::ParameterError{"BitwiseAnd", "images must have the same size and type"};
+            throw improc::ParameterError{"other", "must have the same size and type as lhs", "BitwiseAnd"};
         cv::Mat result;
         cv::bitwise_and(img.mat(), other_, result);
         return Image<F>(std::move(result));
@@ -64,7 +64,7 @@ struct BitwiseOr {
     template<IntegerFormat F>
     Image<F> operator()(Image<F> img) const {
         if (img.mat().size() != other_.size() || img.mat().type() != other_.type())
-            throw improc::ParameterError{"BitwiseOr", "images must have the same size and type"};
+            throw improc::ParameterError{"other", "must have the same size and type as lhs", "BitwiseOr"};
         cv::Mat result;
         cv::bitwise_or(img.mat(), other_, result);
         return Image<F>(std::move(result));
@@ -148,7 +148,7 @@ struct Add {
     template<AnyFormat F>
     Image<F> operator()(Image<F> img) const {
         if (img.mat().size() != other_.size() || img.mat().type() != other_.type())
-            throw improc::ParameterError{"Add", "images must have the same size and type"};
+            throw improc::ParameterError{"other", "must have the same size and type as lhs", "Add"};
         cv::Mat result;
         cv::add(img.mat(), other_, result);
         return Image<F>(std::move(result));
@@ -169,7 +169,7 @@ struct Subtract {
     template<AnyFormat F>
     Image<F> operator()(Image<F> img) const {
         if (img.mat().size() != other_.size() || img.mat().type() != other_.type())
-            throw improc::ParameterError{"Subtract", "images must have the same size and type"};
+            throw improc::ParameterError{"other", "must have the same size and type as lhs", "Subtract"};
         cv::Mat result;
         cv::subtract(img.mat(), other_, result);
         return Image<F>(std::move(result));
@@ -192,7 +192,7 @@ struct Multiply {
     template<AnyFormat F>
     Image<F> operator()(Image<F> img) const {
         if (img.mat().size() != other_.size() || img.mat().type() != other_.type())
-            throw improc::ParameterError{"Multiply", "images must have the same size and type"};
+            throw improc::ParameterError{"other", "must have the same size and type as lhs", "Multiply"};
         cv::Mat result;
         cv::multiply(img.mat(), other_, result, scale_);
         return Image<F>(std::move(result));
@@ -216,7 +216,7 @@ struct Divide {
     template<AnyFormat F>
     Image<F> operator()(Image<F> img) const {
         if (img.mat().size() != other_.size() || img.mat().type() != other_.type())
-            throw improc::ParameterError{"Divide", "images must have the same size and type"};
+            throw improc::ParameterError{"other", "must have the same size and type as lhs", "Divide"};
         cv::Mat result;
         cv::divide(img.mat(), other_, result, scale_);
         return Image<F>(std::move(result));
