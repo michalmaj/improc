@@ -97,6 +97,9 @@
 #include "improc/core/ops/arithmetic.hpp"
 #include "improc/core/ops/channels.hpp"
 
+// Types
+#include "improc/core/types/histogram_data.hpp"
+
 // Analysis ops (multi-arg or non-image output — not composable via operator|)
 #include "improc/core/ops/analysis.hpp"
 #include "improc/core/ops/optical_flow.hpp"

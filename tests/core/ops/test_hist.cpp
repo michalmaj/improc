@@ -33,44 +33,44 @@ TEST(CalcHistTest, FluentSetterReturnsThis) {
 }
 
 TEST(CalcHistTest, GrayOutputShape) {
-    cv::Mat h = CalcHist{}(make_gray_rand(32, 32));
-    EXPECT_EQ(h.rows, 256);
-    EXPECT_EQ(h.cols, 1);
-    EXPECT_EQ(h.type(), CV_32FC1);
+    HistogramData h = CalcHist{}(make_gray_rand(32, 32));
+    EXPECT_EQ(h.data.rows, 256);
+    EXPECT_EQ(h.data.cols, 1);
+    EXPECT_EQ(h.data.type(), CV_32FC1);
 }
 
 TEST(CalcHistTest, GraySumEqualsPixelCount) {
     auto img = make_gray_rand(16, 16);
-    cv::Mat h = CalcHist{}(img);
-    double total = cv::sum(h)[0];
+    HistogramData h = CalcHist{}(img);
+    double total = cv::sum(h.data)[0];
     EXPECT_NEAR(total, static_cast<double>(16 * 16), 0.5);
 }
 
 TEST(CalcHistTest, GrayAllBinsNonNegative) {
-    cv::Mat h = CalcHist{}(make_gray_rand(32, 32));
+    HistogramData h = CalcHist{}(make_gray_rand(32, 32));
     double mn;
-    cv::minMaxLoc(h, &mn);
+    cv::minMaxLoc(h.data, &mn);
     EXPECT_GE(mn, 0.0);
 }
 
 TEST(CalcHistTest, BGROutputShape) {
-    cv::Mat h = CalcHist{}(make_bgr_rand(32, 32));
-    EXPECT_EQ(h.rows, 3 * 256);
-    EXPECT_EQ(h.cols, 1);
-    EXPECT_EQ(h.type(), CV_32FC1);
+    HistogramData h = CalcHist{}(make_bgr_rand(32, 32));
+    EXPECT_EQ(h.data.rows, 256);
+    EXPECT_EQ(h.data.cols, 3);
+    EXPECT_EQ(h.data.type(), CV_32FC1);
 }
 
 TEST(CalcHistTest, BGRSumEqualsThreeTimesPixelCount) {
     auto img = make_bgr_rand(16, 16);
-    cv::Mat h = CalcHist{}(img);
-    double total = cv::sum(h)[0];
+    HistogramData h = CalcHist{}(img);
+    double total = cv::sum(h.data)[0];
     EXPECT_NEAR(total, static_cast<double>(3 * 16 * 16), 0.5);
 }
 
 TEST(CalcHistTest, CustomBinsChangesOutputRows) {
-    cv::Mat h = CalcHist{}.bins(128)(make_gray_rand(32, 32));
-    EXPECT_EQ(h.rows, 128);
-    EXPECT_EQ(h.cols, 1);
+    HistogramData h = CalcHist{}.bins(128)(make_gray_rand(32, 32));
+    EXPECT_EQ(h.data.rows, 128);
+    EXPECT_EQ(h.data.cols, 1);
 }
 
 // --- CompareHist ---
@@ -80,7 +80,7 @@ TEST(CompareHistTest, DefaultConstruction) {
 }
 
 TEST(CompareHistTest, IdenticalHistogramsScoreNearOne) {
-    cv::Mat h = CalcHist{}(make_gray_rand(64, 64));
+    HistogramData h = CalcHist{}(make_gray_rand(64, 64));
     double score = CompareHist{}(h, h);
     EXPECT_NEAR(score, 1.0, 1e-5);
 }
@@ -89,8 +89,44 @@ TEST(CompareHistTest, IdenticalHistogramsScoreNearOne) {
 
 TEST(CalcHistTest, ConstantGrayImageSingleNonZeroBin) {
     auto img = make_gray_solid(8, 8, 42);
-    cv::Mat h = CalcHist{}(img);
-    int nonzero = cv::countNonZero(h);
+    HistogramData h = CalcHist{}(img);
+    int nonzero = cv::countNonZero(h.data);
     EXPECT_EQ(nonzero, 1);
-    EXPECT_NEAR(h.at<float>(42, 0), 64.0f, 1e-3f);
+    EXPECT_NEAR(h.data.at<float>(42, 0), 64.0f, 1e-3f);
+}
+
+// --- HistogramData type tests ---
+
+TEST(CalcHistTest, ReturnsHistogramDataForGray) {
+    cv::Mat m(100, 100, CV_8UC1, cv::Scalar(128));
+    Image<Gray> img(m);
+    HistogramData h = CalcHist{}(img);
+    EXPECT_FALSE(h.empty());
+    EXPECT_EQ(h.bins, 256);
+    EXPECT_EQ(h.channels, 1);
+}
+
+TEST(CalcHistTest, ReturnsHistogramDataForBGR) {
+    cv::Mat m(100, 100, CV_8UC3, cv::Scalar(50, 100, 150));
+    Image<BGR> img(m);
+    HistogramData h = CalcHist{}(img);
+    EXPECT_FALSE(h.empty());
+    EXPECT_EQ(h.bins, 256);
+    EXPECT_EQ(h.channels, 3);
+}
+
+TEST(CalcHistTest, HistogramDataMetadataMatchesCustomSettings) {
+    HistogramData h = CalcHist{}.bins(128).range(0.0f, 128.0f)(make_gray_rand(32, 32));
+    EXPECT_EQ(h.bins, 128);
+    EXPECT_FLOAT_EQ(h.range_min, 0.0f);
+    EXPECT_FLOAT_EQ(h.range_max, 128.0f);
+    EXPECT_EQ(h.channels, 1);
+}
+
+TEST(CompareHistTest, AcceptsHistogramData) {
+    cv::Mat m(100, 100, CV_8UC1, cv::Scalar(100));
+    Image<Gray> img(m);
+    HistogramData h = CalcHist{}(img);
+    double corr = CompareHist{}(h, h);
+    EXPECT_NEAR(corr, 1.0, 1e-5);
 }

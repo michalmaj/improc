@@ -14,28 +14,27 @@ CalcHist& CalcHist::range(float lo, float hi) {
     return *this;
 }
 
-cv::Mat CalcHist::operator()(const Image<Gray>& img) const {
+HistogramData CalcHist::operator()(const Image<Gray>& img) const {
     cv::Mat hist;
     const float range[] = {range_lo_, range_hi_};
     const float* ranges[] = {range};
     int ch = 0;
     cv::calcHist(&img.mat(), 1, &ch, cv::noArray(),
                  hist, 1, &bins_, ranges);
-    return hist;
+    return HistogramData{hist, bins_, range_lo_, range_hi_, 1};
 }
 
-cv::Mat CalcHist::operator()(const Image<BGR>& img) const {
+HistogramData CalcHist::operator()(const Image<BGR>& img) const {
     const float range[] = {range_lo_, range_hi_};
     const float* ranges[] = {range};
-
-    cv::Mat hists[3];
-    for (int ch = 0; ch < 3; ++ch) {
-        cv::calcHist(&img.mat(), 1, &ch, cv::noArray(),
-                     hists[ch], 1, &bins_, ranges);
+    cv::Mat combined(bins_, 3, CV_32F);
+    for (int c = 0; c < 3; ++c) {
+        cv::Mat col_hist;
+        cv::calcHist(&img.mat(), 1, &c, cv::noArray(),
+                     col_hist, 1, &bins_, ranges);
+        col_hist.copyTo(combined.col(c));
     }
-    cv::Mat stacked;
-    cv::vconcat(hists, 3, stacked);
-    return stacked;
+    return HistogramData{combined, bins_, range_lo_, range_hi_, 3};
 }
 
 CompareHist& CompareHist::method(int m) {
@@ -43,8 +42,8 @@ CompareHist& CompareHist::method(int m) {
     return *this;
 }
 
-double CompareHist::operator()(const cv::Mat& h1, const cv::Mat& h2) const {
-    return cv::compareHist(h1, h2, method_);
+double CompareHist::operator()(const HistogramData& h1, const HistogramData& h2) const {
+    return cv::compareHist(h1.data, h2.data, method_);
 }
 
 } // namespace improc::core

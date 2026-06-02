@@ -3,13 +3,15 @@
 
 #include <opencv2/imgproc.hpp>
 #include "improc/core/image.hpp"
+#include "improc/core/types/histogram_data.hpp"
 
 namespace improc::core {
 
 /**
  * @brief Computes a 1-D histogram for a grayscale or BGR image.
  *
- * For BGR images, per-channel histograms are concatenated along columns.
+ * For Gray images the result contains a (bins × 1) CV_32F matrix.
+ * For BGR images the result contains a (bins × 3) CV_32F matrix (columns = B, G, R).
  */
 struct CalcHist {
     /// @brief Sets the number of histogram bins (default: 256).
@@ -18,9 +20,9 @@ struct CalcHist {
     CalcHist& range(float lo, float hi);
 
     /// @brief Computes a 1-D histogram for a grayscale image.
-    [[nodiscard]] cv::Mat operator()(const Image<Gray>& img) const;
-    /// @brief Computes per-channel histograms for a BGR image, concatenated along columns.
-    [[nodiscard]] cv::Mat operator()(const Image<BGR>& img) const;
+    [[nodiscard]] HistogramData operator()(const Image<Gray>& img) const;
+    /// @brief Computes per-channel histograms for a BGR image, stored as columns of the result matrix.
+    [[nodiscard]] HistogramData operator()(const Image<BGR>& img) const;
 
 private:
     int bins_ = 256;
@@ -36,7 +38,7 @@ struct CompareHist {
     CompareHist& method(int m);
 
     /// @return Scalar result whose meaning depends on the chosen method.
-    [[nodiscard]] double operator()(const cv::Mat& h1, const cv::Mat& h2) const;
+    [[nodiscard]] double operator()(const HistogramData& h1, const HistogramData& h2) const;
 
 private:
     int method_ = cv::HISTCMP_CORREL;
