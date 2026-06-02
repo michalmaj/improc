@@ -8,6 +8,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## Table of Contents
 
 - [[Unreleased]](#unreleased)
+- [[0.18.0]](#0180--2026-06-02) — 2026-06-02 · Test improvements: renamed/moved test files, added `test_to_bgr.cpp` and `test_axis.cpp`
 - [[0.17.0]](#0170--2026-06-02) — 2026-06-02 · Fisheye camera ops: `FisheyeCalibrate`, `FisheyeUndistort`, `FisheyeUndistortPoints`, `FisheyeInitRectifyMap`, `FisheyeStereoCalibrate`, `FisheyeStereoRectify`
 - [[0.16.0]](#0160--2026-06-02) — 2026-06-02 · Typed wrappers: `HistogramData`, `ImageHash`, `FaceEmbedding`; `CountNonZero`/`ComponentMap` return `std::size_t`
 - [[0.15.0]](#0150--2026-06-02) — 2026-06-02 · Breaking changes: DrawContours/DrawKeypoints/DrawMatches moved to `improc::visualization`; `Dataset::shuffle_seed`; `[[nodiscard]]` ops; `ParameterError` exception hierarchy; remove empty cuda placeholder
@@ -27,6 +28,16 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ---
 
 ## [Unreleased]
+
+---
+
+## [0.18.0] — 2026-06-02
+
+### Test Improvements
+- Renamed `tests/core/ops/test_analysis_v080.cpp` → `tests/core/ops/test_analysis.cpp` (removed milestone label from filename)
+- Moved `tests/core/test_background_subtract.cpp` → `tests/core/ops/test_background_subtract.cpp` (consistent with source location)
+- Added `tests/core/ops/test_to_bgr.cpp` covering Gray→BGR, HSV→BGR, LAB→BGR, YCrCb→BGR conversions
+- Added `tests/core/ops/test_axis.cpp` covering `Axis` enum usability and `Flip` axis composition
 
 ---
 
