@@ -131,12 +131,12 @@ For best results, ensure the barcode covers at least 10% of the image width and 
 
 ## Face Detection (model-gated)
 
-`DetectFaceYN` and `RecognizeFace` require model files downloaded separately from the OpenCV Model Zoo. `DetectFaceYN` takes a `yunet.onnx` model path and returns a `std::vector<FaceDetection>`, each holding a `cv::Rect2f` bounding box, a confidence score, and five facial landmarks (right eye, left eye, nose tip, right mouth corner, left mouth corner). `RecognizeFace` takes an `sface.onnx` model path and produces a 128-element feature vector per aligned face crop; use the static `RecognizeFace::match(a, b)` function to compute cosine similarity — a value above 0.363 corresponds to same-identity at FAR = 1 × 10⁻⁵.
+`DetectFaceYN` and `RecognizeFace` require model files downloaded separately from the OpenCV Model Zoo. `DetectFaceYN` takes a `yunet.onnx` model path and returns a `std::vector<FaceDetection>`, each holding a `cv::Rect2f` bounding box, a confidence score, and five facial landmarks (right eye, left eye, nose tip, right mouth corner, left mouth corner). `RecognizeFace` takes an `sface.onnx` model path and produces a `FaceEmbedding` (a typed wrapper around a `(1, 128) CV_32F` descriptor) per aligned face crop; use the static `RecognizeFace::match(emb_a, emb_b)` function to compute cosine similarity — a value above 0.363 corresponds to same-identity at FAR = 1 × 10⁻⁵.
 
 ```cpp
 // Requires model files downloaded from the OpenCV Model Zoo
 // DetectFaceYN: returns vector<FaceDetection> {bbox, confidence, landmarks}
-// RecognizeFace: returns a feature vector; use RecognizeFace::match(a, b)
+// RecognizeFace: returns FaceEmbedding; use RecognizeFace::match(emb_a, emb_b)
 //                for cosine similarity (>0.363 = same person at FAR=1e-5)
 ```
 

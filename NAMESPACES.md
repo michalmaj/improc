@@ -160,6 +160,27 @@ Image<Gray>     gray  = convert<Gray, BGR>(bgr_image);
 Image<Float32C3> f32c3 = convert<Float32C3, BGR>(bgr_image);
 ```
 
+### Result types (`core/types/`)
+
+Three typed wrappers introduced in v0.16.0 replace raw `cv::Mat` returns for histogram, perceptual hash, and face embedding results. Each wrapper is a plain struct with a `value` member (the underlying `cv::Mat`) plus an `empty()` helper.
+
+**`HistogramData`** (`core/types/histogram_data.hpp`) — wraps a histogram `cv::Mat` with metadata.
+- Members: `cv::Mat data`, `int bins = 256`, `float range_min = 0.0f`, `float range_max = 256.0f`, `int channels = 1`
+- `bool empty() const` — true when `data.empty()`
+- Returned by `CalcHist`; accepted by `CompareHist`
+
+**`ImageHash`** (`core/types/image_hash.hpp`) — wraps a perceptual hash `cv::Mat`.
+- Member: `cv::Mat value`
+- `bool empty() const` — true when `value.empty()`
+- `operator==` — compares via L1 norm (zero = identical); `operator!=` provided
+- Returned by all 6 hash ops (`AverageHash`, `PHash`, `MarrHildrethHash`, `RadialVarianceHash`, `ColorMomentHash`, `BlockMeanHash`); accepted by their static `distance()` methods
+
+**`FaceEmbedding`** (`core/types/face_embedding.hpp`) — wraps an SFace face descriptor.
+- Member: `cv::Mat descriptor` (1×128 CV_32F)
+- `bool empty() const` — true when `descriptor.empty()`
+- `float cosine_similarity(const FaceEmbedding& other) const` — cosine similarity in [-1, 1]
+- Returned by `RecognizeFace::embed()`; accepted by `RecognizeFace::match()`
+
 ### Pipeline `operator|` and ops (`pipeline.hpp`)
 
 Composes processing steps using the pipe operator. Each step is a small functor. `pipeline.hpp` is the single umbrella include — it pulls in all ops.
@@ -329,7 +350,7 @@ cv::Rect    br   = cs.bounding_rect(0);
 // ComponentMap — label 0 = background; labels 1..N-1 = components
 ComponentMap cm   = binary | ConnectedComponents{};
 ComponentMap cm4  = binary | ConnectedComponents{}.connectivity(ConnectedComponents::Connectivity::Four);
-int          n_labels = cm.count();      // total label count (including background)
+std::size_t  n_labels = cm.count();      // total label count (including background)
 int          comp_area = cm.area(1);    // pixel area of label 1
 cv::Rect     br   = cm.bounding_rect(1);
 cv::Point2d  cen  = cm.centroid(1);
@@ -412,9 +433,9 @@ std::vector<FaceDetection> faces = face_detector(bgr_img);
 
 RecognizeFace recognizer;
 recognizer.model("face_recognition_sface.onnx");
-cv::Mat emb_a = recognizer.embed(face_chip_a);
-cv::Mat emb_b = recognizer.embed(face_chip_b);
-float   sim   = RecognizeFace::match(emb_a, emb_b);  // static; no model instance needed
+FaceEmbedding emb_a = recognizer.embed(face_chip_a);
+FaceEmbedding emb_b = recognizer.embed(face_chip_b);
+float         sim   = RecognizeFace::match(emb_a, emb_b);  // static; no model instance needed
 ```
 
 **`GammaCorrection`** throws `ParameterError` if `gamma <= 0`. Uses an 8-bit LUT for integer formats (fast); `cv::pow` + clamp for float formats.
@@ -453,7 +474,7 @@ float   sim   = RecognizeFace::match(emb_a, emb_b);  // static; no model instanc
 
 **`ConnectedComponents`** labels connected regions in a binary `Image<Gray>` using `cv::connectedComponentsWithStats`. Returns `ComponentMap` — not `Image<>`. Label 0 is always the background. Connectivity defaults to `Eight`; use `Four` for stricter adjacency. No parameters throw.
 
-**`ComponentMap`** — result type with public members `labels` (CV_32S, same size as source), `stats` (N×5 int matrix), `centroids` (N×2 double matrix), and `num_labels` (int, including background). `count()` is an alias for `num_labels`. Accessors `area(i)`, `bounding_rect(i)`, `centroid(i)`, `mask(i)` are bounds-checked and throw `std::out_of_range` for invalid label (including -1 or label ≥ count()).
+**`ComponentMap`** — result type with public members `labels` (CV_32S, same size as source), `stats` (N×5 int matrix), `centroids` (N×2 double matrix), and `num_labels` (std::size_t, including background). `count()` is an alias for `num_labels`. Accessors `area(i)`, `bounding_rect(i)`, `centroid(i)`, `mask(i)` are bounds-checked and throw `std::out_of_range` for invalid label (including -1 or label ≥ count()).
 
 **`DistanceTransform`** computes the distance of each non-zero pixel to the nearest zero pixel in a binary `Image<Gray>` using `cv::distanceTransform`. Returns `Image<Float32>`. Distance type defaults to `L2` (Euclidean); `L1` and `C` (Chebyshev) available. Mask size defaults to `Mask3`; `Mask5` and `Precise` also available. No parameters throw.
 
@@ -487,9 +508,9 @@ float   sim   = RecognizeFace::match(emb_a, emb_b);  // static; no model instanc
 
 **`DetectBarcode`** (`ops/detectors.hpp`) — detects and decodes barcodes in `Image<BGR>` using `cv::barcode::BarcodeDetector` (built-in, no model file). Returns `BarcodeResult`. Stateless, no setters. Empty result on blank image.
 
-**`DetectFaceYN`** (`ops/face.hpp`) — stateful YuNet face detector. Requires `.model(path)` before first call. Non-const `operator()(Image<BGR>)`; hold as named lvalue. Lazy-initialises the model on first call or when frame size changes. Throws `std::invalid_argument` if model path not set; `FileNotFoundError` if file absent; `ModelError` on load failure. Returns `std::vector<FaceDetection>`.
+**`DetectFaceYN`** (`ops/face.hpp`) — stateful YuNet face detector. Requires `.model(path)` before first call. Non-const `operator()(Image<BGR>)`; hold as named lvalue. Lazy-initialises the model on first call or when frame size changes. Throws `improc::ParameterError` if model path not set; `FileNotFoundError` if file absent; `ModelError` on load failure. Returns `std::vector<FaceDetection>`.
 
-**`RecognizeFace`** (`ops/face.hpp`) — stateful SFace face recogniser. Requires `.model(path)` before calling `embed()`. `embed(Image<BGR>)` returns a `(1, 128)` `CV_32F` embedding; non-const. `match(emb_a, emb_b)` is **static** — cosine similarity in `[-1, 1]`, no model required.
+**`RecognizeFace`** (`ops/face.hpp`) — stateful SFace face recogniser. Requires `.model(path)` before calling `embed()`. `embed(Image<BGR>)` returns `FaceEmbedding` (typed wrapper around a `(1, 128) CV_32F` descriptor); non-const. `match(const FaceEmbedding&, const FaceEmbedding&)` is **static** — cosine similarity in `[-1, 1]`, no model required.
 
 **`DescriptorSet`** — result type with a `KeypointSet keypoints` member and a `cv::Mat descriptors` member. `size()` returns `keypoints.size()`, which equals `descriptors.rows` after computation; `empty()` returns `true` when the stored `KeypointSet` is empty. Descriptor type: CV_32F for SIFT; CV_8U for ORB and AKAZE. A default-constructed `DescriptorSet` is empty. The underlying OpenCV `cv::Feature2D::compute()` call may prune keypoints that cannot be described; the stored `keypoints` reflects the pruned set.
 
@@ -572,20 +593,20 @@ Image<Gray> fg = frame | sub;  // lvalue — state accumulates
 #### Pipeline ops
 
 **`LUT`** (`ops/lut.hpp`) — pipeline op.
-- `LUT(cv::Mat table)` — 256-entry lookup table (CV_8UC1 or CV_8UC3, 256 elements). Throws `std::invalid_argument` on wrong size or depth.
+- `LUT(cv::Mat table)` — 256-entry lookup table (CV_8UC1 or CV_8UC3, 256 elements). Throws `improc::ParameterError` on wrong size or depth.
 - `operator()(Image<F>)` → `Image<F>` — applies `cv::LUT` to any format.
 - Composable via `operator|`.
 
 #### Analysis ops (non-image output or multi-arg — not composable via `operator|`)
 
-**`CalcHist`** (`ops/hist.hpp`) — histogram computation.
+**`CalcHist`** (`ops/hist.hpp`) — histogram computation. Returns a typed `HistogramData` wrapper.
 - Fluent: `.bins(int)` (default 256), `.range(float lo, float hi)` (default [0, 256)).
-- `operator()(const Image<Gray>&)` → `cv::Mat` (CV_32FC1, `bins×1`).
-- `operator()(const Image<BGR>&)` → `cv::Mat` (CV_32FC1, `3*bins×1`, channels stacked B/G/R).
+- `operator()(const Image<Gray>&)` → `HistogramData` (bins×1 CV_32FC1 histogram).
+- `operator()(const Image<BGR>&)` → `HistogramData` (3×bins CV_32FC1, channels stacked B/G/R).
 
 **`CompareHist`** (`ops/hist.hpp`) — histogram comparison.
 - Fluent: `.method(int)` (cv::HISTCMP_* constants; default `cv::HISTCMP_CORREL`).
-- `operator()(const cv::Mat&, const cv::Mat&)` → `double`.
+- `operator()(const HistogramData&, const HistogramData&)` → `double`.
 
 **`HoughLinesP`** (`ops/hough.hpp`) — probabilistic Hough line detection.
 - Fluent: `.rho(double)` (default 1.0), `.theta(double)` (default CV_PI/180), `.threshold(int)` (default 80), `.min_line_length(double)` (default 0), `.max_line_gap(double)` (default 0).
@@ -598,7 +619,7 @@ Image<Gray> fg = frame | sub;  // lvalue — state accumulates
 **`MatchTemplate`** (`ops/match_template.hpp`) — template matching.
 - Fluent: `.method(int)` (cv::TM_* constants; default `cv::TM_CCOEFF_NORMED`).
 - `operator()(const Image<BGR>& img, const Image<BGR>& templ)` → `std::pair<cv::Point, double>` — `{best_match_top_left, score}`.
-- Throws `std::invalid_argument` if template is larger than image.
+- Throws `improc::ParameterError` if template is larger than image.
 
 **`Moments`** (`ops/moments.hpp`) — image moments.
 - `bool binary` member (default `false`): treat non-zero pixels as 1.
@@ -610,12 +631,12 @@ Image<Gray> fg = frame | sub;  // lvalue — state accumulates
 
 **`Watershed`** (`ops/watershed.hpp`) — marker-based segmentation (multi-arg, in-place markers).
 - `operator()(const Image<BGR>& img, cv::Mat& markers)` — markers: CV_32SC1, same size as img; modified in place.
-- Throws `std::invalid_argument` if markers have wrong type or size.
+- Throws `improc::ParameterError` if markers have wrong type or size.
 
 **`GrabCut`** (`ops/grabcut.hpp`) — foreground/background segmentation (multi-arg).
 - Fluent: `.iterations(int)` (default 5).
 - `operator()(const Image<BGR>& img, cv::Rect roi)` → `Image<Gray>` mask (GC_FGD=1, GC_PR_FGD=3 are foreground).
-- Throws `std::invalid_argument` if roi is empty or outside image bounds.
+- Throws `improc::ParameterError` if roi is empty or outside image bounds.
 
 #### Phase 2 additions
 
@@ -641,16 +662,16 @@ Image<Gray> fg = frame | sub;  // lvalue — state accumulates
 - Fluent: `.lo_diff(cv::Scalar)` (default 0,0,0), `.up_diff(cv::Scalar)` (default 0,0,0).
 - `operator()(const Image<BGR>&, cv::Point seed, cv::Scalar new_color)` → `Image<BGR>`.
 - `operator()(const Image<Gray>&, cv::Point seed, uchar new_val)` → `Image<Gray>`.
-- Throws `std::invalid_argument` if seed is outside image bounds.
+- Throws `improc::ParameterError` if seed is outside image bounds.
 
 **`Remap`** (`ops/remap.hpp`) — pipeline op.
-- `Remap(cv::Mat map1, cv::Mat map2)` — throws `std::invalid_argument` if maps are empty or sizes differ.
+- `Remap(cv::Mat map1, cv::Mat map2)` — throws `improc::ParameterError` if maps are empty or sizes differ.
 - Fluent: `.interpolation(int)` (default `cv::INTER_LINEAR`).
 - `operator()(Image<F>)` → `Image<F>`; composable via `operator|`.
 
 **`AbsDiff`** (`ops/arithmetic.hpp`) — pipeline op.
 - `AbsDiff(cv::Mat other)` — second image in constructor.
-- `operator()(Image<F>)` → `Image<F>`; throws `std::invalid_argument` on size or type mismatch.
+- `operator()(Image<F>)` → `Image<F>`; throws `improc::ParameterError` on size or type mismatch.
 
 **`BitwiseAnd`** / **`BitwiseOr`** (`ops/arithmetic.hpp`) — pipeline ops.
 - Constructor takes second image as `cv::Mat`. Throw on size or type mismatch. Integer formats only (`IntegerFormat`).
@@ -667,12 +688,12 @@ All motion ops are **multi-arg** — they take two images or extra arguments and
 - Fluent: `.win_size(cv::Size)` (default {21,21}), `.max_level(int)` (default 3), `.max_iter(int)` (default 30), `.epsilon(double)` (default 0.01).
 - `operator()(const Image<Gray>& prev, const Image<Gray>& next, const std::vector<cv::Point2f>& prev_pts)` → `SparseLKFlowResult`.
 - `SparseLKFlowResult`: `.points` (tracked positions), `.status` (1=tracked, 0=lost), `.error` (per-point error).
-- Throws `std::invalid_argument` if `prev_pts` is empty or sizes differ.
+- Throws `improc::ParameterError` if `prev_pts` is empty or sizes differ.
 
 **`DenseFarnebackFlow`** (`ops/optical_flow.hpp`) — dense Farneback optical flow.
 - Fluent: `.pyr_scale(double)`, `.levels(int)`, `.win_size(int)`, `.iterations(int)`, `.poly_n(int)`, `.poly_sigma(double)`.
 - `operator()(const Image<Gray>& prev, const Image<Gray>& next)` → `Image<Flow>`.
-- Throws `std::invalid_argument` if sizes differ.
+- Throws `improc::ParameterError` if sizes differ.
 
 **`DenseDISFlow`** (`ops/optical_flow.hpp`) — dense DIS optical flow (faster alternative).
 - Fluent: `.preset(DenseDISFlow::Preset::{UltraFast, Fast, Medium})` (default Medium).
@@ -681,7 +702,7 @@ All motion ops are **multi-arg** — they take two images or extra arguments and
 **`CamShift`** (`ops/tracking.hpp`) — continuously adaptive MeanShift tracker.
 - Fluent: `.epsilon(double)` (default 1.0), `.max_iter(int)` (default 10).
 - `operator()(const Image<Gray>& back_proj, cv::Rect& window)` → `CamShiftResult{object, iterations}`. Updates `window` in-place.
-- Throws `std::invalid_argument` if `window` is outside image bounds.
+- Throws `improc::ParameterError` if `window` is outside image bounds.
 
 **`MeanShift`** (`ops/tracking.hpp`) — kernel-based MeanShift.
 - Fluent: `.epsilon(double)`, `.max_iter(int)`.
@@ -689,7 +710,7 @@ All motion ops are **multi-arg** — they take two images or extra arguments and
 
 **`PhaseCorrelate`** (`ops/phase_correlate.hpp`) — frequency-domain sub-pixel shift estimation.
 - `operator()(const Image<Float32>& prev, const Image<Float32>& next)` → `PhaseCorrelateResult{shift, response}`.
-- Uses Hanning window internally. Throws `std::invalid_argument` if sizes differ.
+- Uses Hanning window internally. Throws `improc::ParameterError` if sizes differ.
 
 ### Math / imgproc foundation ops (`pipeline.hpp`)
 
@@ -716,7 +737,7 @@ All motion ops are **multi-arg** — they take two images or extra arguments and
 
 **`MergeChannels`** (`ops/channels.hpp`) — channel composition.
 - `operator()(b, g, r)` → `Image<BGR>`. `operator()(b, g, r, a)` → `Image<BGRA>`.
-- Throws `std::invalid_argument` if channel sizes differ.
+- Throws `improc::ParameterError` if channel sizes differ.
 
 **Analysis structs** (not composable via `operator|`):
 
@@ -743,7 +764,7 @@ All motion ops are **multi-arg** — they take two images or extra arguments and
 - `operator()(const Image<F>&)` → `MeanStdDevResult{mean, stddev}`.
 
 **`CountNonZero`** (`ops/analysis.hpp`) — count non-zero pixels.
-- `operator()(const Image<Gray>&)` → `int`.
+- `operator()(const Image<Gray>&)` → `std::size_t`.
 
 **`Reduce`** (`ops/analysis.hpp`) — collapse image to 1D.
 - Fluent: `.op(ReduceOp::{Sum, Avg, Max, Min})`, `.dim(int)` (0=row-wise, 1=col-wise).
@@ -1902,7 +1923,7 @@ Includes `improc/core/pipeline.hpp` — `operator|` and all core ops are availab
 ### Chessboard detection (`ops/chessboard.hpp`)
 
 **`FindChessboardCorners`** — detects inner corners of a chessboard pattern.
-- `.board_size(cv::Size)` — **required**; inner corners (e.g. `{9,6}` for a 10×7 board); throws `std::invalid_argument` if not set
+- `.board_size(cv::Size)` — **required**; inner corners (e.g. `{9,6}` for a 10×7 board); throws `improc::ParameterError` if not set
 - `.flags(int)` — default: `CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_NORMALIZE_IMAGE`
 - `operator()(Image<Gray>)` → `FindChessboardResult`
 - `operator()(Image<BGR>)` → `FindChessboardResult` (auto-converts to Gray)
@@ -1925,14 +1946,14 @@ Includes `improc/core/pipeline.hpp` — `operator|` and all core ops are availab
 - Generates object points for one chessboard view on the Z=0 plane.
 - Returns `std::vector<cv::Point3f>` of size `board_size.width × board_size.height`.
 - `square_size` in any consistent unit (mm, m, etc.).
-- Throws `std::invalid_argument` if dimensions or square_size are not positive.
+- Throws `improc::ParameterError` if dimensions or square_size are not positive.
 
 **`CalibrateCamera`** — wraps `cv::calibrateCamera`.
 - `.flags(int)` — default: `0`
 - `operator()(obj_pts, img_pts, image_size)` → `CalibrationResult`
   - `obj_pts`: `std::vector<std::vector<cv::Point3f>>` — one entry per view
   - `img_pts`: `std::vector<std::vector<cv::Point2f>>` — one `FindChessboardResult.corners` per view
-- Throws `std::invalid_argument` if sizes mismatch or fewer than 3 views.
+- Throws `improc::ParameterError` if sizes mismatch or fewer than 3 views.
 
 ---
 
@@ -1942,7 +1963,7 @@ Includes `improc/core/pipeline.hpp` — `operator|` and all core ops are availab
 - `.K(cv::Mat)` — **required**; 3×3 intrinsic matrix
 - `.dist(cv::Mat)` — **required**; distortion coefficients
 - `template<AnyFormat F> operator()(Image<F>)` → `Image<F>` — works on any format; composable via `operator|`
-- Throws `std::invalid_argument` if K or dist not set.
+- Throws `improc::ParameterError` if K or dist not set.
 
 **`UndistortMap`** — precomputes undistortion maps once for use with `Remap` (efficient for video).
 - `.K(cv::Mat)` — **required**
@@ -1950,7 +1971,7 @@ Includes `improc/core/pipeline.hpp` — `operator|` and all core ops are availab
 - `.new_K(cv::Mat)` — optional; new camera matrix after undistortion
 - `.R(cv::Mat)` — optional; rectification transform (for stereo)
 - `operator()(cv::Size image_size)` → `UndistortMapResult`
-- Throws `std::invalid_argument` if K, dist not set, or image_size dimensions are not positive.
+- Throws `improc::ParameterError` if K, dist not set, or image_size dimensions are not positive.
 - Pair with `Remap` from `improc::core`: `img | Remap{maps.map1, maps.map2}`
 
 ---
@@ -1963,7 +1984,7 @@ Includes `improc/core/pipeline.hpp` — `operator|` and all core ops are availab
 **`SolvePnP`** — estimates pose from 2D/3D correspondences.
 - `.method(int)` — default: `cv::SOLVEPNP_ITERATIVE`
 - `operator()(obj_pts, img_pts, K, dist)` → `PnPResult`
-- Throws `std::invalid_argument` if sizes mismatch or fewer than 4 correspondences.
+- Throws `improc::ParameterError` if sizes mismatch or fewer than 4 correspondences.
 
 **`SolvePnPRansac`** — RANSAC-robust pose estimation.
 - `.method(int)` — default: `cv::SOLVEPNP_ITERATIVE`
@@ -1971,7 +1992,7 @@ Includes `improc/core/pipeline.hpp` — `operator|` and all core ops are availab
 - `.reprojection_error(float)` — default: `8.0`
 - `.iterations(int)` — default: `100`
 - `operator()(obj_pts, img_pts, K, dist)` → `PnPRansacResult`
-- Throws `std::invalid_argument` if sizes mismatch or fewer than 4 correspondences.
+- Throws `improc::ParameterError` if sizes mismatch or fewer than 4 correspondences.
 
 ---
 
@@ -2026,20 +2047,20 @@ if (det.found) {
 - `operator()(obj_pts, img_pts1, img_pts2, image_size)` → `StereoCalibrationResult`
   - `obj_pts`: `std::vector<std::vector<cv::Point3f>>` — same for both cameras
   - `img_pts1` / `img_pts2`: `std::vector<std::vector<cv::Point2f>>` — per-view corners
-- Throws `std::invalid_argument` if vector sizes differ, fewer than 3 views, or image_size not positive.
+- Throws `improc::ParameterError` if vector sizes differ, fewer than 3 views, or image_size not positive.
 
 **`StereoRectify`** — wraps `cv::stereoRectify`; computes rectification transforms.
 - `.alpha(double)` — default: `-1.0` (all valid pixels preserved)
 - `.new_image_size(cv::Size)` — default: `{0,0}` (same as input)
 - `operator()(K1, dist1, K2, dist2, R, T, image_size)` → `StereoRectifyResult`
-- Throws `std::invalid_argument` if any of K1/dist1/K2/dist2/R/T is empty.
+- Throws `improc::ParameterError` if any of K1/dist1/K2/dist2/R/T is empty.
 
 **`StereoBM`** — block-matching disparity; wraps `cv::StereoBM`.
 - `.num_disparities(int)` — default: `16`
 - `.block_size(int)` — default: `15`
 - `operator()(Image<Gray> left, Image<Gray> right)` → `cv::Mat` (CV_16S)
 - Divide result by `16.0` to get actual disparity values in pixels.
-- Throws `std::invalid_argument` if left and right sizes differ.
+- Throws `improc::ParameterError` if left and right sizes differ.
 
 **`StereoSGBM`** — semi-global block-matching; wraps `cv::StereoSGBM`.
 - `.min_disparity(int)` — default: `0`
@@ -2065,7 +2086,7 @@ if (det.found) {
 - `.ransac_threshold(double)` — default: `3.0`
 - `.confidence(double)` — default: `0.99`
 - `operator()(pts1, pts2)` → `FundamentalMatResult`
-- Throws `std::invalid_argument` if sizes mismatch or fewer than 8 points.
+- Throws `improc::ParameterError` if sizes mismatch or fewer than 8 points.
 
 **`FindEssentialMat`** — wraps `cv::findEssentialMat`.
 - `.method(int)` — default: `cv::RANSAC`
@@ -2073,7 +2094,7 @@ if (det.found) {
 - `.confidence(double)` — default: `0.99`
 - `operator()(pts1, pts2, K)` → `EssentialMatResult`
   - `K`: 3×3 camera matrix
-- Throws `std::invalid_argument` if sizes mismatch or fewer than 5 points.
+- Throws `improc::ParameterError` if sizes mismatch or fewer than 5 points.
 
 **`RecoverPose`** — wraps `cv::recoverPose`; decomposes essential matrix into R and t.
 - `operator()(E, pts1, pts2, K)` → `RecoverPoseResult`
@@ -2108,7 +2129,7 @@ Uses the OpenCV 4.8.1 unified API: value-type `cv::aruco::Dictionary` and `cv::a
 **`GenerateAruco`** — generates a single ArUco marker image via `cv::aruco::generateImageMarker`.
 - `.border_bits(int)` — default: `1`
 - `operator()(dict, id, side_pixels)` → `Image<Gray>` — square gray marker image
-- Throws `std::invalid_argument` if `id < 0` or `side_pixels < 1`.
+- Throws `improc::ParameterError` if `id < 0` or `side_pixels < 1`.
 
 **`ArucoPose`** — estimates pose for each detected marker using `cv::solvePnP` (IPPE_SQUARE).
 - `operator()(ArucoResult, K, dist, marker_length)` → `std::vector<ArucoPoseResult>`
@@ -2122,6 +2143,53 @@ Uses the OpenCV 4.8.1 unified API: value-type `cv::aruco::Dictionary` and `cv::a
 - `.marker_length(float)` — **required**; physical marker size in world units; throws if ≤ 0
 - `operator()(Image<BGR>, dict)` → `CharucoResult` — basic detection
 - `operator()(Image<BGR>, dict, K, dist)` → `CharucoResult` — with subpixel corner refinement
+
+---
+
+### Fisheye calibration (`ops/fisheye.hpp`)
+
+Six ops for fisheye (equidistant) lens calibration. They mirror the pinhole calibration API but call `cv::fisheye::*` internally. All use `CalibrationResult`, `UndistortMapResult`, and `StereoCalibrationResult` / `StereoRectifyResult` from `ops/calib_types.hpp` (same result types as the pinhole equivalents).
+
+**`FisheyeCalibrate`** — wraps `cv::fisheye::calibrate`.
+- Fluent: `.flags(int)` (default: `CALIB_RECOMPUTE_EXTRINSIC | CALIB_CHECK_COND | CALIB_FIX_SKEW`), `.criteria(cv::TermCriteria)`
+- `operator()(obj_pts, img_pts, image_size)` → `CalibrationResult`
+
+**`FisheyeUndistort`** — pipeline op; wraps `cv::fisheye::undistortImage`.
+- Fluent: `.K(cv::Mat)`, `.dist(cv::Mat)`, `.new_K(cv::Mat)` (optional; defaults to K)
+- `template<AnyFormat F> operator()(Image<F>)` → `Image<F>` — composable via `operator|`
+
+**`FisheyeUndistortPoints`** — wraps `cv::fisheye::undistortPoints`.
+- Fluent: `.K(cv::Mat)`, `.dist(cv::Mat)`, `.R(cv::Mat)` (optional), `.P(cv::Mat)` (optional)
+- `operator()(const std::vector<cv::Point2f>&)` → `std::vector<cv::Point2f>`
+
+**`FisheyeInitRectifyMap`** — wraps `cv::fisheye::initUndistortRectifyMap`; precomputes remap maps for efficient video undistortion.
+- Fluent: `.K(cv::Mat)`, `.dist(cv::Mat)`, `.R(cv::Mat)` (optional), `.new_K(cv::Mat)` (optional)
+- `operator()(cv::Size image_size)` → `UndistortMapResult` — use with `Remap{maps.map1, maps.map2}`
+
+**`FisheyeStereoCalibrate`** — wraps `cv::fisheye::stereoCalibrate`.
+- Fluent: `.K1(cv::Mat)`, `.dist1(cv::Mat)`, `.K2(cv::Mat)`, `.dist2(cv::Mat)`, `.flags(int)`
+- `operator()(obj_pts, left_pts, right_pts, image_size)` → `StereoCalibrationResult`
+- Note: `cv::fisheye::stereoCalibrate` does not compute E and F matrices; `.E` and `.F` in the result are empty.
+
+**`FisheyeStereoRectify`** — wraps `cv::fisheye::stereoRectify`.
+- Fluent: `.image_size(cv::Size)` (**required**), `.flags(int)` (default: `CALIB_ZERO_DISPARITY`), `.balance(double)` (default: 0.0), `.fov_scale(double)` (default: 1.0)
+- `operator()(K1, D1, K2, D2, R, T)` → `StereoRectifyResult`
+
+```cpp
+#include "improc/calib/pipeline.hpp"
+using namespace improc::calib;
+using namespace improc::core;
+
+// Fisheye calibration — same workflow as pinhole
+auto cal = FisheyeCalibrate{}(obj_pts, img_pts, image_size);
+
+// Undistort a frame (pipeline form)
+Image<BGR> out = frame | FisheyeUndistort{}.K(cal.camera_matrix).dist(cal.dist_coeffs);
+
+// Efficient video undistortion — precompute maps once
+auto maps = FisheyeInitRectifyMap{}.K(cal.camera_matrix).dist(cal.dist_coeffs)(image_size);
+Image<BGR> undistorted = frame | Remap{maps.map1, maps.map2};
+```
 
 ---
 

@@ -38,9 +38,9 @@
 
 ## Status
 
-> **Latest release: v0.12.0** — Documentation Completion: 100% Doxygen coverage across all 51 public headers; Conan migration for onnxruntime and nlohmann_json.
-> **Previous highlights:** v0.11.0 — 8 tutorials + 12 examples. v0.10.0 — Photo + Creative + Quality + Hashing (20 new ops). v0.9.0 — Camera Geometry + Detectors (`improc::calib`, 31 ops). v0.8.0 — Classic CV ops.
-> APIs are stabilising but may still change between minor versions.
+> **Latest release: v0.18.0** — API freeze preparation: uniform `improc::ParameterError`, `[[nodiscard]]` across all ops, typed result wrappers (`HistogramData`, `ImageHash`, `FaceEmbedding`), 6 fisheye ops, and test/doc cleanup.
+> **Previous highlights:** v0.17.0 — Fisheye calibration ops. v0.16.0 — Typed wrappers for histogram, hash, and face embedding results. v0.15.0 — `improc::ParameterError` replaces `std::invalid_argument`; `[[nodiscard]]` sweep. v0.12.0 — 100% Doxygen coverage. v0.9.0 — Camera Geometry + Detectors. v0.8.0 — Classic CV ops.
+> APIs are stabilising but may still change between minor versions until v1.0.0.
 
 | Namespace | Status | Notes |
 |---|---|---|
