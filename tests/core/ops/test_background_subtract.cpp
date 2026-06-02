@@ -1,4 +1,4 @@
-// tests/core/test_background_subtract.cpp
+// tests/core/ops/test_background_subtract.cpp
 #include <gtest/gtest.h>
 #include <opencv2/core.hpp>
 #include "improc/core/ops/background_subtract.hpp"
