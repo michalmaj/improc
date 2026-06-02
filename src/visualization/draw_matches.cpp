@@ -1,7 +1,7 @@
-// src/core/ops/draw_matches.cpp
-#include "improc/core/ops/draw_matches.hpp"
+// src/visualization/draw_matches.cpp
+#include "improc/visualization/draw_matches.hpp"
 
-namespace improc::core {
+namespace improc::visualization {
 
 Image<BGR> DrawKeypoints::operator()(Image<Gray> img) const {
     cv::Mat out;
@@ -27,4 +27,4 @@ Image<BGR> DrawMatches::operator()() const {
     return Image<BGR>(std::move(out));
 }
 
-} // namespace improc::core
+} // namespace improc::visualization
