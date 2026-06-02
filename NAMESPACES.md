@@ -805,22 +805,22 @@ if (!ok)
 
 `imwrite` calls `cv::imwrite`. Returns `Error{Code::ImageWriteFailed}` if `cv::imwrite` returns false (bad path, unsupported extension, permissions error).
 
-### `CameraCapture` (`io/camera_capture.hpp`)
+### `WebcamCapture` (`io/webcam_capture.hpp`)
 
-Asynchronous camera frame capture. Runs a background capture thread. Non-copyable, non-movable.
+Asynchronous camera frame capture. Runs a background capture thread. Non-copyable, non-movable. The thread is **not** started on construction — call `start()` explicitly. `start()` is idempotent. Accepts an integer device index (e.g. `0`) or a string device path (e.g. `"/dev/video1"`).
 
-`getFrame()` returns `std::expected<cv::Mat, improc::Error>` — use `.has_value()` / `*result` / `.error()` to inspect the result.
+`getFrame()` returns `std::expected<CameraFrame, improc::Error>`. `CameraFrame::rgb` is an `std::optional<Image<BGR>>`; `CameraFrame::depth` is populated only by depth-capable devices. Returns `Error::CameraUnavailable` if the device could not be opened, or `Error::CameraFrameEmpty` if no frame has been captured yet.
 
 ```cpp
-CameraCapture cam(0);
-std::this_thread::sleep_for(std::chrono::milliseconds(500)); // warm-up
+WebcamCapture cam(0);
+cam.start();
 
-if (auto frame = cam.getFrame())
-    cv::imshow("Live", *frame);
-else
+if (auto frame = cam.getFrame(); frame && frame->rgb)
+    cv::imshow("Live", frame->rgb->mat());
+else if (!frame)
     std::cerr << frame.error().message << '\n';
 
-cam.stop();
+cam.stop();  // also called automatically by the destructor
 ```
 
 ### `VideoWriter` (`io/video_writer.hpp`)
@@ -1428,20 +1428,21 @@ Throws `ParameterError` if constructed with 0 threads. Exceptions from tasks pro
 
 ### `FramePipeline<Result>` (`threading/frame_pipeline.hpp`)
 
-Header-only template. Connects `CameraCapture` to `ThreadPool` for typed frame-by-frame processing. Holds references (not ownership) to both. Non-copyable, non-movable.
+Header-only template. Connects any `CameraSourceType` (e.g. `WebcamCapture`, `IPCameraCapture`, `VideoFileCapture`) to a `ThreadPool` for typed frame-by-frame processing. Holds references (not ownership) to both. Non-copyable, non-movable. `start()` starts the source and spawns a polling thread — do **not** call `source.start()` separately.
 
 ```cpp
-improc::io::CameraCapture camera(0);
+improc::io::WebcamCapture camera(0);
 ThreadPool pool(4);
-FramePipeline<cv::Mat> pipeline(camera, pool);
+FramePipeline<Image<Float32C3>> pipeline(camera, pool);
 
-pipeline.start([](cv::Mat frame) {
-    return frame | Resize{}.width(224).height(224) | ToFloat32C3{};
+pipeline.start([](improc::io::CameraFrame frame) -> Image<Float32C3> {
+    if (!frame.rgb) return Image<Float32C3>{};
+    return *frame.rgb | Resize{}.width(224).height(224) | ToFloat32C3{};
 });
 
 while (running) {
     if (auto result = pipeline.tryPop()) {
-        // use *result (cv::Mat)
+        // use *result (Image<Float32C3>)
     }
 }
 pipeline.stop();

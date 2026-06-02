@@ -112,7 +112,7 @@ int main() {
     ByteTracker tracker{};
     tracker.high_conf_threshold(0.6f).low_conf_threshold(0.15f);
 
-    CameraCapture cam{0};  // or path to video file
+    WebcamCapture cam{0};  // or path to video file
 
     while (true) {
         auto frame = cam.next();

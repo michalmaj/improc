@@ -114,9 +114,9 @@ gtest_discover_tests(improc_tests)
 
 # === DEMO ===
 
-# Camera Capture
-add_executable(demo_camera_capture examples/io/demo_camera_capture.cpp)
-target_link_libraries(demo_camera_capture PRIVATE improc)
+# Webcam Capture
+add_executable(demo_webcam_capture examples/io/demo_webcam_capture.cpp)
+target_link_libraries(demo_webcam_capture PRIVATE improc)
 
 # Unified Camera (AnyCameraSource — runtime selection between webcam and IP camera)
 add_executable(demo_unified_camera examples/io/demo_unified_camera.cpp)

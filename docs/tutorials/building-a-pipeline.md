@@ -220,5 +220,5 @@ Image<Float32C3> tensor = *src
 
 ## Next Steps
 
-- [Real-Time Camera](real-time-camera.md) — `CameraCapture` + `ThreadPool` + `FramePipeline`
+- [Real-Time Camera](real-time-camera.md) — `WebcamCapture` + `ThreadPool` + `FramePipeline`
 - [NAMESPACES.md](../../NAMESPACES.md) — complete API reference for every op, error code, and return type
