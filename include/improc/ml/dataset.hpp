@@ -70,7 +70,7 @@ public:
      * @brief Sets the random seed used when shuffling samples before splitting.
      * @param seed Seed value for the internal `std::mt19937`.
      */
-    void set_shuffle_seed(unsigned int seed);
+    void shuffle_seed(unsigned int seed);
 
 private:
     std::vector<cv::Mat> train_;
