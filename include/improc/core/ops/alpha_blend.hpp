@@ -26,7 +26,7 @@ namespace improc::core {
 struct AlphaBlend {
     explicit AlphaBlend(Image<BGRA> overlay) : overlay_(std::move(overlay)) {}
 
-    Image<BGR> operator()(Image<BGR> img) const {
+    [[nodiscard]] Image<BGR> operator()(Image<BGR> img) const {
         if (img.rows() != overlay_.rows() || img.cols() != overlay_.cols())
             throw ParameterError{"overlay", "size must match background", "AlphaBlend"};
 

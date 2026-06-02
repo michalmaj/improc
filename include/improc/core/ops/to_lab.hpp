@@ -17,7 +17,7 @@ namespace improc::core {
  * @endcode
  */
 struct ToLAB {
-    Image<LAB> operator()(Image<BGR> img) const;
+    [[nodiscard]] Image<LAB> operator()(Image<BGR> img) const;
 };
 
 } // namespace improc::core

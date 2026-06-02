@@ -18,7 +18,7 @@ namespace improc::core {
  * @endcode
  */
 struct ToYCrCb {
-    Image<YCrCb> operator()(Image<BGR> img) const;
+    [[nodiscard]] Image<YCrCb> operator()(Image<BGR> img) const;
 };
 
 } // namespace improc::core

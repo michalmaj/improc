@@ -19,7 +19,7 @@ namespace improc::core {
  */
 struct PyrDown {
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img) const {
         cv::Mat dst;
         cv::pyrDown(img.mat(), dst);
         return Image<Format>(std::move(dst));
@@ -38,7 +38,7 @@ struct PyrDown {
  */
 struct PyrUp {
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img) const {
         cv::Mat dst;
         cv::pyrUp(img.mat(), dst);
         return Image<Format>(std::move(dst));

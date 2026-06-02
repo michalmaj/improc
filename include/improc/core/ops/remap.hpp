@@ -35,7 +35,7 @@ struct Remap {
     Remap& interpolation(int flags) { interpolation_ = flags; return *this; }
 
     template<AnyFormat F>
-    Image<F> operator()(Image<F> img) const {
+    [[nodiscard]] Image<F> operator()(Image<F> img) const {
         cv::Mat result;
         cv::remap(img.mat(), result, map1_, map2_, interpolation_);
         return Image<F>(std::move(result));

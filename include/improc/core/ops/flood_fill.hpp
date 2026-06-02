@@ -21,9 +21,9 @@ struct FloodFill {
     FloodFill& up_diff(cv::Scalar hi) { up_diff_ = hi; return *this; }
 
     /// @brief Fills a connected region in a BGR image.
-    Image<BGR>  operator()(const Image<BGR>&  img, cv::Point seed, cv::Scalar new_color) const;
+    [[nodiscard]] Image<BGR>  operator()(const Image<BGR>&  img, cv::Point seed, cv::Scalar new_color) const;
     /// @brief Fills a connected region in a Gray image.
-    Image<Gray> operator()(const Image<Gray>& img, cv::Point seed, uchar      new_val)   const;
+    [[nodiscard]] Image<Gray> operator()(const Image<Gray>& img, cv::Point seed, uchar      new_val)   const;
 
 private:
     cv::Scalar lo_diff_{0, 0, 0};

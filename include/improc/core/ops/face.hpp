@@ -27,7 +27,7 @@ public:
     DetectFaceYN& nms_threshold(float t)   { nms_threshold_    = t;               return *this; }
     DetectFaceYN& top_k(int k)             { top_k_            = k;               return *this; }
 
-    std::vector<FaceDetection> operator()(Image<BGR> img);  // non-const: lazy init
+    [[nodiscard]] std::vector<FaceDetection> operator()(Image<BGR> img);  // non-const: lazy init
 
 private:
     void ensure_initialized(cv::Size frame_size);
@@ -54,7 +54,7 @@ class RecognizeFace {
 public:
     RecognizeFace& model(std::string path) { model_path_ = std::move(path); return *this; }
 
-    cv::Mat      embed(Image<BGR> face_chip);           // non-const; returns (1, 128) CV_32F
+    [[nodiscard]] cv::Mat      embed(Image<BGR> face_chip);           // non-const; returns (1, 128) CV_32F
     static float match(const cv::Mat& emb_a,
                        const cv::Mat& emb_b);           // static: cosine similarity, no model needed
 

@@ -38,7 +38,7 @@ struct UnsharpMask {
 
     /// @brief Applies unsharp mask sharpening to img.
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img) const {
         cv::Mat blurred;
         cv::GaussianBlur(img.mat(), blurred, cv::Size(0, 0), sigma_);
         cv::Mat dst;

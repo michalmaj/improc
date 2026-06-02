@@ -60,7 +60,7 @@ struct ConnectedComponents {
 
     ConnectedComponents& connectivity(Connectivity c) { conn_ = c; return *this; }
 
-    ComponentMap operator()(Image<Gray> img) const;
+    [[nodiscard]] ComponentMap operator()(Image<Gray> img) const;
 
 private:
     Connectivity conn_ = Connectivity::Eight;

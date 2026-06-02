@@ -32,9 +32,9 @@ struct SobelEdge {
     }
 
     /// @brief Detects edges in img using the Sobel operator.
-    Image<Gray> operator()(Image<Gray> img) const;
+    [[nodiscard]] Image<Gray> operator()(Image<Gray> img) const;
     /// @brief Detects edges in img using the Sobel operator.
-    Image<Gray> operator()(Image<BGR>  img) const;
+    [[nodiscard]] Image<Gray> operator()(Image<BGR>  img) const;
 
 private:
     int ksize_ = 3;
@@ -77,9 +77,9 @@ struct CannyEdge {
     }
 
     /// @brief Detects edges in img using the Canny algorithm.
-    Image<Gray> operator()(Image<Gray> img) const;
+    [[nodiscard]] Image<Gray> operator()(Image<Gray> img) const;
     /// @brief Detects edges in img using the Canny algorithm.
-    Image<Gray> operator()(Image<BGR>  img) const;
+    [[nodiscard]] Image<Gray> operator()(Image<BGR>  img) const;
 
 private:
     double threshold1_    = 100.0;
@@ -125,9 +125,9 @@ struct LaplacianEdge {
     }
 
     /// @brief Detects edges in img using the Laplacian operator.
-    Image<Gray> operator()(Image<Gray> img) const;
+    [[nodiscard]] Image<Gray> operator()(Image<Gray> img) const;
     /// @brief Detects edges in img using the Laplacian operator (auto-converts BGR→Gray).
-    Image<Gray> operator()(Image<BGR>  img) const;
+    [[nodiscard]] Image<Gray> operator()(Image<BGR>  img) const;
 
 private:
     int    ksize_ = 1;
@@ -175,9 +175,9 @@ struct HarrisCorner {
     }
 
     /// @brief Returns normalized corner response map for a gray image.
-    Image<Gray> operator()(Image<Gray> img) const;
+    [[nodiscard]] Image<Gray> operator()(Image<Gray> img) const;
     /// @brief Returns normalized corner response map (auto-converts BGR→Gray).
-    Image<Gray> operator()(Image<BGR>  img) const;
+    [[nodiscard]] Image<Gray> operator()(Image<BGR>  img) const;
 
 private:
     int    block_size_ = 2;
@@ -200,7 +200,7 @@ struct SobelGradient {
     SobelGradient& scale(double s) { scale_ = s; return *this; }
     SobelGradient& delta(double d) { delta_ = d; return *this; }
 
-    SobelResult operator()(const Image<Gray>& img) const;
+    [[nodiscard]] SobelResult operator()(const Image<Gray>& img) const;
 
 private:
     int    ksize_ = 3;
@@ -217,7 +217,7 @@ struct ScharrGradient {
     ScharrGradient& scale(double s) { scale_ = s; return *this; }
     ScharrGradient& delta(double d) { delta_ = d; return *this; }
 
-    ScharrResult operator()(const Image<Gray>& img) const;
+    [[nodiscard]] ScharrResult operator()(const Image<Gray>& img) const;
 
 private:
     double scale_ = 1.0;

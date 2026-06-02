@@ -15,7 +15,7 @@ namespace improc::core {
  */
 struct AverageHash {
     /// @return 1×8 CV_8U hash matrix (64 bits).
-    cv::Mat operator()(const Image<BGR>&) const;
+    [[nodiscard]] cv::Mat operator()(const Image<BGR>&) const;
     /// @brief Computes the Hamming distance between two AverageHash digests.
     static double distance(const cv::Mat& a, const cv::Mat& b);
 };
@@ -25,7 +25,7 @@ struct AverageHash {
  */
 struct PHash {
     /// @return 1×8 CV_8U hash matrix (64 bits, DCT-based).
-    cv::Mat operator()(const Image<BGR>&) const;
+    [[nodiscard]] cv::Mat operator()(const Image<BGR>&) const;
     /// @brief Computes the Hamming distance between two PHash digests.
     static double distance(const cv::Mat& a, const cv::Mat& b);
 };
@@ -35,7 +35,7 @@ struct PHash {
  */
 struct MarrHildrethHash {
     /// @return 1×72 CV_8U hash matrix (576 bits, LoG zero-crossing).
-    cv::Mat operator()(const Image<BGR>&) const;
+    [[nodiscard]] cv::Mat operator()(const Image<BGR>&) const;
     /// @brief Computes the Hamming distance between two MarrHildrethHash digests.
     static double distance(const cv::Mat& a, const cv::Mat& b);
 };
@@ -45,7 +45,7 @@ struct MarrHildrethHash {
  */
 struct RadialVarianceHash {
     /// @return 1×40 CV_64F hash matrix (radial variances).
-    cv::Mat operator()(const Image<BGR>&) const;
+    [[nodiscard]] cv::Mat operator()(const Image<BGR>&) const;
     /// @brief Computes the L2 distance between two RadialVarianceHash digests.
     static double distance(const cv::Mat& a, const cv::Mat& b);
 };
@@ -55,7 +55,7 @@ struct RadialVarianceHash {
  */
 struct ColorMomentHash {
     /// @return 1×42 CV_64F hash matrix (color moments).
-    cv::Mat operator()(const Image<BGR>&) const;
+    [[nodiscard]] cv::Mat operator()(const Image<BGR>&) const;
     /// @brief Computes the L2 distance between two ColorMomentHash digests.
     static double distance(const cv::Mat& a, const cv::Mat& b);
 };
@@ -65,7 +65,7 @@ struct ColorMomentHash {
  */
 struct BlockMeanHash {
     /// @return 1×32 CV_8U hash matrix (256 bits, block means).
-    cv::Mat operator()(const Image<BGR>&) const;
+    [[nodiscard]] cv::Mat operator()(const Image<BGR>&) const;
     /// @brief Computes the Hamming distance between two BlockMeanHash digests.
     static double distance(const cv::Mat& a, const cv::Mat& b);
 };

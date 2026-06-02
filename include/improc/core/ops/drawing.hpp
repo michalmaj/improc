@@ -40,7 +40,7 @@ struct DrawText {
         return *this;
     }
 
-    Image<BGR> operator()(Image<BGR> img) const;
+    [[nodiscard]] Image<BGR> operator()(Image<BGR> img) const;
 
 private:
     std::string text_;
@@ -73,7 +73,7 @@ struct DrawLine {
         return *this;
     }
 
-    Image<BGR> operator()(Image<BGR> img) const;
+    [[nodiscard]] Image<BGR> operator()(Image<BGR> img) const;
 
 private:
     cv::Point  p1_, p2_;
@@ -110,7 +110,7 @@ struct DrawCircle {
         return *this;
     }
 
-    Image<BGR> operator()(Image<BGR> img) const;
+    [[nodiscard]] Image<BGR> operator()(Image<BGR> img) const;
 
 private:
     cv::Point  center_;
@@ -143,7 +143,7 @@ struct DrawRectangle {
         return *this;
     }
 
-    Image<BGR> operator()(Image<BGR> img) const;
+    [[nodiscard]] Image<BGR> operator()(Image<BGR> img) const;
 
 private:
     cv::Rect   rect_;

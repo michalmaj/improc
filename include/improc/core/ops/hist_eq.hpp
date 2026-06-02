@@ -22,9 +22,9 @@ namespace improc::core {
  */
 struct HistogramEqualization {
     /// @brief Equalizes the histogram of a single-channel gray image.
-    Image<Gray> operator()(Image<Gray> img) const;
+    [[nodiscard]] Image<Gray> operator()(Image<Gray> img) const;
     /// @brief Equalizes the luminance (Y) channel of a BGR image.
-    Image<BGR>  operator()(Image<BGR>  img) const;
+    [[nodiscard]] Image<BGR>  operator()(Image<BGR>  img) const;
 };
 
 } // namespace improc::core

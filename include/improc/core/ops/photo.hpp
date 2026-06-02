@@ -27,7 +27,7 @@ struct SeamlessClone {
     /// @brief Sets the blending mode (default: Mode::Normal).
     SeamlessClone& mode(Mode m) { mode_ = m; return *this; }
     /// @brief Clones the masked region of src into dst centred at center.
-    Image<BGR> operator()(const Image<BGR>& src,
+    [[nodiscard]] Image<BGR> operator()(const Image<BGR>& src,
                           const Image<BGR>& dst,
                           const Image<Gray>& mask,
                           cv::Point center) const;
@@ -51,7 +51,7 @@ struct EdgePreservingFilter {
     /// @brief Sets the filter type (default: Filter::Recursive).
     EdgePreservingFilter& filter(Filter f) { filter_  = f; return *this; }
     /// @return Smoothed BGR image with preserved edges.
-    Image<BGR> operator()(const Image<BGR>&) const;
+    [[nodiscard]] Image<BGR> operator()(const Image<BGR>&) const;
 private:
     float  sigma_s_ = 60.f;
     float  sigma_r_ = 0.4f;
@@ -67,7 +67,7 @@ struct DetailEnhance {
     /// @brief Sets the colour standard deviation (default: 0.15).
     DetailEnhance& sigma_r(float r) { sigma_r_ = r; return *this; }
     /// @return Detail-enhanced BGR image.
-    Image<BGR> operator()(const Image<BGR>&) const;
+    [[nodiscard]] Image<BGR> operator()(const Image<BGR>&) const;
 private:
     float sigma_s_ = 10.f;
     float sigma_r_ = 0.15f;
@@ -82,7 +82,7 @@ struct Stylize {
     /// @brief Sets the colour standard deviation (default: 0.45).
     Stylize& sigma_r(float r) { sigma_r_ = r; return *this; }
     /// @return Stylised BGR image.
-    Image<BGR> operator()(const Image<BGR>&) const;
+    [[nodiscard]] Image<BGR> operator()(const Image<BGR>&) const;
 private:
     float sigma_s_ = 60.f;
     float sigma_r_ = 0.45f;
@@ -99,7 +99,7 @@ struct PencilSketch {
     /// @brief Sets the shading intensity for the colour sketch (default: 0.05).
     PencilSketch& shade_factor(float f) { shade_factor_ = f; return *this; }
     /// @return PencilSketchResult containing grayscale and colour sketch images.
-    PencilSketchResult operator()(const Image<BGR>&) const;
+    [[nodiscard]] PencilSketchResult operator()(const Image<BGR>&) const;
 private:
     float sigma_s_      = 60.f;
     float sigma_r_      = 0.07f;
@@ -115,7 +115,7 @@ struct NLMeansDenoisingMulti {
     /// @brief Sets the number of surrounding frames in the temporal window (default: 3).
     NLMeansDenoisingMulti& temporal_window_size(int w) { tws_ = w; return *this; }
     /// @return Denoised BGR image of the middle frame.
-    Image<BGR> operator()(const std::vector<Image<BGR>>&) const;
+    [[nodiscard]] Image<BGR> operator()(const std::vector<Image<BGR>>&) const;
 private:
     float h_   = 3.f;
     int   tws_ = 3;
@@ -136,7 +136,7 @@ struct MergeHDR {
     /// @brief Sets the merge algorithm (default: Method::Mertens).
     MergeHDR& method(Method m) { method_ = m; return *this; }
     /// @return Image<Float32C3> HDR image.
-    Image<Float32C3> operator()(const std::vector<Image<BGR>>& images,
+    [[nodiscard]] Image<Float32C3> operator()(const std::vector<Image<BGR>>& images,
                                 const std::vector<float>& times = {}) const;
 private:
     Method method_ = Method::Mertens;
@@ -158,7 +158,7 @@ struct ToneMap {
     /// @brief Sets the tone-mapping algorithm (default: Algorithm::Reinhard).
     ToneMap& algorithm(Algorithm a) { algo_ = a; return *this; }
     /// @return Tone-mapped BGR image (CV_8UC3).
-    Image<BGR> operator()(const Image<Float32C3>&) const;
+    [[nodiscard]] Image<BGR> operator()(const Image<Float32C3>&) const;
 private:
     float     gamma_ = 1.f;
     Algorithm algo_  = Algorithm::Reinhard;

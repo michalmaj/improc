@@ -51,7 +51,7 @@ struct FindContours {
     FindContours& mode(Mode m)     { mode_   = m; return *this; }
     FindContours& method(Method m) { method_ = m; return *this; }
 
-    ContourSet operator()(Image<Gray> img) const;
+    [[nodiscard]] ContourSet operator()(Image<Gray> img) const;
 
 private:
     Mode   mode_   = Mode::External;
@@ -59,14 +59,14 @@ private:
 };
 
 struct ConvexHull {
-    std::vector<cv::Point> operator()(const std::vector<cv::Point>& contour) const;
+    [[nodiscard]] std::vector<cv::Point> operator()(const std::vector<cv::Point>& contour) const;
 };
 
 struct ApproxPolyDP {
     ApproxPolyDP& epsilon(double e) { epsilon_ = e; return *this; }
     ApproxPolyDP& closed(bool c)    { closed_  = c; return *this; }
 
-    std::vector<cv::Point> operator()(const std::vector<cv::Point>& contour) const;
+    [[nodiscard]] std::vector<cv::Point> operator()(const std::vector<cv::Point>& contour) const;
 
 private:
     double epsilon_ = 3.0;
@@ -74,11 +74,11 @@ private:
 };
 
 struct MinAreaRect {
-    cv::RotatedRect operator()(const std::vector<cv::Point>& contour) const;
+    [[nodiscard]] cv::RotatedRect operator()(const std::vector<cv::Point>& contour) const;
 };
 
 struct BoundingRect {
-    cv::Rect operator()(const std::vector<cv::Point>& contour) const;
+    [[nodiscard]] cv::Rect operator()(const std::vector<cv::Point>& contour) const;
 };
 
 } // namespace improc::core

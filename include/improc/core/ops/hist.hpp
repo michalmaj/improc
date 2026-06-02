@@ -18,9 +18,9 @@ struct CalcHist {
     CalcHist& range(float lo, float hi);
 
     /// @brief Computes a 1-D histogram for a grayscale image.
-    cv::Mat operator()(const Image<Gray>& img) const;
+    [[nodiscard]] cv::Mat operator()(const Image<Gray>& img) const;
     /// @brief Computes per-channel histograms for a BGR image, concatenated along columns.
-    cv::Mat operator()(const Image<BGR>& img) const;
+    [[nodiscard]] cv::Mat operator()(const Image<BGR>& img) const;
 
 private:
     int bins_ = 256;
@@ -36,7 +36,7 @@ struct CompareHist {
     CompareHist& method(int m);
 
     /// @return Scalar result whose meaning depends on the chosen method.
-    double operator()(const cv::Mat& h1, const cv::Mat& h2) const;
+    [[nodiscard]] double operator()(const cv::Mat& h1, const cv::Mat& h2) const;
 
 private:
     int method_ = cv::HISTCMP_CORREL;

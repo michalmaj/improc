@@ -57,7 +57,7 @@ struct Threshold {
 
     /// @brief Applies thresholding to img.
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img) const {
         cv::Mat dst;
         try {
             cv::threshold(img.mat(), dst, value_, max_value_, detail::to_cv_type(mode_));

@@ -43,9 +43,9 @@ struct BilateralFilter {
     }
 
     /// @brief Applies bilateral filter to img.
-    Image<Gray> operator()(Image<Gray> img) const;
+    [[nodiscard]] Image<Gray> operator()(Image<Gray> img) const;
     /// @brief Applies bilateral filter to img.
-    Image<BGR>  operator()(Image<BGR>  img) const;
+    [[nodiscard]] Image<BGR>  operator()(Image<BGR>  img) const;
 
 private:
     int    diameter_    = 9;

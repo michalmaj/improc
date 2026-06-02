@@ -72,7 +72,7 @@ struct WarpPerspective {
 
     /// @brief Warps img using the configured homography.
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img) const {
         if (!H_)
             throw ParameterError{"homography", "must be set before calling operator()", "WarpPerspective"};
         int w = width_.value_or(img.cols());

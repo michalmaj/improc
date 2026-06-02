@@ -51,7 +51,7 @@ struct WarpAffine {
 
     /// @brief Applies the affine transform to img.
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img) const {
         if (!M_)
             throw ParameterError{"matrix", "must be set before calling operator()", "WarpAffine"};
         int w = width_.value_or(img.cols());

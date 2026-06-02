@@ -51,7 +51,7 @@ struct MatchBF {
         return *this;
     }
 
-    MatchSet operator()() const;
+    [[nodiscard]] MatchSet operator()() const;
 
 private:
     DescriptorSet lhs_;
@@ -85,7 +85,7 @@ struct MatchFlann {
         return *this;
     }
 
-    MatchSet operator()() const;
+    [[nodiscard]] MatchSet operator()() const;
 
 private:
     DescriptorSet lhs_;

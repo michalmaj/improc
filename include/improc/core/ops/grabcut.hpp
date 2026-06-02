@@ -20,7 +20,7 @@ struct GrabCut {
     /// @brief Runs GrabCut and returns a binary foreground mask.
     /// @param roi Rectangle containing the foreground object.
     /// @return Image<Gray> where 255 = foreground, 0 = background.
-    Image<Gray> operator()(const Image<BGR>& img, cv::Rect roi) const;
+    [[nodiscard]] Image<Gray> operator()(const Image<BGR>& img, cv::Rect roi) const;
 
 private:
     int iterations_{5};

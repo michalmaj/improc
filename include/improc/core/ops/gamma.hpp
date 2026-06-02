@@ -32,7 +32,7 @@ struct GammaCorrection {
 
     /// @brief Applies gamma correction to img.
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img) const {
         const int depth = img.mat().depth();
         cv::Mat dst;
 

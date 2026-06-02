@@ -27,7 +27,7 @@ struct LUT {
     }
 
     template<AnyFormat F>
-    Image<F> operator()(Image<F> img) const {
+    [[nodiscard]] Image<F> operator()(Image<F> img) const {
         cv::Mat result;
         cv::LUT(img.mat(), table_, result);
         return Image<F>(std::move(result));

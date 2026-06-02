@@ -24,7 +24,7 @@ struct Flip {
 
     /// @brief Flips img along the configured axis.
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img) const {
         int flip_code;
         switch (axis_) {
             case Axis::Horizontal: flip_code =  1; break;

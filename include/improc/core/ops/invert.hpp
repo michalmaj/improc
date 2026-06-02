@@ -22,7 +22,7 @@ namespace improc::core {
  */
 struct Invert {
     template<IntegerFormat Format>
-    Image<Format> operator()(Image<Format> img) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img) const {
         cv::Mat dst;
         cv::bitwise_not(img.mat(), dst);
         return Image<Format>(std::move(dst));

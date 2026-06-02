@@ -40,7 +40,7 @@ struct Resize {
 
     /// @brief Resizes img to the configured dimensions.
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img) const {
         if (!width_ && !height_) {
             throw ParameterError{"width/height", "at least one must be set", "Resize"};
         }

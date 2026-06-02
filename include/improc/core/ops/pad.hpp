@@ -69,7 +69,7 @@ struct Pad {
 
     /// @brief Applies the configured border padding to img.
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img) const {
         if (top_ == 0 && bottom_ == 0 && left_ == 0 && right_ == 0)
             throw ParameterError{"top/bottom/left/right", "at least one side must be > 0", "Pad"};
         cv::Mat dst;
@@ -109,7 +109,7 @@ struct PadToSquare {
 
     /// @brief Pads img along the short axis to produce a square.
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img) const {
         const int h = img.rows();
         const int w = img.cols();
         if (h == w) return img.clone();

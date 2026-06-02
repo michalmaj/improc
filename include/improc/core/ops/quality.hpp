@@ -19,8 +19,8 @@ namespace improc::core {
  * @return INFINITY when images are identical (MSE == 0).
  */
 struct PSNR {
-    double operator()(const Image<BGR>&  ref, const Image<BGR>&  cmp) const;
-    double operator()(const Image<Gray>& ref, const Image<Gray>& cmp) const;
+    [[nodiscard]] double operator()(const Image<BGR>&  ref, const Image<BGR>&  cmp) const;
+    [[nodiscard]] double operator()(const Image<Gray>& ref, const Image<Gray>& cmp) const;
 };
 
 /**
@@ -29,24 +29,24 @@ struct PSNR {
  * @return 1.0 for identical images.
  */
 struct SSIM {
-    double operator()(const Image<BGR>&  ref, const Image<BGR>&  cmp) const;
-    double operator()(const Image<Gray>& ref, const Image<Gray>& cmp) const;
+    [[nodiscard]] double operator()(const Image<BGR>&  ref, const Image<BGR>&  cmp) const;
+    [[nodiscard]] double operator()(const Image<Gray>& ref, const Image<Gray>& cmp) const;
 };
 
 /**
  * @brief Gradient Magnitude Similarity Deviation — lower is better; 0 for identical images.
  */
 struct GMSD {
-    double operator()(const Image<BGR>&  ref, const Image<BGR>&  cmp) const;
-    double operator()(const Image<Gray>& ref, const Image<Gray>& cmp) const;
+    [[nodiscard]] double operator()(const Image<BGR>&  ref, const Image<BGR>&  cmp) const;
+    [[nodiscard]] double operator()(const Image<Gray>& ref, const Image<Gray>& cmp) const;
 };
 
 /**
  * @brief Mean Squared Error — lower is better; 0 for identical images.
  */
 struct MSE {
-    double operator()(const Image<BGR>&  ref, const Image<BGR>&  cmp) const;
-    double operator()(const Image<Gray>& ref, const Image<Gray>& cmp) const;
+    [[nodiscard]] double operator()(const Image<BGR>&  ref, const Image<BGR>&  cmp) const;
+    [[nodiscard]] double operator()(const Image<Gray>& ref, const Image<Gray>& cmp) const;
 };
 
 } // namespace improc::core

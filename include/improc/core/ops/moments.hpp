@@ -14,7 +14,7 @@ struct Moments {
     bool binary = false; ///< If true, treats the image as binary before moment computation.
 
     /// @return cv::Moments containing spatial, central, and normalised central moments.
-    cv::Moments operator()(const Image<Gray>& img) const {
+    [[nodiscard]] cv::Moments operator()(const Image<Gray>& img) const {
         return cv::moments(img.mat(), binary);
     }
 };

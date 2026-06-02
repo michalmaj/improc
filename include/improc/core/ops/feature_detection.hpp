@@ -43,7 +43,7 @@ struct DetectORB {
     DetectORB& scale_factor(float f) { scale_factor_ = f; return *this; }
     DetectORB& n_levels(int n)       { n_levels_     = n; return *this; }
 
-    KeypointSet operator()(Image<Gray> img) const;
+    [[nodiscard]] KeypointSet operator()(Image<Gray> img) const;
 
 private:
     int   max_features_{500};
@@ -74,7 +74,7 @@ struct DetectSIFT {
     DetectSIFT& max_features(int n)    { max_features_    = n; return *this; }
     DetectSIFT& n_octave_layers(int n) { n_octave_layers_ = n; return *this; }
 
-    KeypointSet operator()(Image<Gray> img) const;
+    [[nodiscard]] KeypointSet operator()(Image<Gray> img) const;
 
 private:
     int max_features_{0};    ///< 0 = no limit
@@ -94,7 +94,7 @@ private:
 struct DetectAKAZE {
     DetectAKAZE& threshold(float t) { threshold_ = t; return *this; }
 
-    KeypointSet operator()(Image<Gray> img) const;
+    [[nodiscard]] KeypointSet operator()(Image<Gray> img) const;
 
 private:
     float threshold_{0.001f};
@@ -128,8 +128,8 @@ struct DescriptorSet {
 /// @brief Pipeline op: computes ORB descriptors for a given `KeypointSet`.
 struct DescribeORB {
     explicit DescribeORB(KeypointSet kps) : kps_(std::move(kps)) {}
-    DescriptorSet operator()(Image<Gray> img) const;
-    DescriptorSet operator()(Image<BGR>  img) const;
+    [[nodiscard]] DescriptorSet operator()(Image<Gray> img) const;
+    [[nodiscard]] DescriptorSet operator()(Image<BGR>  img) const;
 private:
     KeypointSet kps_;
 };
@@ -143,8 +143,8 @@ private:
  */
 struct DescribeSIFT {
     explicit DescribeSIFT(KeypointSet kps) : kps_(std::move(kps)) {}
-    DescriptorSet operator()(Image<Gray> img) const;
-    DescriptorSet operator()(Image<BGR>  img) const;
+    [[nodiscard]] DescriptorSet operator()(Image<Gray> img) const;
+    [[nodiscard]] DescriptorSet operator()(Image<BGR>  img) const;
 private:
     KeypointSet kps_;
 };
@@ -152,8 +152,8 @@ private:
 /// @brief Pipeline op: computes AKAZE descriptors for a given `KeypointSet`.
 struct DescribeAKAZE {
     explicit DescribeAKAZE(KeypointSet kps) : kps_(std::move(kps)) {}
-    DescriptorSet operator()(Image<Gray> img) const;
-    DescriptorSet operator()(Image<BGR>  img) const;
+    [[nodiscard]] DescriptorSet operator()(Image<Gray> img) const;
+    [[nodiscard]] DescriptorSet operator()(Image<BGR>  img) const;
 private:
     KeypointSet kps_;
 };
@@ -174,7 +174,7 @@ struct GoodFeaturesToTrack {
     }
     GoodFeaturesToTrack& use_harris(bool b) { use_harris_ = b; return *this; }
 
-    std::vector<cv::Point2f> operator()(const Image<Gray>& img) const;
+    [[nodiscard]] std::vector<cv::Point2f> operator()(const Image<Gray>& img) const;
 
 private:
     int    max_corners_   = 100;

@@ -28,7 +28,7 @@ struct SparseLKFlow {
     /// @brief Sets the convergence epsilon for the iterative search (default: 0.01).
     SparseLKFlow& epsilon(double e)     { epsilon_   = e; return *this; }
 
-    SparseLKFlowResult operator()(const Image<Gray>& prev,
+    [[nodiscard]] SparseLKFlowResult operator()(const Image<Gray>& prev,
                                   const Image<Gray>& next,
                                   const std::vector<cv::Point2f>& prev_pts) const;
 
@@ -59,7 +59,7 @@ struct DenseFarnebackFlow {
     DenseFarnebackFlow& poly_sigma(double s) { poly_sigma_ = s; return *this; }
 
     /// @return Image<Flow> (CV_32FC2) displacement field.
-    Image<Flow> operator()(const Image<Gray>& prev, const Image<Gray>& next) const;
+    [[nodiscard]] Image<Flow> operator()(const Image<Gray>& prev, const Image<Gray>& next) const;
 
 private:
     double pyr_scale_  = 0.5;
@@ -85,7 +85,7 @@ struct DenseDISFlow {
     DenseDISFlow& preset(Preset p) { preset_ = p; return *this; }
 
     /// @return Image<Flow> (CV_32FC2) displacement field.
-    Image<Flow> operator()(const Image<Gray>& prev, const Image<Gray>& next) const;
+    [[nodiscard]] Image<Flow> operator()(const Image<Gray>& prev, const Image<Gray>& next) const;
 
 private:
     Preset preset_ = Preset::Medium;

@@ -24,7 +24,7 @@ struct PhaseCorrelateResult {
  */
 struct PhaseCorrelate {
     /// @return PhaseCorrelateResult with the sub-pixel shift and peak response strength.
-    PhaseCorrelateResult operator()(const Image<Float32>& prev,
+    [[nodiscard]] PhaseCorrelateResult operator()(const Image<Float32>& prev,
                                     const Image<Float32>& next) const;
 };
 
