@@ -20,3 +20,4 @@
 #include "improc/calib/ops/stereo.hpp"
 #include "improc/calib/ops/epipolar.hpp"
 #include "improc/calib/ops/aruco.hpp"
+#include "improc/calib/ops/fisheye.hpp"
