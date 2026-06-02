@@ -27,7 +27,7 @@ struct BBoxCompose : detail::BindMixin<BBoxCompose<Format>> {
         return *this;
     }
 
-    AnnotatedImage<Format> operator()(AnnotatedImage<Format> ann, std::mt19937& rng) const {
+    [[nodiscard]] AnnotatedImage<Format> operator()(AnnotatedImage<Format> ann, std::mt19937& rng) const {
         for (const auto& op : ops_)
             ann = op(std::move(ann), rng);
         return ann;

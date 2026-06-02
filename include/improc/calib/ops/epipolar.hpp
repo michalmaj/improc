@@ -23,7 +23,7 @@ struct FindFundamentalMat {
 
     /// @brief Estimates the fundamental matrix.
     /// @throws improc::ParameterError if `pts1.size() != pts2.size()` or fewer than 8 points.
-    FundamentalMatResult operator()(const std::vector<cv::Point2f>& pts1,
+    [[nodiscard]] FundamentalMatResult operator()(const std::vector<cv::Point2f>& pts1,
                                     const std::vector<cv::Point2f>& pts2) const;
 
 private:
@@ -48,7 +48,7 @@ struct FindEssentialMat {
     /// @brief Estimates the essential matrix.
     /// @param K 3×3 camera intrinsic matrix (same for both views).
     /// @throws improc::ParameterError if sizes mismatch or fewer than 5 points.
-    EssentialMatResult operator()(const std::vector<cv::Point2f>& pts1,
+    [[nodiscard]] EssentialMatResult operator()(const std::vector<cv::Point2f>& pts1,
                                   const std::vector<cv::Point2f>& pts2,
                                   const cv::Mat& K) const;
 
@@ -67,7 +67,7 @@ struct RecoverPose {
     /// @brief Recovers R and t.
     /// @param E Essential matrix (from `FindEssentialMat`).
     /// @param K Camera matrix (shared intrinsics assumed).
-    RecoverPoseResult operator()(const cv::Mat& E,
+    [[nodiscard]] RecoverPoseResult operator()(const cv::Mat& E,
                                  const std::vector<cv::Point2f>& pts1,
                                  const std::vector<cv::Point2f>& pts2,
                                  const cv::Mat& K) const;
@@ -83,7 +83,7 @@ struct TriangulatePoints {
     /// @param P1 3×4 projection matrix of the first camera.
     /// @param P2 3×4 projection matrix of the second camera.
     /// @return 4×N homogeneous point cloud (CV_32F); divide by row 3 for Euclidean coordinates.
-    cv::Mat operator()(const cv::Mat& P1, const cv::Mat& P2,
+    [[nodiscard]] cv::Mat operator()(const cv::Mat& P1, const cv::Mat& P2,
                        const std::vector<cv::Point2f>& pts1,
                        const std::vector<cv::Point2f>& pts2) const;
 };

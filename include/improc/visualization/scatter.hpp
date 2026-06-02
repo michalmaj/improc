@@ -50,8 +50,8 @@ struct Scatter {
 
     /// @brief Renders the scatter chart from parallel x/y value arrays.
     /// @throws improc::ParameterError if `xs` or `ys` is empty, or their sizes differ.
-    Image<BGR> operator()(const std::vector<float>& xs,
-                          const std::vector<float>& ys) const;
+    [[nodiscard]] Image<BGR> operator()(const std::vector<float>& xs,
+                                        const std::vector<float>& ys) const;
 
 private:
     std::string title_;

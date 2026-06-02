@@ -41,7 +41,7 @@ struct Compose : detail::BindMixin<Compose<Format>> {
         return *this;
     }
 
-    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         for (const auto& step : steps_)
             img = step(std::move(img), rng);
         return img;
@@ -77,7 +77,7 @@ public:
     template<typename Aug>
     RandomApply(Aug aug, float p) : p_(validate_p(p)), aug_(std::move(aug)) {}
 
-    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         std::bernoulli_distribution d(p_);
         if (!d(rng)) return img;
         return aug_(std::move(img), rng);
@@ -99,7 +99,7 @@ struct OneOf : detail::BindMixin<OneOf<Format>> {
         return *this;
     }
 
-    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         if (options_.empty())
             throw AugmentError{"OneOf: operator() called with no augmentations added"};
         std::uniform_int_distribution<std::size_t> d(0, options_.size() - 1);

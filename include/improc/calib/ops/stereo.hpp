@@ -39,7 +39,7 @@ struct StereoCalibrate {
 
     /// @brief Runs stereo calibration.
     /// @throws improc::ParameterError if point set sizes mismatch, fewer than 3 views, or image_size is non-positive.
-    StereoCalibrationResult operator()(
+    [[nodiscard]] StereoCalibrationResult operator()(
         const std::vector<std::vector<cv::Point3f>>& obj_pts,
         const std::vector<std::vector<cv::Point2f>>& img_pts1,
         const std::vector<std::vector<cv::Point2f>>& img_pts2,
@@ -63,7 +63,7 @@ struct StereoRectify {
 
     /// @brief Computes stereo rectification.
     /// @throws improc::ParameterError if any of the input matrices is empty.
-    StereoRectifyResult operator()(const cv::Mat& K1, const cv::Mat& dist1,
+    [[nodiscard]] StereoRectifyResult operator()(const cv::Mat& K1, const cv::Mat& dist1,
                                    const cv::Mat& K2, const cv::Mat& dist2,
                                    const cv::Mat& R,  const cv::Mat& T,
                                    cv::Size image_size) const;
@@ -87,7 +87,7 @@ struct StereoBM {
 
     /// @brief Computes the disparity map.
     /// @throws improc::ParameterError if `left` and `right` have different sizes.
-    cv::Mat operator()(Image<Gray> left, Image<Gray> right) const;
+    [[nodiscard]] cv::Mat operator()(Image<Gray> left, Image<Gray> right) const;
 
 private:
     int num_disparities_ = 16;
@@ -116,7 +116,7 @@ struct StereoSGBM {
 
     /// @brief Computes the disparity map.
     /// @throws improc::ParameterError if `left` and `right` have different sizes.
-    cv::Mat operator()(Image<Gray> left, Image<Gray> right) const;
+    [[nodiscard]] cv::Mat operator()(Image<Gray> left, Image<Gray> right) const;
 
 private:
     int min_disparity_   = 0;
@@ -140,7 +140,7 @@ struct ReprojectTo3D {
     /// @param disparity CV_16S or CV_32F disparity map.
     /// @param Q         4×4 disparity-to-depth matrix from `StereoRectify`.
     /// @return CV_32FC3 point cloud; same size as `disparity`.
-    cv::Mat operator()(const cv::Mat& disparity, const cv::Mat& Q) const;
+    [[nodiscard]] cv::Mat operator()(const cv::Mat& disparity, const cv::Mat& Q) const;
 
 private:
     bool handle_missing_ = false;

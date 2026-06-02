@@ -22,7 +22,7 @@ using improc::core::BGR;
  * @param instance_masks_dir Directory containing instance segmentation PNGs, or empty to skip.
  * @return Parsed `SegmentedImage<BGR>` or an `improc::Error`.
  */
-std::expected<SegmentedImage<BGR>, improc::Error>
+[[nodiscard]] std::expected<SegmentedImage<BGR>, improc::Error>
 parse_voc_seg(const std::filesystem::path& stem,
               const std::filesystem::path& images_dir,
               const std::filesystem::path& class_masks_dir,
@@ -41,7 +41,7 @@ public:
     VocSegDataset& load_instance_masks(bool v) { load_instance_ = v; return *this; }
 
     /// @brief Load from a VOC-structured directory root.
-    std::expected<void, improc::Error>
+    [[nodiscard]] std::expected<void, improc::Error>
     load_from_directory(const std::filesystem::path& root);
 
     const std::vector<SegmentedImage<BGR>>& train() const { return train_; }
@@ -51,7 +51,7 @@ public:
     const std::unordered_map<int, std::string>& class_mapping() const { return id_to_class_; }
 
     /// @throws std::out_of_range if id has no name.
-    std::string class_name_for(int id) const { return id_to_class_.at(id); }
+    [[nodiscard]] std::string class_name_for(int id) const { return id_to_class_.at(id); }
 
 private:
     bool load_instance_ = false;

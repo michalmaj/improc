@@ -44,7 +44,7 @@ struct LinePlot {
 
     /// @brief Renders the line chart from the given scalar values.
     /// @throws improc::ParameterError if `values` is empty.
-    Image<BGR> operator()(const std::vector<float>& values) const;
+    [[nodiscard]] Image<BGR> operator()(const std::vector<float>& values) const;
 
 private:
     std::string title_;

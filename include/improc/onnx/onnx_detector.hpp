@@ -125,7 +125,7 @@ public:
      * @return `Detection` entries that passed confidence and NMS filtering,
      *         or an `improc::Error` if inference fails.
      */
-    std::expected<std::vector<Detection>, improc::Error>
+    [[nodiscard]] std::expected<std::vector<Detection>, improc::Error>
     operator()(const Image<BGR>& img) const;
 
 private:

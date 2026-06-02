@@ -72,7 +72,7 @@ struct ConfusionMatrixPlot {
 
     /// @brief Renders and returns the confusion matrix plot as a BGR image.
     /// @throws improc::ParameterError if width or height <= 0 or canvas is too small for the matrix.
-    Image<BGR> operator()() const {
+    [[nodiscard]] Image<BGR> operator()() const {
         if (width_ <= 0)  throw improc::ParameterError{"width",  "must be positive", "ConfusionMatrixPlot"};
         if (height_ <= 0) throw improc::ParameterError{"height", "must be positive", "ConfusionMatrixPlot"};
 

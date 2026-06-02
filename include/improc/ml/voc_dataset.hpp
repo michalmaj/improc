@@ -30,7 +30,7 @@ using improc::core::BGR;
  * @param filter_unknown Drop objects whose class name is not already in `class_map` (default: false).
  * @return Parsed `AnnotatedImage<BGR>` or an `improc::Error`.
  */
-std::expected<AnnotatedImage<BGR>, improc::Error>
+[[nodiscard]] std::expected<AnnotatedImage<BGR>, improc::Error>
 parse_voc_xml(const std::filesystem::path& xml_path,
               const std::filesystem::path& images_dir,
               std::unordered_map<std::string, int>& class_map,
@@ -71,7 +71,7 @@ public:
     VocDataset& shuffle_seed(unsigned int s) { shuffle_seed_ = s; return *this; }
 
     /// @brief Loads the dataset from a VOC-structured directory.
-    std::expected<void, improc::Error>
+    [[nodiscard]] std::expected<void, improc::Error>
     load_from_directory(const std::filesystem::path& root);
 
     const std::vector<AnnotatedImage<BGR>>& train() const { return train_; }
@@ -83,7 +83,7 @@ public:
 
     /// @brief Returns the class name for the given integer id.
     /// @throws std::out_of_range if the id is unknown.
-    std::string class_name_for(int id) const { return id_to_class_.at(id); }
+    [[nodiscard]] std::string class_name_for(int id) const { return id_to_class_.at(id); }
 
 private:
     std::vector<std::string>              user_classes_;

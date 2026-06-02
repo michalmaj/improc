@@ -32,7 +32,7 @@ struct RandomGaussianNoise : detail::BindMixin<RandomGaussianNoise> {
     RandomGaussianNoise& mean(float m) { mean_ = m; return *this; }
 
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         std::uniform_real_distribution<float> d(std_low_, std_high_);
         float std_dev = d(rng);
         const int ch = img.mat().channels();
@@ -50,7 +50,7 @@ struct RandomGaussianNoise : detail::BindMixin<RandomGaussianNoise> {
     }
 
     template<AnyFormat Format>
-    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+    [[nodiscard]] SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
         seg.image = (*this)(std::move(seg.image), rng);
         return seg;
     }
@@ -75,7 +75,7 @@ struct RandomSaltAndPepper : detail::BindMixin<RandomSaltAndPepper> {
     }
 
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         cv::Mat dst = img.mat().clone();
         std::bernoulli_distribution noise_dist(p_);
         std::bernoulli_distribution salt_dist(0.5);
@@ -103,7 +103,7 @@ struct RandomSaltAndPepper : detail::BindMixin<RandomSaltAndPepper> {
     }
 
     template<AnyFormat Format>
-    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+    [[nodiscard]] SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
         seg.image = (*this)(std::move(seg.image), rng);
         return seg;
     }

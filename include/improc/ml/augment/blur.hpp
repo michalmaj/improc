@@ -51,7 +51,7 @@ struct RandomBlur : detail::BindMixin<RandomBlur> {
     }
 
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         constexpr bool is_float = improc::core::FormatTraits<Format>::is_float;
         if constexpr (is_float) {
             bool has_bilateral = std::find(types_.begin(), types_.end(), Type::Bilateral) != types_.end();
@@ -82,7 +82,7 @@ struct RandomBlur : detail::BindMixin<RandomBlur> {
     }
 
     template<AnyFormat Format>
-    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+    [[nodiscard]] SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
         seg.image = (*this)(std::move(seg.image), rng);
         return seg;
     }
@@ -114,7 +114,7 @@ struct RandomSharpness : detail::BindMixin<RandomSharpness> {
     }
 
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         std::bernoulli_distribution d(p_);
         if (!d(rng)) return img;
         std::uniform_real_distribution<float> s_d(min_s_, max_s_);
@@ -138,7 +138,7 @@ struct RandomSharpness : detail::BindMixin<RandomSharpness> {
     }
 
     template<AnyFormat Format>
-    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+    [[nodiscard]] SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
         seg.image = (*this)(std::move(seg.image), rng);
         return seg;
     }

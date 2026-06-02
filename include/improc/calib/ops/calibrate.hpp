@@ -11,7 +11,7 @@ namespace improc::calib {
 /// @param square_size Physical side length of one square in any consistent unit.
 /// @return `board_size.width * board_size.height` points in row-major order.
 /// @throws improc::ParameterError if any dimension of `board_size` <= 0 or `square_size` <= 0.
-inline std::vector<cv::Point3f> make_chessboard_points(cv::Size board_size,
+[[nodiscard]] inline std::vector<cv::Point3f> make_chessboard_points(cv::Size board_size,
                                                         float square_size) {
     if (board_size.width <= 0 || board_size.height <= 0)
         throw improc::ParameterError{"board_size", "dimensions must be positive", "make_chessboard_points"};
@@ -40,7 +40,7 @@ struct CalibrateCamera {
 
     /// @brief Runs the calibration.
     /// @throws improc::ParameterError if sizes mismatch or fewer than 3 views are provided.
-    CalibrationResult operator()(const std::vector<std::vector<cv::Point3f>>& obj_pts,
+    [[nodiscard]] CalibrationResult operator()(const std::vector<std::vector<cv::Point3f>>& obj_pts,
                                  const std::vector<std::vector<cv::Point2f>>& img_pts,
                                  cv::Size image_size) const;
 

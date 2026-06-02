@@ -27,7 +27,7 @@ struct SegCompose : detail::BindMixin<SegCompose<Format>> {
         return *this;
     }
 
-    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+    [[nodiscard]] SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
         for (const auto& op : ops_)
             seg = op(std::move(seg), rng);
         return seg;

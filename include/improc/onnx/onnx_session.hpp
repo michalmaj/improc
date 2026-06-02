@@ -55,7 +55,7 @@ public:
      * @return `{}` on success; an `improc::Error` if the file is missing,
      *         has the wrong extension, or ORT fails to parse it.
      */
-    std::expected<void, improc::Error> load(const std::filesystem::path& path);
+    [[nodiscard]] std::expected<void, improc::Error> load(const std::filesystem::path& path);
 
     /**
      * @brief Runs inference with the provided input tensors.
@@ -63,7 +63,7 @@ public:
      * @return Output tensors in model declaration order, or an `improc::Error`
      *         if the session is not loaded or ORT returns an error.
      */
-    std::expected<std::vector<TensorInfo>, improc::Error>
+    [[nodiscard]] std::expected<std::vector<TensorInfo>, improc::Error>
     run(const std::vector<TensorInfo>& inputs) const;
 
     /**

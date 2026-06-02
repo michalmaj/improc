@@ -32,9 +32,9 @@ struct FindChessboardCorners {
     FindChessboardCorners& flags(int f)            { flags_ = f; return *this; }
 
     /// @brief Finds chessboard corners in a grayscale image.
-    FindChessboardResult operator()(Image<Gray> img) const;
+    [[nodiscard]] FindChessboardResult operator()(Image<Gray> img) const;
     /// @brief Finds chessboard corners in a BGR image (auto-converted to Gray).
-    FindChessboardResult operator()(Image<BGR>  img) const;
+    [[nodiscard]] FindChessboardResult operator()(Image<BGR>  img) const;
 
 private:
     cv::Size board_size_{};
@@ -63,9 +63,9 @@ struct FindChessboardCornersSB {
     FindChessboardCornersSB& flags(int f)            { flags_ = f; return *this; }
 
     /// @brief Finds chessboard corners in a grayscale image.
-    FindChessboardResult operator()(Image<Gray> img) const;
+    [[nodiscard]] FindChessboardResult operator()(Image<Gray> img) const;
     /// @brief Finds chessboard corners in a BGR image (auto-converted to Gray).
-    FindChessboardResult operator()(Image<BGR>  img) const;
+    [[nodiscard]] FindChessboardResult operator()(Image<BGR>  img) const;
 
 private:
     cv::Size board_size_{};
@@ -94,8 +94,8 @@ struct RefineCorners {
     RefineCorners& epsilon(double e) { epsilon_   = e;       return *this; }
 
     /// @brief Refines corners in a grayscale image. Returns refined corner positions.
-    std::vector<cv::Point2f> operator()(Image<Gray>               img,
-                                        std::vector<cv::Point2f>  corners) const;
+    [[nodiscard]] std::vector<cv::Point2f> operator()(Image<Gray>               img,
+                                                       std::vector<cv::Point2f>  corners) const;
 
 private:
     cv::Size win_size_  = {11, 11};

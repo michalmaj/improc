@@ -35,7 +35,7 @@ struct Show {
     }
 
     /// @brief Displays the image via `cv::imshow`, waits `wait_ms` ms, and returns the image unchanged.
-    Image<BGR> operator()(Image<BGR> img) const {
+    [[nodiscard]] Image<BGR> operator()(Image<BGR> img) const {
         cv::imshow(window_name_, img.mat());
         cv::waitKey(wait_ms_);
         return img;

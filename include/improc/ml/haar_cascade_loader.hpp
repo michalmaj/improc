@@ -23,7 +23,7 @@ public:
    * @brief Returns the loaded classifier, or an error if not yet loaded.
    * @return The `cv::CascadeClassifier` on success, or an `improc::Error`.
    */
-  std::expected<cv::CascadeClassifier, improc::Error> get_impl() const;
+  [[nodiscard]] std::expected<cv::CascadeClassifier, improc::Error> get_impl() const;
 
 private:
   cv::CascadeClassifier classifier_;

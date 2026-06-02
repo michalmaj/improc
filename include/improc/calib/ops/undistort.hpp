@@ -30,7 +30,7 @@ struct Undistort {
     Undistort& dist(cv::Mat d) { dist_ = std::move(d); return *this; }
 
     template<AnyFormat F>
-    Image<F> operator()(Image<F> img) const {
+    [[nodiscard]] Image<F> operator()(Image<F> img) const {
         if (K_.empty())
             throw improc::ParameterError{"K", "must be set before calling operator()", "Undistort"};
         if (dist_.empty())
@@ -69,7 +69,7 @@ struct UndistortMap {
     UndistortMap& R(cv::Mat r)       { R_     = std::move(r); return *this; }
 
     /// @brief Computes the undistortion maps for the given image size.
-    UndistortMapResult operator()(cv::Size image_size) const;
+    [[nodiscard]] UndistortMapResult operator()(cv::Size image_size) const;
 
 private:
     cv::Mat K_;

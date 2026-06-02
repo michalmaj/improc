@@ -57,7 +57,7 @@ struct RandomErasing : detail::BindMixin<RandomErasing> {
     }
 
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         std::bernoulli_distribution d(p_);
         if (!d(rng)) return img;
         int W = img.cols(), H = img.rows();
@@ -119,7 +119,7 @@ struct GridDropout : detail::BindMixin<GridDropout> {
     }
 
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         cv::Mat dst = img.mat().clone();
         std::bernoulli_distribution d(ratio_);
         int W = img.cols(), H = img.rows();

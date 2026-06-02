@@ -28,7 +28,7 @@ using improc::core::BGR;
  * @param filter_unknown Drop annotations whose class name is not already in `class_map`.
  * @return Vector of `AnnotatedImage<BGR>` (one per image in the JSON), or an `improc::Error`.
  */
-std::expected<std::vector<AnnotatedImage<BGR>>, improc::Error>
+[[nodiscard]] std::expected<std::vector<AnnotatedImage<BGR>>, improc::Error>
 parse_coco_json(const std::filesystem::path& json_path,
                 const std::filesystem::path& images_dir,
                 std::unordered_map<std::string, int>& class_map,
@@ -59,17 +59,17 @@ public:
     CocoDataset& skip_crowd(bool v) { skip_crowd_ = v; return *this; }
 
     /// @brief Load (or replace) the train split from a COCO JSON file.
-    std::expected<void, improc::Error>
+    [[nodiscard]] std::expected<void, improc::Error>
     load_train(const std::filesystem::path& json_path,
                const std::filesystem::path& images_dir);
 
     /// @brief Load (or replace) the val split from a COCO JSON file.
-    std::expected<void, improc::Error>
+    [[nodiscard]] std::expected<void, improc::Error>
     load_val(const std::filesystem::path& json_path,
              const std::filesystem::path& images_dir);
 
     /// @brief Load (or replace) the test split from a COCO JSON file.
-    std::expected<void, improc::Error>
+    [[nodiscard]] std::expected<void, improc::Error>
     load_test(const std::filesystem::path& json_path,
               const std::filesystem::path& images_dir);
 
@@ -82,7 +82,7 @@ public:
 
     /// @brief Returns the class name for a given integer id.
     /// @throws std::out_of_range if the id is unknown.
-    std::string class_name_for(int id) const { return id_to_class_.at(id); }
+    [[nodiscard]] std::string class_name_for(int id) const { return id_to_class_.at(id); }
 
 private:
     std::vector<std::string>              user_classes_;

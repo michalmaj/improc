@@ -77,7 +77,7 @@ struct DnnForward {
      * @param img Input image in BGR format.
      * @return All output values concatenated into a flat `std::vector<float>`.
      */
-    std::vector<float> operator()(const Image<BGR>& img) const;
+    [[nodiscard]] std::vector<float> operator()(const Image<BGR>& img) const;
 
 private:
     mutable cv::dnn::Net  net_;

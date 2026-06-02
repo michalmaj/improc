@@ -98,7 +98,7 @@ struct DnnClassifier {
      * @param img Input image in BGR format.
      * @return Up to `top_k` `ClassResult` entries sorted by score descending.
      */
-    std::vector<ClassResult> operator()(const Image<BGR>& img) const;
+    [[nodiscard]] std::vector<ClassResult> operator()(const Image<BGR>& img) const;
 
 private:
     mutable cv::dnn::Net     net_;

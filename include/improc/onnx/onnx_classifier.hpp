@@ -95,7 +95,7 @@ public:
      * @return Up to `top_k` `ClassResult` entries sorted by score descending,
      *         or an `improc::Error` if inference fails.
      */
-    std::expected<std::vector<ClassResult>, improc::Error>
+    [[nodiscard]] std::expected<std::vector<ClassResult>, improc::Error>
     operator()(const Image<BGR>& img) const;
 
 private:
