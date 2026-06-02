@@ -31,12 +31,12 @@ std::pair<Image<BGR>, Image<BGR>> make_distinct_pair() {
 #define HASH_TESTS(OpName)                                                       \
 TEST(OpName##Test, SameImageSameHash) {                                          \
     auto img = make_bgr();                                                       \
-    auto h1 = OpName{}(img);                                                     \
-    auto h2 = OpName{}(img);                                                     \
-    EXPECT_NEAR(cv::norm(h1, h2), 0.0, 1e-9);                                   \
+    ImageHash h1 = OpName{}(img);                                                \
+    ImageHash h2 = OpName{}(img);                                                \
+    EXPECT_EQ(h1, h2);                                                           \
 }                                                                                \
 TEST(OpName##Test, SelfDistanceIsZero) {                                         \
-    auto h = OpName{}(make_bgr());                                               \
+    ImageHash h = OpName{}(make_bgr());                                          \
     EXPECT_NEAR(OpName::distance(h, h), 0.0, 1e-9);                             \
 }                                                                                \
 TEST(OpName##Test, DifferentImagesPositiveDistance) {                            \
@@ -53,3 +53,26 @@ HASH_TESTS(MarrHildrethHash)
 HASH_TESTS(RadialVarianceHash)
 HASH_TESTS(ColorMomentHash)
 HASH_TESTS(BlockMeanHash)
+
+TEST(AverageHashTest, ReturnsImageHash) {
+    cv::Mat m(64, 64, CV_8UC3, cv::Scalar(100, 150, 200));
+    Image<BGR> img(m);
+    ImageHash h = AverageHash{}(img);
+    EXPECT_FALSE(h.empty());
+}
+
+TEST(AverageHashTest, SameImageProducesZeroDistance) {
+    cv::Mat m(64, 64, CV_8UC3, cv::Scalar(100, 150, 200));
+    Image<BGR> img(m);
+    ImageHash h1 = AverageHash{}(img);
+    ImageHash h2 = AverageHash{}(img);
+    EXPECT_DOUBLE_EQ(AverageHash::distance(h1, h2), 0.0);
+}
+
+TEST(AverageHashTest, EqualHashesCompareEqual) {
+    cv::Mat m(64, 64, CV_8UC3, cv::Scalar(50, 100, 150));
+    Image<BGR> img(m);
+    ImageHash h1 = AverageHash{}(img);
+    ImageHash h2 = AverageHash{}(img);
+    EXPECT_EQ(h1, h2);
+}

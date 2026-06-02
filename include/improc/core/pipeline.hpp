@@ -99,6 +99,7 @@
 
 // Types
 #include "improc/core/types/histogram_data.hpp"
+#include "improc/core/types/image_hash.hpp"
 
 // Analysis ops (multi-arg or non-image output — not composable via operator|)
 #include "improc/core/ops/analysis.hpp"
