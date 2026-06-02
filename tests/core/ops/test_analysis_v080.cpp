@@ -74,12 +74,12 @@ TEST(CountNonZeroTest, HalfFilledMask) {
     cv::Mat m(100, 100, CV_8UC1, cv::Scalar(0));
     m.rowRange(0, 50).setTo(cv::Scalar(255));
     Image<Gray> img(m);
-    EXPECT_EQ(CountNonZero{}(img), 5000);
+    EXPECT_EQ(CountNonZero{}(img), 5000u);
 }
 
 TEST(CountNonZeroTest, AllZeroGivesZero) {
     Image<Gray> img(cv::Mat(50, 50, CV_8UC1, cv::Scalar(0)));
-    EXPECT_EQ(CountNonZero{}(img), 0);
+    EXPECT_EQ(CountNonZero{}(img), 0u);
 }
 
 // ── Reduce ────────────────────────────────────────────────────────────────────

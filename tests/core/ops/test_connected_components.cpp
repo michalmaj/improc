@@ -73,7 +73,7 @@ TEST(ComponentMapTest, MaskIsCorrectType) {
 TEST(ComponentMapTest, OutOfRangeLabelThrows) {
     Image<Gray> src = make_one_blob();
     ComponentMap result = src | ConnectedComponents{};
-    EXPECT_THROW(result.area(result.count()), std::out_of_range);
+    EXPECT_THROW(result.area(static_cast<int>(result.count())), std::out_of_range);
     EXPECT_THROW(result.area(-1), std::out_of_range);
 }
 
@@ -88,7 +88,7 @@ TEST(ConnectedComponentsTest, FindsComponentsInBinaryImage) {
 TEST(ConnectedComponentsTest, BlackImageHasOnlyBackground) {
     Image<Gray> src(cv::Mat(50, 50, CV_8UC1, cv::Scalar(0)));
     ComponentMap result = src | ConnectedComponents{};
-    EXPECT_EQ(result.count(), 1);
+    EXPECT_EQ(result.count(), 1u);
 }
 
 TEST(ConnectedComponentsTest, PipelineSyntax) {

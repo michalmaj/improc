@@ -27,8 +27,8 @@ MinMaxLocResult MinMaxLoc::operator()(const cv::Mat& mat) const {
     return run_minmaxloc(mat);
 }
 
-int CountNonZero::operator()(const Image<Gray>& img) const {
-    return cv::countNonZero(img.mat());
+std::size_t CountNonZero::operator()(const Image<Gray>& img) const {
+    return static_cast<std::size_t>(cv::countNonZero(img.mat()));
 }
 
 cv::Mat Reduce::operator()(const Image<Gray>& img) const {

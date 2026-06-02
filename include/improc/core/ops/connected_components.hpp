@@ -1,5 +1,6 @@
 // include/improc/core/ops/connected_components.hpp
 #pragma once
+#include <cstddef>
 #include <stdexcept>
 #include <opencv2/imgproc.hpp>
 #include "improc/core/image.hpp"
@@ -22,10 +23,10 @@ struct ComponentMap {
     cv::Mat labels;        ///< CV_32S label matrix, same size as source
     cv::Mat stats;         ///< (num_labels × 5) int stats matrix (CC_STAT_* columns)
     cv::Mat centroids;     ///< (num_labels × 2) double centroid matrix
-    int     num_labels{0}; ///< total label count including background (label 0)
+    std::size_t num_labels{0}; ///< total label count including background (label 0)
 
     /// @brief Alias for `num_labels`.
-    int count() const { return num_labels; }
+    std::size_t count() const { return num_labels; }
 
     /// @brief Pixel area of label `label` (CC_STAT_AREA). Throws `std::out_of_range` if invalid.
     int area(int label) const;

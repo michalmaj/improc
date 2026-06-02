@@ -1,5 +1,6 @@
 // include/improc/core/ops/analysis.hpp
 #pragma once
+#include <cstddef>
 #include <opencv2/core.hpp>
 #include "improc/core/image.hpp"
 #include "improc/core/concepts.hpp"
@@ -72,7 +73,7 @@ struct MeanStdDev {
  */
 struct CountNonZero {
     /// @return Number of non-zero pixels.
-    [[nodiscard]] int operator()(const Image<Gray>& img) const;
+    [[nodiscard]] std::size_t operator()(const Image<Gray>& img) const;
 };
 
 /// @brief Reduction operation used by `Reduce`.
