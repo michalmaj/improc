@@ -8,6 +8,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## Table of Contents
 
 - [[Unreleased]](#unreleased)
+- [[0.16.0]](#0160--2026-06-02) — 2026-06-02 · Typed wrappers: `HistogramData`, `ImageHash`, `FaceEmbedding`; `CountNonZero`/`ComponentMap` return `std::size_t`
 - [[0.15.0]](#0150--2026-06-02) — 2026-06-02 · Breaking changes: DrawContours/DrawKeypoints/DrawMatches moved to `improc::visualization`; `Dataset::shuffle_seed`; `[[nodiscard]]` ops; `ParameterError` exception hierarchy; remove empty cuda placeholder
 - [[0.12.0]](#0120--2026-05-30) — 2026-05-30 · Documentation Completion: 100% Doxygen coverage across all 51 public headers; Conan migration for onnxruntime and nlohmann_json
 - [[0.11.0]](#0110--2026-05-28) — 2026-05-28 · Documentation Coverage: 8 tutorials + 12 examples for motion, calib, stereo, ArUco, detectors, photo/creative, HDR, quality metrics, and perceptual hashing
@@ -25,6 +26,23 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ---
 
 ## [Unreleased]
+
+---
+
+## [0.16.0] — 2026-06-02
+
+### Breaking Changes
+- `CalcHist::operator()` now returns `HistogramData` instead of `cv::Mat`; update callers to use `.data` for the raw matrix
+- `CompareHist::operator()` now accepts `const HistogramData&` instead of `const cv::Mat&`
+- All 6 hash ops (`AverageHash`, `PHash`, `MarrHildrethHash`, `RadialVarianceHash`, `ColorMomentHash`, `BlockMeanHash`) return `ImageHash` instead of `cv::Mat`; `distance()` accepts `const ImageHash&`
+- `RecognizeFace::embed()` returns `FaceEmbedding` instead of `cv::Mat`; `match()` accepts `const FaceEmbedding&`
+- `CountNonZero::operator()` returns `std::size_t` instead of `int`
+- `ComponentMap::num_labels` and `count()` are now `std::size_t`
+
+### New Types
+- `improc::core::HistogramData` — typed wrapper for histogram data with bins/range metadata
+- `improc::core::ImageHash` — typed wrapper for perceptual hash matrices with `operator==` and `operator!=`
+- `improc::core::FaceEmbedding` — typed wrapper for face recognition embeddings with `cosine_similarity()`
 
 ---
 
