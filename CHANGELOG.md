@@ -8,6 +8,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## Table of Contents
 
 - [[Unreleased]](#unreleased)
+- [[0.17.0]](#0170--2026-06-02) — 2026-06-02 · Fisheye camera ops: `FisheyeCalibrate`, `FisheyeUndistort`, `FisheyeUndistortPoints`, `FisheyeInitRectifyMap`, `FisheyeStereoCalibrate`, `FisheyeStereoRectify`
 - [[0.16.0]](#0160--2026-06-02) — 2026-06-02 · Typed wrappers: `HistogramData`, `ImageHash`, `FaceEmbedding`; `CountNonZero`/`ComponentMap` return `std::size_t`
 - [[0.15.0]](#0150--2026-06-02) — 2026-06-02 · Breaking changes: DrawContours/DrawKeypoints/DrawMatches moved to `improc::visualization`; `Dataset::shuffle_seed`; `[[nodiscard]]` ops; `ParameterError` exception hierarchy; remove empty cuda placeholder
 - [[0.12.0]](#0120--2026-05-30) — 2026-05-30 · Documentation Completion: 100% Doxygen coverage across all 51 public headers; Conan migration for onnxruntime and nlohmann_json
@@ -26,6 +27,18 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ---
 
 ## [Unreleased]
+
+---
+
+## [0.17.0] — 2026-06-02
+
+### New Features
+- `improc::calib::FisheyeCalibrate` — calibrates a fisheye camera via `cv::fisheye::calibrate`, returns `CalibrationResult`
+- `improc::calib::FisheyeUndistort` — removes fisheye distortion from images (templated on `AnyFormat`)
+- `improc::calib::FisheyeUndistortPoints` — undistorts 2-D image points for fisheye lenses
+- `improc::calib::FisheyeInitRectifyMap` — computes fisheye undistortion and rectification maps, returns `UndistortMapResult`
+- `improc::calib::FisheyeStereoCalibrate` — calibrates a fisheye stereo pair, returns `StereoCalibrationResult`
+- `improc::calib::FisheyeStereoRectify` — computes rectification transforms for a fisheye stereo pair, returns `StereoRectifyResult`
 
 ---
 
