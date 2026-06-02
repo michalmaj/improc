@@ -8,6 +8,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## Table of Contents
 
 - [[Unreleased]](#unreleased)
+- [[0.15.0]](#0150--2026-06-02) — 2026-06-02 · Breaking changes: DrawContours/DrawKeypoints/DrawMatches moved to `improc::visualization`; `Dataset::shuffle_seed`; `[[nodiscard]]` ops; `ParameterError` exception hierarchy; remove empty cuda placeholder
 - [[0.12.0]](#0120--2026-05-30) — 2026-05-30 · Documentation Completion: 100% Doxygen coverage across all 51 public headers; Conan migration for onnxruntime and nlohmann_json
 - [[0.11.0]](#0110--2026-05-28) — 2026-05-28 · Documentation Coverage: 8 tutorials + 12 examples for motion, calib, stereo, ArUco, detectors, photo/creative, HDR, quality metrics, and perceptual hashing
 - [[0.10.0]](#0100--2026-05-27) — 2026-05-27 · Photo + Creative + Quality + Hashing: 8 photo/creative ops, panorama stitching, 4 quality metrics, 6 perceptual hash ops (all standard OpenCV, no contrib)
@@ -24,6 +25,21 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ---
 
 ## [Unreleased]
+
+---
+
+## [0.15.0] — 2026-06-02
+
+### Breaking Changes
+- `improc::core::DrawContours` moved to `improc::visualization::DrawContours` — update includes and `using`-declarations. Backward-compat alias in `improc::core` via `pipeline.hpp`.
+- `improc::core::DrawKeypoints` moved to `improc::visualization::DrawKeypoints`
+- `improc::core::DrawMatches` moved to `improc::visualization::DrawMatches`
+- `Dataset::set_shuffle_seed(seed)` renamed to `Dataset::shuffle_seed(seed)`
+- All result-returning `operator()` are now `[[nodiscard]]` — discarding return values is a compiler warning
+
+### Improvements
+- All `throw std::invalid_argument(...)` replaced with `throw improc::ParameterError{...}` throughout the library (`ParameterError` inherits `improc::Exception`; existing `catch(std::invalid_argument&)` blocks need updating to `catch(improc::ParameterError&)` or `catch(improc::Exception&)`)
+- Removed empty `include/improc/cuda/` placeholder directory
 
 ---
 
