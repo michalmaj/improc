@@ -66,18 +66,15 @@ void RecognizeFace::ensure_initialized() {
     }
 }
 
-cv::Mat RecognizeFace::embed(Image<BGR> face_chip) {
+FaceEmbedding RecognizeFace::embed(Image<BGR> face_chip) {
     ensure_initialized();
     cv::Mat emb;
     recognizer_->feature(face_chip.mat(), emb);
-    return emb;
+    return FaceEmbedding{std::move(emb)};
 }
 
-float RecognizeFace::match(const cv::Mat& emb_a, const cv::Mat& emb_b) {
-    cv::Mat a_norm, b_norm;
-    cv::normalize(emb_a, a_norm, 1.0, 0.0, cv::NORM_L2);
-    cv::normalize(emb_b, b_norm, 1.0, 0.0, cv::NORM_L2);
-    return static_cast<float>(a_norm.dot(b_norm));
+float RecognizeFace::match(const FaceEmbedding& emb_a, const FaceEmbedding& emb_b) {
+    return emb_a.cosine_similarity(emb_b);
 }
 
 } // namespace improc::core
