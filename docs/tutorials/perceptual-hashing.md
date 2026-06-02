@@ -4,7 +4,7 @@ A perceptual hash is a compact fingerprint of an image's visual content rather t
 
 The practical applications of perceptual hashing are broad. Near-duplicate detection identifies re-uploaded, recompressed, or slightly cropped versions of the same photograph in a content platform without storing or comparing full pixel data. Content deduplication in large image archives eliminates redundant copies even when file formats, resolutions, or colour profiles have changed. Visual search pipelines use hashes as a fast pre-filter: rather than comparing a query against millions of full images, a hash lookup narrows the candidate set to a handful of similar-looking images for detailed verification. The hash distance also provides a useful similarity score for ranking results.
 
-`improc++` provides six perceptual hash algorithms, each tuned to a different trade-off between speed, robustness, and discrimination power. All six take an `Image<BGR>` and return a `cv::Mat` containing the hash, and each exposes a static `distance()` method that computes the canonical distance metric for that algorithm. All are implemented using standard OpenCV — no contrib module is required.
+`improc++` provides six perceptual hash algorithms, each tuned to a different trade-off between speed, robustness, and discrimination power. All six take an `Image<BGR>` and return an `ImageHash` (a typed wrapper around a `cv::Mat`), and each exposes a static `distance()` method that computes the canonical distance metric for that algorithm. Access the raw matrix via `.value` if needed. All are implemented using standard OpenCV — no contrib module is required.
 
 ## Prerequisites
 - Completed [Building a Pipeline](building-a-pipeline.md)
@@ -22,8 +22,8 @@ Image<BGR> img = /* load image */;
 
 // AverageHash — 8×8 resize → mean threshold → 64-bit hash (1×8 CV_8U)
 // Fastest; sensitive to colour/brightness changes
-cv::Mat ah = AverageHash{}(img);
-double  ah_dist = AverageHash::distance(ah, ah2);  // Hamming distance
+ImageHash ah = AverageHash{}(img);
+double    ah_dist = AverageHash::distance(ah, ah2);  // Hamming distance
 ```
 
 ## PHash (DCT Hash)
@@ -33,8 +33,8 @@ double  ah_dist = AverageHash::distance(ah, ah2);  // Hamming distance
 ```cpp
 // PHash (DCT hash) — 32×32 → DCT → 8×8 top-left → 63-bit hash (1×8 CV_8U)
 // More robust than AverageHash; best general-purpose choice
-cv::Mat ph = PHash{}(img);
-double  ph_dist = PHash::distance(ph, ph2);         // Hamming
+ImageHash ph = PHash{}(img);
+double    ph_dist = PHash::distance(ph, ph2);         // Hamming
 ```
 
 ## MarrHildrethHash
@@ -44,8 +44,8 @@ double  ph_dist = PHash::distance(ph, ph2);         // Hamming
 ```cpp
 // MarrHildrethHash — LoG sign bits on 24×24 → 576-bit hash (1×72 CV_8U)
 // Robust to noise and moderate geometric distortion
-cv::Mat mh = MarrHildrethHash{}(img);
-double  mh_dist = MarrHildrethHash::distance(mh, mh2); // Hamming
+ImageHash mh = MarrHildrethHash{}(img);
+double    mh_dist = MarrHildrethHash::distance(mh, mh2); // Hamming
 ```
 
 ## RadialVarianceHash
@@ -55,8 +55,8 @@ double  mh_dist = MarrHildrethHash::distance(mh, mh2); // Hamming
 ```cpp
 // RadialVarianceHash — 40 radial variance samples → 40-float hash (1×40 CV_64F)
 // Rotation-aware; use when images may be rotated
-cv::Mat rv = RadialVarianceHash{}(img);
-double  rv_dist = RadialVarianceHash::distance(rv, rv2); // L2
+ImageHash rv = RadialVarianceHash{}(img);
+double    rv_dist = RadialVarianceHash::distance(rv, rv2); // L2
 ```
 
 ## ColorMomentHash
@@ -66,8 +66,8 @@ double  rv_dist = RadialVarianceHash::distance(rv, rv2); // L2
 ```cpp
 // ColorMomentHash — 42 YCrCb colour statistics → 42-float hash (1×42 CV_64F)
 // Captures global colour distribution
-cv::Mat cm = ColorMomentHash{}(img);
-double  cm_dist = ColorMomentHash::distance(cm, cm2);    // L2
+ImageHash cm = ColorMomentHash{}(img);
+double    cm_dist = ColorMomentHash::distance(cm, cm2);    // L2
 ```
 
 ## BlockMeanHash
@@ -77,8 +77,8 @@ double  cm_dist = ColorMomentHash::distance(cm, cm2);    // L2
 ```cpp
 // BlockMeanHash — block mean threshold on 256×256 → 256-bit hash (1×32 CV_8U)
 // Layout-sensitive; suitable for large images where spatial structure matters
-cv::Mat bm = BlockMeanHash{}(img);
-double  bm_dist = BlockMeanHash::distance(bm, bm2);      // Hamming
+ImageHash bm = BlockMeanHash{}(img);
+double    bm_dist = BlockMeanHash::distance(bm, bm2);      // Hamming
 ```
 
 ## Practical Distance Thresholds

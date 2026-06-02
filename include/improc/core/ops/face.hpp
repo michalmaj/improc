@@ -12,7 +12,7 @@ namespace improc::core {
 
 /// @brief Stateful YuNet face detector. Requires `.model(path)` before first call.
 /// Hold as a named lvalue — operator() is non-const (lazy model init on first call).
-/// Throws std::invalid_argument if model path not set; FileNotFoundError if absent; ModelError on load failure.
+/// Throws ParameterError if model path not set; FileNotFoundError if absent; ModelError on load failure.
 /// Setters `score_threshold`, `nms_threshold`, `top_k` are only applied at model creation;
 /// calling them after the first `operator()` has no effect.
 /// @code
