@@ -1,6 +1,6 @@
 // src/core/ops/grabcut.cpp
 #include "improc/core/ops/grabcut.hpp"
-#include <stdexcept>
+#include "improc/exceptions.hpp"
 
 namespace improc::core {
 
@@ -11,11 +11,11 @@ GrabCut& GrabCut::iterations(int n) {
 
 Image<Gray> GrabCut::operator()(const Image<BGR>& img, cv::Rect roi) const {
     if (roi.empty())
-        throw std::invalid_argument("GrabCut: roi must not be empty");
+        throw improc::ParameterError{"roi", "must not be empty", "GrabCut"};
     if (roi.x < 0 || roi.y < 0 ||
         roi.x + roi.width  > img.cols() ||
         roi.y + roi.height > img.rows())
-        throw std::invalid_argument("GrabCut: roi extends outside image bounds");
+        throw improc::ParameterError{"roi", "extends outside image bounds", "GrabCut"};
 
     cv::Mat mask;
     cv::Mat bgModel, fgModel;

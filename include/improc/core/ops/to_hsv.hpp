@@ -13,7 +13,7 @@ namespace improc::core {
  * @endcode
  */
 struct ToHSV {
-    Image<HSV> operator()(Image<BGR> img) const;
+    [[nodiscard]] Image<HSV> operator()(Image<BGR> img) const;
 };
 
 } // namespace improc::core

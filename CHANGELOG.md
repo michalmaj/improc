@@ -8,6 +8,10 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## Table of Contents
 
 - [[Unreleased]](#unreleased)
+- [[0.18.0]](#0180--2026-06-02) — 2026-06-02 · Test improvements: renamed/moved test files, added `test_to_bgr.cpp` and `test_axis.cpp`
+- [[0.17.0]](#0170--2026-06-02) — 2026-06-02 · Fisheye camera ops: `FisheyeCalibrate`, `FisheyeUndistort`, `FisheyeUndistortPoints`, `FisheyeInitRectifyMap`, `FisheyeStereoCalibrate`, `FisheyeStereoRectify`
+- [[0.16.0]](#0160--2026-06-02) — 2026-06-02 · Typed wrappers: `HistogramData`, `ImageHash`, `FaceEmbedding`; `CountNonZero`/`ComponentMap` return `std::size_t`
+- [[0.15.0]](#0150--2026-06-02) — 2026-06-02 · Breaking changes: DrawContours/DrawKeypoints/DrawMatches moved to `improc::visualization`; `Dataset::shuffle_seed`; `[[nodiscard]]` ops; `ParameterError` exception hierarchy; remove empty cuda placeholder
 - [[0.12.0]](#0120--2026-05-30) — 2026-05-30 · Documentation Completion: 100% Doxygen coverage across all 51 public headers; Conan migration for onnxruntime and nlohmann_json
 - [[0.11.0]](#0110--2026-05-28) — 2026-05-28 · Documentation Coverage: 8 tutorials + 12 examples for motion, calib, stereo, ArUco, detectors, photo/creative, HDR, quality metrics, and perceptual hashing
 - [[0.10.0]](#0100--2026-05-27) — 2026-05-27 · Photo + Creative + Quality + Hashing: 8 photo/creative ops, panorama stitching, 4 quality metrics, 6 perceptual hash ops (all standard OpenCV, no contrib)
@@ -24,6 +28,60 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ---
 
 ## [Unreleased]
+
+---
+
+## [0.18.0] — 2026-06-02
+
+### Test Improvements
+- Renamed `tests/core/ops/test_analysis_v080.cpp` → `tests/core/ops/test_analysis.cpp` (removed milestone label from filename)
+- Moved `tests/core/test_background_subtract.cpp` → `tests/core/ops/test_background_subtract.cpp` (consistent with source location)
+- Added `tests/core/ops/test_to_bgr.cpp` covering Gray→BGR, HSV→BGR, LAB→BGR, YCrCb→BGR conversions
+- Added `tests/core/ops/test_axis.cpp` covering `Axis` enum usability and `Flip` axis composition
+
+---
+
+## [0.17.0] — 2026-06-02
+
+### New Features
+- `improc::calib::FisheyeCalibrate` — calibrates a fisheye camera via `cv::fisheye::calibrate`, returns `CalibrationResult`
+- `improc::calib::FisheyeUndistort` — removes fisheye distortion from images (templated on `AnyFormat`)
+- `improc::calib::FisheyeUndistortPoints` — undistorts 2-D image points for fisheye lenses
+- `improc::calib::FisheyeInitRectifyMap` — computes fisheye undistortion and rectification maps, returns `UndistortMapResult`
+- `improc::calib::FisheyeStereoCalibrate` — calibrates a fisheye stereo pair, returns `StereoCalibrationResult`
+- `improc::calib::FisheyeStereoRectify` — computes rectification transforms for a fisheye stereo pair, returns `StereoRectifyResult`
+
+---
+
+## [0.16.0] — 2026-06-02
+
+### Breaking Changes
+- `CalcHist::operator()` now returns `HistogramData` instead of `cv::Mat`; update callers to use `.data` for the raw matrix
+- `CompareHist::operator()` now accepts `const HistogramData&` instead of `const cv::Mat&`
+- All 6 hash ops (`AverageHash`, `PHash`, `MarrHildrethHash`, `RadialVarianceHash`, `ColorMomentHash`, `BlockMeanHash`) return `ImageHash` instead of `cv::Mat`; `distance()` accepts `const ImageHash&`
+- `RecognizeFace::embed()` returns `FaceEmbedding` instead of `cv::Mat`; `match()` accepts `const FaceEmbedding&`
+- `CountNonZero::operator()` returns `std::size_t` instead of `int`
+- `ComponentMap::num_labels` and `count()` are now `std::size_t`
+
+### New Types
+- `improc::core::HistogramData` — typed wrapper for histogram data with bins/range metadata
+- `improc::core::ImageHash` — typed wrapper for perceptual hash matrices with `operator==` and `operator!=`
+- `improc::core::FaceEmbedding` — typed wrapper for face recognition embeddings with `cosine_similarity()`
+
+---
+
+## [0.15.0] — 2026-06-02
+
+### Breaking Changes
+- `improc::core::DrawContours` moved to `improc::visualization::DrawContours` — update includes and `using`-declarations. Backward-compat alias in `improc::core` via `pipeline.hpp`.
+- `improc::core::DrawKeypoints` moved to `improc::visualization::DrawKeypoints`
+- `improc::core::DrawMatches` moved to `improc::visualization::DrawMatches`
+- `Dataset::set_shuffle_seed(seed)` renamed to `Dataset::shuffle_seed(seed)`
+- All result-returning `operator()` are now `[[nodiscard]]` — discarding return values is a compiler warning
+
+### Improvements
+- All `throw std::invalid_argument(...)` replaced with `throw improc::ParameterError{...}` throughout the library (`ParameterError` inherits `improc::Exception`; existing `catch(std::invalid_argument&)` blocks need updating to `catch(improc::ParameterError&)` or `catch(improc::Exception&)`)
+- Removed empty `include/improc/cuda/` placeholder directory
 
 ---
 

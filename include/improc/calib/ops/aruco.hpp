@@ -23,7 +23,7 @@ using improc::core::Gray;
  * @endcode
  */
 struct ArucoDict {
-    cv::aruco::Dictionary operator()(cv::aruco::PredefinedDictionaryType type) const;
+    [[nodiscard]] cv::aruco::Dictionary operator()(cv::aruco::PredefinedDictionaryType type) const;
 };
 
 // ── DetectAruco ───────────────────────────────────────────────────────────────
@@ -34,8 +34,8 @@ struct ArucoDict {
  * @return `ArucoResult` containing corners, IDs, and rejected candidates.
  */
 struct DetectAruco {
-    ArucoResult operator()(Image<BGR>  img, const cv::aruco::Dictionary& dict) const;
-    ArucoResult operator()(Image<Gray> img, const cv::aruco::Dictionary& dict) const;
+    [[nodiscard]] ArucoResult operator()(Image<BGR>  img, const cv::aruco::Dictionary& dict) const;
+    [[nodiscard]] ArucoResult operator()(Image<Gray> img, const cv::aruco::Dictionary& dict) const;
 };
 
 // ── DrawAruco ─────────────────────────────────────────────────────────────────
@@ -48,11 +48,11 @@ struct DrawAruco {
     DrawAruco& axis_length(float l) { axis_length_ = l; return *this; }
 
     // Overload 1: draws marker outlines + ID numbers only.
-    cv::Mat operator()(cv::Mat img, const ArucoResult& result) const;
+    [[nodiscard]] cv::Mat operator()(cv::Mat img, const ArucoResult& result) const;
 
     // Overload 2: draws marker outlines + IDs + coordinate axes per marker.
     // Uses cv::drawFrameAxes. Iterates poses and draws one axis frame per marker.
-    cv::Mat operator()(cv::Mat img,
+    [[nodiscard]] cv::Mat operator()(cv::Mat img,
                        const ArucoResult& result,
                        const std::vector<ArucoPoseResult>& poses,
                        const cv::Mat& K,
@@ -72,8 +72,8 @@ struct GenerateAruco {
     GenerateAruco& border_bits(int b) { border_bits_ = b; return *this; }
 
     /// @brief Renders marker `id` from `dict` at `side_pixels × side_pixels`.
-    /// @throws std::invalid_argument if `id` < 0 or `side_pixels` < 1.
-    Image<Gray> operator()(const cv::aruco::Dictionary& dict,
+    /// @throws improc::ParameterError if `id` < 0 or `side_pixels` < 1.
+    [[nodiscard]] Image<Gray> operator()(const cv::aruco::Dictionary& dict,
                            int id,
                            int side_pixels) const;
 
@@ -97,7 +97,7 @@ struct ArucoPose {
     /// @param dist         Distortion coefficients.
     /// @param marker_length Physical marker side length in world units.
     /// @return One `ArucoPoseResult` per detected marker, in the same order as `result`.
-    std::vector<ArucoPoseResult> operator()(const ArucoResult& result,
+    [[nodiscard]] std::vector<ArucoPoseResult> operator()(const ArucoResult& result,
                                             const cv::Mat& K,
                                             const cv::Mat& dist,
                                             float marker_length) const;
@@ -125,10 +125,10 @@ struct CharucoBoard {
     CharucoBoard& marker_length(float m) { marker_length_ = m; return *this; }
 
     /// @brief Detects board corners (no subpixel refinement).
-    /// @throws std::invalid_argument if `board_size` not set, or lengths <= 0.
-    CharucoResult operator()(Image<BGR> img, const cv::aruco::Dictionary& dict) const;
+    /// @throws improc::ParameterError if `board_size` not set, or lengths <= 0.
+    [[nodiscard]] CharucoResult operator()(Image<BGR> img, const cv::aruco::Dictionary& dict) const;
     /// @brief Detects board corners with subpixel refinement using camera intrinsics.
-    CharucoResult operator()(Image<BGR> img,
+    [[nodiscard]] CharucoResult operator()(Image<BGR> img,
                              const cv::aruco::Dictionary& dict,
                              const cv::Mat& K,
                              const cv::Mat& dist) const;

@@ -34,13 +34,6 @@ ContourSet FindContours::operator()(Image<Gray> img) const {
     return result;
 }
 
-Image<BGR> DrawContours::operator()(Image<BGR> img) const {
-    cv::Mat dst = img.mat().clone();
-    cv::drawContours(dst, cs_.contours, index_, color_, thickness_,
-                     cv::LINE_AA, cs_.hierarchy);
-    return Image<BGR>(std::move(dst));
-}
-
 std::vector<cv::Point> ConvexHull::operator()(const std::vector<cv::Point>& contour) const {
     std::vector<cv::Point> hull;
     cv::convexHull(contour, hull);

@@ -9,7 +9,7 @@ namespace improc::core {
 
 void DetectFaceYN::ensure_initialized(cv::Size frame_size) {
     if (model_path_.empty())
-        throw std::invalid_argument("DetectFaceYN: model path not set — call .model(path) first");
+        throw improc::ParameterError{"model_path", "must be set — call .model(path) first", "DetectFaceYN"};
     if (!detector_) {
         if (!std::filesystem::exists(model_path_))
             throw improc::FileNotFoundError{model_path_};
@@ -54,7 +54,7 @@ std::vector<FaceDetection> DetectFaceYN::operator()(Image<BGR> img) {
 
 void RecognizeFace::ensure_initialized() {
     if (model_path_.empty())
-        throw std::invalid_argument("RecognizeFace: model path not set — call .model(path) first");
+        throw improc::ParameterError{"model_path", "must be set — call .model(path) first", "RecognizeFace"};
     if (!recognizer_) {
         if (!std::filesystem::exists(model_path_))
             throw improc::FileNotFoundError{model_path_};
@@ -66,18 +66,15 @@ void RecognizeFace::ensure_initialized() {
     }
 }
 
-cv::Mat RecognizeFace::embed(Image<BGR> face_chip) {
+FaceEmbedding RecognizeFace::embed(Image<BGR> face_chip) {
     ensure_initialized();
     cv::Mat emb;
     recognizer_->feature(face_chip.mat(), emb);
-    return emb;
+    return FaceEmbedding{std::move(emb)};
 }
 
-float RecognizeFace::match(const cv::Mat& emb_a, const cv::Mat& emb_b) {
-    cv::Mat a_norm, b_norm;
-    cv::normalize(emb_a, a_norm, 1.0, 0.0, cv::NORM_L2);
-    cv::normalize(emb_b, b_norm, 1.0, 0.0, cv::NORM_L2);
-    return static_cast<float>(a_norm.dot(b_norm));
+float RecognizeFace::match(const FaceEmbedding& emb_a, const FaceEmbedding& emb_b) {
+    return emb_a.cosine_similarity(emb_b);
 }
 
 } // namespace improc::core

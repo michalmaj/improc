@@ -40,7 +40,7 @@ struct GaussianBlur {
 
     /// @brief Applies Gaussian blur to img.
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img) const {
         cv::Mat dst;
         cv::GaussianBlur(img.mat(), dst, cv::Size(kernel_size_, kernel_size_), sigma_);
         return Image<Format>(std::move(dst));
@@ -75,7 +75,7 @@ struct MedianBlur {
 
     /// @brief Applies median blur to img.
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img) const {
         cv::Mat dst;
         cv::medianBlur(img.mat(), dst, kernel_size_);
         return Image<Format>(std::move(dst));
@@ -116,7 +116,7 @@ struct BoxFilter {
 
     /// @brief Applies box filter to img.
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img) const {
         cv::Mat result;
         cv::boxFilter(img.mat(), result, -1,
                       cv::Size(ksize_, ksize_), cv::Point(-1, -1),

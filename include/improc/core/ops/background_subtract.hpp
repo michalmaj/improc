@@ -38,7 +38,7 @@ struct BackgroundSubtractMOG2 {
     BackgroundSubtractMOG2& detect_shadows(bool s) { detect_shadows_ = s;  return *this; }
 
     /// @brief Applies the subtractor; updates internal model. Non-const.
-    Image<Gray> operator()(const Image<BGR>& img);
+    [[nodiscard]] Image<Gray> operator()(const Image<BGR>& img);
 
 private:
     int    history_        = 500;
@@ -71,7 +71,7 @@ struct BackgroundSubtractKNN {
     BackgroundSubtractKNN& detect_shadows(bool s) { detect_shadows_ = s;  return *this; }
 
     /// @brief Applies the subtractor; updates internal model. Non-const.
-    Image<Gray> operator()(const Image<BGR>& img);
+    [[nodiscard]] Image<Gray> operator()(const Image<BGR>& img);
 
 private:
     int    history_        = 500;

@@ -1,5 +1,6 @@
 // src/core/ops/optical_flow.cpp
 #include "improc/core/ops/optical_flow.hpp"
+#include "improc/exceptions.hpp"
 #include <stdexcept>
 
 namespace improc::core {
@@ -8,9 +9,9 @@ SparseLKFlowResult SparseLKFlow::operator()(const Image<Gray>& prev,
                                              const Image<Gray>& next,
                                              const std::vector<cv::Point2f>& prev_pts) const {
     if (prev_pts.empty())
-        throw std::invalid_argument("SparseLKFlow: prev_pts must not be empty");
+        throw improc::ParameterError{"prev_pts", "must not be empty", "SparseLKFlow"};
     if (prev.rows() != next.rows() || prev.cols() != next.cols())
-        throw std::invalid_argument("SparseLKFlow: prev and next must have the same size");
+        throw improc::ParameterError{"prev", "must be the same size as next", "SparseLKFlow"};
 
     SparseLKFlowResult result;
     cv::calcOpticalFlowPyrLK(
@@ -25,7 +26,7 @@ SparseLKFlowResult SparseLKFlow::operator()(const Image<Gray>& prev,
 Image<Flow> DenseFarnebackFlow::operator()(const Image<Gray>& prev,
                                             const Image<Gray>& next) const {
     if (prev.rows() != next.rows() || prev.cols() != next.cols())
-        throw std::invalid_argument("DenseFarnebackFlow: prev and next must have the same size");
+        throw improc::ParameterError{"prev", "must be the same size as next", "DenseFarnebackFlow"};
     cv::Mat flow;
     cv::calcOpticalFlowFarneback(prev.mat(), next.mat(), flow,
                                   pyr_scale_, levels_, win_size_,
@@ -36,7 +37,7 @@ Image<Flow> DenseFarnebackFlow::operator()(const Image<Gray>& prev,
 Image<Flow> DenseDISFlow::operator()(const Image<Gray>& prev,
                                       const Image<Gray>& next) const {
     if (prev.rows() != next.rows() || prev.cols() != next.cols())
-        throw std::invalid_argument("DenseDISFlow: prev and next must have the same size");
+        throw improc::ParameterError{"prev", "must be the same size as next", "DenseDISFlow"};
     int preset_flag;
     switch (preset_) {
         case Preset::UltraFast: preset_flag = cv::DISOpticalFlow::PRESET_ULTRAFAST; break;

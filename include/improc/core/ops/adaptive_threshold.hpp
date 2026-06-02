@@ -61,7 +61,7 @@ struct AdaptiveThreshold {
     AdaptiveThreshold& C(double v) { C_ = v; return *this; }
 
     template<GrayFormat Format>
-    Image<Format> operator()(Image<Format> img) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img) const {
         const int cv_method = (method_ == AdaptiveMethod::Gaussian)
             ? cv::ADAPTIVE_THRESH_GAUSSIAN_C
             : cv::ADAPTIVE_THRESH_MEAN_C;

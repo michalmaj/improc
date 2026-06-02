@@ -42,7 +42,7 @@ struct Crop {
 
     /// @brief Crops img to the configured ROI.
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img) const {
         if (!x_ || !y_ || !width_ || !height_)
             throw ParameterError{"x/y/width/height", "all four must be set", "Crop"};
         cv::Rect roi(*x_, *y_, *width_, *height_);

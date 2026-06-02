@@ -51,59 +51,22 @@ struct FindContours {
     FindContours& mode(Mode m)     { mode_   = m; return *this; }
     FindContours& method(Method m) { method_ = m; return *this; }
 
-    ContourSet operator()(Image<Gray> img) const;
+    [[nodiscard]] ContourSet operator()(Image<Gray> img) const;
 
 private:
     Mode   mode_   = Mode::External;
     Method method_ = Method::Simple;
 };
 
-/**
- * @brief Pipeline op: draws contours from a `ContourSet` onto a BGR image clone.
- *
- * Wraps `cv::drawContours`. Pass `index(-1)` to draw all (default).
- * Pass `thickness(-1)` to fill contours.
- * The source image is never mutated.
- *
- * @throws improc::ParameterError if `thickness` is not positive and not -1.
- *
- * @code
- * Image<BGR> annotated = bgr | DrawContours{cs}.color({0, 255, 0});
- * Image<BGR> filled    = bgr | DrawContours{cs}.thickness(-1);
- * @endcode
- */
-struct DrawContours {
-    explicit DrawContours(ContourSet cs) : cs_(std::move(cs)) {}
-
-    DrawContours& index(int i) { index_ = i; return *this; }
-
-    DrawContours& color(cv::Scalar c) { color_ = c; return *this; }
-
-    DrawContours& thickness(int t) {
-        if (t <= 0 && t != -1)
-            throw ParameterError{"thickness", "must be positive or -1 (fill)", "DrawContours"};
-        thickness_ = t;
-        return *this;
-    }
-
-    Image<BGR> operator()(Image<BGR> img) const;
-
-private:
-    ContourSet cs_;
-    int        index_{-1};
-    cv::Scalar color_{0, 255, 0};
-    int        thickness_{1};
-};
-
 struct ConvexHull {
-    std::vector<cv::Point> operator()(const std::vector<cv::Point>& contour) const;
+    [[nodiscard]] std::vector<cv::Point> operator()(const std::vector<cv::Point>& contour) const;
 };
 
 struct ApproxPolyDP {
     ApproxPolyDP& epsilon(double e) { epsilon_ = e; return *this; }
     ApproxPolyDP& closed(bool c)    { closed_  = c; return *this; }
 
-    std::vector<cv::Point> operator()(const std::vector<cv::Point>& contour) const;
+    [[nodiscard]] std::vector<cv::Point> operator()(const std::vector<cv::Point>& contour) const;
 
 private:
     double epsilon_ = 3.0;
@@ -111,11 +74,11 @@ private:
 };
 
 struct MinAreaRect {
-    cv::RotatedRect operator()(const std::vector<cv::Point>& contour) const;
+    [[nodiscard]] cv::RotatedRect operator()(const std::vector<cv::Point>& contour) const;
 };
 
 struct BoundingRect {
-    cv::Rect operator()(const std::vector<cv::Point>& contour) const;
+    [[nodiscard]] cv::Rect operator()(const std::vector<cv::Point>& contour) const;
 };
 
 } // namespace improc::core

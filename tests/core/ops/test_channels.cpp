@@ -60,7 +60,7 @@ TEST(MergeChannelsTest, MismatchedSizesThrow) {
     Image<Gray> b(cv::Mat(50, 50, CV_8UC1, cv::Scalar(0)));
     Image<Gray> g(cv::Mat(60, 60, CV_8UC1, cv::Scalar(0)));
     Image<Gray> r(cv::Mat(50, 50, CV_8UC1, cv::Scalar(0)));
-    EXPECT_THROW(MergeChannels{}(b, g, r), std::invalid_argument);
+    EXPECT_THROW(MergeChannels{}(b, g, r), improc::ParameterError);
 }
 
 TEST(MergeChannelsTest, MismatchedAlphaThrows) {
@@ -68,5 +68,5 @@ TEST(MergeChannelsTest, MismatchedAlphaThrows) {
     Image<Gray> g(cv::Mat(50, 50, CV_8UC1, cv::Scalar(0)));
     Image<Gray> r(cv::Mat(50, 50, CV_8UC1, cv::Scalar(0)));
     Image<Gray> a(cv::Mat(60, 60, CV_8UC1, cv::Scalar(255)));
-    EXPECT_THROW(MergeChannels{}(b, g, r, a), std::invalid_argument);
+    EXPECT_THROW(MergeChannels{}(b, g, r, a), improc::ParameterError);
 }

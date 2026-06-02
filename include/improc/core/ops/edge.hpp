@@ -2,7 +2,6 @@
 #pragma once
 
 #include <format>
-#include <stdexcept>
 #include <opencv2/imgproc.hpp>
 #include "improc/core/image.hpp"
 #include "improc/exceptions.hpp"
@@ -27,15 +26,15 @@ struct SobelEdge {
     /// @brief Sets Sobel kernel size. Must be 1, 3, 5, or 7.
     SobelEdge& ksize(int k) {
         if (k != 1 && k != 3 && k != 5 && k != 7)
-            throw ParameterError{"ksize", "must be 1, 3, 5, or 7", "SobelEdge"};
+            throw improc::ParameterError{"ksize", "must be 1, 3, 5, or 7", "SobelEdge"};
         ksize_ = k;
         return *this;
     }
 
     /// @brief Detects edges in img using the Sobel operator.
-    Image<Gray> operator()(Image<Gray> img) const;
+    [[nodiscard]] Image<Gray> operator()(Image<Gray> img) const;
     /// @brief Detects edges in img using the Sobel operator.
-    Image<Gray> operator()(Image<BGR>  img) const;
+    [[nodiscard]] Image<Gray> operator()(Image<BGR>  img) const;
 
 private:
     int ksize_ = 3;
@@ -58,29 +57,29 @@ struct CannyEdge {
     /// @brief Sets lower hysteresis threshold. Must be >= 0.
     CannyEdge& threshold1(double t) {
         if (t < 0.0)
-            throw ParameterError{"threshold1", "must be >= 0", "CannyEdge"};
+            throw improc::ParameterError{"threshold1", "must be >= 0", "CannyEdge"};
         threshold1_ = t;
         return *this;
     }
     /// @brief Sets upper hysteresis threshold. Must be >= 0.
     CannyEdge& threshold2(double t) {
         if (t < 0.0)
-            throw ParameterError{"threshold2", "must be >= 0", "CannyEdge"};
+            throw improc::ParameterError{"threshold2", "must be >= 0", "CannyEdge"};
         threshold2_ = t;
         return *this;
     }
     /// @brief Sets Sobel aperture size. Must be 3, 5, or 7.
     CannyEdge& aperture_size(int s) {
         if (s != 3 && s != 5 && s != 7)
-            throw ParameterError{"aperture_size", "must be 3, 5, or 7", "CannyEdge"};
+            throw improc::ParameterError{"aperture_size", "must be 3, 5, or 7", "CannyEdge"};
         aperture_size_ = s;
         return *this;
     }
 
     /// @brief Detects edges in img using the Canny algorithm.
-    Image<Gray> operator()(Image<Gray> img) const;
+    [[nodiscard]] Image<Gray> operator()(Image<Gray> img) const;
     /// @brief Detects edges in img using the Canny algorithm.
-    Image<Gray> operator()(Image<BGR>  img) const;
+    [[nodiscard]] Image<Gray> operator()(Image<BGR>  img) const;
 
 private:
     double threshold1_    = 100.0;
@@ -107,7 +106,7 @@ struct LaplacianEdge {
     /// @brief Laplacian kernel size. Default 1. Must be odd and positive.
     LaplacianEdge& ksize(int v) {
         if (v <= 0 || v % 2 == 0)
-            throw ParameterError{"ksize",
+            throw improc::ParameterError{"ksize",
                 std::format("must be odd and positive, got {}", v), "LaplacianEdge"};
         ksize_ = v;
         return *this;
@@ -115,7 +114,7 @@ struct LaplacianEdge {
     /// @brief Scale factor applied to computed Laplacian values. Default 1.0. Must be > 0.
     LaplacianEdge& scale(double v) {
         if (v <= 0.0)
-            throw ParameterError{"scale", "must be positive", "LaplacianEdge"};
+            throw improc::ParameterError{"scale", "must be positive", "LaplacianEdge"};
         scale_ = v;
         return *this;
     }
@@ -126,9 +125,9 @@ struct LaplacianEdge {
     }
 
     /// @brief Detects edges in img using the Laplacian operator.
-    Image<Gray> operator()(Image<Gray> img) const;
+    [[nodiscard]] Image<Gray> operator()(Image<Gray> img) const;
     /// @brief Detects edges in img using the Laplacian operator (auto-converts BGR→Gray).
-    Image<Gray> operator()(Image<BGR>  img) const;
+    [[nodiscard]] Image<Gray> operator()(Image<BGR>  img) const;
 
 private:
     int    ksize_ = 1;
@@ -156,29 +155,29 @@ struct HarrisCorner {
     /// @brief Neighbourhood size for covariance matrix. Default 2. Must be > 0.
     HarrisCorner& block_size(int v) {
         if (v <= 0)
-            throw ParameterError{"block_size", "must be positive", "HarrisCorner"};
+            throw improc::ParameterError{"block_size", "must be positive", "HarrisCorner"};
         block_size_ = v;
         return *this;
     }
     /// @brief Sobel kernel size. Must be 3, 5, or 7. Default 3.
     HarrisCorner& ksize(int v) {
         if (v != 3 && v != 5 && v != 7)
-            throw ParameterError{"ksize", "must be 3, 5, or 7", "HarrisCorner"};
+            throw improc::ParameterError{"ksize", "must be 3, 5, or 7", "HarrisCorner"};
         ksize_ = v;
         return *this;
     }
     /// @brief Harris sensitivity parameter. Must be in (0, 1). Default 0.04.
     HarrisCorner& k(double v) {
         if (v <= 0.0 || v >= 1.0)
-            throw ParameterError{"k", "must be in (0, 1)", "HarrisCorner"};
+            throw improc::ParameterError{"k", "must be in (0, 1)", "HarrisCorner"};
         k_ = v;
         return *this;
     }
 
     /// @brief Returns normalized corner response map for a gray image.
-    Image<Gray> operator()(Image<Gray> img) const;
+    [[nodiscard]] Image<Gray> operator()(Image<Gray> img) const;
     /// @brief Returns normalized corner response map (auto-converts BGR→Gray).
-    Image<Gray> operator()(Image<BGR>  img) const;
+    [[nodiscard]] Image<Gray> operator()(Image<BGR>  img) const;
 
 private:
     int    block_size_ = 2;
@@ -194,14 +193,14 @@ struct SobelResult {
 struct SobelGradient {
     SobelGradient& ksize(int k) {
         if (k != 1 && k != 3 && k != 5 && k != 7)
-            throw std::invalid_argument("SobelGradient: ksize must be 1, 3, 5, or 7");
+            throw improc::ParameterError{"ksize", "must be 1, 3, 5, or 7", "SobelGradient"};
         ksize_ = k;
         return *this;
     }
     SobelGradient& scale(double s) { scale_ = s; return *this; }
     SobelGradient& delta(double d) { delta_ = d; return *this; }
 
-    SobelResult operator()(const Image<Gray>& img) const;
+    [[nodiscard]] SobelResult operator()(const Image<Gray>& img) const;
 
 private:
     int    ksize_ = 3;
@@ -218,7 +217,7 @@ struct ScharrGradient {
     ScharrGradient& scale(double s) { scale_ = s; return *this; }
     ScharrGradient& delta(double d) { delta_ = d; return *this; }
 
-    ScharrResult operator()(const Image<Gray>& img) const;
+    [[nodiscard]] ScharrResult operator()(const Image<Gray>& img) const;
 
 private:
     double scale_ = 1.0;

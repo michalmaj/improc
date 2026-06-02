@@ -23,7 +23,7 @@ struct DistanceTransform {
     DistanceTransform& dist_type(DistType t) { dist_type_ = t; return *this; }
     DistanceTransform& mask_size(MaskSize m) { mask_size_ = m; return *this; }
 
-    Image<Float32> operator()(Image<Gray> img) const;
+    [[nodiscard]] Image<Float32> operator()(Image<Gray> img) const;
 
 private:
     DistType dist_type_ = DistType::L2;

@@ -38,7 +38,7 @@ struct CenterCrop {
 
     /// @brief Applies the centered crop to img.
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img) const {
         if (!width_ || !height_)
             throw ParameterError{"width/height", "both must be set", "CenterCrop"};
         const int w = *width_, h = *height_;

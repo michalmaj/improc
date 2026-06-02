@@ -1,7 +1,8 @@
-// tests/core/ops/test_analysis_v080.cpp
+// tests/core/ops/test_analysis.cpp
 #include <gtest/gtest.h>
 #include <opencv2/core.hpp>
 #include "improc/core/pipeline.hpp"
+#include "improc/exceptions.hpp"
 
 using namespace improc::core;
 
@@ -73,12 +74,12 @@ TEST(CountNonZeroTest, HalfFilledMask) {
     cv::Mat m(100, 100, CV_8UC1, cv::Scalar(0));
     m.rowRange(0, 50).setTo(cv::Scalar(255));
     Image<Gray> img(m);
-    EXPECT_EQ(CountNonZero{}(img), 5000);
+    EXPECT_EQ(CountNonZero{}(img), 5000u);
 }
 
 TEST(CountNonZeroTest, AllZeroGivesZero) {
     Image<Gray> img(cv::Mat(50, 50, CV_8UC1, cv::Scalar(0)));
-    EXPECT_EQ(CountNonZero{}(img), 0);
+    EXPECT_EQ(CountNonZero{}(img), 0u);
 }
 
 // ── Reduce ────────────────────────────────────────────────────────────────────
@@ -137,6 +138,6 @@ TEST(ReduceTest, MinAlongCols) {
 
 TEST(ReduceTest, InvalidDimThrows) {
     Image<Gray> img(cv::Mat(4, 4, CV_8UC1, cv::Scalar(0)));
-    EXPECT_THROW(Reduce{}.dim(2), std::invalid_argument);
-    EXPECT_THROW(Reduce{}.dim(-1), std::invalid_argument);
+    EXPECT_THROW(Reduce{}.dim(2), improc::ParameterError);
+    EXPECT_THROW(Reduce{}.dim(-1), improc::ParameterError);
 }

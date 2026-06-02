@@ -101,7 +101,7 @@ std::string Dataset::class_name_for(int label) const {
     return "<unknown>";
 }
 
-void Dataset::set_shuffle_seed(unsigned int seed) {
+void Dataset::shuffle_seed(unsigned int seed) {
     shuffle_seed_ = seed;
 }
 

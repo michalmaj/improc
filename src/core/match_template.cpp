@@ -1,6 +1,6 @@
 // src/core/match_template.cpp
 #include "improc/core/ops/match_template.hpp"
-#include <stdexcept>
+#include "improc/exceptions.hpp"
 
 namespace improc::core {
 
@@ -12,7 +12,7 @@ MatchTemplate& MatchTemplate::method(int m) {
 std::pair<cv::Point, double> MatchTemplate::operator()(const Image<BGR>& img,
                                                         const Image<BGR>& templ) const {
     if (templ.mat().cols > img.mat().cols || templ.mat().rows > img.mat().rows)
-        throw std::invalid_argument("template must not be larger than the image");
+        throw improc::ParameterError{"templ", "must not be larger than the image", "MatchTemplate"};
 
     cv::Mat result;
     cv::matchTemplate(img.mat(), templ.mat(), result, method_);

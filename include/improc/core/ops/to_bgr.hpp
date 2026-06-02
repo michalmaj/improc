@@ -17,10 +17,10 @@ namespace improc::core {
  * @endcode
  */
 struct ToBGR {
-    Image<BGR> operator()(Image<Gray> img) const;
-    Image<BGR> operator()(Image<HSV>  img) const;
-    Image<BGR> operator()(Image<LAB>   img) const { return convert<BGR, LAB>  (std::move(img)); }
-    Image<BGR> operator()(Image<YCrCb> img) const { return convert<BGR, YCrCb>(std::move(img)); }
+    [[nodiscard]] Image<BGR> operator()(Image<Gray> img) const;
+    [[nodiscard]] Image<BGR> operator()(Image<HSV>  img) const;
+    [[nodiscard]] Image<BGR> operator()(Image<LAB>   img) const { return convert<BGR, LAB>  (std::move(img)); }
+    [[nodiscard]] Image<BGR> operator()(Image<YCrCb> img) const { return convert<BGR, YCrCb>(std::move(img)); }
 };
 
 } // namespace improc::core

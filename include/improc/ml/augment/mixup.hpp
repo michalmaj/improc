@@ -56,7 +56,7 @@ struct MixUp {
     /// @brief Mixes `a` with `b` using a Beta-sampled weight.
     /// @throws improc::ParameterError if images differ in size or label vectors differ in length.
     template<AnyFormat F>
-    LabeledImage<F> operator()(LabeledImage<F> a,
+    [[nodiscard]] LabeledImage<F> operator()(LabeledImage<F> a,
                                 const LabeledImage<F>& b,
                                 std::mt19937& rng) const {
         if (a.image.mat().size() != b.image.mat().size())
@@ -111,7 +111,7 @@ struct CutMix {
     }
 
     template<AnyFormat F>
-    LabeledImage<F> operator()(LabeledImage<F> a,
+    [[nodiscard]] LabeledImage<F> operator()(LabeledImage<F> a,
                                 const LabeledImage<F>& b,
                                 std::mt19937& rng) const {
         if (a.image.mat().size() != b.image.mat().size())
@@ -179,7 +179,7 @@ struct MixCompose {
         return *this;
     }
 
-    LabeledImage<Format> operator()(LabeledImage<Format> primary,
+    [[nodiscard]] LabeledImage<Format> operator()(LabeledImage<Format> primary,
                                     const LabeledImage<Format>& secondary,
                                     std::mt19937& rng) const {
         for (const auto& op : ops_)

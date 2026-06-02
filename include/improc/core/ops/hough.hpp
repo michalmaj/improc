@@ -27,7 +27,7 @@ struct HoughLinesP {
     HoughLinesP& max_line_gap(double g);
 
     /// @return Detected line segments as cv::Vec4i (x1, y1, x2, y2).
-    std::vector<cv::Vec4i> operator()(const Image<Gray>& img) const;
+    [[nodiscard]] std::vector<cv::Vec4i> operator()(const Image<Gray>& img) const;
 
 private:
     double rho_             = 1.0;
@@ -57,7 +57,7 @@ struct HoughCircles {
     HoughCircles& max_radius(int r);
 
     /// @return Detected circles as cv::Vec3f (cx, cy, radius).
-    std::vector<cv::Vec3f> operator()(const Image<Gray>& img) const;
+    [[nodiscard]] std::vector<cv::Vec3f> operator()(const Image<Gray>& img) const;
 
 private:
     double min_dist_   = 20.0;

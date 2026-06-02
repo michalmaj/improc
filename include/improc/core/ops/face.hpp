@@ -5,6 +5,7 @@
 #include <opencv2/objdetect.hpp>
 #include "improc/core/image.hpp"
 #include "improc/core/ops/detector_types.hpp"
+#include "improc/core/types/face_embedding.hpp"
 #include "improc/exceptions.hpp"
 
 namespace improc::core {
@@ -27,7 +28,7 @@ public:
     DetectFaceYN& nms_threshold(float t)   { nms_threshold_    = t;               return *this; }
     DetectFaceYN& top_k(int k)             { top_k_            = k;               return *this; }
 
-    std::vector<FaceDetection> operator()(Image<BGR> img);  // non-const: lazy init
+    [[nodiscard]] std::vector<FaceDetection> operator()(Image<BGR> img);  // non-const: lazy init
 
 private:
     void ensure_initialized(cv::Size frame_size);
@@ -42,7 +43,7 @@ private:
 };
 
 /// @brief Stateful SFace face recogniser. Requires `.model(path)` before calling embed().
-/// embed() returns (1, 128) CV_32F embedding; non-const (lazy init).
+/// embed() returns a FaceEmbedding wrapping a (1, 128) CV_32F descriptor; non-const (lazy init).
 /// match() is static — cosine similarity [-1, 1]; no model needed.
 /// @code
 /// RecognizeFace op;
@@ -54,9 +55,9 @@ class RecognizeFace {
 public:
     RecognizeFace& model(std::string path) { model_path_ = std::move(path); return *this; }
 
-    cv::Mat      embed(Image<BGR> face_chip);           // non-const; returns (1, 128) CV_32F
-    static float match(const cv::Mat& emb_a,
-                       const cv::Mat& emb_b);           // static: cosine similarity, no model needed
+    [[nodiscard]] FaceEmbedding embed(Image<BGR> face_chip);           // non-const; returns FaceEmbedding with (1, 128) CV_32F descriptor
+    [[nodiscard]] static float match(const FaceEmbedding& emb_a,
+                                     const FaceEmbedding& emb_b);      // static: cosine similarity, no model needed
 
 private:
     void ensure_initialized();

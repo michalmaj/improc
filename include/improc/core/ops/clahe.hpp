@@ -41,9 +41,9 @@ struct CLAHE {
     }
 
     /// @brief Applies CLAHE to img. May propagate cv::Exception on OpenCV failure.
-    Image<Gray> operator()(Image<Gray> img) const;
+    [[nodiscard]] Image<Gray> operator()(Image<Gray> img) const;
     /// @brief Applies CLAHE to img. May propagate cv::Exception on OpenCV failure.
-    Image<BGR>  operator()(Image<BGR>  img) const;
+    [[nodiscard]] Image<BGR>  operator()(Image<BGR>  img) const;
 
 private:
     double clip_limit_ = 40.0;

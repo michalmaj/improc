@@ -17,7 +17,7 @@ namespace improc::core {
 struct DetectFAST {
     DetectFAST& threshold(int t)             { threshold_ = t;   return *this; }
     DetectFAST& non_max_suppression(bool nms) { nms_       = nms; return *this; }
-    KeypointSet operator()(Image<Gray> img) const;
+    [[nodiscard]] KeypointSet operator()(Image<Gray> img) const;
 private:
     int  threshold_ = 10;
     bool nms_       = true;
@@ -30,7 +30,7 @@ private:
 /// @endcode
 struct DetectBlob {
     DetectBlob& params(cv::SimpleBlobDetector::Params p) { params_ = p; return *this; }
-    KeypointSet operator()(Image<Gray> img) const;
+    [[nodiscard]] KeypointSet operator()(Image<Gray> img) const;
 private:
     cv::SimpleBlobDetector::Params params_;
 };
@@ -44,7 +44,7 @@ struct DetectMSER {
     DetectMSER& delta(int d)    { delta_    = d; return *this; }
     DetectMSER& min_area(int a) { min_area_ = a; return *this; }
     DetectMSER& max_area(int a) { max_area_ = a; return *this; }
-    MSERResult  operator()(Image<Gray> img) const;
+    [[nodiscard]] MSERResult  operator()(Image<Gray> img) const;
 private:
     int delta_    = 5;
     int min_area_ = 60;
@@ -59,7 +59,7 @@ private:
 struct DetectLines {
     DetectLines& scale(double s)       { scale_       = s; return *this; }
     DetectLines& sigma_scale(double s) { sigma_scale_ = s; return *this; }
-    LineSet      operator()(Image<Gray> img) const;
+    [[nodiscard]] LineSet      operator()(Image<Gray> img) const;
 private:
     double scale_       = 0.8;
     double sigma_scale_ = 0.6;
@@ -70,7 +70,7 @@ private:
 /// QRResult qr = bgr | DetectQR{};
 /// @endcode
 struct DetectQR {
-    QRResult operator()(Image<BGR> img) const;
+    [[nodiscard]] QRResult operator()(Image<BGR> img) const;
 };
 
 /// @brief Pipeline op: detects and decodes barcodes in `Image<BGR>` (no model file needed). Returns `BarcodeResult`.
@@ -78,7 +78,7 @@ struct DetectQR {
 /// BarcodeResult bc = bgr | DetectBarcode{};
 /// @endcode
 struct DetectBarcode {
-    BarcodeResult operator()(Image<BGR> img) const;
+    [[nodiscard]] BarcodeResult operator()(Image<BGR> img) const;
 };
 
 } // namespace improc::core

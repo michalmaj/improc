@@ -43,5 +43,5 @@ TEST(PhaseCorrelateTest, DetectsHorizontalShift) {
 TEST(PhaseCorrelateTest, MismatchedSizesThrow) {
     Image<Float32> prev(cv::Mat(100, 100, CV_32FC1, cv::Scalar(0.f)));
     Image<Float32> next(cv::Mat(200, 200, CV_32FC1, cv::Scalar(0.f)));
-    EXPECT_THROW(PhaseCorrelate{}(prev, next), std::invalid_argument);
+    EXPECT_THROW(PhaseCorrelate{}(prev, next), improc::ParameterError);
 }

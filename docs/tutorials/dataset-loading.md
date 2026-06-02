@@ -48,7 +48,7 @@ It loads all images, shuffles them, and splits into train/val/test sets.
 using namespace improc::ml;
 
 Dataset ds{};
-ds.set_shuffle_seed(42);
+ds.shuffle_seed(42);
 
 auto ok = ds.load_from_directory(
     "data/animals/",

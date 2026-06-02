@@ -48,11 +48,11 @@ struct Histogram {
     }
 
     /// @brief Renders a three-channel BGR histogram chart.
-    Image<BGR> operator()(Image<BGR>     img) const;
+    [[nodiscard]] Image<BGR> operator()(Image<BGR>     img) const;
     /// @brief Renders a single-channel grayscale histogram chart.
-    Image<BGR> operator()(Image<Gray>    img) const;
+    [[nodiscard]] Image<BGR> operator()(Image<Gray>    img) const;
     /// @brief Renders a single-channel Float32 histogram chart (values in [0,1]).
-    Image<BGR> operator()(Image<Float32> img) const;
+    [[nodiscard]] Image<BGR> operator()(Image<Float32> img) const;
 
 private:
     cv::Mat render(const std::vector<cv::Mat>& hists,

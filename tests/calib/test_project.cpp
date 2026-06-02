@@ -41,7 +41,7 @@ TEST(ProjectPointsTest, PointsWithinReasonableBounds) {
 
 TEST(ProjectPointsTest, ThrowsOnEmptyObjectPoints) {
     EXPECT_THROW(ProjectPoints{}({}, make_rvec(), make_tvec(), make_K(), zero_dist()),
-                 std::invalid_argument);
+                 improc::ParameterError);
 }
 
 // ── SolvePnP ─────────────────────────────────────────────────────────────────
@@ -79,7 +79,7 @@ TEST(SolvePnPTest, RoundTripReprojectionErrorLessThanOnePixel) {
 TEST(SolvePnPTest, ThrowsOnFewerThanFourPoints) {
     std::vector<cv::Point3f> obj3 = {{0,0,0},{1,0,0},{0,1,0}};
     std::vector<cv::Point2f> img3 = {{100,100},{200,100},{100,200}};
-    EXPECT_THROW(SolvePnP{}(obj3, img3, make_K(), zero_dist()), std::invalid_argument);
+    EXPECT_THROW(SolvePnP{}(obj3, img3, make_K(), zero_dist()), improc::ParameterError);
 }
 
 TEST(SolvePnPTest, ThrowsOnMismatchedSizes) {
@@ -87,7 +87,7 @@ TEST(SolvePnPTest, ThrowsOnMismatchedSizes) {
     std::vector<cv::Point2f> img_pts;
     cv::projectPoints(obj, make_rvec(), make_tvec(), make_K(), zero_dist(), img_pts);
     img_pts.pop_back();
-    EXPECT_THROW(SolvePnP{}(obj, img_pts, make_K(), zero_dist()), std::invalid_argument);
+    EXPECT_THROW(SolvePnP{}(obj, img_pts, make_K(), zero_dist()), improc::ParameterError);
 }
 
 TEST(SolvePnPTest, FluentMethodReturnsThis) {
@@ -139,11 +139,11 @@ TEST(SolvePnPRansacTest, ThrowsOnMismatchedSizes) {
     std::vector<cv::Point2f> img_pts;
     cv::projectPoints(obj, make_rvec(), make_tvec(), make_K(), zero_dist(), img_pts);
     img_pts.pop_back();
-    EXPECT_THROW(SolvePnPRansac{}(obj, img_pts, make_K(), zero_dist()), std::invalid_argument);
+    EXPECT_THROW(SolvePnPRansac{}(obj, img_pts, make_K(), zero_dist()), improc::ParameterError);
 }
 
 TEST(SolvePnPRansacTest, ThrowsOnFewerThanFourPoints) {
     std::vector<cv::Point3f> obj3 = {{0,0,0},{1,0,0},{0,1,0}};
     std::vector<cv::Point2f> img3 = {{100,100},{200,100},{100,200}};
-    EXPECT_THROW(SolvePnPRansac{}(obj3, img3, make_K(), zero_dist()), std::invalid_argument);
+    EXPECT_THROW(SolvePnPRansac{}(obj3, img3, make_K(), zero_dist()), improc::ParameterError);
 }

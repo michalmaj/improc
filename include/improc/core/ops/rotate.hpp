@@ -34,7 +34,7 @@ struct Rotate {
 
     /// @brief Rotates img around its center by the configured angle.
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img) const {
         if (!angle_)
             throw ParameterError{"angle", "must be set before calling operator()", "Rotate"};
         cv::Point2f center(img.cols() / 2.0f, img.rows() / 2.0f);

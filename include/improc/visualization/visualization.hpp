@@ -3,7 +3,8 @@
 
 /** @file visualization.hpp
  *  @brief Convenience header — includes all `improc::visualization` rendering types
- *         (Histogram, LinePlot, Scatter, Show, Draw, DrawTracks, Montage).
+ *         (Histogram, LinePlot, Scatter, Show, Draw, DrawTracks, Montage,
+ *          DrawContours, DrawKeypoints, DrawMatches).
  */
 
 #include "improc/visualization/histogram.hpp"
@@ -13,3 +14,5 @@
 #include "improc/visualization/draw.hpp"
 #include "improc/visualization/draw_tracks.hpp"
 #include "improc/visualization/montage.hpp"
+#include "improc/visualization/draw_contours.hpp"
+#include "improc/visualization/draw_matches.hpp"

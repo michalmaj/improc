@@ -60,9 +60,9 @@ struct NLMeansDenoising {
     }
 
     /// @brief Denoises a single-channel gray image.
-    Image<Gray> operator()(Image<Gray> img) const;
+    [[nodiscard]] Image<Gray> operator()(Image<Gray> img) const;
     /// @brief Denoises a BGR color image.
-    Image<BGR>  operator()(Image<BGR>  img) const;
+    [[nodiscard]] Image<BGR>  operator()(Image<BGR>  img) const;
 
 private:
     float h_                    = 3.0f;

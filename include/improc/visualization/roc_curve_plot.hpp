@@ -62,7 +62,7 @@ struct ROCCurvePlot {
 
     /// @brief Renders and returns the ROC curve plot as a BGR image.
     /// @throws improc::ParameterError if width or height <= 0.
-    Image<BGR> operator()() const {
+    [[nodiscard]] Image<BGR> operator()() const {
         if (width_ <= 0)  throw improc::ParameterError{"width",  "must be positive", "ROCCurvePlot"};
         if (height_ <= 0) throw improc::ParameterError{"height", "must be positive", "ROCCurvePlot"};
 

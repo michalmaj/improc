@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <cmath>
 #include "improc/calib/pipeline.hpp"
+#include "improc/exceptions.hpp"
 
 using namespace improc::calib;
 
@@ -90,15 +91,15 @@ TEST(MakeChessboardPointsTest, FirstPointIsOrigin) {
 }
 
 TEST(MakeChessboardPointsTest, ThrowsOnZeroWidth) {
-    EXPECT_THROW(make_chessboard_points({0, 6}, 25.f), std::invalid_argument);
+    EXPECT_THROW(make_chessboard_points({0, 6}, 25.f), improc::ParameterError);
 }
 
 TEST(MakeChessboardPointsTest, ThrowsOnNegativeDimension) {
-    EXPECT_THROW(make_chessboard_points({9, -1}, 25.f), std::invalid_argument);
+    EXPECT_THROW(make_chessboard_points({9, -1}, 25.f), improc::ParameterError);
 }
 
 TEST(MakeChessboardPointsTest, ThrowsOnNonPositiveSquareSize) {
-    EXPECT_THROW(make_chessboard_points({9, 6}, 0.f), std::invalid_argument);
+    EXPECT_THROW(make_chessboard_points({9, 6}, 0.f), improc::ParameterError);
 }
 
 // ── CalibrateCamera ──────────────────────────────────────────────────────────
@@ -108,14 +109,14 @@ TEST(CalibrateCameraTest, ThrowsOnMismatchedVectorSizes) {
     auto obj = data.obj_pts;
     auto img = data.img_pts;
     img.pop_back();
-    EXPECT_THROW(CalibrateCamera{}(obj, img, data.image_size), std::invalid_argument);
+    EXPECT_THROW(CalibrateCamera{}(obj, img, data.image_size), improc::ParameterError);
 }
 
 TEST(CalibrateCameraTest, ThrowsOnFewerThanThreeViews) {
     auto data = make_calib_data();
     std::vector<std::vector<cv::Point3f>> obj2 = {data.obj_pts[0], data.obj_pts[1]};
     std::vector<std::vector<cv::Point2f>> img2 = {data.img_pts[0], data.img_pts[1]};
-    EXPECT_THROW(CalibrateCamera{}(obj2, img2, data.image_size), std::invalid_argument);
+    EXPECT_THROW(CalibrateCamera{}(obj2, img2, data.image_size), improc::ParameterError);
 }
 
 TEST(CalibrateCameraTest, ResultStructIsPopulated) {
@@ -147,5 +148,5 @@ TEST(CalibrateCameraTest, RecoveredFocalLengthCloseToGroundTruth) {
 TEST(CalibrateCameraTest, ThrowsOnZeroImageSize) {
     auto data = make_calib_data();
     EXPECT_THROW(CalibrateCamera{}(data.obj_pts, data.img_pts, {0, 0}),
-                 std::invalid_argument);
+                 improc::ParameterError);
 }

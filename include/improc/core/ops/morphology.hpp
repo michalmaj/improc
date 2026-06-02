@@ -55,7 +55,7 @@ struct Dilate {
 
     /// @brief Applies morphological dilation to img.
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img) const {
         cv::Mat kernel = cv::getStructuringElement(
             detail::morph_shape_to_cv(shape_),
             cv::Size(kernel_size_, kernel_size_));
@@ -98,7 +98,7 @@ struct Erode {
 
     /// @brief Applies morphological erosion to img.
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img) const {
         cv::Mat kernel = cv::getStructuringElement(
             detail::morph_shape_to_cv(shape_),
             cv::Size(kernel_size_, kernel_size_));
@@ -144,7 +144,7 @@ struct MorphOpen {
 
     /// @brief Applies morphological opening (erode then dilate) to img.
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img) const {
         cv::Mat kernel = cv::getStructuringElement(
             detail::morph_shape_to_cv(shape_),
             cv::Size(kernel_size_, kernel_size_));
@@ -191,7 +191,7 @@ struct MorphClose {
 
     /// @brief Applies morphological closing (dilate then erode) to img.
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img) const {
         cv::Mat kernel = cv::getStructuringElement(
             detail::morph_shape_to_cv(shape_),
             cv::Size(kernel_size_, kernel_size_));
@@ -229,7 +229,7 @@ struct MorphGradient {
 
     /// @brief Applies morphological gradient (dilate − erode) to img.
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img) const {
         cv::Mat kernel = cv::getStructuringElement(
             detail::morph_shape_to_cv(shape_),
             cv::Size(kernel_size_, kernel_size_));
@@ -265,7 +265,7 @@ struct TopHat {
 
     /// @brief Applies top-hat transform (src − MorphOpen) to img.
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img) const {
         cv::Mat kernel = cv::getStructuringElement(
             detail::morph_shape_to_cv(shape_),
             cv::Size(kernel_size_, kernel_size_));
@@ -301,7 +301,7 @@ struct BlackHat {
 
     /// @brief Applies black-hat transform (MorphClose − src) to img.
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img) const {
         cv::Mat kernel = cv::getStructuringElement(
             detail::morph_shape_to_cv(shape_),
             cv::Size(kernel_size_, kernel_size_));

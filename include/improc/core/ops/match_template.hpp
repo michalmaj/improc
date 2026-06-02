@@ -19,7 +19,7 @@ struct MatchTemplate {
     MatchTemplate& method(int m);
 
     /// @return {best_match_top_left, match_score}.
-    std::pair<cv::Point, double> operator()(const Image<BGR>& img,
+    [[nodiscard]] std::pair<cv::Point, double> operator()(const Image<BGR>& img,
                                              const Image<BGR>& templ) const;
 
 private:

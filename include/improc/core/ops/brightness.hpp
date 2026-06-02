@@ -31,7 +31,7 @@ struct Brightness {
     Brightness& delta(double d) { delta_ = d; return *this; }
 
     template<AnyFormat F>
-    Image<F> operator()(Image<F> img) const {
+    [[nodiscard]] Image<F> operator()(Image<F> img) const {
         cv::Mat dst;
         img.mat().convertTo(dst, -1, 1.0, delta_);
         return Image<F>(std::move(dst));

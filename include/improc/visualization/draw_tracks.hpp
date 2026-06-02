@@ -46,7 +46,7 @@ struct DrawTracks {
     DrawTracks& show_id(bool b) { show_id_ = b; return *this; }
 
     /// @brief Draws all tracks onto a clone of `img` and returns the annotated copy.
-    Image<BGR> operator()(Image<BGR> img) const {
+    [[nodiscard]] Image<BGR> operator()(Image<BGR> img) const {
         cv::Mat canvas = img.mat().clone();
 
         for (const auto& t : tracks_) {

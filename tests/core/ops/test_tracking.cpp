@@ -36,7 +36,7 @@ TEST(CamShiftTest, ConvergesOnBrightRegion) {
 TEST(CamShiftTest, OutOfBoundsWindowThrows) {
     auto back_proj = make_prob_map(cv::Rect(80, 80, 40, 40));
     cv::Rect window(-10, -10, 50, 50);
-    EXPECT_THROW(CamShift{}(back_proj, window), std::invalid_argument);
+    EXPECT_THROW(CamShift{}(back_proj, window), improc::ParameterError);
 }
 
 // ── MeanShift ─────────────────────────────────────────────────────────────────
@@ -64,5 +64,5 @@ TEST(MeanShiftTest, ConvergesOnBrightRegion) {
 TEST(MeanShiftTest, OutOfBoundsWindowThrows) {
     auto back_proj = make_prob_map(cv::Rect(80, 80, 40, 40));
     cv::Rect window(250, 250, 50, 50);
-    EXPECT_THROW(MeanShift{}(back_proj, window), std::invalid_argument);
+    EXPECT_THROW(MeanShift{}(back_proj, window), improc::ParameterError);
 }

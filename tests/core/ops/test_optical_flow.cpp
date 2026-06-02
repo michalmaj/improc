@@ -43,14 +43,14 @@ TEST(SparseLKFlowTest, TracksKnownTranslation) {
 TEST(SparseLKFlowTest, EmptyPointsThrows) {
     auto prev = make_circle_gray({80, 100});
     auto next = make_circle_gray({90, 100});
-    EXPECT_THROW(SparseLKFlow{}(prev, next, {}), std::invalid_argument);
+    EXPECT_THROW(SparseLKFlow{}(prev, next, {}), improc::ParameterError);
 }
 
 TEST(SparseLKFlowTest, MismatchedSizesThrow) {
     Image<Gray> prev(cv::Mat(100, 100, CV_8UC1, cv::Scalar(0)));
     Image<Gray> next(cv::Mat(200, 200, CV_8UC1, cv::Scalar(0)));
     std::vector<cv::Point2f> pts = {{50.f, 50.f}};
-    EXPECT_THROW(SparseLKFlow{}(prev, next, pts), std::invalid_argument);
+    EXPECT_THROW(SparseLKFlow{}(prev, next, pts), improc::ParameterError);
 }
 
 // ── DenseFarnebackFlow ────────────────────────────────────────────────────────
@@ -96,7 +96,7 @@ TEST(DenseFarnebackFlowTest, DetectsHorizontalTranslation) {
 TEST(DenseFarnebackFlowTest, MismatchedSizesThrow) {
     Image<Gray> prev(cv::Mat(100, 100, CV_8UC1, cv::Scalar(0)));
     Image<Gray> next(cv::Mat(200, 200, CV_8UC1, cv::Scalar(0)));
-    EXPECT_THROW(DenseFarnebackFlow{}(prev, next), std::invalid_argument);
+    EXPECT_THROW(DenseFarnebackFlow{}(prev, next), improc::ParameterError);
 }
 
 // ── DenseDISFlow ──────────────────────────────────────────────────────────────
@@ -124,5 +124,5 @@ TEST(DenseDISFlowTest, ReturnsFlowSameSize) {
 TEST(DenseDISFlowTest, MismatchedSizesThrow) {
     Image<Gray> prev(cv::Mat(100, 100, CV_8UC1, cv::Scalar(0)));
     Image<Gray> next(cv::Mat(200, 200, CV_8UC1, cv::Scalar(0)));
-    EXPECT_THROW(DenseDISFlow{}(prev, next), std::invalid_argument);
+    EXPECT_THROW(DenseDISFlow{}(prev, next), improc::ParameterError);
 }

@@ -14,7 +14,7 @@ namespace improc::calib {
 struct ProjectPoints {
     /// @brief Projects `obj_pts` using the given pose and camera parameters.
     /// @return Projected 2-D points in pixel coordinates.
-    std::vector<cv::Point2f> operator()(const std::vector<cv::Point3f>& obj_pts,
+    [[nodiscard]] std::vector<cv::Point2f> operator()(const std::vector<cv::Point3f>& obj_pts,
                                         const cv::Mat& rvec,
                                         const cv::Mat& tvec,
                                         const cv::Mat& K,
@@ -29,8 +29,8 @@ struct SolvePnP {
     SolvePnP& method(int m) { method_ = m; return *this; }
 
     /// @brief Estimates the pose.
-    /// @throws std::invalid_argument if sizes mismatch or fewer than 4 points.
-    PnPResult operator()(const std::vector<cv::Point3f>& obj_pts,
+    /// @throws improc::ParameterError if sizes mismatch or fewer than 4 points.
+    [[nodiscard]] PnPResult operator()(const std::vector<cv::Point3f>& obj_pts,
                          const std::vector<cv::Point2f>& img_pts,
                          const cv::Mat& K,
                          const cv::Mat& dist) const;
@@ -53,7 +53,7 @@ struct SolvePnPRansac {
     SolvePnPRansac& iterations(int n)           { iterations_         = n; return *this; }
 
     /// @brief Estimates the pose with RANSAC.
-    PnPRansacResult operator()(const std::vector<cv::Point3f>& obj_pts,
+    [[nodiscard]] PnPRansacResult operator()(const std::vector<cv::Point3f>& obj_pts,
                                const std::vector<cv::Point2f>& img_pts,
                                const cv::Mat& K,
                                const cv::Mat& dist) const;

@@ -33,7 +33,7 @@ struct WeightedBlend {
         return *this;
     }
 
-    Image<F> operator()(Image<F> img) const {
+    [[nodiscard]] Image<F> operator()(Image<F> img) const {
         if (img.rows() != other_.rows() || img.cols() != other_.cols())
             throw ParameterError{"other", "size must match source image", "WeightedBlend"};
         cv::Mat dst;

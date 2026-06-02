@@ -32,7 +32,7 @@ struct Contrast {
     }
 
     template<AnyFormat F>
-    Image<F> operator()(Image<F> img) const {
+    [[nodiscard]] Image<F> operator()(Image<F> img) const {
         cv::Mat dst;
         img.mat().convertTo(dst, -1, factor_, 0.0);
         return Image<F>(std::move(dst));

@@ -39,10 +39,10 @@ TEST(FloodFillTest, OriginalImageUnmodified) {
 
 TEST(FloodFillTest, SeedOutsideBoundsThrows) {
     Image<BGR> img(cv::Mat(50, 50, CV_8UC3, cv::Scalar(0)));
-    EXPECT_THROW(FloodFill{}(img, {-1,  0}, cv::Scalar(0)), std::invalid_argument);
-    EXPECT_THROW(FloodFill{}(img, {50,  0}, cv::Scalar(0)), std::invalid_argument);
-    EXPECT_THROW(FloodFill{}(img, { 0, -1}, cv::Scalar(0)), std::invalid_argument);
-    EXPECT_THROW(FloodFill{}(img, { 0, 50}, cv::Scalar(0)), std::invalid_argument);
+    EXPECT_THROW(FloodFill{}(img, {-1,  0}, cv::Scalar(0)), improc::ParameterError);
+    EXPECT_THROW(FloodFill{}(img, {50,  0}, cv::Scalar(0)), improc::ParameterError);
+    EXPECT_THROW(FloodFill{}(img, { 0, -1}, cv::Scalar(0)), improc::ParameterError);
+    EXPECT_THROW(FloodFill{}(img, { 0, 50}, cv::Scalar(0)), improc::ParameterError);
 }
 
 TEST(FloodFillTest, LoUpDiffToleranceLimitsSpread) {

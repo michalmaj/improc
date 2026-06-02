@@ -64,7 +64,7 @@ struct IoUHistogram {
 
     /// @brief Renders and returns the histogram as a BGR image.
     /// @throws improc::ParameterError if width, height, or bins <= 0, or threshold outside [0, 1].
-    Image<BGR> operator()() const {
+    [[nodiscard]] Image<BGR> operator()() const {
         if (width_ <= 0)
             throw improc::ParameterError{"width",     "must be positive",   "IoUHistogram"};
         if (height_ <= 0)

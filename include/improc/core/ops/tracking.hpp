@@ -40,7 +40,7 @@ struct CamShift {
     CamShift& max_iter(int n)    { max_iter_ = n; return *this; }
 
     /// @brief Runs one frame of CamShift on `back_proj`, updating `window` in place.
-    CamShiftResult operator()(const Image<Gray>& back_proj, cv::Rect& window) const;
+    [[nodiscard]] CamShiftResult operator()(const Image<Gray>& back_proj, cv::Rect& window) const;
 
 private:
     double epsilon_  = 1.0;
@@ -70,7 +70,7 @@ struct MeanShift {
 
     /// @brief Runs one frame of Mean-Shift on `back_proj`, updating `window` in place.
     /// @return Number of iterations performed.
-    int operator()(const Image<Gray>& back_proj, cv::Rect& window) const;
+    [[nodiscard]] int operator()(const Image<Gray>& back_proj, cv::Rect& window) const;
 
 private:
     double epsilon_  = 1.0;

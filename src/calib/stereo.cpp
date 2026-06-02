@@ -1,5 +1,6 @@
 // src/calib/stereo.cpp
 #include "improc/calib/ops/stereo.hpp"
+#include "improc/exceptions.hpp"
 #include <opencv2/calib3d.hpp>
 
 namespace improc::calib {
@@ -10,14 +11,11 @@ StereoCalibrationResult StereoCalibrate::operator()(
         const std::vector<std::vector<cv::Point2f>>& img_pts2,
         cv::Size image_size) const {
     if (obj_pts.size() != img_pts1.size() || obj_pts.size() != img_pts2.size())
-        throw std::invalid_argument(
-            "StereoCalibrate: obj_pts, img_pts1, img_pts2 must have the same number of views");
+        throw improc::ParameterError{"obj_pts", "must have same number of views as img_pts1 and img_pts2", "StereoCalibrate"};
     if (obj_pts.size() < 3)
-        throw std::invalid_argument(
-            "StereoCalibrate: at least 3 views required");
+        throw improc::ParameterError{"obj_pts", "at least 3 views required", "StereoCalibrate"};
     if (image_size.width <= 0 || image_size.height <= 0)
-        throw std::invalid_argument(
-            "StereoCalibrate: image_size dimensions must be positive");
+        throw improc::ParameterError{"image_size", "dimensions must be positive", "StereoCalibrate"};
 
     StereoCalibrationResult result;
     result.K1    = K1_.empty()    ? cv::Mat() : K1_.clone();
@@ -40,8 +38,7 @@ StereoRectifyResult StereoRectify::operator()(
         cv::Size image_size) const {
     if (K1.empty() || dist1.empty() || K2.empty() || dist2.empty() ||
         R.empty()  || T.empty())
-        throw std::invalid_argument(
-            "StereoRectify: K1, dist1, K2, dist2, R, T must not be empty");
+        throw improc::ParameterError{"inputs", "K1, dist1, K2, dist2, R, T must not be empty", "StereoRectify"};
 
     StereoRectifyResult result;
     cv::stereoRectify(K1, dist1, K2, dist2, image_size, R, T,
@@ -53,8 +50,7 @@ StereoRectifyResult StereoRectify::operator()(
 
 cv::Mat StereoBM::operator()(Image<Gray> left, Image<Gray> right) const {
     if (left.mat().size() != right.mat().size())
-        throw std::invalid_argument(
-            "StereoBM: left and right images must have the same size");
+        throw improc::ParameterError{"left", "must be the same size as right", "StereoBM"};
     auto bm = cv::StereoBM::create(num_disparities_, block_size_);
     cv::Mat disparity;
     bm->compute(left.mat(), right.mat(), disparity);
@@ -63,8 +59,7 @@ cv::Mat StereoBM::operator()(Image<Gray> left, Image<Gray> right) const {
 
 cv::Mat StereoSGBM::operator()(Image<Gray> left, Image<Gray> right) const {
     if (left.mat().size() != right.mat().size())
-        throw std::invalid_argument(
-            "StereoSGBM: left and right images must have the same size");
+        throw improc::ParameterError{"left", "must be the same size as right", "StereoSGBM"};
     auto sgbm = cv::StereoSGBM::create(min_disparity_, num_disparities_, block_size_,
                                         p1_, p2_, 0, 0, 0, 0, 0, mode_);
     cv::Mat disparity;

@@ -46,13 +46,13 @@ TEST(MatchTemplateTest, FindsEmbeddedPatchLocation) {
 TEST(MatchTemplateTest, ThrowsWhenTemplateWiderThanImage) {
     Image<BGR> img(cv::Mat(64, 64, CV_8UC3, cv::Scalar(0)));
     Image<BGR> templ(cv::Mat(32, 128, CV_8UC3, cv::Scalar(0)));
-    EXPECT_THROW(MatchTemplate{}(img, templ), std::invalid_argument);
+    EXPECT_THROW(MatchTemplate{}(img, templ), improc::ParameterError);
 }
 
 TEST(MatchTemplateTest, ThrowsWhenTemplateTallerThanImage) {
     Image<BGR> img(cv::Mat(64, 64, CV_8UC3, cv::Scalar(0)));
     Image<BGR> templ(cv::Mat(128, 32, CV_8UC3, cv::Scalar(0)));
-    EXPECT_THROW(MatchTemplate{}(img, templ), std::invalid_argument);
+    EXPECT_THROW(MatchTemplate{}(img, templ), improc::ParameterError);
 }
 
 TEST(MatchTemplateTest, ExactMatchScoreNearOne) {

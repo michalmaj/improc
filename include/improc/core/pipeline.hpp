@@ -7,11 +7,11 @@
  * Standardize, ApplyMask, WarpAffine, WarpPerspective, ToGray, ToFloat32,
  * ToFloat32C3, ToHSV, ToLAB, ToYCrCb, ToBGR, Brightness, Contrast, WeightedBlend, AlphaBlend,
  * PyrDown, PyrUp, DrawText, DrawLine, DrawCircle, DrawRectangle,
- * FindContours, DrawContours, ConnectedComponents, DistanceTransform,
+ * FindContours, ConnectedComponents, DistanceTransform,
  * DetectORB, DetectSIFT, DetectAKAZE,
  * DescribeORB, DescribeSIFT, DescribeAKAZE,
  * MatchSet, MatchBF, MatchFlann,
- * DrawKeypoints, DrawMatches,
+ * DrawKeypoints, DrawMatches, (both now in improc::visualization, backward-compat aliases in improc::core)
  * BackgroundSubtractMOG2, BackgroundSubtractKNN, LUT,
  * CalcHist, CompareHist, HoughLinesP, HoughCircles, MatchTemplate,
  * Moments, Inpaint, Watershed, GrabCut,
@@ -70,6 +70,8 @@
 #include "improc/core/ops/pyramid.hpp"
 #include "improc/core/ops/drawing.hpp"
 #include "improc/core/ops/contours.hpp"
+// DrawContours moved to improc::visualization; backward-compat alias in improc::core.
+#include "improc/visualization/draw_contours.hpp"
 #include "improc/core/ops/connected_components.hpp"
 #include "improc/core/ops/distance_transform.hpp"
 #include "improc/core/ops/feature_detection.hpp"
@@ -95,6 +97,11 @@
 #include "improc/core/ops/arithmetic.hpp"
 #include "improc/core/ops/channels.hpp"
 
+// Types
+#include "improc/core/types/histogram_data.hpp"
+#include "improc/core/types/image_hash.hpp"
+#include "improc/core/types/face_embedding.hpp"
+
 // Analysis ops (multi-arg or non-image output — not composable via operator|)
 #include "improc/core/ops/analysis.hpp"
 #include "improc/core/ops/optical_flow.hpp"
@@ -114,6 +121,10 @@
 #include "improc/core/ops/img_hash.hpp"
 
 namespace improc::core {
+
+// Backward-compat alias: DrawContours moved to improc::visualization.
+// Deprecated: include "improc/visualization/draw_contours.hpp" and use improc::visualization::DrawContours.
+using improc::visualization::DrawContours;
 
 /**
  * @brief Generic pipeline dispatch operator.

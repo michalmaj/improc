@@ -150,7 +150,7 @@ struct DnnDetector {
      * @return `Detection` entries that passed confidence and NMS filtering.
      * @throws improc::Exception if the forward pass or output parsing fails.
      */
-    std::vector<Detection> operator()(const Image<BGR>& img) const;
+    [[nodiscard]] std::vector<Detection> operator()(const Image<BGR>& img) const;
 
 private:
     mutable cv::dnn::Net     net_;

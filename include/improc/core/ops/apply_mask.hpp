@@ -33,7 +33,7 @@ struct ApplyMask {
 
     /// @brief Applies the mask to img, zeroing pixels where mask == 0.
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img) const {
         if (!mask_)
             throw ParameterError{"mask", "must be set before calling operator()", "ApplyMask"};
         if (mask_->rows() != img.rows() || mask_->cols() != img.cols())

@@ -87,7 +87,7 @@ struct RandomFlip : detail::BindMixin<RandomFlip> {
     }
 
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         std::bernoulli_distribution d(p_);
         if (!d(rng)) return img;
         int flip_code;
@@ -103,7 +103,7 @@ struct RandomFlip : detail::BindMixin<RandomFlip> {
     }
 
     template<AnyFormat Format>
-    AnnotatedImage<Format> operator()(AnnotatedImage<Format> ann, std::mt19937& rng) const {
+    [[nodiscard]] AnnotatedImage<Format> operator()(AnnotatedImage<Format> ann, std::mt19937& rng) const {
         std::bernoulli_distribution d(p_);
         if (!d(rng)) return ann;
         int W = ann.image.cols(), H = ann.image.rows();
@@ -127,7 +127,7 @@ struct RandomFlip : detail::BindMixin<RandomFlip> {
     }
 
     template<AnyFormat Format>
-    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+    [[nodiscard]] SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
         std::bernoulli_distribution d(p_);
         if (!d(rng)) return seg;
         int flip_code;
@@ -181,7 +181,7 @@ struct RandomRotate : detail::BindMixin<RandomRotate> {
     }
 
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         std::uniform_real_distribution<float> d(min_deg_, max_deg_);
         float angle = d(rng);
         cv::Point2f center(img.cols() / 2.0f, img.rows() / 2.0f);
@@ -196,7 +196,7 @@ struct RandomRotate : detail::BindMixin<RandomRotate> {
     }
 
     template<AnyFormat Format>
-    AnnotatedImage<Format> operator()(AnnotatedImage<Format> ann, std::mt19937& rng) const {
+    [[nodiscard]] AnnotatedImage<Format> operator()(AnnotatedImage<Format> ann, std::mt19937& rng) const {
         std::uniform_real_distribution<float> d(min_deg_, max_deg_);
         float angle = d(rng);
         int W = ann.image.cols(), H = ann.image.rows();
@@ -225,7 +225,7 @@ struct RandomRotate : detail::BindMixin<RandomRotate> {
     }
 
     template<AnyFormat Format>
-    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+    [[nodiscard]] SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
         std::uniform_real_distribution<float> d(min_deg_, max_deg_);
         float angle = d(rng);
         cv::Point2f center(seg.image.cols() / 2.0f, seg.image.rows() / 2.0f);
@@ -276,7 +276,7 @@ struct RandomCrop : detail::BindMixin<RandomCrop> {
     }
 
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         if (width_ <= 0 || height_ <= 0)
             throw ParameterError{"width/height", "both must be set", "RandomCrop"};
         if (width_ > img.cols() || height_ > img.rows())
@@ -293,7 +293,7 @@ struct RandomCrop : detail::BindMixin<RandomCrop> {
     }
 
     template<AnyFormat Format>
-    AnnotatedImage<Format> operator()(AnnotatedImage<Format> ann, std::mt19937& rng) const {
+    [[nodiscard]] AnnotatedImage<Format> operator()(AnnotatedImage<Format> ann, std::mt19937& rng) const {
         if (width_ <= 0 || height_ <= 0)
             throw ParameterError{"width/height", "both must be set", "RandomCrop"};
         if (width_ > ann.image.cols() || height_ > ann.image.rows())
@@ -320,7 +320,7 @@ struct RandomCrop : detail::BindMixin<RandomCrop> {
     }
 
     template<AnyFormat Format>
-    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+    [[nodiscard]] SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
         if (width_ <= 0 || height_ <= 0)
             throw ParameterError{"width/height", "both must be set", "RandomCrop"};
         if (width_ > seg.image.cols() || height_ > seg.image.rows())
@@ -368,7 +368,7 @@ struct RandomResize : detail::BindMixin<RandomResize> {
     }
 
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         std::uniform_int_distribution<int> d(min_side_, max_side_);
         int target = d(rng);
         const int h = img.rows();
@@ -387,7 +387,7 @@ struct RandomResize : detail::BindMixin<RandomResize> {
     }
 
     template<AnyFormat Format>
-    AnnotatedImage<Format> operator()(AnnotatedImage<Format> ann, std::mt19937& rng) const {
+    [[nodiscard]] AnnotatedImage<Format> operator()(AnnotatedImage<Format> ann, std::mt19937& rng) const {
         std::uniform_int_distribution<int> d(min_side_, max_side_);
         int target = d(rng);
         const int h = ann.image.rows(), w = ann.image.cols();
@@ -410,7 +410,7 @@ struct RandomResize : detail::BindMixin<RandomResize> {
     }
 
     template<AnyFormat Format>
-    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+    [[nodiscard]] SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
         std::uniform_int_distribution<int> d(min_side_, max_side_);
         int target = d(rng);
         const int h = seg.image.rows(), w = seg.image.cols();
@@ -459,7 +459,7 @@ struct RandomZoom : detail::BindMixin<RandomZoom> {
     }
 
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         int W = img.cols(), H = img.rows();
         std::uniform_real_distribution<float> d(min_scale_, max_scale_);
         float scale = d(rng);
@@ -475,7 +475,7 @@ struct RandomZoom : detail::BindMixin<RandomZoom> {
     }
 
     template<AnyFormat Format>
-    AnnotatedImage<Format> operator()(AnnotatedImage<Format> ann, std::mt19937& rng) const {
+    [[nodiscard]] AnnotatedImage<Format> operator()(AnnotatedImage<Format> ann, std::mt19937& rng) const {
         int W = ann.image.cols(), H = ann.image.rows();
         std::uniform_real_distribution<float> d(min_scale_, max_scale_);
         float scale = d(rng);
@@ -509,7 +509,7 @@ struct RandomZoom : detail::BindMixin<RandomZoom> {
     }
 
     template<AnyFormat Format>
-    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+    [[nodiscard]] SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
         int W = seg.image.cols(), H = seg.image.rows();
         std::uniform_real_distribution<float> d(min_scale_, max_scale_);
         float scale = d(rng);
@@ -562,7 +562,7 @@ struct RandomShear : detail::BindMixin<RandomShear> {
     }
 
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         std::uniform_real_distribution<float> d(min_deg_, max_deg_);
         float angle_rad = d(rng) * std::numbers::pi_v<float> / 180.0f;
         float shear = std::tan(angle_rad);
@@ -579,7 +579,7 @@ struct RandomShear : detail::BindMixin<RandomShear> {
     }
 
     template<AnyFormat Format>
-    AnnotatedImage<Format> operator()(AnnotatedImage<Format> ann, std::mt19937& rng) const {
+    [[nodiscard]] AnnotatedImage<Format> operator()(AnnotatedImage<Format> ann, std::mt19937& rng) const {
         std::uniform_real_distribution<float> d(min_deg_, max_deg_);
         float angle_rad = d(rng) * std::numbers::pi_v<float> / 180.0f;
         float shear = std::tan(angle_rad);
@@ -609,7 +609,7 @@ struct RandomShear : detail::BindMixin<RandomShear> {
     }
 
     template<AnyFormat Format>
-    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+    [[nodiscard]] SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
         std::uniform_real_distribution<float> d(min_deg_, max_deg_);
         float angle_rad = d(rng) * std::numbers::pi_v<float> / 180.0f;
         float shear = std::tan(angle_rad);
@@ -658,7 +658,7 @@ struct RandomPerspective : detail::BindMixin<RandomPerspective> {
     }
 
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         int W = img.cols(), H = img.rows();
         float half_range = distortion_scale_ * std::min(W, H) / 2.0f;
         std::uniform_real_distribution<float> d(-half_range, half_range);
@@ -679,7 +679,7 @@ struct RandomPerspective : detail::BindMixin<RandomPerspective> {
     }
 
     template<AnyFormat Format>
-    AnnotatedImage<Format> operator()(AnnotatedImage<Format> ann, std::mt19937& rng) const {
+    [[nodiscard]] AnnotatedImage<Format> operator()(AnnotatedImage<Format> ann, std::mt19937& rng) const {
         int W = ann.image.cols(), H = ann.image.rows();
         float half_range = distortion_scale_ * std::min(W, H) / 2.0f;
         std::uniform_real_distribution<float> d(-half_range, half_range);
@@ -713,7 +713,7 @@ struct RandomPerspective : detail::BindMixin<RandomPerspective> {
     }
 
     template<AnyFormat Format>
-    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+    [[nodiscard]] SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
         int W = seg.image.cols(), H = seg.image.rows();
         float half_range = distortion_scale_ * std::min(W, H) / 2.0f;
         std::uniform_real_distribution<float> d(-half_range, half_range);

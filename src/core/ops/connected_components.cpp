@@ -1,10 +1,11 @@
 // src/core/ops/connected_components.cpp
+#include <cstddef>
 #include "improc/core/ops/connected_components.hpp"
 
 namespace improc::core {
 
 void ComponentMap::check(int label) const {
-    if (label < 0 || label >= num_labels)
+    if (label < 0 || static_cast<std::size_t>(label) >= num_labels)
         throw std::out_of_range{"ComponentMap: label out of range"};
 }
 
@@ -37,9 +38,10 @@ cv::Mat ComponentMap::mask(int label) const {
 
 ComponentMap ConnectedComponents::operator()(Image<Gray> img) const {
     ComponentMap result;
-    result.num_labels = cv::connectedComponentsWithStats(
-        img.mat(), result.labels, result.stats, result.centroids,
-        static_cast<int>(conn_), CV_32S);
+    result.num_labels = static_cast<std::size_t>(
+        cv::connectedComponentsWithStats(
+            img.mat(), result.labels, result.stats, result.centroids,
+            static_cast<int>(conn_), CV_32S));
     return result;
 }
 

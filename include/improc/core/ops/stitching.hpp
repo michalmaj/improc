@@ -31,7 +31,7 @@ struct Stitch {
     /// @brief Sets the stitching mode (default: Mode::Panorama).
     Stitch& mode(Mode m) { mode_ = m; return *this; }
     /// @return StitchResult; ok is false if feature matching or blending fails.
-    StitchResult operator()(const std::vector<Image<BGR>>&) const;
+    [[nodiscard]] StitchResult operator()(const std::vector<Image<BGR>>&) const;
 private:
     Mode mode_ = Mode::Panorama;
 };

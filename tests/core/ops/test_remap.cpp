@@ -3,6 +3,7 @@
 #include <opencv2/imgproc.hpp>
 #include "improc/core/ops/remap.hpp"
 #include "improc/core/pipeline.hpp"
+#include "improc/exceptions.hpp"
 
 using namespace improc::core;
 
@@ -43,13 +44,13 @@ TEST(RemapTest, IdentityMapsPreserveImage) {
 TEST(RemapTest, EmptyMapThrows) {
     cv::Mat m1(50, 50, CV_32FC1);
     cv::Mat m2;
-    EXPECT_THROW(Remap(m1, m2), std::invalid_argument);
+    EXPECT_THROW(Remap(m1, m2), improc::ParameterError);
 }
 
 TEST(RemapTest, MismatchedMapSizesThrow) {
     cv::Mat m1(50, 50, CV_32FC1);
     cv::Mat m2(60, 60, CV_32FC1);
-    EXPECT_THROW(Remap(m1, m2), std::invalid_argument);
+    EXPECT_THROW(Remap(m1, m2), improc::ParameterError);
 }
 
 TEST(RemapTest, OutputSizeMatchesMapSize) {

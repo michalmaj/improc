@@ -36,7 +36,7 @@ struct InRange {
 
     /// @brief Applies the range check and returns a binary Gray mask.
     template<AnyFormat Format>
-    Image<Gray> operator()(Image<Format> img) const {
+    [[nodiscard]] Image<Gray> operator()(Image<Format> img) const {
         if (!lower_)
             throw ParameterError{"lower", "must be set before calling operator()", "InRange"};
         if (!upper_)

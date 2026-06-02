@@ -50,7 +50,7 @@ struct Montage {
     Montage& background(cv::Scalar color);
 
     /// @brief Renders and returns the grid as `Image<BGR>`.
-    Image<BGR> operator()() const;
+    [[nodiscard]] Image<BGR> operator()() const;
 
 private:
     std::vector<Image<BGR>> images_;

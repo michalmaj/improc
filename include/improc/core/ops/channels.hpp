@@ -13,10 +13,10 @@ namespace improc::core {
 struct SplitChannels {
     /// @brief Splits BGR into B, G, R channels.
     /// @return Array of three single-channel Image<Gray> in B, G, R order.
-    std::array<Image<Gray>, 3> operator()(const Image<BGR>&  img) const;
+    [[nodiscard]] std::array<Image<Gray>, 3> operator()(const Image<BGR>&  img) const;
     /// @brief Splits BGRA into B, G, R, A channels.
     /// @return Array of four single-channel Image<Gray> in B, G, R, A order.
-    std::array<Image<Gray>, 4> operator()(const Image<BGRA>& img) const;
+    [[nodiscard]] std::array<Image<Gray>, 4> operator()(const Image<BGRA>& img) const;
 };
 
 /**
@@ -24,10 +24,10 @@ struct SplitChannels {
  */
 struct MergeChannels {
     /// @brief Merges three single-channel images into a BGR image.
-    Image<BGR>  operator()(const Image<Gray>& b, const Image<Gray>& g,
+    [[nodiscard]] Image<BGR>  operator()(const Image<Gray>& b, const Image<Gray>& g,
                             const Image<Gray>& r) const;
     /// @brief Merges four single-channel images into a BGRA image.
-    Image<BGRA> operator()(const Image<Gray>& b, const Image<Gray>& g,
+    [[nodiscard]] Image<BGRA> operator()(const Image<Gray>& b, const Image<Gray>& g,
                             const Image<Gray>& r, const Image<Gray>& a) const;
 };
 

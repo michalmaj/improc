@@ -47,7 +47,7 @@ struct LetterBox {
 
     /// @brief Applies the letterbox transform to img.
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img) const {
         if (!width_ || !height_)
             throw ParameterError{"width/height", "both must be set", "LetterBox"};
         const int tw = *width_, th = *height_;

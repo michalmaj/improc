@@ -33,7 +33,7 @@ struct RandomBrightness : detail::BindMixin<RandomBrightness> {
     }
 
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         std::uniform_real_distribution<float> d(low_, high_);
         float factor = d(rng);
         cv::Mat src_f, dst;
@@ -46,7 +46,7 @@ struct RandomBrightness : detail::BindMixin<RandomBrightness> {
     }
 
     template<AnyFormat Format>
-    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+    [[nodiscard]] SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
         seg.image = (*this)(std::move(seg.image), rng);
         return seg;
     }
@@ -72,7 +72,7 @@ struct RandomContrast : detail::BindMixin<RandomContrast> {
     }
 
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         std::uniform_real_distribution<float> d(low_, high_);
         float alpha = d(rng);
         cv::Scalar mean = cv::mean(img.mat());
@@ -86,7 +86,7 @@ struct RandomContrast : detail::BindMixin<RandomContrast> {
     }
 
     template<AnyFormat Format>
-    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+    [[nodiscard]] SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
         seg.image = (*this)(std::move(seg.image), rng);
         return seg;
     }
@@ -142,7 +142,7 @@ struct ColorJitter : detail::BindMixin<ColorJitter> {
     }
 
     template<BGRFormat Format>
-    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         std::uniform_real_distribution<float> br_d(br_low_, br_high_);
         std::uniform_real_distribution<float> ct_d(ct_low_, ct_high_);
         std::uniform_real_distribution<float> sa_d(sa_low_, sa_high_);
@@ -192,7 +192,7 @@ struct ColorJitter : detail::BindMixin<ColorJitter> {
     }
 
     template<BGRFormat Format>
-    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+    [[nodiscard]] SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
         seg.image = (*this)(std::move(seg.image), rng);
         return seg;
     }
@@ -218,7 +218,7 @@ struct RandomGrayscale : detail::BindMixin<RandomGrayscale> {
     }
 
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         std::bernoulli_distribution d(p_);
         if (!d(rng)) return img;
         if constexpr (std::is_same_v<Format, improc::core::BGR>) {
@@ -232,7 +232,7 @@ struct RandomGrayscale : detail::BindMixin<RandomGrayscale> {
     }
 
     template<AnyFormat Format>
-    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+    [[nodiscard]] SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
         seg.image = (*this)(std::move(seg.image), rng);
         return seg;
     }
@@ -262,7 +262,7 @@ struct RandomSolarize : detail::BindMixin<RandomSolarize> {
     }
 
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         std::bernoulli_distribution d(p_);
         if (!d(rng)) return img;
         if constexpr (improc::core::FormatTraits<Format>::is_float) {
@@ -279,7 +279,7 @@ struct RandomSolarize : detail::BindMixin<RandomSolarize> {
     }
 
     template<AnyFormat Format>
-    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+    [[nodiscard]] SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
         seg.image = (*this)(std::move(seg.image), rng);
         return seg;
     }
@@ -310,7 +310,7 @@ struct RandomPosterize : detail::BindMixin<RandomPosterize> {
     }
 
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         std::bernoulli_distribution d(p_);
         if (!d(rng)) return img;
         if constexpr (improc::core::FormatTraits<Format>::is_float) {
@@ -328,7 +328,7 @@ struct RandomPosterize : detail::BindMixin<RandomPosterize> {
     }
 
     template<AnyFormat Format>
-    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+    [[nodiscard]] SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
         seg.image = (*this)(std::move(seg.image), rng);
         return seg;
     }
@@ -353,7 +353,7 @@ struct RandomEqualize : detail::BindMixin<RandomEqualize> {
     }
 
     template<AnyFormat Format>
-    Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
+    [[nodiscard]] Image<Format> operator()(Image<Format> img, std::mt19937& rng) const {
         std::bernoulli_distribution d(p_);
         if (!d(rng)) return img;
         if constexpr (std::is_same_v<Format, improc::core::BGR>) {
@@ -376,7 +376,7 @@ struct RandomEqualize : detail::BindMixin<RandomEqualize> {
     }
 
     template<AnyFormat Format>
-    SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
+    [[nodiscard]] SegmentedImage<Format> operator()(SegmentedImage<Format> seg, std::mt19937& rng) const {
         seg.image = (*this)(std::move(seg.image), rng);
         return seg;
     }

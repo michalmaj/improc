@@ -1,9 +1,10 @@
 // include/improc/core/ops/analysis.hpp
 #pragma once
-#include <stdexcept>
+#include <cstddef>
 #include <opencv2/core.hpp>
 #include "improc/core/image.hpp"
 #include "improc/core/concepts.hpp"
+#include "improc/exceptions.hpp"
 
 namespace improc::core {
 
@@ -23,7 +24,7 @@ struct IntegralImage {
     IntegralImage& with_sq_sum(bool b) { with_sq_sum_ = b; return *this; }
 
     /// @brief Computes and returns the integral image.
-    IntegralResult operator()(const Image<Gray>& img) const;
+    [[nodiscard]] IntegralResult operator()(const Image<Gray>& img) const;
 
 private:
     bool with_sq_sum_ = false;
@@ -42,9 +43,9 @@ struct MinMaxLocResult {
  */
 struct MinMaxLoc {
     /// @brief Finds min/max in a `Gray` image.
-    MinMaxLocResult operator()(const Image<Gray>& img) const;
+    [[nodiscard]] MinMaxLocResult operator()(const Image<Gray>& img) const;
     /// @brief Finds min/max in an arbitrary `cv::Mat`.
-    MinMaxLocResult operator()(const cv::Mat& mat) const;
+    [[nodiscard]] MinMaxLocResult operator()(const cv::Mat& mat) const;
 };
 
 /**
@@ -60,7 +61,7 @@ struct MeanStdDevResult {
  */
 struct MeanStdDev {
     template<AnyFormat F>
-    MeanStdDevResult operator()(const Image<F>& img) const {
+    [[nodiscard]] MeanStdDevResult operator()(const Image<F>& img) const {
         MeanStdDevResult r;
         cv::meanStdDev(img.mat(), r.mean, r.stddev);
         return r;
@@ -72,7 +73,7 @@ struct MeanStdDev {
  */
 struct CountNonZero {
     /// @return Number of non-zero pixels.
-    int operator()(const Image<Gray>& img) const;
+    [[nodiscard]] std::size_t operator()(const Image<Gray>& img) const;
 };
 
 /// @brief Reduction operation used by `Reduce`.
@@ -85,16 +86,16 @@ struct Reduce {
     /// @brief Sets the reduction operation (default: Sum).
     Reduce& op(ReduceOp o) { op_  = o; return *this; }
     /// @brief Sets the reduction dimension: 0 = reduce rows → single row; 1 = reduce cols → single col.
-    /// @throws std::invalid_argument if dim is not 0 or 1.
+    /// @throws improc::ParameterError if dim is not 0 or 1.
     Reduce& dim(int d) {
         if (d != 0 && d != 1)
-            throw std::invalid_argument("Reduce: dim must be 0 (reduce rows) or 1 (reduce cols)");
+            throw improc::ParameterError{"dim", "must be 0 (reduce rows) or 1 (reduce cols)", "Reduce"};
         dim_ = d;
         return *this;
     }
 
     /// @return Single-row or single-column cv::Mat.
-    cv::Mat operator()(const Image<Gray>& img) const;
+    [[nodiscard]] cv::Mat operator()(const Image<Gray>& img) const;
 
 private:
     ReduceOp op_  = ReduceOp::Sum;

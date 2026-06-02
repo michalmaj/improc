@@ -98,7 +98,7 @@ TEST(StereoCalibrateTest, ThrowsOnMismatchedVectorSizes) {
     auto pts2 = d.img_pts2;
     pts2.pop_back();
     EXPECT_THROW(StereoCalibrate{}(obj, d.img_pts1, pts2, d.image_size),
-                 std::invalid_argument);
+                 improc::ParameterError);
 }
 
 TEST(StereoCalibrateTest, ThrowsOnFewerThanThreeViews) {
@@ -106,13 +106,13 @@ TEST(StereoCalibrateTest, ThrowsOnFewerThanThreeViews) {
     std::vector<std::vector<cv::Point3f>> obj2 = {d.obj_pts[0], d.obj_pts[1]};
     std::vector<std::vector<cv::Point2f>> p1 = {d.img_pts1[0], d.img_pts1[1]};
     std::vector<std::vector<cv::Point2f>> p2 = {d.img_pts2[0], d.img_pts2[1]};
-    EXPECT_THROW(StereoCalibrate{}(obj2, p1, p2, d.image_size), std::invalid_argument);
+    EXPECT_THROW(StereoCalibrate{}(obj2, p1, p2, d.image_size), improc::ParameterError);
 }
 
 TEST(StereoCalibrateTest, ThrowsOnZeroImageSize) {
     auto d = make_stereo_data();
     EXPECT_THROW(StereoCalibrate{}(d.obj_pts, d.img_pts1, d.img_pts2, {0,0}),
-                 std::invalid_argument);
+                 improc::ParameterError);
 }
 
 TEST(StereoCalibrateTest, RmsLowOnSyntheticData) {
@@ -153,7 +153,7 @@ TEST(StereoRectifyTest, ThrowsOnEmptyMatrices) {
     EXPECT_THROW(
         StereoRectify{}(cv::Mat{}, cv::Mat{}, cv::Mat{}, cv::Mat{},
                         cv::Mat{}, cv::Mat{}, {640,480}),
-        std::invalid_argument);
+        improc::ParameterError);
 }
 
 TEST(StereoRectifyTest, OutputShapesAreCorrect) {
@@ -182,7 +182,7 @@ TEST(StereoRectifyTest, ValidROIsAreNonEmpty) {
 TEST(StereoBMTest, ThrowsOnSizeMismatch) {
     auto [left, right] = make_stereo_pair({9,6}, 20, 16);
     cv::Mat smaller(left.mat().rows / 2, left.mat().cols / 2, CV_8UC1);
-    EXPECT_THROW(StereoBM{}(left, Image<Gray>(smaller)), std::invalid_argument);
+    EXPECT_THROW(StereoBM{}(left, Image<Gray>(smaller)), improc::ParameterError);
 }
 
 TEST(StereoBMTest, OutputIsCV16SAndMatchesInputSize) {
@@ -211,7 +211,7 @@ TEST(StereoBMTest, FluentSettersReturnThis) {
 TEST(StereoSGBMTest, ThrowsOnSizeMismatch) {
     auto [left, right] = make_stereo_pair({9,6}, 20, 16);
     cv::Mat smaller(left.mat().rows / 2, left.mat().cols / 2, CV_8UC1);
-    EXPECT_THROW(StereoSGBM{}(left, Image<Gray>(smaller)), std::invalid_argument);
+    EXPECT_THROW(StereoSGBM{}(left, Image<Gray>(smaller)), improc::ParameterError);
 }
 
 TEST(StereoSGBMTest, OutputIsCV16SAndMatchesInputSize) {

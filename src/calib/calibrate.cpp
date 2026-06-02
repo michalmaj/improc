@@ -8,14 +8,11 @@ CalibrationResult CalibrateCamera::operator()(
         const std::vector<std::vector<cv::Point2f>>& img_pts,
         cv::Size image_size) const {
     if (obj_pts.size() != img_pts.size())
-        throw std::invalid_argument(
-            "CalibrateCamera: obj_pts and img_pts must have the same number of views");
+        throw improc::ParameterError{"obj_pts", "must have the same number of views as img_pts", "CalibrateCamera"};
     if (obj_pts.size() < 3)
-        throw std::invalid_argument(
-            "CalibrateCamera: at least 3 views required");
+        throw improc::ParameterError{"obj_pts", "at least 3 views required", "CalibrateCamera"};
     if (image_size.width <= 0 || image_size.height <= 0)
-        throw std::invalid_argument(
-            "CalibrateCamera: image_size dimensions must be positive");
+        throw improc::ParameterError{"image_size", "dimensions must be positive", "CalibrateCamera"};
 
     CalibrationResult result;
     result.rms = cv::calibrateCamera(obj_pts, img_pts, image_size,

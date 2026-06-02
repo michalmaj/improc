@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 #include <opencv2/core.hpp>
 #include "improc/core/pipeline.hpp"
+#include "improc/exceptions.hpp"
 
 using namespace improc::core;
 
@@ -26,12 +27,12 @@ TEST(LUTTest, DefaultConstructionFromValidTable) {
 
 TEST(LUTTest, InvalidTableSizeThrows) {
     cv::Mat bad(1, 128, CV_8UC1, cv::Scalar(0));
-    EXPECT_THROW(LUT{bad}, std::invalid_argument);
+    EXPECT_THROW(LUT{bad}, improc::ParameterError);
 }
 
 TEST(LUTTest, InvalidTableDepthThrows) {
     cv::Mat bad(1, 256, CV_16UC1, cv::Scalar(0));
-    EXPECT_THROW(LUT{bad}, std::invalid_argument);
+    EXPECT_THROW(LUT{bad}, improc::ParameterError);
 }
 
 TEST(LUTTest, InvertsGrayImageValues) {

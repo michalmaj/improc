@@ -18,9 +18,9 @@ namespace improc::core {
  */
 struct Normalize {
     /// @brief Applies min-max normalization to img, scaling values to [0, 1].
-    Image<Float32>   operator()(Image<Float32>   img) const;
+    [[nodiscard]] Image<Float32>   operator()(Image<Float32>   img) const;
     /// @brief Applies min-max normalization to img, scaling values to [0, 1].
-    Image<Float32C3> operator()(Image<Float32C3> img) const;
+    [[nodiscard]] Image<Float32C3> operator()(Image<Float32C3> img) const;
 };
 
 /**
@@ -42,9 +42,9 @@ struct NormalizeTo {
      */
     explicit NormalizeTo(float min, float max);
     /// @brief Scales pixel values of img to [min_val, max_val].
-    Image<Float32>   operator()(Image<Float32>   img) const;
+    [[nodiscard]] Image<Float32>   operator()(Image<Float32>   img) const;
     /// @brief Scales pixel values of img to [min_val, max_val].
-    Image<Float32C3> operator()(Image<Float32C3> img) const;
+    [[nodiscard]] Image<Float32C3> operator()(Image<Float32C3> img) const;
 private:
     float min_, max_;
 };
@@ -67,9 +67,9 @@ struct Standardize {
      */
     explicit Standardize(float mean, float std_dev);
     /// @brief Standardizes img by subtracting mean and dividing by std_dev.
-    Image<Float32>   operator()(Image<Float32>   img) const;
+    [[nodiscard]] Image<Float32>   operator()(Image<Float32>   img) const;
     /// @brief Standardizes img by subtracting mean and dividing by std_dev.
-    Image<Float32C3> operator()(Image<Float32C3> img) const;
+    [[nodiscard]] Image<Float32C3> operator()(Image<Float32C3> img) const;
 private:
     float mean_, std_dev_;
 };

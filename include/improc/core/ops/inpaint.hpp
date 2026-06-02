@@ -26,7 +26,7 @@ struct Inpaint {
     Inpaint& method(InpaintMethod m);
 
     /// @brief Inpaints regions where mask is non-zero.
-    Image<BGR> operator()(const Image<BGR>& img, const Image<Gray>& mask) const;
+    [[nodiscard]] Image<BGR> operator()(const Image<BGR>& img, const Image<Gray>& mask) const;
 
 private:
     double radius_ = 3.0;
