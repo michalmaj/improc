@@ -4,6 +4,7 @@ The library is organized into modular namespaces under the root `improc` namespa
 
 ## Table of Contents
 
+- [Version](#version-improcversionhpp) — Compile-time version constants
 - [`improc`](#improc--root-namespace-exceptions-and-error-values) — Root namespace: exceptions and error values
 - [`improc::core`](#improccore--type-safe-image-primitives) — Type-safe image primitives
 - [`improc::io`](#improcio--inputoutput) — Input/Output
@@ -22,6 +23,33 @@ The library is organized into modular namespaces under the root `improc` namespa
 - [`improc::views`](#improcviews--lazy-image-pipeline) — Lazy Image Pipeline
 - [`improc::calib`](#improccalib--camera-calibration-and-pose-estimation) — Camera calibration and pose estimation
 - [Planned namespaces](#planned-namespaces)
+
+---
+
+## Version (`improc/version.hpp`)
+
+Compile-time version constants and a runtime accessor. Include `improc/version.hpp` — no other dependency.
+
+| Symbol | Value |
+|---|---|
+| `IMPROC_VERSION_MAJOR` | `0` |
+| `IMPROC_VERSION_MINOR` | `18` |
+| `IMPROC_VERSION_PATCH` | `0` |
+| `IMPROC_VERSION` | `MAJOR*10000 + MINOR*100 + PATCH` (e.g. `1800` for 0.18.0) |
+| `IMPROC_VERSION_STRING` | `"0.18.0"` |
+| `improc::version_string()` | `constexpr const char*` — same as `IMPROC_VERSION_STRING` |
+
+```cpp
+#include "improc/version.hpp"
+
+// Compile-time guard
+#if IMPROC_VERSION < 1800
+#error "improc++ 0.18.0 or newer required"
+#endif
+
+// Runtime
+std::cout << "improc++ " << improc::version_string() << '\n';
+```
 
 ---
 
