@@ -1,4 +1,4 @@
-// tests/core/ops/test_analysis_v080.cpp
+// tests/core/ops/test_analysis.cpp
 #include <gtest/gtest.h>
 #include <opencv2/core.hpp>
 #include "improc/core/pipeline.hpp"
