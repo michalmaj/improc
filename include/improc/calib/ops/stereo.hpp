@@ -38,7 +38,7 @@ struct StereoCalibrate {
     StereoCalibrate& flags(int f)     { flags_ = f;             return *this; }
 
     /// @brief Runs stereo calibration.
-    /// @throws std::invalid_argument if point set sizes mismatch, fewer than 3 views, or image_size is non-positive.
+    /// @throws improc::ParameterError if point set sizes mismatch, fewer than 3 views, or image_size is non-positive.
     StereoCalibrationResult operator()(
         const std::vector<std::vector<cv::Point3f>>& obj_pts,
         const std::vector<std::vector<cv::Point2f>>& img_pts1,
@@ -62,7 +62,7 @@ struct StereoRectify {
     StereoRectify& new_image_size(cv::Size s) { new_image_size_ = s; return *this; }
 
     /// @brief Computes stereo rectification.
-    /// @throws std::invalid_argument if any of the input matrices is empty.
+    /// @throws improc::ParameterError if any of the input matrices is empty.
     StereoRectifyResult operator()(const cv::Mat& K1, const cv::Mat& dist1,
                                    const cv::Mat& K2, const cv::Mat& dist2,
                                    const cv::Mat& R,  const cv::Mat& T,
@@ -86,7 +86,7 @@ struct StereoBM {
     StereoBM& block_size(int s)      { block_size_      = s; return *this; }
 
     /// @brief Computes the disparity map.
-    /// @throws std::invalid_argument if `left` and `right` have different sizes.
+    /// @throws improc::ParameterError if `left` and `right` have different sizes.
     cv::Mat operator()(Image<Gray> left, Image<Gray> right) const;
 
 private:
@@ -115,7 +115,7 @@ struct StereoSGBM {
     StereoSGBM& mode(int m)            { mode_            = m; return *this; }
 
     /// @brief Computes the disparity map.
-    /// @throws std::invalid_argument if `left` and `right` have different sizes.
+    /// @throws improc::ParameterError if `left` and `right` have different sizes.
     cv::Mat operator()(Image<Gray> left, Image<Gray> right) const;
 
 private:

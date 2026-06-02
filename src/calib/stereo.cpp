@@ -38,7 +38,7 @@ StereoRectifyResult StereoRectify::operator()(
         cv::Size image_size) const {
     if (K1.empty() || dist1.empty() || K2.empty() || dist2.empty() ||
         R.empty()  || T.empty())
-        throw improc::ParameterError{"K1", "K1, dist1, K2, dist2, R, T must not be empty", "StereoRectify"};
+        throw improc::ParameterError{"inputs", "K1, dist1, K2, dist2, R, T must not be empty", "StereoRectify"};
 
     StereoRectifyResult result;
     cv::stereoRectify(K1, dist1, K2, dist2, image_size, R, T,
@@ -50,7 +50,7 @@ StereoRectifyResult StereoRectify::operator()(
 
 cv::Mat StereoBM::operator()(Image<Gray> left, Image<Gray> right) const {
     if (left.mat().size() != right.mat().size())
-        throw improc::ParameterError{"left", "left and right images must have the same size", "StereoBM"};
+        throw improc::ParameterError{"left", "must be the same size as right", "StereoBM"};
     auto bm = cv::StereoBM::create(num_disparities_, block_size_);
     cv::Mat disparity;
     bm->compute(left.mat(), right.mat(), disparity);
@@ -59,7 +59,7 @@ cv::Mat StereoBM::operator()(Image<Gray> left, Image<Gray> right) const {
 
 cv::Mat StereoSGBM::operator()(Image<Gray> left, Image<Gray> right) const {
     if (left.mat().size() != right.mat().size())
-        throw improc::ParameterError{"left", "left and right images must have the same size", "StereoSGBM"};
+        throw improc::ParameterError{"left", "must be the same size as right", "StereoSGBM"};
     auto sgbm = cv::StereoSGBM::create(min_disparity_, num_disparities_, block_size_,
                                         p1_, p2_, 0, 0, 0, 0, 0, mode_);
     cv::Mat disparity;

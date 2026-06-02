@@ -22,7 +22,7 @@ struct FindFundamentalMat {
     FindFundamentalMat& confidence(double c)       { confidence_       = c; return *this; }
 
     /// @brief Estimates the fundamental matrix.
-    /// @throws std::invalid_argument if `pts1.size() != pts2.size()` or fewer than 8 points.
+    /// @throws improc::ParameterError if `pts1.size() != pts2.size()` or fewer than 8 points.
     FundamentalMatResult operator()(const std::vector<cv::Point2f>& pts1,
                                     const std::vector<cv::Point2f>& pts2) const;
 
@@ -47,7 +47,7 @@ struct FindEssentialMat {
 
     /// @brief Estimates the essential matrix.
     /// @param K 3×3 camera intrinsic matrix (same for both views).
-    /// @throws std::invalid_argument if sizes mismatch or fewer than 5 points.
+    /// @throws improc::ParameterError if sizes mismatch or fewer than 5 points.
     EssentialMatResult operator()(const std::vector<cv::Point2f>& pts1,
                                   const std::vector<cv::Point2f>& pts2,
                                   const cv::Mat& K) const;

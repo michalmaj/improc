@@ -29,7 +29,7 @@ struct SolvePnP {
     SolvePnP& method(int m) { method_ = m; return *this; }
 
     /// @brief Estimates the pose.
-    /// @throws std::invalid_argument if sizes mismatch or fewer than 4 points.
+    /// @throws improc::ParameterError if sizes mismatch or fewer than 4 points.
     PnPResult operator()(const std::vector<cv::Point3f>& obj_pts,
                          const std::vector<cv::Point2f>& img_pts,
                          const cv::Mat& K,

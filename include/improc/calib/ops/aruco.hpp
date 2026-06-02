@@ -72,7 +72,7 @@ struct GenerateAruco {
     GenerateAruco& border_bits(int b) { border_bits_ = b; return *this; }
 
     /// @brief Renders marker `id` from `dict` at `side_pixels × side_pixels`.
-    /// @throws std::invalid_argument if `id` < 0 or `side_pixels` < 1.
+    /// @throws improc::ParameterError if `id` < 0 or `side_pixels` < 1.
     Image<Gray> operator()(const cv::aruco::Dictionary& dict,
                            int id,
                            int side_pixels) const;
@@ -125,7 +125,7 @@ struct CharucoBoard {
     CharucoBoard& marker_length(float m) { marker_length_ = m; return *this; }
 
     /// @brief Detects board corners (no subpixel refinement).
-    /// @throws std::invalid_argument if `board_size` not set, or lengths <= 0.
+    /// @throws improc::ParameterError if `board_size` not set, or lengths <= 0.
     CharucoResult operator()(Image<BGR> img, const cv::aruco::Dictionary& dict) const;
     /// @brief Detects board corners with subpixel refinement using camera intrinsics.
     CharucoResult operator()(Image<BGR> img,

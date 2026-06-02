@@ -11,7 +11,7 @@ SparseLKFlowResult SparseLKFlow::operator()(const Image<Gray>& prev,
     if (prev_pts.empty())
         throw improc::ParameterError{"prev_pts", "must not be empty", "SparseLKFlow"};
     if (prev.rows() != next.rows() || prev.cols() != next.cols())
-        throw improc::ParameterError{"prev", "prev and next must have the same size", "SparseLKFlow"};
+        throw improc::ParameterError{"prev", "must be the same size as next", "SparseLKFlow"};
 
     SparseLKFlowResult result;
     cv::calcOpticalFlowPyrLK(
@@ -26,7 +26,7 @@ SparseLKFlowResult SparseLKFlow::operator()(const Image<Gray>& prev,
 Image<Flow> DenseFarnebackFlow::operator()(const Image<Gray>& prev,
                                             const Image<Gray>& next) const {
     if (prev.rows() != next.rows() || prev.cols() != next.cols())
-        throw improc::ParameterError{"prev", "prev and next must have the same size", "DenseFarnebackFlow"};
+        throw improc::ParameterError{"prev", "must be the same size as next", "DenseFarnebackFlow"};
     cv::Mat flow;
     cv::calcOpticalFlowFarneback(prev.mat(), next.mat(), flow,
                                   pyr_scale_, levels_, win_size_,
@@ -37,7 +37,7 @@ Image<Flow> DenseFarnebackFlow::operator()(const Image<Gray>& prev,
 Image<Flow> DenseDISFlow::operator()(const Image<Gray>& prev,
                                       const Image<Gray>& next) const {
     if (prev.rows() != next.rows() || prev.cols() != next.cols())
-        throw improc::ParameterError{"prev", "prev and next must have the same size", "DenseDISFlow"};
+        throw improc::ParameterError{"prev", "must be the same size as next", "DenseDISFlow"};
     int preset_flag;
     switch (preset_) {
         case Preset::UltraFast: preset_flag = cv::DISOpticalFlow::PRESET_ULTRAFAST; break;

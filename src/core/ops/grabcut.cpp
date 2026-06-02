@@ -1,7 +1,6 @@
 // src/core/ops/grabcut.cpp
 #include "improc/core/ops/grabcut.hpp"
 #include "improc/exceptions.hpp"
-#include <stdexcept>
 
 namespace improc::core {
 

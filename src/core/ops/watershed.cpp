@@ -1,7 +1,6 @@
 // src/core/ops/watershed.cpp
 #include "improc/core/ops/watershed.hpp"
 #include "improc/exceptions.hpp"
-#include <stdexcept>
 
 namespace improc::core {
 

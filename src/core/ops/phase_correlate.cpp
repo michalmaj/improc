@@ -7,7 +7,7 @@ namespace improc::core {
 PhaseCorrelateResult PhaseCorrelate::operator()(const Image<Float32>& prev,
                                                  const Image<Float32>& next) const {
     if (prev.rows() != next.rows() || prev.cols() != next.cols())
-        throw improc::ParameterError{"prev", "prev and next must have the same size", "PhaseCorrelate"};
+        throw improc::ParameterError{"prev", "must be the same size as next", "PhaseCorrelate"};
     cv::Mat hann;
     cv::createHanningWindow(hann, prev.mat().size(), CV_32F);
     double response;

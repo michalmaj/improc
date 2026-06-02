@@ -18,7 +18,7 @@ using improc::core::BGR;
  * number of inner corners per row and column (e.g., `{9, 6}` for a 10×7
  * square board). BGR input is auto-converted to Gray internally.
  *
- * @throws std::invalid_argument if board_size has not been set.
+ * @throws improc::ParameterError if board_size has not been set.
  *
  * @code
  * auto result = gray_img | FindChessboardCorners{}.board_size({9, 6});
@@ -49,7 +49,7 @@ private:
  * a separate refinement step. `board_size` must be set before invoking.
  * BGR input is auto-converted to Gray internally.
  *
- * @throws std::invalid_argument if board_size has not been set.
+ * @throws improc::ParameterError if board_size has not been set.
  *
  * @code
  * auto result = gray_img | FindChessboardCornersSB{}.board_size({9, 6});

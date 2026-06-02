@@ -1,5 +1,4 @@
 // src/core/ops/flood_fill.cpp
-#include <stdexcept>
 #include "improc/core/ops/flood_fill.hpp"
 #include "improc/exceptions.hpp"
 

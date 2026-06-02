@@ -1,7 +1,6 @@
 // src/core/match_template.cpp
 #include "improc/core/ops/match_template.hpp"
 #include "improc/exceptions.hpp"
-#include <stdexcept>
 
 namespace improc::core {
 
