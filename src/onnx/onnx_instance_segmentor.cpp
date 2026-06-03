@@ -187,15 +187,16 @@ OnnxInstanceSegmentor::operator()(const Image<BGR>& img) const {
 
         // Sigmoid + binarise at mask_threshold_
         cv::Mat mask_small(static_cast<int>(Hm), static_cast<int>(Wm), CV_8U);
+        auto* mask_ptr = reinterpret_cast<uint8_t*>(mask_small.data);
         for (int p = 0; p < proto_size; ++p) {
             float sigmoid_val = 1.0f / (1.0f + std::exp(-mask_logits[static_cast<std::size_t>(p)]));
-            mask_small.data[p] = (sigmoid_val >= mask_threshold_) ? 255u : 0u;
+            mask_ptr[p] = (sigmoid_val >= mask_threshold_) ? 255u : 0u;
         }
 
         // Resize to original image resolution + re-binarise after INTER_LINEAR
         cv::Mat mask_full;
         cv::resize(mask_small, mask_full, cv::Size(orig_w, orig_h), 0, 0, cv::INTER_LINEAR);
-        cv::threshold(mask_full, mask_full, 127, 255, cv::THRESH_BINARY);
+        cv::threshold(mask_full, mask_full, static_cast<double>(mask_threshold_ * 255.0f), 255.0, cv::THRESH_BINARY);
 
         int   cid  = class_ids[static_cast<std::size_t>(idx)];
         float conf = confs[static_cast<std::size_t>(idx)];
