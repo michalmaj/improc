@@ -202,6 +202,7 @@ See `examples/calib/demo_calibrate.cpp` for a self-contained demo that synthesis
 
 ## Next Steps
 
+- [Fisheye Camera Calibration](fisheye-calibration.md) — wide-angle and 180°+ lens calibration with the Kannala–Brandt model
 - [Stereo Vision](stereo-vision.md) — two-camera depth estimation and epipolar geometry
 - [ArUco Markers](aruco-markers.md) — fiducial markers for pose estimation and board calibration
 - [Feature Detection](feature-detection.md) — keypoint detection and descriptor matching
