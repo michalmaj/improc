@@ -1,7 +1,18 @@
 @PACKAGE_INIT@
 
 include(CMakeFindDependencyMacro)
+
 find_dependency(OpenCV REQUIRED)
+find_dependency(onnxruntime REQUIRED)
+
+# Reproduce the build-time shim: Conan exposes opencv::opencv; system installs
+# expose ${OpenCV_LIBS}. Either way the installed improcTargets.cmake references
+# opencv::opencv, so we must have that target available for consumers.
+if(NOT TARGET opencv::opencv)
+    add_library(opencv::opencv INTERFACE IMPORTED GLOBAL)
+    target_link_libraries(opencv::opencv INTERFACE ${OpenCV_LIBS})
+    target_include_directories(opencv::opencv INTERFACE ${OpenCV_INCLUDE_DIRS})
+endif()
 
 include("${CMAKE_CURRENT_LIST_DIR}/improcTargets.cmake")
 check_required_components(improc)

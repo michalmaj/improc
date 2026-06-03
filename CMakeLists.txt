@@ -42,7 +42,7 @@ target_link_libraries(improc PUBLIC
         opencv::opencv
         $<BUILD_INTERFACE:nlohmann_json::nlohmann_json>
 )
-target_link_libraries(improc PRIVATE
+target_link_libraries(improc PUBLIC
         onnxruntime::onnxruntime
 )
 
