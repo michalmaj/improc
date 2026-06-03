@@ -8,6 +8,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## Table of Contents
 
 - [[Unreleased]](#unreleased)
+- [[0.19.0]](#0190--2026-06-03) — 2026-06-03 · OnnxSegmentor + OnnxInstanceSegmentor: semantic and instance segmentation inference in `improc::onnx`
 - [[0.18.0]](#0180--2026-06-02) — 2026-06-02 · Test improvements: renamed/moved test files, added `test_to_bgr.cpp` and `test_axis.cpp`
 - [[0.17.0]](#0170--2026-06-02) — 2026-06-02 · Fisheye camera ops: `FisheyeCalibrate`, `FisheyeUndistort`, `FisheyeUndistortPoints`, `FisheyeInitRectifyMap`, `FisheyeStereoCalibrate`, `FisheyeStereoRectify`
 - [[0.16.0]](#0160--2026-06-02) — 2026-06-02 · Typed wrappers: `HistogramData`, `ImageHash`, `FaceEmbedding`; `CountNonZero`/`ComponentMap` return `std::size_t`
@@ -28,6 +29,16 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ---
 
 ## [Unreleased]
+
+---
+
+## [0.19.0] — 2026-06-03
+
+### Added
+- `OnnxSegmentor` — semantic segmentation inference in `improc::onnx`; wraps any ONNX model with `[1,C,H,W]` logit output; returns `SegmentationMask` (per-pixel class mask + optional labels) at original input resolution via `INTER_NEAREST` argmax
+- `OnnxInstanceSegmentor` — YOLOv8-seg instance segmentation in `improc::onnx`; decodes two-output YOLO-seg format (boxes + prototype masks), applies NMS, and returns `std::vector<SegmentInstance>` with per-instance binary masks
+- `SegmentationMask` result type in `improc::ml` — `Image<Gray>` class mask, label vector, `label_at(class_id)` accessor
+- `SegmentInstance` result type in `improc::ml` — bounding box, class id, confidence, label, binary `Image<Gray>` mask
 
 ---
 

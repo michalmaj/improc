@@ -1,4 +1,4 @@
-// examples/io/demo_camera_capture.cpp
+// examples/io/demo_webcam_capture.cpp
 #include "improc/io/webcam_capture.hpp"
 #include <opencv2/highgui.hpp>
 #include <iostream>

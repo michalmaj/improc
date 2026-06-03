@@ -16,7 +16,7 @@ namespace improc::io {
 /**
  * @brief Asynchronous webcam capture with explicit start/stop lifecycle.
  *
- * Unlike `CameraCapture`, the background thread is NOT started on construction.
+ * The background thread is NOT started on construction.
  * Call `start()` explicitly after construction. `start()` is idempotent: calling
  * it on an already-started capture is a no-op. Non-copyable and non-movable.
  *

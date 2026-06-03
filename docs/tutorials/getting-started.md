@@ -101,7 +101,7 @@ cmake --build build --parallel
 |---|---|
 | `improc/core/pipeline.hpp` | All core ops (`Resize`, `GaussianBlur`, …) + `operator\|` |
 | `improc/io/image_io.hpp` | `imread<F>`, `imwrite` |
-| `improc/io/camera_capture.hpp` | Threaded camera capture |
+| `improc/io/webcam_capture.hpp` | Threaded camera capture (`WebcamCapture`) |
 | `improc/io/video_writer.hpp` | RAII video recording |
 | `improc/views/views.hpp` | Lazy pipeline adapters |
 | `improc/ml/augmentation.hpp` | Stochastic augmentation ops |
@@ -111,4 +111,4 @@ cmake --build build --parallel
 ## Next Steps
 
 - [Building a Pipeline](building-a-pipeline.md) — composing ops, format conversions, lazy views, augmentation
-- [Real-Time Camera](real-time-camera.md) — `CameraCapture` + `ThreadPool` + `FramePipeline`
+- [Real-Time Camera](real-time-camera.md) — `WebcamCapture` + `ThreadPool` + `FramePipeline`

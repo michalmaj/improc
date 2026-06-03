@@ -163,7 +163,7 @@ OpenCV is powerful but its raw API is stringly-typed, mutation-heavy, and easy t
 - **Dataset loading** — load image datasets from class-labeled directories with train/val/test splitting
 - **DNN inference** — `DnnClassifier`, `DnnDetector` (YOLO & SSD), `DnnForward` backed by OpenCV DNN; pipeline-composable
 - **ONNX Runtime inference** — `OnnxClassifier`, `OnnxDetector` (YOLOv5 & YOLOv8 & SSD), `OnnxSession` (raw tensor I/O); CPU + CoreML EP on Apple Silicon; train in Python, export to ONNX, run here
-- **Camera capture** — asynchronous threaded frame capture via `CameraCapture`; `getFrame()` returns `std::expected<cv::Mat, Error>` for safe error handling
+- **Camera capture** — asynchronous threaded frame capture via `WebcamCapture`; explicit `start()`/`stop()` lifecycle; `getFrame()` returns `std::expected<CameraFrame, Error>` for safe error handling
 - **Video file capture** — `VideoFileCapture` reads video files frame-by-frame as a `CameraSourceType`; satisfies `CameraSourceType<VideoFileCapture>`; `getFrame()` returns `Error::EndOfFile` at EOF; fully compatible with `AnyCameraSource` and `FramePipeline`
 - **Background subtraction** — `BackgroundSubtractMOG2` (Gaussian Mixture Model) and `BackgroundSubtractKNN` (K-Nearest Neighbours); stateful — pass as lvalue to `operator|` to accumulate model across frames; returns `Image<Gray>` foreground mask
 - **Video recording** — synchronous RAII `VideoWriter` with auto codec detection and pipeline support (`img | Show{"preview"} | writer`)
@@ -176,7 +176,7 @@ OpenCV is powerful but its raw API is stringly-typed, mutation-heavy, and easy t
 
 ```cpp
 #include "improc/core/pipeline.hpp"
-#include "improc/io/camera_capture.hpp"
+#include "improc/io/webcam_capture.hpp"
 #include "improc/io/video_writer.hpp"
 #include "improc/visualization/visualization.hpp"
 
@@ -198,17 +198,18 @@ Image<Float32C3> tensor = result | ToFloat32C3{} | NormalizeTo{0.0f, 1.0f};
 result | Histogram{} | Show{"Histogram"};
 
 // 4. Record from camera with live preview
-CameraCapture cam(0);
+WebcamCapture cam(0);
+cam.start();
 VideoWriter writer{"output.mp4"};
 writer.fps(30);
 
 while (true) {
     auto frame = cam.getFrame();
-    if (!frame) continue;
-    Image<BGR> img(*frame);
-    img | Show{"Live"}.wait_ms(1) | writer;  // display + record in one pipeline
-    if (cv::waitKey(1) == 27) break;         // ESC to stop
+    if (!frame || !frame->rgb) continue;
+    *frame->rgb | Show{"Live"}.wait_ms(1) | writer;  // display + record in one pipeline
+    if (cv::waitKey(1) == 27) break;                 // ESC to stop
 }
+cam.stop();
 ```
 
 ## Usage
@@ -220,7 +221,7 @@ All ops are functors that compose via `operator|`. The `pipeline.hpp` umbrella h
 #include "improc/core/pipeline.hpp"
 
 // I/O
-#include "improc/io/camera_capture.hpp"
+#include "improc/io/webcam_capture.hpp"
 #include "improc/io/video_writer.hpp"
 
 // ML utilities

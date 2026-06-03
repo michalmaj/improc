@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.30)
-project(improc VERSION 0.12.0)
+project(improc VERSION 0.18.0)
 
 if(APPLE)
     string(REPLACE "--as-needed" "" CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
@@ -42,7 +42,7 @@ target_link_libraries(improc PUBLIC
         opencv::opencv
         $<BUILD_INTERFACE:nlohmann_json::nlohmann_json>
 )
-target_link_libraries(improc PRIVATE
+target_link_libraries(improc PUBLIC
         onnxruntime::onnxruntime
 )
 
@@ -114,9 +114,9 @@ gtest_discover_tests(improc_tests)
 
 # === DEMO ===
 
-# Camera Capture
-add_executable(demo_camera_capture examples/io/demo_camera_capture.cpp)
-target_link_libraries(demo_camera_capture PRIVATE improc)
+# Webcam Capture
+add_executable(demo_webcam_capture examples/io/demo_webcam_capture.cpp)
+target_link_libraries(demo_webcam_capture PRIVATE improc)
 
 # Unified Camera (AnyCameraSource — runtime selection between webcam and IP camera)
 add_executable(demo_unified_camera examples/io/demo_unified_camera.cpp)

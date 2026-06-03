@@ -11,11 +11,11 @@
 #include <chrono>
 #include <thread>
 #include <opencv2/highgui.hpp>
-#include "improc/io/camera_capture.hpp"
+#include "improc/io/webcam_capture.hpp"
 #include "improc/io/video_writer.hpp"
 #include "improc/core/pipeline.hpp"
 
-using improc::io::CameraCapture;
+using improc::io::WebcamCapture;
 using improc::io::VideoWriter;
 using improc::core::Image;
 using improc::core::BGR;
@@ -32,7 +32,8 @@ static bool camera_available() {
 static void demo_camera(const std::string& out_path) {
     std::cout << "[demo_camera] recording 5 s to " << out_path << " ...\n";
 
-    CameraCapture camera(0);
+    WebcamCapture camera(0);
+    camera.start();
     std::this_thread::sleep_for(std::chrono::milliseconds(500)); // warm-up
 
     VideoWriter writer{out_path};
@@ -42,10 +43,9 @@ static void demo_camera(const std::string& out_path) {
     int frames = 0;
     while (std::chrono::steady_clock::now() < end) {
         auto result = camera.getFrame();
-        if (!result) continue;
+        if (!result || !result->rgb) continue;
 
         // pipeline: write frame, then display it
-        if (!result->rgb) continue;
         auto img = result->rgb->clone();
         img = writer(std::move(img));    // write
         cv::imshow("Recording", img.mat());

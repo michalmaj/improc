@@ -6,7 +6,7 @@ This tutorial shows how to capture frames from a camera, process them in a threa
 
 | Class | Responsibility |
 |---|---|
-| `CameraCapture` | Asynchronous frame capture in a background thread |
+| `WebcamCapture` | Asynchronous frame capture in a background thread; explicit `start()`/`stop()` |
 | `ThreadPool` | Fixed-size worker pool; `submit()` returns `std::future<T>` |
 | `FramePipeline<Result>` | Ties capture + pool together; `tryPop()` returns `std::optional<Result>` |
 | `VideoWriter` | RAII video recording; pipeline-composable via `operator\|` |
@@ -18,7 +18,7 @@ The simplest case — capture and display on the main thread:
 
 ```cpp
 #include "improc/core/pipeline.hpp"
-#include "improc/io/camera_capture.hpp"
+#include "improc/io/webcam_capture.hpp"
 #include "improc/visualization/visualization.hpp"
 
 using namespace improc::core;
@@ -26,17 +26,18 @@ using namespace improc::io;
 using namespace improc::visualization;
 
 int main() {
-    CameraCapture cam(0);   // device index 0
+    WebcamCapture cam(0);   // device index 0
+    cam.start();
 
     while (true) {
-        auto frame = cam.getFrame();  // std::expected<cv::Mat, Error>
-        if (!frame) continue;
+        auto frame = cam.getFrame();  // std::expected<CameraFrame, Error>
+        if (!frame || !frame->rgb) continue;
 
-        Image<BGR> img(*frame);
-        img | Show{"Live"}.wait_ms(1);  // display, wait 1 ms
+        *frame->rgb | Show{"Live"}.wait_ms(1);  // display, wait 1 ms
 
         if (cv::waitKey(1) == 27) break;  // ESC to quit
     }
+    cam.stop();
 }
 ```
 
@@ -46,7 +47,7 @@ Process frames in the main thread and record them to a file simultaneously. `Vid
 
 ```cpp
 #include "improc/core/pipeline.hpp"
-#include "improc/io/camera_capture.hpp"
+#include "improc/io/webcam_capture.hpp"
 #include "improc/io/video_writer.hpp"
 #include "improc/visualization/visualization.hpp"
 
@@ -55,18 +56,17 @@ using namespace improc::io;
 using namespace improc::visualization;
 
 int main() {
-    CameraCapture cam(0);
+    WebcamCapture cam(0);
+    cam.start();
     VideoWriter writer{"output.mp4"};
     writer.fps(30);
 
     while (true) {
         auto frame = cam.getFrame();
-        if (!frame) continue;
-
-        Image<BGR> img(*frame);
+        if (!frame || !frame->rgb) continue;
 
         // Apply processing, display, and record in one pipeline
-        img
+        *frame->rgb
             | GaussianBlur{}.kernel_size(3)
             | Brightness{}.delta(10.0)
             | Show{"Preview"}.wait_ms(1)
@@ -74,6 +74,7 @@ int main() {
 
         if (cv::waitKey(1) == 27) break;
     }
+    cam.stop();
     // VideoWriter destructor finalises the file
 }
 ```
@@ -86,7 +87,7 @@ For computationally heavy per-frame work (inference, augmentation, multi-step pi
 #include <iostream>
 #include <optional>
 #include "improc/core/pipeline.hpp"
-#include "improc/io/camera_capture.hpp"
+#include "improc/io/webcam_capture.hpp"
 #include "improc/threading/thread_pool.hpp"
 #include "improc/threading/frame_pipeline.hpp"
 #include "improc/visualization/visualization.hpp"
@@ -102,17 +103,18 @@ struct FrameResult {
 };
 
 int main() {
-    CameraCapture cam(0);
+    WebcamCapture cam(0);
     ThreadPool pool(4);  // 4 worker threads
 
     // FramePipeline holds *references* — cam and pool must outlive it
+    // start() calls cam.start() internally — do not call cam.start() separately
     FramePipeline<FrameResult> pipeline(cam, pool);
 
-    pipeline.start([](const cv::Mat& raw) -> FrameResult {
+    pipeline.start([](improc::io::CameraFrame frame) -> FrameResult {
         // This lambda runs on a worker thread
-        Image<BGR> img(raw);
+        if (!frame.rgb) return {};
         return {
-            img
+            *frame.rgb
                 | Resize{}.width(640).height(360)
                 | GaussianBlur{}.kernel_size(5)
                 | CLAHE{}.clip_limit(2.0)
@@ -179,8 +181,8 @@ writer.close();  // or let the destructor handle it
 
 ## Tips
 
-- `CameraCapture` is non-copyable — pass by reference or store in a unique location.
-- `FramePipeline` holds references to `CameraCapture` and `ThreadPool`, not ownership. Both must stay alive for the lifetime of the pipeline.
+- `WebcamCapture` is non-copyable — pass by reference or store in a unique location.
+- `FramePipeline` holds references to the camera source and `ThreadPool`, not ownership. Both must stay alive for the lifetime of the pipeline.
 - `tryPop()` never blocks — poll it in your display loop and skip frames if the pool is behind.
 - If processing is faster than capture, the pool workers will idle; if slower, the result queue grows. Tune the pool size and pipeline complexity for your target frame rate.
 
