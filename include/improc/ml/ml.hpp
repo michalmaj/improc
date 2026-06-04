@@ -5,6 +5,7 @@
 #include "improc/ml/dataset.hpp"
 #include "improc/ml/dnn_classifier.hpp"
 #include "improc/ml/dnn_detector.hpp"
+#include "improc/ml/dnn_segmentor.hpp"
 #include "improc/ml/dnn_forward.hpp"
 #include "improc/ml/haar_cascade_loader.hpp"
 #include "improc/ml/image_loader.hpp"
@@ -15,3 +16,4 @@
 #include "improc/ml/voc_seg_dataset.hpp"
 #include "improc/ml/eval/eval.hpp"
 #include "improc/ml/tracking/tracking.hpp"
+#include "improc/ml/hog_detector.hpp"

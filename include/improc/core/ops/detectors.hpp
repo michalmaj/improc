@@ -6,6 +6,7 @@
 #include "improc/core/image.hpp"
 #include "improc/core/ops/feature_detection.hpp"  // KeypointSet
 #include "improc/core/ops/detector_types.hpp"
+#include "improc/core/ops/haar_detect.hpp"
 
 namespace improc::core {
 

@@ -119,7 +119,7 @@ private:
  */
 struct DescriptorSet {
     KeypointSet keypoints;
-    cv::Mat     descriptors;  // CV_32F for SIFT; CV_8U for ORB/AKAZE
+    cv::Mat     descriptors;  // CV_32F for SIFT/KAZE; CV_8U for ORB/AKAZE/BRISK
 
     std::size_t size()  const { return keypoints.size(); }
     bool        empty() const { return keypoints.empty(); }
@@ -156,6 +156,88 @@ struct DescribeAKAZE {
     [[nodiscard]] DescriptorSet operator()(Image<BGR>  img) const;
 private:
     KeypointSet kps_;
+};
+
+/**
+ * @brief Pipeline op: detects BRISK keypoints in `Image<Gray>`.
+ *
+ * Returns `KeypointSet`. Wraps `cv::BRISK`. Binary descriptor algorithm —
+ * fast detection, rotation and scale invariant.
+ * Defaults: `threshold=30`, `octaves=3`, `pattern_scale=1.0f`.
+ *
+ * @code
+ * KeypointSet ks = gray | DetectBRISK{}.threshold(20);
+ * @endcode
+ */
+struct DetectBRISK {
+    DetectBRISK& threshold(int t)       { threshold_     = t; return *this; }
+    DetectBRISK& octaves(int n)         { octaves_       = n; return *this; }
+    DetectBRISK& pattern_scale(float s) { pattern_scale_ = s; return *this; }
+
+    [[nodiscard]] KeypointSet operator()(Image<Gray> img) const;
+
+private:
+    int   threshold_     {30};
+    int   octaves_       {3};
+    float pattern_scale_ {1.0f};
+};
+
+/// @brief Pipeline op: computes BRISK descriptors (CV_8U) for a given `KeypointSet`.
+struct DescribeBRISK {
+    explicit DescribeBRISK(KeypointSet kps) : kps_(std::move(kps)) {}
+    DescribeBRISK& threshold(int t)       { threshold_     = t; return *this; }
+    DescribeBRISK& octaves(int n)         { octaves_       = n; return *this; }
+    DescribeBRISK& pattern_scale(float s) { pattern_scale_ = s; return *this; }
+
+    [[nodiscard]] DescriptorSet operator()(Image<Gray> img) const;
+    [[nodiscard]] DescriptorSet operator()(Image<BGR>  img) const;
+
+private:
+    KeypointSet kps_;
+    int   threshold_     {30};
+    int   octaves_       {3};
+    float pattern_scale_ {1.0f};
+};
+
+/**
+ * @brief Pipeline op: detects KAZE keypoints in `Image<Gray>`.
+ *
+ * Returns `KeypointSet`. Wraps `cv::KAZE`. Nonlinear scale space detector
+ * producing float descriptors (CV_32F, 64-dim). Slower but more accurate than AKAZE.
+ * Defaults: `threshold=0.001f`, `octaves=4`, `sublevels=4`.
+ *
+ * @code
+ * KeypointSet ks = gray | DetectKAZE{}.threshold(0.005f);
+ * @endcode
+ */
+struct DetectKAZE {
+    DetectKAZE& threshold(float t) { threshold_ = t; return *this; }
+    DetectKAZE& octaves(int n)     { octaves_   = n; return *this; }
+    DetectKAZE& sublevels(int n)   { sublevels_ = n; return *this; }
+
+    [[nodiscard]] KeypointSet operator()(Image<Gray> img) const;
+
+private:
+    float threshold_ {0.001f};
+    int   octaves_   {4};
+    int   sublevels_ {4};
+};
+
+/// @brief Pipeline op: computes KAZE descriptors (CV_32F, 64-dim) for a given `KeypointSet`.
+struct DescribeKAZE {
+    explicit DescribeKAZE(KeypointSet kps) : kps_(std::move(kps)) {}
+    DescribeKAZE& threshold(float t) { threshold_ = t; return *this; }
+    DescribeKAZE& octaves(int n)     { octaves_   = n; return *this; }
+    DescribeKAZE& sublevels(int n)   { sublevels_ = n; return *this; }
+
+    [[nodiscard]] DescriptorSet operator()(Image<Gray> img) const;
+    [[nodiscard]] DescriptorSet operator()(Image<BGR>  img) const;
+
+private:
+    KeypointSet kps_;
+    float threshold_ {0.001f};
+    int   octaves_   {4};
+    int   sublevels_ {4};
 };
 
 struct GoodFeaturesToTrack {
