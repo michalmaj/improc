@@ -77,6 +77,56 @@ DescriptorSet DescribeAKAZE::operator()(Image<BGR> img) const {
     return result;
 }
 
+// ── BRISK ────────────────────────────────────────────────────────────────────
+
+KeypointSet DetectBRISK::operator()(Image<Gray> img) const {
+    KeypointSet result;
+    cv::BRISK::create(threshold_, octaves_, pattern_scale_)
+        ->detect(img.mat(), result.keypoints);
+    return result;
+}
+
+DescriptorSet DescribeBRISK::operator()(Image<Gray> img) const {
+    DescriptorSet result;
+    result.keypoints = kps_;
+    cv::BRISK::create(threshold_, octaves_, pattern_scale_)
+        ->compute(img.mat(), result.keypoints.keypoints, result.descriptors);
+    return result;
+}
+
+DescriptorSet DescribeBRISK::operator()(Image<BGR> img) const {
+    DescriptorSet result;
+    result.keypoints = kps_;
+    cv::BRISK::create(threshold_, octaves_, pattern_scale_)
+        ->compute(to_gray(img.mat()), result.keypoints.keypoints, result.descriptors);
+    return result;
+}
+
+// ── KAZE ─────────────────────────────────────────────────────────────────────
+
+KeypointSet DetectKAZE::operator()(Image<Gray> img) const {
+    KeypointSet result;
+    cv::KAZE::create(false, false, threshold_, octaves_, sublevels_)
+        ->detect(img.mat(), result.keypoints);
+    return result;
+}
+
+DescriptorSet DescribeKAZE::operator()(Image<Gray> img) const {
+    DescriptorSet result;
+    result.keypoints = kps_;
+    cv::KAZE::create(false, false, threshold_, octaves_, sublevels_)
+        ->compute(img.mat(), result.keypoints.keypoints, result.descriptors);
+    return result;
+}
+
+DescriptorSet DescribeKAZE::operator()(Image<BGR> img) const {
+    DescriptorSet result;
+    result.keypoints = kps_;
+    cv::KAZE::create(false, false, threshold_, octaves_, sublevels_)
+        ->compute(to_gray(img.mat()), result.keypoints.keypoints, result.descriptors);
+    return result;
+}
+
 std::vector<cv::Point2f> GoodFeaturesToTrack::operator()(const Image<Gray>& img) const {
     std::vector<cv::Point2f> corners;
     cv::goodFeaturesToTrack(img.mat(), corners, max_corners_,

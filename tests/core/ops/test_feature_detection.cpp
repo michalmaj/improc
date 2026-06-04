@@ -135,3 +135,85 @@ TEST(GoodFeaturesToTrackTest, QualityLevelNegativeThrows) {
 TEST(GoodFeaturesToTrackTest, MinDistanceNegativeThrows) {
     EXPECT_THROW(GoodFeaturesToTrack{}.min_distance(-1.0), improc::ParameterError);
 }
+
+// ── DetectBRISK ───────────────────────────────────────────────────────────────
+
+TEST(DetectBRISKTest, FindsKeypointsInTexturedImage) {
+    Image<Gray> src = make_textured();
+    KeypointSet ks = src | DetectBRISK{};
+    EXPECT_GT(ks.size(), 0u);
+}
+
+TEST(DetectBRISKTest, ThresholdSetterChangesCount) {
+    Image<Gray> src = make_textured();
+    // higher threshold → stricter → fewer keypoints
+    std::size_t n_low  = (src | DetectBRISK{}.threshold(10)).size();
+    std::size_t n_high = (src | DetectBRISK{}.threshold(100)).size();
+    EXPECT_GE(n_low, n_high);
+}
+
+TEST(DetectBRISKTest, BlankImageHasNoKeypoints) {
+    Image<Gray> blank(cv::Mat(200, 200, CV_8UC1, cv::Scalar(0)));
+    KeypointSet ks = blank | DetectBRISK{};
+    EXPECT_EQ(ks.size(), 0u);
+}
+
+// ── DescribeBRISK ─────────────────────────────────────────────────────────────
+
+TEST(DescribeBRISKTest, DescriptorsAreCV8U) {
+    Image<Gray> src = make_textured();
+    KeypointSet kps = src | DetectBRISK{};
+    if (kps.empty()) GTEST_SKIP() << "no BRISK keypoints detected";
+    DescriptorSet ds = src | DescribeBRISK{kps};
+    EXPECT_FALSE(ds.empty());
+    EXPECT_EQ(ds.descriptors.type(), CV_8U);
+    EXPECT_EQ(ds.size(), ds.keypoints.size());
+}
+
+TEST(DescribeBRISKTest, AcceptsBGRImage) {
+    Image<BGR> src{cv::Mat(200, 200, CV_8UC3, cv::Scalar(128, 64, 200))};
+    cv::rectangle(src.mat(), {10,10}, {90,90}, cv::Scalar(0,0,255), -1);
+    KeypointSet kps = make_textured() | DetectBRISK{};
+    DescriptorSet ds = src | DescribeBRISK{kps};
+    SUCCEED();  // must not throw; result may be empty
+}
+
+// ── DetectKAZE ────────────────────────────────────────────────────────────────
+
+TEST(DetectKAZETest, FindsKeypointsInTexturedImage) {
+    Image<Gray> src = make_textured();
+    KeypointSet ks = src | DetectKAZE{};
+    EXPECT_GT(ks.size(), 0u);
+}
+
+TEST(DetectKAZETest, ThresholdSetterChangesCount) {
+    Image<Gray> src = make_textured();
+    std::size_t n_low  = (src | DetectKAZE{}.threshold(0.0001f)).size();
+    std::size_t n_high = (src | DetectKAZE{}.threshold(0.01f)).size();
+    EXPECT_GE(n_low, n_high);
+}
+
+TEST(DetectKAZETest, BlankImageHasNoKeypoints) {
+    Image<Gray> blank(cv::Mat(200, 200, CV_8UC1, cv::Scalar(0)));
+    KeypointSet ks = blank | DetectKAZE{};
+    EXPECT_EQ(ks.size(), 0u);
+}
+
+// ── DescribeKAZE ──────────────────────────────────────────────────────────────
+
+TEST(DescribeKAZETest, DescriptorsAreCV32F) {
+    Image<Gray> src = make_textured();
+    KeypointSet kps = src | DetectKAZE{};
+    if (kps.empty()) GTEST_SKIP() << "no KAZE keypoints detected";
+    DescriptorSet ds = src | DescribeKAZE{kps};
+    EXPECT_FALSE(ds.empty());
+    EXPECT_EQ(ds.descriptors.type(), CV_32F);
+    EXPECT_EQ(ds.size(), ds.keypoints.size());
+}
+
+TEST(DescribeKAZETest, AcceptsBGRImage) {
+    Image<BGR> src{cv::Mat(200, 200, CV_8UC3, cv::Scalar(100, 150, 200))};
+    KeypointSet kps = make_textured() | DetectKAZE{};
+    DescriptorSet ds = src | DescribeKAZE{kps};
+    SUCCEED();
+}
