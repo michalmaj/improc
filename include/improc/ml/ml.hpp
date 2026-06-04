@@ -16,3 +16,4 @@
 #include "improc/ml/voc_seg_dataset.hpp"
 #include "improc/ml/eval/eval.hpp"
 #include "improc/ml/tracking/tracking.hpp"
+#include "improc/ml/hog_detector.hpp"
