@@ -23,6 +23,8 @@
 #include "improc/io/io.hpp"
 #include "improc/calib/calib.hpp"
 #include "improc/ml/ml.hpp"
+#ifdef IMPROC_WITH_ONNX
 #include "improc/onnx/onnx.hpp"
+#endif
 #include "improc/threading/threading.hpp"
 #include "improc/visualization/visualization.hpp"
