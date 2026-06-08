@@ -35,7 +35,7 @@ TEST(CenterCropTest, ResultOwnsItsMemory) {
     cv::Mat mat(100, 100, CV_8UC3, cv::Scalar(10, 20, 30));
     Image<BGR> img(mat);
     Image<BGR> cropped = img | CenterCrop{}.width(50).height(50);
-    img.mat().setTo(cv::Scalar(0, 0, 0));
+    img.unsafe_mat().setTo(cv::Scalar(0, 0, 0));
     EXPECT_EQ(cropped.mat().at<cv::Vec3b>(0, 0), (cv::Vec3b{10, 20, 30}));
 }
 

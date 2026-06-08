@@ -19,11 +19,11 @@ Image<Float32> Normalize::operator()(Image<Float32> img) const {
     double min_val, max_val;
     global_min_max(img.mat(), min_val, max_val);
     if (std::abs(max_val - min_val) < 1e-10) {
-        img.mat().setTo(0.0f);
+        img.unsafe_mat().setTo(0.0f);
     } else {
         const double scale = 1.0 / (max_val - min_val);
         const double shift = -min_val * scale;
-        img.mat().convertTo(img.mat(), CV_32FC1, scale, shift);
+        img.mat().convertTo(img.unsafe_mat(), CV_32FC1, scale, shift);
     }
     return img;
 }
@@ -32,11 +32,11 @@ Image<Float32C3> Normalize::operator()(Image<Float32C3> img) const {
     double min_val, max_val;
     global_min_max(img.mat(), min_val, max_val);
     if (std::abs(max_val - min_val) < 1e-10) {
-        img.mat().setTo(0.0f);
+        img.unsafe_mat().setTo(0.0f);
     } else {
         const double scale = 1.0 / (max_val - min_val);
         const double shift = -min_val * scale;
-        img.mat().convertTo(img.mat(), CV_32FC3, scale, shift);
+        img.mat().convertTo(img.unsafe_mat(), CV_32FC3, scale, shift);
     }
     return img;
 }
@@ -50,11 +50,11 @@ Image<Float32> NormalizeTo::operator()(Image<Float32> img) const {
     double min_val, max_val;
     global_min_max(img.mat(), min_val, max_val);
     if (std::abs(max_val - min_val) < 1e-10) {
-        img.mat().setTo(0.0f);
+        img.unsafe_mat().setTo(0.0f);
     } else {
         const double scale = (max_ - min_) / (max_val - min_val);
         const double shift = min_ - min_val * scale;
-        img.mat().convertTo(img.mat(), CV_32FC1, scale, shift);
+        img.mat().convertTo(img.unsafe_mat(), CV_32FC1, scale, shift);
     }
     return img;
 }
@@ -63,11 +63,11 @@ Image<Float32C3> NormalizeTo::operator()(Image<Float32C3> img) const {
     double min_val, max_val;
     global_min_max(img.mat(), min_val, max_val);
     if (std::abs(max_val - min_val) < 1e-10) {
-        img.mat().setTo(0.0f);
+        img.unsafe_mat().setTo(0.0f);
     } else {
         const double scale = (max_ - min_) / (max_val - min_val);
         const double shift = min_ - min_val * scale;
-        img.mat().convertTo(img.mat(), CV_32FC3, scale, shift);
+        img.mat().convertTo(img.unsafe_mat(), CV_32FC3, scale, shift);
     }
     return img;
 }
@@ -78,12 +78,12 @@ Standardize::Standardize(float mean, float std_dev) : mean_(mean), std_dev_(std_
 }
 
 Image<Float32> Standardize::operator()(Image<Float32> img) const {
-    img.mat().convertTo(img.mat(), CV_32FC1, 1.0 / std_dev_, -mean_ / std_dev_);
+    img.mat().convertTo(img.unsafe_mat(), CV_32FC1, 1.0 / std_dev_, -mean_ / std_dev_);
     return img;
 }
 
 Image<Float32C3> Standardize::operator()(Image<Float32C3> img) const {
-    img.mat().convertTo(img.mat(), CV_32FC3, 1.0 / std_dev_, -mean_ / std_dev_);
+    img.mat().convertTo(img.unsafe_mat(), CV_32FC3, 1.0 / std_dev_, -mean_ / std_dev_);
     return img;
 }
 

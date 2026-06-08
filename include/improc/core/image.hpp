@@ -43,10 +43,10 @@ public:
     /// @brief Returns a deep copy with independent pixel data.
     Image clone() const { return Image(mat_.clone()); }
 
-    /// @brief Mutable access to the underlying `cv::Mat`.
-    [[nodiscard]] cv::Mat&       mat()       { return mat_; }
-    /// @brief Const access to the underlying `cv::Mat`.
+    /// @brief Read-only access to the underlying `cv::Mat`.
     [[nodiscard]] const cv::Mat& mat() const { return mat_; }
+    /// @brief Mutable access to the underlying `cv::Mat`. Bypasses format invariants — caller is responsible for keeping the mat type consistent with `Format`.
+    [[nodiscard]] cv::Mat& unsafe_mat() { return mat_; }
 
     /// @brief Number of pixel rows.
     [[nodiscard]] int  rows()  const { return mat_.rows; }
