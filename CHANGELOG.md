@@ -8,6 +8,8 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## Table of Contents
 
 - [[Unreleased]](#unreleased)
+- [[1.0.0]](#100--2026-06-08) — 2026-06-08 · API freeze: `improc/improc.hpp` top-level umbrella, `calib/calib.hpp`, version bump to 1.0.0
+- [[0.20.0]](#0200--2026-06-04) — 2026-06-04 · API completeness: `DetectHaar`, BRISK/KAZE detectors, `DnnSegmentor`, `HOGDetector`, umbrella header fixes
 - [[0.19.0]](#0190--2026-06-03) — 2026-06-03 · OnnxSegmentor + OnnxInstanceSegmentor: semantic and instance segmentation inference in `improc::onnx`
 - [[0.18.0]](#0180--2026-06-02) — 2026-06-02 · Test improvements: renamed/moved test files, added `test_to_bgr.cpp` and `test_axis.cpp`
 - [[0.17.0]](#0170--2026-06-02) — 2026-06-02 · Fisheye camera ops: `FisheyeCalibrate`, `FisheyeUndistort`, `FisheyeUndistortPoints`, `FisheyeInitRectifyMap`, `FisheyeStereoCalibrate`, `FisheyeStereoRectify`
@@ -29,6 +31,33 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ---
 
 ## [Unreleased]
+
+---
+
+## [1.0.0] — 2026-06-08
+
+### Added
+- `include/improc/improc.hpp` — top-level umbrella header; single-include convenience for all `improc` namespaces
+- `include/improc/calib/calib.hpp` — umbrella header for `improc::calib` (delegates to `calib/pipeline.hpp`), consistent with `ml/ml.hpp`, `onnx/onnx.hpp`, `threading/threading.hpp`, etc.
+
+### Changed
+- Version bumped to **1.0.0** in `version.hpp` and `CMakeLists.txt`; `IMPROC_VERSION` macro encodes `10000` (i.e. `1*10000 + 0*100 + 0`)
+- **API freeze** — public API is now stable; breaking changes deferred to v2.0.0
+
+---
+
+## [0.20.0] — 2026-06-04
+
+### Added
+- `DetectHaar` pipeline op in `improc::core` — wraps `cv::CascadeClassifier::detectMultiScale`; returns `std::vector<cv::Rect>`; converts BGR→Gray internally; fluent setters: `scale_factor`, `min_neighbors`, `min_size`, `max_size`
+- `DetectBRISK` / `DescribeBRISK` in `improc::core` — binary descriptor (CV_8U); same pattern as ORB/AKAZE
+- `DetectKAZE` / `DescribeKAZE` in `improc::core` — float descriptor (CV_32F, 64-dim); non-accelerated KAZE variant
+- `DnnSegmentor` in `improc::ml` — `cv::dnn`-backed semantic segmentation; accepts ONNX, Caffe, TF, Darknet; returns `std::expected<SegmentationMask, improc::Error>`; fluent setters: `input_size`, `scale`, `mean`, `swap_rb`, `output_layer`, `labels`
+- `HOGDetector` in `improc::ml` — `cv::HOGDescriptor` people detector; returns `std::vector<Detection>` with sigmoid-mapped confidence; fluent setters: `win_stride`, `padding`, `scale`, `hit_threshold`
+
+### Fixed
+- `visualization/visualization.hpp` now includes `ml_charts.hpp` (previously `ConfusionMatrixPlot`, `PRCurvePlot`, `ROCCurvePlot`, `ClassBarChart`, `IoUHistogram` were silently omitted)
+- `threading/threading.hpp` umbrella header added (previously `improc::threading` had no `<namespace>.hpp` umbrella unlike all other namespaces)
 
 ---
 
