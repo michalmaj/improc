@@ -358,7 +358,7 @@ Filter-before-transform avoids processing elements that will be discarded. Speed
 </details>
 
 <details>
-<summary><strong>v0.9.0 Detectors (improc::core)</strong> — DetectFAST · DetectBlob · DetectMSER · DetectLines · DetectQR · DetectBarcode · face (model-gated)</summary>
+<summary><strong>Detectors (improc::core)</strong> — DetectFAST · DetectBlob · DetectMSER · DetectLines · DetectQR · DetectBarcode · face (model-gated)</summary>
 
 All overhead times at 480×640. Throughput in µs.
 
@@ -402,7 +402,7 @@ All overhead times at 480×640. Throughput in µs.
 </details>
 
 <details>
-<summary><strong>v0.9.0 Camera Geometry (improc::calib)</strong> — chessboard · calibration · pose · stereo · epipolar · ArUco</summary>
+<summary><strong>Camera Geometry (improc::calib)</strong> — chessboard · calibration · pose · stereo · epipolar · ArUco</summary>
 
 ### Chessboard detection
 
@@ -472,7 +472,7 @@ All overhead times at 480×640. Throughput in µs.
 </details>
 
 <details>
-<summary><strong>v0.14.0 Background subtraction (improc::core)</strong> — BackgroundSubtractMOG2 · BackgroundSubtractKNN</summary>
+<summary><strong>Background subtraction (improc::core)</strong> — BackgroundSubtractMOG2 · BackgroundSubtractKNN</summary>
 
 Wrapper overhead ≈ 0 for both algorithms. Times in µs/frame.
 
@@ -566,7 +566,7 @@ was correct all along — the benchmark was the issue.
 | Speedup | **16×** | **16×** |
 
 <details>
-<summary><strong>v0.10.0-A — Photo + Stitching (improc::core)</strong></summary>
+<summary><strong>Photo + Stitching (improc::core)</strong></summary>
 
 > Build: `cmake --build build --target improc_benchmarks`
 > Run: `./build/improc_benchmarks --benchmark_filter="edge_preserving|detail_enhance|stylize|pencil|seamless|merge_hdr|tonemap|stitch"`
@@ -589,7 +589,7 @@ Raw JSON: [`benchmarks/results/2026-05-31-photo.json`](benchmarks/results/2026-0
 </details>
 
 <details>
-<summary><strong>v0.10.0-B — Quality + Hashing (improc::core)</strong></summary>
+<summary><strong>Quality + Hashing (improc::core)</strong></summary>
 
 > Run: `./build/improc_benchmarks --benchmark_filter="psnr|ssim|gmsd|mse|hash"`
 
