@@ -13,7 +13,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Dependencies
 find_package(OpenCV REQUIRED)
-find_package(GTest REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
 # Compatibility shim: system OpenCV uses OpenCV_LIBS, Conan uses opencv::opencv
@@ -32,6 +31,10 @@ endif()
 
 # === OAK-D depth camera support (optional) ===
 option(IMPROC_WITH_DEPTHAI "Build with OAK-D support via depthai-core v2" OFF)
+
+# === Test and example build control ===
+option(IMPROC_BUILD_TESTS    "Build improc unit tests"       ON)
+option(IMPROC_BUILD_EXAMPLES "Build improc demo executables" OFF)
 
 # === improc LIBRARY ===
 file(GLOB_RECURSE IMPROC_HEADERS CONFIGURE_DEPENDS include/improc/**/*.hpp)
@@ -75,8 +78,6 @@ if(IMPROC_WITH_DEPTHAI)
     message(STATUS "depthai-core ${DEPTHAI_VERSION}: depthai::core enabled")
 endif()
 
-enable_testing()
-
 # === Installation + cmake package config =====================================
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -116,19 +117,26 @@ install(FILES
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/improc
 )
 
-file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS tests/*.cpp)
+if(IMPROC_BUILD_TESTS)
+    find_package(GTest REQUIRED)
+    enable_testing()
 
-if(NOT IMPROC_WITH_ONNX)
-    file(GLOB_RECURSE _ONNX_TESTS CONFIGURE_DEPENDS tests/onnx/*.cpp)
-    list(REMOVE_ITEM TEST_SOURCES ${_ONNX_TESTS})
+    file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS tests/*.cpp)
+
+    if(NOT IMPROC_WITH_ONNX)
+        file(GLOB_RECURSE _ONNX_TESTS CONFIGURE_DEPENDS tests/onnx/*.cpp)
+        list(REMOVE_ITEM TEST_SOURCES ${_ONNX_TESTS})
+    endif()
+
+    add_executable(improc_tests ${TEST_SOURCES})
+    target_link_libraries(improc_tests PRIVATE improc GTest::gtest GTest::gtest_main)
+
+    include(GoogleTest)
+    gtest_discover_tests(improc_tests)
 endif()
 
-add_executable(improc_tests ${TEST_SOURCES})
-target_link_libraries(improc_tests PRIVATE improc GTest::gtest GTest::gtest_main)
 
-include(GoogleTest)
-gtest_discover_tests(improc_tests)
-
+if(IMPROC_BUILD_EXAMPLES)
 
 # === DEMO ===
 
@@ -442,6 +450,8 @@ if(IMPROC_WITH_ONNX)
     add_executable(demo_onnx_inference examples/ml/demo_onnx_inference.cpp)
     target_link_libraries(demo_onnx_inference PRIVATE improc)
 endif()
+
+endif() # IMPROC_BUILD_EXAMPLES
 
 # Benchmarks (opt-in: cmake -DIMPROC_BENCHMARKS=ON ...)
 if(IMPROC_BENCHMARKS)
