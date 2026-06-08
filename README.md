@@ -38,20 +38,19 @@
 
 ## Status
 
-> **Latest release: v0.18.0** — API freeze preparation: uniform `improc::ParameterError`, `[[nodiscard]]` across all ops, typed result wrappers (`HistogramData`, `ImageHash`, `FaceEmbedding`), 6 fisheye ops, and test/doc cleanup.
-> **Previous highlights:** v0.17.0 — Fisheye calibration ops. v0.16.0 — Typed wrappers for histogram, hash, and face embedding results. v0.15.0 — `improc::ParameterError` replaces `std::invalid_argument`; `[[nodiscard]]` sweep. v0.12.0 — 100% Doxygen coverage. v0.9.0 — Camera Geometry + Detectors. v0.8.0 — Classic CV ops.
-> APIs are stabilising but may still change between minor versions until v1.0.0.
+> **v1.0.0** — Stable API release. All namespaces frozen; breaking changes only in future major versions.
+> Highlights: `improc/improc.hpp` single-include umbrella, optional ONNX build (`-DIMPROC_WITH_ONNX=OFF`), `DetectHaar`, BRISK/KAZE feature ops, `DnnSegmentor`, `HOGDetector`.
 
 | Namespace | Status | Notes |
 |---|---|---|
-| `improc::core` | ✅ Stable | Photo/creative, quality metrics, perceptual hashing (v0.10.0) |
-| `improc::calib` | ✅ Stable | Camera calibration, stereo, pose, ArUco (v0.9.0) |
+| `improc::core` | ✅ Stable | Photo/creative, quality metrics, perceptual hashing |
+| `improc::calib` | ✅ Stable | Camera calibration, stereo, pose, ArUco |
 | `improc::io` | ✅ Stable | |
-| `improc::ml` | ✅ Stable | New ops added regularly |
+| `improc::ml` | ✅ Stable | DNN inference, HOG, segmentation, augmentation, tracking |
 | `improc::threading` | ✅ Stable | |
-| `improc::visualization` | ✅ Stable | New ops added regularly |
+| `improc::visualization` | ✅ Stable | Charts, plots, ML-specific visualisations |
 | `improc::views` | ✅ Stable | Lazy image pipeline adapters |
-| `improc::onnx` | ✅ Stable | ONNX Runtime 1.24.4 (via Conan); CPU + CoreML on Apple Silicon |
+| `improc::onnx` | ✅ Stable | ONNX Runtime 1.24.4; CPU + CoreML on Apple Silicon; optional (`-DIMPROC_WITH_ONNX=ON` by default) |
 | `improc::cuda` | 🔜 Planned | GPU-accelerated ops via OpenCV CUDA |
 
 ## Getting Started
@@ -87,8 +86,7 @@ cmake --build build --parallel
 ### Your First Pipeline
 
 ```cpp
-#include "improc/core/pipeline.hpp"
-#include "improc/io/image_io.hpp"
+#include "improc/improc.hpp"   // single include — pulls in all namespaces
 using namespace improc::core;
 using namespace improc::io;
 
@@ -214,29 +212,19 @@ cam.stop();
 
 ## Usage
 
-All ops are functors that compose via `operator|`. The `pipeline.hpp` umbrella header pulls in all core ops. For a full reference of every namespace, op, and error type see **[NAMESPACES.md](NAMESPACES.md)**.
+All ops are functors that compose via `operator|`. For a full reference of every namespace, op, and error type see **[NAMESPACES.md](NAMESPACES.md)**.
 
 ```cpp
-// Core ops
-#include "improc/core/pipeline.hpp"
+// Single include — pulls in all namespaces
+#include "improc/improc.hpp"
 
-// I/O
-#include "improc/io/webcam_capture.hpp"
-#include "improc/io/video_writer.hpp"
-
-// ML utilities
-#include "improc/ml/augmentation.hpp"        // all augmentation ops
-#include "improc/ml/tracking/tracking.hpp"   // IouTracker, SortTracker, ByteTracker, TrackingEval
-#include "improc/ml/dnn_classifier.hpp"
-#include "improc/ml/dataset.hpp"
-
-// ONNX Runtime inference
-#include "improc/onnx/onnx.hpp"           // OnnxSession, OnnxClassifier, OnnxDetector
-
-// Visualization
+// Or include only what you need:
+#include "improc/core/pipeline.hpp"          // all core ops
+#include "improc/io/io.hpp"                  // webcam, video, image I/O
+#include "improc/ml/augmentation.hpp"        // augmentation ops
+#include "improc/ml/tracking/tracking.hpp"   // IouTracker, SortTracker, ByteTracker
+#include "improc/onnx/onnx.hpp"              // OnnxSession, OnnxClassifier, OnnxDetector (requires IMPROC_WITH_ONNX)
 #include "improc/visualization/visualization.hpp"
-
-// Lazy views
 #include "improc/views/views.hpp"
 ```
 
@@ -404,6 +392,8 @@ Supported auto-codecs: `.mp4`/`.mov` → `mp4v`, `.avi` → `MJPG`, `.mkv` → `
 
 ## ONNX Runtime Inference
 
+> Requires `-DIMPROC_WITH_ONNX=ON` (the default). Pass `-DIMPROC_WITH_ONNX=OFF` to build without ONNX Runtime.
+
 Train models in Python and run inference here. `OnnxClassifier` and `OnnxDetector` share the same fluent API as their `Dnn*` counterparts. `OnnxSession` gives you raw tensor access for custom model architectures.
 
 ```cpp
@@ -518,10 +508,6 @@ std::cout << "MOTA=" << m.MOTA << "  MOTP=" << m.MOTP
 
 All trackers are drop-in replaceable — swap `SortTracker` for `ByteTracker` with no other changes. `DrawTracks` is in `improc/visualization/draw_tracks.hpp` (included via `visualization.hpp`). See `NAMESPACES.md` for the full setter reference.
 
-<!-- TODO: Realistic tracking demo — requires a short MP4/AVI with trackable objects (people or cars).
-     Pipeline: VideoReader → DnnDetector (YOLO 640×640) → ByteTracker → DrawTracks → Show.
-     User will provide the video file; wire up examples/ml/demo_tracking_realworld.cpp once available. -->
-
 ## Lazy Views
 
 Lazy pipeline adapters over image collections. Nothing executes until you materialise with `views::to<T>()` or a range-for loop.
@@ -601,7 +587,7 @@ MatchSet      sift_ms   = MatchFlann{sift_desc, sift_desc}.ratio_threshold(0.7f)
 
 - C++23 or later
 - [OpenCV](https://opencv.org/) 4.8+
-- [ONNX Runtime](https://onnxruntime.ai/) 1.24.4 (via Conan)
+- [ONNX Runtime](https://onnxruntime.ai/) 1.24.4 — optional, default ON (`-DIMPROC_WITH_ONNX=OFF` to skip)
 - [GoogleTest](https://github.com/google/googletest) 1.16+
 - [Conan 2.0](https://conan.io/) for dependency management
 
@@ -629,7 +615,7 @@ find_package(improc REQUIRED)
 target_link_libraries(my_app PRIVATE improc::improc)
 ```
 
-This pulls in OpenCV as a transitive dependency. ONNX Runtime must be supplied separately until v1.0.0.
+This pulls in OpenCV as a transitive dependency. ONNX Runtime is linked automatically when `IMPROC_WITH_ONNX=ON` (the default).
 
 ## CMake Configuration (CLion)
 
