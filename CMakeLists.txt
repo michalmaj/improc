@@ -14,7 +14,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Dependencies
 find_package(OpenCV REQUIRED)
 find_package(GTest REQUIRED)
-find_package(onnxruntime REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
 # Compatibility shim: system OpenCV uses OpenCV_LIBS, Conan uses opencv::opencv
@@ -24,12 +23,24 @@ if(NOT TARGET opencv::opencv)
     target_include_directories(opencv::opencv INTERFACE ${OpenCV_INCLUDE_DIRS})
 endif()
 
+# === ONNX Runtime inference support (optional) ===
+option(IMPROC_WITH_ONNX "Build with ONNX Runtime support (improc::onnx namespace)" ON)
+
+if(IMPROC_WITH_ONNX)
+    find_package(onnxruntime REQUIRED)
+endif()
+
 # === OAK-D depth camera support (optional) ===
 option(IMPROC_WITH_DEPTHAI "Build with OAK-D support via depthai-core v2" OFF)
 
 # === improc LIBRARY ===
 file(GLOB_RECURSE IMPROC_HEADERS CONFIGURE_DEPENDS include/improc/**/*.hpp)
 file(GLOB_RECURSE IMPROC_SOURCES CONFIGURE_DEPENDS src/**/*.cpp)
+
+if(NOT IMPROC_WITH_ONNX)
+    file(GLOB_RECURSE _ONNX_SOURCES CONFIGURE_DEPENDS src/onnx/*.cpp)
+    list(REMOVE_ITEM IMPROC_SOURCES ${_ONNX_SOURCES})
+endif()
 
 add_library(improc STATIC ${IMPROC_HEADERS} ${IMPROC_SOURCES})
 
@@ -42,9 +53,11 @@ target_link_libraries(improc PUBLIC
         opencv::opencv
         $<BUILD_INTERFACE:nlohmann_json::nlohmann_json>
 )
-target_link_libraries(improc PUBLIC
-        onnxruntime::onnxruntime
-)
+if(IMPROC_WITH_ONNX)
+    target_link_libraries(improc PUBLIC onnxruntime::onnxruntime)
+    target_compile_definitions(improc PUBLIC IMPROC_WITH_ONNX)
+    message(STATUS "onnxruntime: improc::onnx enabled")
+endif()
 
 # === depthai-core (optional) ===
 if(IMPROC_WITH_DEPTHAI)
@@ -104,6 +117,11 @@ install(FILES
 )
 
 file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS tests/*.cpp)
+
+if(NOT IMPROC_WITH_ONNX)
+    file(GLOB_RECURSE _ONNX_TESTS CONFIGURE_DEPENDS tests/onnx/*.cpp)
+    list(REMOVE_ITEM TEST_SOURCES ${_ONNX_TESTS})
+endif()
 
 add_executable(improc_tests ${TEST_SOURCES})
 target_link_libraries(improc_tests PRIVATE improc GTest::gtest GTest::gtest_main)
