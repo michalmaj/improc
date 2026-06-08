@@ -8,7 +8,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## Table of Contents
 
 - [[Unreleased]](#unreleased)
-- [[1.0.0]](#100--2026-06-08) — 2026-06-08 · API freeze: `improc/improc.hpp` top-level umbrella, `calib/calib.hpp`, version bump to 1.0.0
+- [[1.0.0]](#100--2026-06-08) — 2026-06-08 · API freeze: `improc/improc.hpp` top-level umbrella, `calib/calib.hpp`, optional ONNX build, version bump to 1.0.0
 - [[0.20.0]](#0200--2026-06-04) — 2026-06-04 · API completeness: `DetectHaar`, BRISK/KAZE detectors, `DnnSegmentor`, `HOGDetector`, umbrella header fixes
 - [[0.19.0]](#0190--2026-06-03) — 2026-06-03 · OnnxSegmentor + OnnxInstanceSegmentor: semantic and instance segmentation inference in `improc::onnx`
 - [[0.18.0]](#0180--2026-06-02) — 2026-06-02 · Test improvements: renamed/moved test files, added `test_to_bgr.cpp` and `test_axis.cpp`
@@ -39,10 +39,12 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 - `include/improc/improc.hpp` — top-level umbrella header; single-include convenience for all `improc` namespaces
 - `include/improc/calib/calib.hpp` — umbrella header for `improc::calib` (delegates to `calib/pipeline.hpp`), consistent with `ml/ml.hpp`, `onnx/onnx.hpp`, `threading/threading.hpp`, etc.
+- `IMPROC_WITH_ONNX` CMake option (re-introduced, default `ON`) — pass `-DIMPROC_WITH_ONNX=OFF` to build without ONNX Runtime; `src/onnx/` and `tests/onnx/` are excluded, `onnxruntime` is not linked, and downstream `find_package(improc)` does not require it
 
 ### Changed
 - Version bumped to **1.0.0** in `version.hpp` and `CMakeLists.txt`; `IMPROC_VERSION` macro encodes `10000` (i.e. `1*10000 + 0*100 + 0`)
 - **API freeze** — public API is now stable; breaking changes deferred to v2.0.0
+- `cmake/improcConfig.cmake.in` — `find_dependency(onnxruntime)` is now conditional on `IMPROC_WITH_ONNX`
 
 ---
 
@@ -134,7 +136,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 - `onnxruntime` dependency migrated from FetchContent binary download to Conan (`onnxruntime/1.24.4`), upgrading from v1.20.1; `eigen` upgraded to 5.0.1 to satisfy onnxruntime's requirements
 - `nlohmann_json` dependency migrated from FetchContent to Conan (`nlohmann_json/3.11.3`)
-- `IMPROC_WITH_ONNX` CMake option removed — ONNX Runtime is now always available via Conan
+- `IMPROC_WITH_ONNX` CMake option removed — ONNX Runtime is now always available via Conan (re-introduced as an opt-out in v1.0.0)
 - `opencv` built without protobuf (resolves Conan graph conflict; Caffe model loading was unused)
 
 ---
