@@ -3,7 +3,10 @@
 include(CMakeFindDependencyMacro)
 
 find_dependency(OpenCV REQUIRED)
-find_dependency(onnxruntime REQUIRED)
+
+if(@IMPROC_WITH_ONNX@)
+    find_dependency(onnxruntime REQUIRED)
+endif()
 
 # Reproduce the build-time shim: Conan exposes opencv::opencv; system installs
 # expose ${OpenCV_LIBS}. Either way the installed improcTargets.cmake references
