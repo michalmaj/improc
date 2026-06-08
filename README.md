@@ -69,7 +69,7 @@
 # 1. Detect your compiler profile (run once)
 conan profile detect --force
 
-# 2. Configure — Conan installs OpenCV, GTest, Eigen automatically
+# 2. Configure — Conan installs OpenCV, GTest automatically
 cmake \
   -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="conan_provider.cmake" \
   -DCONAN_COMMAND=$(which conan) \
@@ -653,7 +653,6 @@ cmake --build cmake-build-debug --target improc_tests
 
 - **Compilers:** GCC 14.2, Clang 19.1.7
 - **OpenCV:** 4.8.1
-- **Eigen:** 3.4.0
 - **GoogleTest:** 1.16.0
 
 ## Benchmarks

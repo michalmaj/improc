@@ -21,8 +21,10 @@ class ConanApplication(ConanFile):
 
     def configure(self):
         self.options["opencv"].with_protobuf = False
-        # Disable opencv's eigen to resolve conflict with onnxruntime which needs eigen >= 5.0.1
-        # We use eigen/5.0.1 as an explicit requirement instead
+        # Disable opencv's bundled Eigen to resolve Conan graph conflict:
+        # onnxruntime requires Eigen >= 5.0.1; OpenCV defaults to 3.4.0.
+        # eigen/5.0.1 is listed in conandata.yml as an explicit dep to force
+        # the correct version — improc++ itself does not use Eigen directly.
         try:
             self.options["opencv"].with_eigen = False
         except Exception:
