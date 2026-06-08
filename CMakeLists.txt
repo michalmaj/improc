@@ -45,7 +45,10 @@ if(NOT IMPROC_WITH_ONNX)
     list(REMOVE_ITEM IMPROC_SOURCES ${_ONNX_SOURCES})
 endif()
 
-add_library(improc STATIC ${IMPROC_HEADERS} ${IMPROC_SOURCES})
+add_library(improc ${IMPROC_HEADERS} ${IMPROC_SOURCES})
+set_target_properties(improc PROPERTIES
+    POSITION_INDEPENDENT_CODE ON
+)
 
 target_include_directories(improc PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
