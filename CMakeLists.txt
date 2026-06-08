@@ -271,31 +271,31 @@ target_link_libraries(demo_augment_bbox PRIVATE improc)
 add_executable(demo_augment_mixup examples/ml/demo_augment_mixup.cpp)
 target_link_libraries(demo_augment_mixup PRIVATE improc)
 
-# VOC dataset loader demo (v0.4.0-D)
+# VOC dataset loader demo
 add_executable(demo_voc_dataset examples/ml/demo_voc_dataset.cpp)
 target_link_libraries(demo_voc_dataset PRIVATE improc)
 
-# COCO dataset loader demo (v0.4.0-E)
+# COCO dataset loader demo
 add_executable(demo_coco_dataset examples/ml/demo_coco_dataset.cpp)
 target_link_libraries(demo_coco_dataset PRIVATE improc)
 
-# VOC Segmentation dataset loader demo (v0.4.0-H)
+# VOC Segmentation dataset loader demo
 add_executable(demo_voc_seg_dataset examples/ml/demo_voc_seg_dataset.cpp)
 target_link_libraries(demo_voc_seg_dataset PRIVATE improc)
 
-# Detection eval demo (v0.5.0-A)
+# Detection eval demo
 add_executable(demo_detection_eval examples/ml/demo_detection_eval.cpp)
 target_link_libraries(demo_detection_eval PRIVATE improc)
 
-# Segmentation eval demo (v0.5.0-B)
+# Segmentation eval demo
 add_executable(demo_seg_eval examples/ml/demo_seg_eval.cpp)
 target_link_libraries(demo_seg_eval PRIVATE improc)
 
-# Classification eval demo (v0.5.0-C)
+# Classification eval demo
 add_executable(demo_class_eval examples/ml/demo_class_eval.cpp)
 target_link_libraries(demo_class_eval PRIVATE improc)
 
-# Tracking demo (v0.5.0-D)
+# Tracking demo
 add_executable(demo_tracking examples/ml/demo_tracking.cpp)
 target_link_libraries(demo_tracking PRIVATE improc)
 
@@ -307,31 +307,31 @@ target_link_libraries(demo_video_writer PRIVATE improc)
 add_executable(demo_color_adjust examples/core/demo_color_adjust.cpp)
 target_link_libraries(demo_color_adjust PRIVATE improc)
 
-# Color space demo — ToLAB, ToYCrCb (v0.14.0)
+# Color space demo — ToLAB, ToYCrCb
 add_executable(demo_color_lab_ycrcb examples/core/demo_color_lab_ycrcb.cpp)
 target_link_libraries(demo_color_lab_ycrcb PRIVATE improc)
 
-# Pixel ops demo — Add, Subtract, Multiply, AbsDiff, SplitChannels, MergeChannels (v0.14.0)
+# Pixel ops demo — Add, Subtract, Multiply, AbsDiff, SplitChannels, MergeChannels
 add_executable(demo_pixel_ops examples/core/demo_pixel_ops.cpp)
 target_link_libraries(demo_pixel_ops PRIVATE improc)
 
-# Filter ops demo — BilateralFilter, CenterCrop, Remap (v0.14.0)
+# Filter ops demo — BilateralFilter, CenterCrop, Remap
 add_executable(demo_filter_ops examples/core/demo_filter_ops.cpp)
 target_link_libraries(demo_filter_ops PRIVATE improc)
 
-# Morphological ops demo — FloodFill, GrabCut, Watershed, DistanceTransform, Inpaint (v0.14.0)
+# Morphological ops demo — FloodFill, GrabCut, Watershed, DistanceTransform, Inpaint
 add_executable(demo_morphological_ops examples/core/demo_morphological_ops.cpp)
 target_link_libraries(demo_morphological_ops PRIVATE improc)
 
-# Analysis ops demo — IntegralImage, MinMaxLoc, MeanStdDev, Moments (v0.14.0)
+# Analysis ops demo — IntegralImage, MinMaxLoc, MeanStdDev, Moments
 add_executable(demo_analysis_ops examples/core/demo_analysis_ops.cpp)
 target_link_libraries(demo_analysis_ops PRIVATE improc)
 
-# Feature ops demo — HoughLinesP, HoughCircles, MatchTemplate (v0.14.0)
+# Feature ops demo — HoughLinesP, HoughCircles, MatchTemplate
 add_executable(demo_feature_ops examples/core/demo_feature_ops.cpp)
 target_link_libraries(demo_feature_ops PRIVATE improc)
 
-# Detector types demo — MSERResult, LineSet, QRResult, BarcodeResult, FaceDetection (v0.14.0)
+# Detector types demo — MSERResult, LineSet, QRResult, BarcodeResult, FaceDetection
 add_executable(demo_detector_types_usage examples/core/demo_detector_types.cpp)
 target_link_libraries(demo_detector_types_usage PRIVATE improc)
 
@@ -343,7 +343,7 @@ target_link_libraries(demo_image_io PRIVATE improc)
 add_executable(demo_video_reader examples/io/demo_video_reader.cpp)
 target_link_libraries(demo_video_reader PRIVATE improc)
 
-# Video File Capture demo (v0.7.0)
+# Video File Capture demo
 add_executable(demo_video_file_capture examples/io/demo_video_file_capture.cpp)
 target_link_libraries(demo_video_file_capture PRIVATE improc)
 
@@ -359,7 +359,7 @@ target_link_libraries(demo_pyramid_drawing PRIVATE improc)
 add_executable(demo_contours examples/core/demo_contours.cpp)
 target_link_libraries(demo_contours PRIVATE improc)
 
-# Background subtraction demo (v0.7.0)
+# Background subtraction demo
 add_executable(demo_background_subtract examples/core/demo_background_subtract.cpp)
 target_link_libraries(demo_background_subtract PRIVATE improc)
 
@@ -404,19 +404,19 @@ target_link_libraries(demo_views_m3 PRIVATE improc)
 add_executable(demo_views_m4 examples/views/demo_views_m4.cpp)
 target_link_libraries(demo_views_m4 PRIVATE improc)
 
-# Photo / creative effects demo (v0.11.0)
+# Photo / creative effects demo
 add_executable(demo_photo examples/core/demo_photo.cpp)
 target_link_libraries(demo_photo PRIVATE improc)
 
-# HDR + stitching demo (v0.11.0)
+# HDR + stitching demo
 add_executable(demo_hdr examples/core/demo_hdr.cpp)
 target_link_libraries(demo_hdr PRIVATE improc)
 
-# Quality metrics demo (v0.11.0)
+# Quality metrics demo
 add_executable(demo_quality examples/core/demo_quality.cpp)
 target_link_libraries(demo_quality PRIVATE improc)
 
-# Perceptual hashing demo (v0.11.0)
+# Perceptual hashing demo
 add_executable(demo_hashing examples/core/demo_hashing.cpp)
 target_link_libraries(demo_hashing PRIVATE improc)
 
@@ -433,13 +433,15 @@ target_link_libraries(demo_stereo PRIVATE improc)
 add_executable(demo_aruco examples/calib/demo_aruco.cpp)
 target_link_libraries(demo_aruco PRIVATE improc)
 
-# Epipolar geometry demo — FindFundamentalMat, FindEssentialMat, RecoverPose, TriangulatePoints (v0.14.0)
+# Epipolar geometry demo — FindFundamentalMat, FindEssentialMat, RecoverPose, TriangulatePoints
 add_executable(demo_epipolar examples/calib/demo_epipolar.cpp)
 target_link_libraries(demo_epipolar PRIVATE improc)
 
 # ONNX inference demo
-add_executable(demo_onnx_inference examples/ml/demo_onnx_inference.cpp)
-target_link_libraries(demo_onnx_inference PRIVATE improc)
+if(IMPROC_WITH_ONNX)
+    add_executable(demo_onnx_inference examples/ml/demo_onnx_inference.cpp)
+    target_link_libraries(demo_onnx_inference PRIVATE improc)
+endif()
 
 # Benchmarks (opt-in: cmake -DIMPROC_BENCHMARKS=ON ...)
 if(IMPROC_BENCHMARKS)

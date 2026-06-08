@@ -32,19 +32,19 @@ Compile-time version constants and a runtime accessor. Include `improc/version.h
 
 | Symbol | Value |
 |---|---|
-| `IMPROC_VERSION_MAJOR` | `0` |
-| `IMPROC_VERSION_MINOR` | `18` |
+| `IMPROC_VERSION_MAJOR` | `1` |
+| `IMPROC_VERSION_MINOR` | `0` |
 | `IMPROC_VERSION_PATCH` | `0` |
-| `IMPROC_VERSION` | `MAJOR*10000 + MINOR*100 + PATCH` (e.g. `1800` for 0.18.0) |
-| `IMPROC_VERSION_STRING` | `"0.18.0"` |
+| `IMPROC_VERSION` | `MAJOR*10000 + MINOR*100 + PATCH` (e.g. `10000` for 1.0.0) |
+| `IMPROC_VERSION_STRING` | `"1.0.0"` |
 | `improc::version_string()` | `constexpr const char*` — same as `IMPROC_VERSION_STRING` |
 
 ```cpp
 #include "improc/version.hpp"
 
 // Compile-time guard
-#if IMPROC_VERSION < 1800
-#error "improc++ 0.18.0 or newer required"
+#if IMPROC_VERSION < 10000
+#error "improc++ 1.0.0 or newer required"
 #endif
 
 // Runtime

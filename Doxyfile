@@ -6,7 +6,7 @@
 # Project
 #---------------------------------------------------------------------------
 PROJECT_NAME           = "improc++"
-PROJECT_NUMBER         = "0.1.0"
+PROJECT_NUMBER         = "1.0.0"
 PROJECT_BRIEF          = "Modern C++ image processing toolkit with compile-time type safety"
 OUTPUT_DIRECTORY       = docs/doxygen
 
