@@ -25,7 +25,7 @@ TEST(CropTest, ResultOwnsItsMemory) {
     cv::Mat mat(100, 200, CV_8UC3, cv::Scalar(10, 20, 30));
     Image<BGR> img(mat);
     Image<BGR> cropped = img | Crop{}.x(0).y(0).width(50).height(50);
-    img.mat().setTo(cv::Scalar(0, 0, 0));
+    img.unsafe_mat().setTo(cv::Scalar(0, 0, 0));
     EXPECT_EQ(cropped.mat().at<cv::Vec3b>(0, 0), (cv::Vec3b{10, 20, 30}));
 }
 
