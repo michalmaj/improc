@@ -1,7 +1,7 @@
 from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration
 from conan.tools.cmake import CMake, CMakeToolchain, CMakeDeps, cmake_layout
-from conan.tools.files import copy, get
+from conan.tools.files import copy, get, rmdir
 from conan.tools.build import check_min_cppstd
 from conan.tools.scm import Version
 import os
@@ -111,10 +111,16 @@ class ImprocConan(ConanFile):
              dst=os.path.join(self.package_folder, "licenses"))
         cmake = CMake(self)
         cmake.install()
+        # Remove the upstream cmake config — Conan generates its own cmake integration
+        # from package_info(). The installed improcConfig.cmake calls find_dependency(OpenCV)
+        # which doesn't resolve correctly in Conan consumers' cmake context.
+        rmdir(self, os.path.join(self.package_folder, "lib", "cmake"))
 
     def package_info(self):
         self.cpp_info.set_property("cmake_file_name", "improc")
         self.cpp_info.set_property("cmake_target_name", "improc::improc")
         self.cpp_info.libs = ["improc"]
+        self.cpp_info.requires = ["opencv::opencv"]
         if self.options.with_onnx:
             self.cpp_info.defines = ["IMPROC_WITH_ONNX"]
+            self.cpp_info.requires.append("onnxruntime::onnxruntime")
