@@ -120,7 +120,37 @@ class ImprocConan(ConanFile):
         self.cpp_info.set_property("cmake_file_name", "improc")
         self.cpp_info.set_property("cmake_target_name", "improc::improc")
         self.cpp_info.libs = ["improc"]
-        self.cpp_info.requires = ["opencv::opencv"]
+
+        # Conan 2's CMakeDeps generates empty INTERFACE_INCLUDE_DIRECTORIES for
+        # transitive package components.  Because improc's installed public headers
+        # include <opencv2/…> directly, consumers cannot compile against them unless
+        # we expose opencv's include paths through our own cpp_info.includedirs.
+        opencv_pkg = self.dependencies["opencv"]
+        opencv_root = opencv_pkg.package_folder
+        seen = set()
+        for comp in opencv_pkg.cpp_info.components.values():
+            for rel_inc in comp.includedirs:
+                abs_inc = os.path.join(opencv_root, rel_inc)
+                if abs_inc not in seen:
+                    seen.add(abs_inc)
+                    self.cpp_info.includedirs.append(abs_inc)
+
+        # Link to the specific opencv modules whose headers appear in improc's
+        # installed public API.
+        self.cpp_info.requires = [
+            "opencv::opencv_core",
+            "opencv::opencv_imgproc",
+            "opencv::opencv_highgui",
+            "opencv::opencv_imgcodecs",
+            "opencv::opencv_videoio",
+            "opencv::opencv_dnn",
+            "opencv::opencv_objdetect",
+            "opencv::opencv_calib3d",
+            "opencv::opencv_features2d",
+            "opencv::opencv_photo",
+            "opencv::opencv_stitching",
+            "opencv::opencv_video",
+        ]
         if self.options.with_onnx:
             self.cpp_info.defines = ["IMPROC_WITH_ONNX"]
             self.cpp_info.requires.append("onnxruntime::onnxruntime")
