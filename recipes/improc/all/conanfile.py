@@ -78,7 +78,7 @@ class ImprocConan(ConanFile):
 
     def requirements(self):
         self.requires("opencv/4.10.0")
-        self.requires("nlohmann_json/3.11.3")
+        self.requires("nlohmann_json/3.11.3", visible=False)
         if self.options.with_onnx:
             self.requires("onnxruntime/1.24.4")
             # Force Eigen >= 5.0.1 to satisfy onnxruntime; opencv defaults to 3.4.0
