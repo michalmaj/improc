@@ -8,6 +8,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## Table of Contents
 
 - [[Unreleased]](#unreleased)
+- [[1.0.2]](#102--2026-06-09) — 2026-06-09 · Packaging sanity: CMake version sync, validate() toolchain guards, build_requirements, defensive CMake variables
 - [[1.0.1]](#101--2026-06-09) — 2026-06-09 · Packaging hardening: Conan Center Index recipe, `cmake.install()`, `cmake_target_name`, `BUILD_SHARED_LIBS`, onnxruntime 1.24.4
 - [[1.0.0]](#100--2026-06-08) — 2026-06-08 · API freeze: `improc/improc.hpp` top-level umbrella, `calib/calib.hpp`, optional ONNX build, version bump to 1.0.0
 - [[0.20.0]](#0200--2026-06-04) — 2026-06-04 · API completeness: `DetectHaar`, BRISK/KAZE detectors, `DnnSegmentor`, `HOGDetector`, umbrella header fixes
@@ -32,6 +33,18 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ---
 
 ## [Unreleased]
+
+---
+
+## [1.0.2] — 2026-06-09
+
+### Fixed
+- `CMakeLists.txt`: `project(improc VERSION ...)` now matches `version.hpp` — `improcConfigVersion.cmake` will correctly advertise `1.0.2`
+- Conan recipe: `validate()` now checks compiler version explicitly — GCC < 14, Clang < 18, Apple-Clang < 15 raise `ConanInvalidConfiguration`; MSVC raises until validated
+- Conan recipe: added `build_requirements()` with `cmake/[>=3.30 <4]` — recipe enforces the same CMake floor as the library
+- Conan recipe: `generate()` now defensively sets `IMPROC_WITH_DEPTHAI=False` and `IMPROC_BENCHMARKS=False` to prevent accidental network access during CCI builds
+- `recipes/improc/all/test_package/CMakeLists.txt`: `find_package(improc 1.0.2 CONFIG REQUIRED)` — version check now catches CMake/header mismatch at test time
+- `recipes/improc/all/conandata.yml` and `conan/conandata.yml`: both kept in sync with all released versions
 
 ---
 

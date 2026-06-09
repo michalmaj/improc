@@ -1,7 +1,9 @@
 from conan import ConanFile
+from conan.errors import ConanInvalidConfiguration
 from conan.tools.cmake import CMake, CMakeToolchain, CMakeDeps, cmake_layout
 from conan.tools.files import copy, get
 from conan.tools.build import check_min_cppstd
+from conan.tools.scm import Version
 import os
 
 
@@ -48,6 +50,23 @@ class ImprocConan(ConanFile):
     def validate(self):
         check_min_cppstd(self, "23")
 
+        compiler = str(self.settings.compiler)
+        version = Version(str(self.settings.compiler.version))
+
+        if compiler == "gcc" and version < "14":
+            raise ConanInvalidConfiguration("improc requires GCC >= 14 for full C++23 support")
+        if compiler == "clang" and version < "18":
+            raise ConanInvalidConfiguration("improc requires Clang >= 18 for full C++23 support")
+        if compiler == "apple-clang" and version < "15":
+            raise ConanInvalidConfiguration("improc requires Apple-Clang >= 15 (Xcode 15) for C++23 support")
+        if compiler == "msvc":
+            raise ConanInvalidConfiguration(
+                "improc C++23 support with MSVC is not validated in this recipe"
+            )
+
+    def build_requirements(self):
+        self.tool_requires("cmake/[>=3.30 <4]")
+
     def requirements(self):
         self.requires("opencv/4.10.0")
         self.requires("nlohmann_json/3.11.3")
@@ -68,6 +87,8 @@ class ImprocConan(ConanFile):
         tc.variables["IMPROC_WITH_ONNX"]                = self.options.with_onnx
         tc.variables["IMPROC_BUILD_TESTS"]              = False
         tc.variables["IMPROC_BUILD_EXAMPLES"]           = False
+        tc.variables["IMPROC_WITH_DEPTHAI"]             = False
+        tc.variables["IMPROC_BENCHMARKS"]               = False
         tc.generate()
 
     def build(self):
