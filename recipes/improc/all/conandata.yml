@@ -1,4 +1,4 @@
 sources:
-  "1.0.2":
-    url: "https://github.com/michalmaj/improc/archive/refs/tags/v1.0.2.tar.gz"
-    sha256: "607493b8e107c733be6e76466781cb2d0feaf1b26b4e2f1004a949459874af26"
+  "1.0.3":
+    url: "https://github.com/michalmaj/improc/archive/refs/tags/v1.0.3.tar.gz"
+    sha256: "PLACEHOLDER_UPDATE_AFTER_TAG"
