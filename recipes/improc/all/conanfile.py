@@ -78,8 +78,10 @@ class ImprocConan(ConanFile):
 
     def requirements(self):
         self.requires("opencv/4.10.0")
+        # nlohmann_json is used unconditionally by the COCO dataset loader (src/ml/coco_dataset.cpp).
+        # visible=False: it is a private impl dep — not exposed in improc's public headers.
+        self.requires("nlohmann_json/3.11.3", visible=False)
         if self.options.with_onnx:
-            self.requires("nlohmann_json/3.11.3", visible=False)
             self.requires("onnxruntime/1.24.4")
             # Force Eigen >= 5.0.1 to satisfy onnxruntime; opencv defaults to 3.4.0
             self.requires("eigen/5.0.1", override=True)
@@ -154,7 +156,9 @@ class ImprocConan(ConanFile):
         if self.options.with_onnx:
             self.cpp_info.defines = ["IMPROC_WITH_ONNX"]
             self.cpp_info.requires.append("onnxruntime::onnxruntime")
-            # nlohmann_json is a private build-time dep (visible=False) used only
-            # in the ONNX code path; must appear here so Conan 2's package_info()
-            # validator sees all direct deps accounted for.
+            # When onnxruntime is present it also depends on nlohmann_json, making it
+            # visible in the resolved graph. Conan 2's package_info() validator then
+            # requires it to be listed here. Without onnxruntime the visible=False dep
+            # stays quiet and must NOT appear in cpp_info.requires (shared-lib builds
+            # fail with "not a direct requirement" if it does).
             self.cpp_info.requires.append("nlohmann_json::nlohmann_json")
