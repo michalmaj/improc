@@ -38,11 +38,17 @@ class ImprocConan(ConanFile):
     def configure(self):
         if self.options.shared:
             self.options.rm_safe("fPIC")
-        self.options["opencv"].with_protobuf = False
-        try:
-            self.options["opencv"].with_eigen = False
-        except Exception:
-            pass
+        if self.options.with_onnx:
+            # onnxruntime bundles its own protobuf; enabling OpenCV's protobuf causes
+            # duplicate symbol errors at link time.
+            self.options["opencv"].with_protobuf = False
+            # onnxruntime requires Eigen >= 5.x; OpenCV defaults to bundled 3.4.x,
+            # which produces a Conan graph conflict. Disabling opencv's bundled Eigen
+            # lets the explicit eigen/5.x requirement in requirements() win.
+            try:
+                self.options["opencv"].with_eigen = False
+            except Exception:
+                pass
 
     def layout(self):
         cmake_layout(self, src_folder=".")

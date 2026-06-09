@@ -38,15 +38,24 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [1.0.2] — 2026-06-09
 
+### Added
+- `src/version.cpp` — defines `improc::version_string()` as a linkable symbol (was `inline constexpr` in header; `test_package` now verifies real linking)
+
 ### Fixed
-- `CMakeLists.txt`: `project(improc VERSION ...)` now matches `version.hpp` — `improcConfigVersion.cmake` will correctly advertise `1.0.2`
-- Conan recipe: `validate()` now checks compiler version explicitly — GCC < 14, Clang < 18, Apple-Clang < 15 raise `ConanInvalidConfiguration`; MSVC raises until validated
-- Conan recipe: added `build_requirements()` with `cmake/[>=3.30 <4]` — recipe enforces the same CMake floor as the library
-- Conan recipe: `generate()` now defensively sets `IMPROC_WITH_DEPTHAI=False` and `IMPROC_BENCHMARKS=False` to prevent accidental network access during CCI builds
-- `recipes/improc/all/test_package/CMakeLists.txt`: `find_package(improc 1.0.2 CONFIG REQUIRED)` — version check now catches CMake/header mismatch at test time
-- `recipes/improc/` is now the single source of truth for the CCI recipe; `conan/` removed
-- `recipes/improc/all/conandata.yml`: contains only the `1.0.2` source entry (CCI convention — no legacy version history in first submission)
-- `recipes/improc/config.yml`: lists only `1.0.2`
+- `CMakeLists.txt`: `project(improc VERSION 1.0.2)` — was `1.0.0`; `improcConfigVersion.cmake` now advertises correct version
+- `include/improc/version.hpp`: `version_string()` changed to a declaration; definition moved to `src/version.cpp`
+- Conan recipe `validate()`: compiler guards now explicit — GCC < 14, Clang < 18, Apple-Clang < 16 (validated by CI `macos-latest`/Xcode 16), MSVC raises until validated
+- Conan recipe `build_requirements()`: `cmake/[>=3.30 <4]` ensures correct CMake version during package build
+- Conan recipe `generate()`: defensively sets `IMPROC_WITH_DEPTHAI=False` and `IMPROC_BENCHMARKS=False`
+- Conan recipe `configure()`: OpenCV forced options (`with_protobuf`, `with_eigen`) now conditional on `with_onnx=True` only — with comments explaining the onnxruntime conflict reason
+- Conan recipe `validate()`: Apple-Clang minimum raised to 16 (what CI actually tests; `macos-latest` = Xcode 16)
+- `recipes/improc/all/test_package/CMakeLists.txt`: `find_package(improc 1.0.2 CONFIG REQUIRED)` catches CMake/header version mismatch
+- `recipes/improc/all/test_package/src/test_package.cpp`: `improc::version_string()` runtime call verifies linker symbol
+- `recipes/improc/config.yml`: only `1.0.2` (first CCI submission should not carry non-promoted versions)
+- `recipes/improc/all/conandata.yml`: only `1.0.2` source entry
+- `conan/` removed — `recipes/improc/` is single source of truth for the CCI producer recipe
+- README: status updated to v1.0.2; OpenCV requirement updated to 4.10+; "Tested With" updated to Apple-Clang 16 and OpenCV 4.10.0
+- Root `conanfile.py`: added comment clarifying it is the developer consumer recipe, not the library packaging recipe
 
 ---
 

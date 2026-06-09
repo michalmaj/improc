@@ -38,7 +38,7 @@
 
 ## Status
 
-> **v1.0.0** — Stable API release. All namespaces frozen; breaking changes only in future major versions.
+> **v1.0.2** — Stable API release. All namespaces frozen; breaking changes only in future major versions.
 > Highlights: `improc/improc.hpp` single-include umbrella, optional ONNX build (`-DIMPROC_WITH_ONNX=OFF`), `DetectHaar`, BRISK/KAZE feature ops, `DnnSegmentor`, `HOGDetector`.
 
 | Namespace | Status | Notes |
@@ -586,7 +586,7 @@ MatchSet      sift_ms   = MatchFlann{sift_desc, sift_desc}.ratio_threshold(0.7f)
 ## Requirements
 
 - C++23 or later
-- [OpenCV](https://opencv.org/) 4.8+
+- [OpenCV](https://opencv.org/) 4.10+
 - [ONNX Runtime](https://onnxruntime.ai/) 1.24.4 — optional, default ON (`-DIMPROC_WITH_ONNX=OFF` to skip)
 - [GoogleTest](https://github.com/google/googletest) 1.16+
 - [Conan 2.0](https://conan.io/) for dependency management
@@ -651,8 +651,8 @@ cmake --build cmake-build-debug --target improc_tests
 
 ## Tested With
 
-- **Compilers:** GCC 14.2, Clang 19.1.7
-- **OpenCV:** 4.8.1
+- **Compilers:** GCC 14.2, Clang 19.1.7, Apple-Clang 16 (Xcode 16)
+- **OpenCV:** 4.10.0
 - **GoogleTest:** 1.16.0
 
 ## Benchmarks

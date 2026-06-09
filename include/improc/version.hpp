@@ -14,6 +14,6 @@
 #define IMPROC_VERSION_STRING "1.0.2"
 
 namespace improc {
-/// Returns the library version string, e.g. "1.0.0".
-inline constexpr const char* version_string() noexcept { return IMPROC_VERSION_STRING; }
+/// Returns the library version string, e.g. "1.0.2". Defined in src/version.cpp — links a real symbol.
+const char* version_string() noexcept;
 } // namespace improc
