@@ -150,6 +150,9 @@ class ImprocConan(ConanFile):
             "opencv::opencv_photo",
             "opencv::opencv_stitching",
             "opencv::opencv_video",
+            # nlohmann_json is used internally (visible=False); must appear here so
+            # Conan 2's package_info() validator sees all direct deps accounted for.
+            "nlohmann_json::nlohmann_json",
         ]
         if self.options.with_onnx:
             self.cpp_info.defines = ["IMPROC_WITH_ONNX"]
