@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.30)
-project(improc VERSION 1.0.2)
+project(improc VERSION 1.0.3)
 
 if(APPLE)
     string(REPLACE "--as-needed" "" CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
@@ -37,8 +37,8 @@ option(IMPROC_BUILD_TESTS    "Build improc unit tests"       ON)
 option(IMPROC_BUILD_EXAMPLES "Build improc demo executables" OFF)
 
 # === improc LIBRARY ===
-file(GLOB_RECURSE IMPROC_HEADERS CONFIGURE_DEPENDS include/improc/**/*.hpp)
-file(GLOB_RECURSE IMPROC_SOURCES CONFIGURE_DEPENDS src/**/*.cpp)
+file(GLOB_RECURSE IMPROC_HEADERS CONFIGURE_DEPENDS include/improc/*.hpp)
+file(GLOB_RECURSE IMPROC_SOURCES CONFIGURE_DEPENDS src/*.cpp)
 
 if(NOT IMPROC_WITH_ONNX)
     file(GLOB_RECURSE _ONNX_SOURCES CONFIGURE_DEPENDS src/onnx/*.cpp)
