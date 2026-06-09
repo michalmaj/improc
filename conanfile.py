@@ -1,6 +1,9 @@
 from conan import ConanFile
 from conan.tools.cmake import cmake_layout, CMakeToolchain
 
+# Developer/consumer recipe — installs dependencies needed to BUILD this repo locally.
+# This is NOT the library packaging recipe.
+# The CCI-ready producer recipe lives in recipes/improc/all/conanfile.py.
 class ConanApplication(ConanFile):
     package_type = "application"
     settings = "os", "compiler", "build_type", "arch"

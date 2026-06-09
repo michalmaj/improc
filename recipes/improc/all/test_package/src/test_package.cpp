@@ -1,7 +1,9 @@
 #include <improc/version.hpp>
 #include <improc/core/pipeline.hpp>
+#include <string_view>
 
 int main() {
     static_assert(IMPROC_VERSION >= 10002, "improc >= 1.0.2 required");
-    return 0;
+    std::string_view v = improc::version_string();
+    return v.empty() ? 1 : 0;
 }

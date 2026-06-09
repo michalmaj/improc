@@ -38,11 +38,17 @@ class ImprocConan(ConanFile):
     def configure(self):
         if self.options.shared:
             self.options.rm_safe("fPIC")
-        self.options["opencv"].with_protobuf = False
-        try:
-            self.options["opencv"].with_eigen = False
-        except Exception:
-            pass
+        if self.options.with_onnx:
+            # onnxruntime bundles its own protobuf; enabling OpenCV's protobuf causes
+            # duplicate symbol errors at link time.
+            self.options["opencv"].with_protobuf = False
+            # onnxruntime requires Eigen >= 5.x; OpenCV defaults to bundled 3.4.x,
+            # which produces a Conan graph conflict. Disabling opencv's bundled Eigen
+            # lets the explicit eigen/5.x requirement in requirements() win.
+            try:
+                self.options["opencv"].with_eigen = False
+            except Exception:
+                pass
 
     def layout(self):
         cmake_layout(self, src_folder=".")
@@ -57,8 +63,8 @@ class ImprocConan(ConanFile):
             raise ConanInvalidConfiguration("improc requires GCC >= 14 for full C++23 support")
         if compiler == "clang" and version < "18":
             raise ConanInvalidConfiguration("improc requires Clang >= 18 for full C++23 support")
-        if compiler == "apple-clang" and version < "15":
-            raise ConanInvalidConfiguration("improc requires Apple-Clang >= 15 (Xcode 15) for C++23 support")
+        if compiler == "apple-clang" and version < "16":
+            raise ConanInvalidConfiguration("improc requires Apple-Clang >= 16 (Xcode 16) for C++23 support")
         if compiler == "msvc":
             raise ConanInvalidConfiguration(
                 "improc C++23 support with MSVC is not validated in this recipe"
