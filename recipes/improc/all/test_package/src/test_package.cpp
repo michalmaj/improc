@@ -1,5 +1,4 @@
-#include <improc/version.hpp>
-#include <improc/core/pipeline.hpp>
+#include <improc/improc.hpp>
 #include <string_view>
 
 int main() {

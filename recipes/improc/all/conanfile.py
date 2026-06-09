@@ -64,7 +64,10 @@ class ImprocConan(ConanFile):
         if compiler == "clang" and version < "18":
             raise ConanInvalidConfiguration("improc requires Clang >= 18 for full C++23 support")
         if compiler == "apple-clang" and version < "16":
-            raise ConanInvalidConfiguration("improc requires Apple-Clang >= 16 (Xcode 16) for C++23 support")
+            raise ConanInvalidConfiguration(
+                "improc requires Apple-Clang >= 16 (Xcode 16); "
+                "older Apple-Clang versions are not validated for this C++23 codebase"
+            )
         if compiler == "msvc":
             raise ConanInvalidConfiguration(
                 "improc C++23 support with MSVC is not validated in this recipe"
