@@ -8,6 +8,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## Table of Contents
 
 - [[Unreleased]](#unreleased)
+- [[1.0.1]](#101--2026-06-09) — 2026-06-09 · Packaging hardening: Conan Center Index recipe, `cmake.install()`, `cmake_target_name`, `BUILD_SHARED_LIBS`, onnxruntime 1.24.4
 - [[1.0.0]](#100--2026-06-08) — 2026-06-08 · API freeze: `improc/improc.hpp` top-level umbrella, `calib/calib.hpp`, optional ONNX build, version bump to 1.0.0
 - [[0.20.0]](#0200--2026-06-04) — 2026-06-04 · API completeness: `DetectHaar`, BRISK/KAZE detectors, `DnnSegmentor`, `HOGDetector`, umbrella header fixes
 - [[0.19.0]](#0190--2026-06-03) — 2026-06-03 · OnnxSegmentor + OnnxInstanceSegmentor: semantic and instance segmentation inference in `improc::onnx`
@@ -31,6 +32,21 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ---
 
 ## [Unreleased]
+
+---
+
+## [1.0.1] — 2026-06-09
+
+### Fixed
+- `conan/conanfile.py`: rename package `improcpp` → `improc`; fix `homepage` URL (`improc++` → `improc`); bump `onnxruntime` dependency `1.17.1` → `1.24.4` to match tested version
+- `conan/conanfile.py`: `package()` now uses `cmake.install()` instead of manual artifact copy — correctly handles all platforms and honours CMake install rules
+- `conan/conanfile.py`: `generate()` now explicitly sets `BUILD_SHARED_LIBS` and `CMAKE_POSITION_INDEPENDENT_CODE` so `shared` and `fPIC` options are honoured
+- `conan/conanfile.py`: `package_info()` sets `cmake_file_name = "improc"` and `cmake_target_name = "improc::improc"` for correct `find_package` / CMakeDeps integration
+- `CMakeLists.txt`: removed unconditional `POSITION_INDEPENDENT_CODE ON` from `set_target_properties` — PIC is now controlled by `CMAKE_POSITION_INDEPENDENT_CODE` (set by Conan recipe or the caller)
+
+### Added
+- `recipes/improc/` — CCI-compatible recipe structure: `config.yml`, `all/conanfile.py`, `all/conandata.yml`, `all/test_package/` (strictly required by Conan Center Index)
+- `recipes/improc/all/test_package/` — minimal consumer test: includes `<improc/version.hpp>`, links `improc::improc`, verifies `IMPROC_VERSION >= 10001` at compile time
 
 ---
 

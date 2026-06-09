@@ -46,9 +46,6 @@ if(NOT IMPROC_WITH_ONNX)
 endif()
 
 add_library(improc ${IMPROC_HEADERS} ${IMPROC_SOURCES})
-set_target_properties(improc PROPERTIES
-    POSITION_INDEPENDENT_CODE ON
-)
 
 target_include_directories(improc PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
